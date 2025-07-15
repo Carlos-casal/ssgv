@@ -1,0 +1,13 @@
+/* assets/styles/app.css (o login.css) */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Puedes añadir tu propio CSS personalizado aquí si es necesario,
+   pero la mayoría de los estilos deberían venir de las clases de Tailwind en tu Twig. */
+
+/* Ejemplo del fondo azul claro que tenías, si quieres eliminarlo: */
+/* body {
+    background-color: lightblue;
+} */

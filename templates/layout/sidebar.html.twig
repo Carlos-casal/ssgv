@@ -1,0 +1,162 @@
+<div class="bg-white shadow-lg w-80 flex flex-col h-full" id="sidebar">
+    <!-- Header -->
+    <div class="p-4 border-b border-gray-200">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                <i data-lucide="users" class="w-5 h-5 text-white"></i>
+            </div>
+            <div>
+                <h2 class="font-semibold text-gray-900">SGV</h2>
+                <p class="text-xs text-gray-500">Sistema Gestión Voluntarios</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="flex-1 p-4 overflow-y-auto">
+        <nav class="space-y-2">
+            <!-- Inicio -->
+            <a href="{{ path('app_dashboard') }}" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ current_section|default('') == 'inicio' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
+                <i data-lucide="home" class="w-5 h-5"></i>
+                <span class="text-sm">Inicio</span>
+            </a>
+
+            <!-- Gestión -->
+            <div class="mb-1">
+                <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('gestion')">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    <span class="flex-1 text-sm">Gestión</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4" id="gestion-icon"></i>
+                </div>
+                <div class="ml-4 space-y-1" id="gestion-submenu">
+                    <!-- Personal -->
+                    <div class="mb-1">
+                        <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('personal')">
+                            <i data-lucide="users" class="w-4 h-4"></i>
+                            <span class="flex-1 text-sm">Personal</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4" id="personal-icon"></i>
+                        </div>
+                        <div class="ml-4 space-y-1" id="personal-submenu">
+                            <a href="{{ path('app_volunteer_list') }}" 
+                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ current_section|default('') == 'personal-listado' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span class="text-sm">Listado</span>
+                            </a>
+                            <a href="{{ path('app_volunteer_reports') }}"
+                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ current_section|default('') == 'personal-informes' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                                <span class="text-sm">Informes</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Servicios -->
+                    <div class="mb-1">
+                        <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('servicios')">
+                            <i data-lucide="building" class="w-4 h-4"></i>
+                            <span class="flex-1 text-sm">Servicios</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4" id="servicios-icon"></i>
+                        </div>
+                        <div class="ml-4 space-y-1" id="servicios-submenu" style="display: none;">
+                            <a href="{{ path('app_services_list') }}" 
+                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                                <i data-lucide="file-text" class="w-4 h-4"></i>
+                                <span class="text-sm">Listado</span>
+                            </a>
+                            <a href="{{ path('app_services_reports') }}" 
+                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                                <span class="text-sm">Informes</span>
+                            </a>
+                            <a href="{{ path('app_services_schedules') }}" 
+                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                                <i data-lucide="check-square" class="w-4 h-4"></i>
+                                <span class="text-sm">Cuadrantes</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Comunicados -->
+                    <a href="{{ path('app_communications') }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <span class="text-sm">Comunicados y Alertas</span>
+                    </a>
+
+                    <!-- Vehículos -->
+                    <a href="{{ path('app_vehicles') }}" 
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                        <i data-lucide="car" class="w-4 h-4"></i>
+                        <span class="text-sm">Vehículos</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- GESDOC -->
+            <a href="{{ path('app_gesdoc') }}" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                <i data-lucide="file-text" class="w-5 h-5"></i>
+                <span class="text-sm">GESDOC</span>
+            </a>
+
+            <!-- CENTRAL -->
+            <a href="{{ path('app_central') }}" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                <i data-lucide="phone" class="w-5 h-5"></i>
+                <span class="text-sm">CENTRAL</span>
+            </a>
+
+            <!-- ESTADÍSTICAS -->
+            <a href="{{ path('app_statistics') }}" 
+               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                <i data-lucide="bar-chart-3" class="w-5 h-5"></i>
+                <span class="text-sm">ESTADÍSTICAS</span>
+            </a>
+        </nav>
+    </div>
+
+    <!-- User section -->
+    <div class="p-4 border-t border-gray-200">
+        <div class="flex items-center gap-3 mb-3">
+            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                <i data-lucide="user" class="w-4 h-4 text-gray-600"></i>
+            </div>
+            <div class="flex-1">
+               {# <p class="font-medium text-sm text-gray-900">{{ app.user.name }}</p> #}
+                <p class="text-xs text-gray-500">{{ app.user.email }}</p>
+            </div>
+        </div>
+        <a href="{{ path('app_logout') }}" 
+           class="w-full flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+            <i data-lucide="log-out" class="w-5 h-5"></i>
+            <span class="text-sm">Cerrar Sesión</span>
+        </a>
+    </div>
+</div>
+
+<script>
+function toggleSubmenu(menuId) {
+    const submenu = document.getElementById(menuId + '-submenu');
+    const icon = document.getElementById(menuId + '-icon');
+    
+    if (submenu.style.display === 'none') {
+        submenu.style.display = 'block';
+        icon.setAttribute('data-lucide', 'chevron-down');
+    } else {
+        submenu.style.display = 'none';
+        icon.setAttribute('data-lucide', 'chevron-right');
+    }
+    lucide.createIcons();
+}
+
+// Inicializar menús expandidos
+document.addEventListener('DOMContentLoaded', function() {
+    // Expandir menú de gestión por defecto
+    const gestionSubmenu = document.getElementById('gestion-submenu');
+    const personalSubmenu = document.getElementById('personal-submenu');
+    
+    if (gestionSubmenu) gestionSubmenu.style.display = 'block';
+    if (personalSubmenu) personalSubmenu.style.display = 'block';
+});
+</script>
