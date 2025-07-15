@@ -255,69 +255,8 @@ class Service
         return $this;
     }
 
-    public function isCollaborationWithOtherServices(): ?bool
-    {
-        return $this->collaboration_with_other_services;
-    }
 
-    public function setCollaborationWithOtherServices(bool $collaboration_with_other_services): static
-    {
-        $this->collaboration_with_other_services = $collaboration_with_other_services;
+ 
 
-        return $this;
-    }
-
-    public function getLocality(): ?string
-    {
-        return $this->locality;
-    }
-
-    public function setLocality(?string $locality): static
-    {
-        $this->locality = $locality;
-
-        return $this;
-    }
-
-    public function getRequester(): ?string
-    {
-        return $this->requester;
-    }
-
-    public function setRequester(?string $requester): static
-    {
-        $this->requester = $requester;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, AssistanceConfirmation>
-     */
-    public function getAssistanceConfirmations(): Collection
-    {
-        return $this->assistanceConfirmations;
-    }
-
-    public function addAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
-    {
-        if (!$this->assistanceConfirmations->contains($assistanceConfirmation)) {
-            $this->assistanceConfirmations->add($assistanceConfirmation);
-            $assistanceConfirmation->setService($this);
-        }
-
-        return $this;
-    }
-
-    public function removeAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
-    {
-        if ($this->assistanceConfirmations->removeElement($assistanceConfirmation)) {
-            // set the owning side to null (unless already changed)
-            if ($assistanceConfirmation->getService() === $this) {
-                $assistanceConfirmation->setService(null);
-            }
-        }
-
-        return $this;
-    }
+    
 }

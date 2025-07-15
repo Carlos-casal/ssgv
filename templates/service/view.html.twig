@@ -1,0 +1,206 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block page_title %}Detalles del Servicio: {{ service.title }}{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">
+                <a href="{{ path('app_services_list') }}">Servicios</a> / {{ service.title }}
+            </h2>
+        </div>
+        <div class="flex gap-3">
+            <a href="#" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                <i data-lucide="copy" class="w-4 h-4"></i>
+                Duplicar
+            </a>
+            <a href="#" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                <i data-lucide="archive" class="w-4 h-4"></i>
+                Archivar
+            </a>
+            <a href="#" class="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                <i data-lucide="printer" class="w-4 h-4"></i>
+                Imprimir
+            </a>
+        </div>
+    </div>
+
+    <div class="mt-6">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <a href="#datos_basicos" class="tab-link active-tab border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-file-signature"></i> Datos básicos
+                </a>
+                <a href="#avanzado" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-file-signature"></i> Avanzado
+                </a>
+                <a href="#asistencias" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-users"></i> Confirmaciones de asistencia
+                </a>
+                <a href="#claves" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-comments"></i> Claves
+                </a>
+                <a href="#intervenciones" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-user-injured"></i> Intervenciones
+                </a>
+                <a href="#otros" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-file-signature"></i> Otros
+                </a>
+                <a href="#materiales" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-boxes"></i> Materiales
+                </a>
+                <a href="#vehiculos" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-truck"></i> Vehículos
+                </a>
+                <a href="#incidencias" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-times"></i> Incidencias
+                </a>
+                <a href="#comunicaciones" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-comments"></i> Comunicaciones
+                </a>
+                <a href="#adjuntos" class="tab-link border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    <i class="fas fa-file-upload"></i> Adjuntos
+                </a>
+            </nav>
+        </div>
+
+        <div class="mt-6">
+            {{ form_start(serviceForm, {'action': path('app_service_edit', {'id': service.id}), 'method': 'POST'}) }}
+            <div id="datos_basicos" class="tab-content active-content">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div>
+                        {{ form_label(serviceForm.numeration, 'Numeración') }}
+                        {{ form_widget(serviceForm.numeration, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div class="lg:col-span-2">
+                        {{ form_label(serviceForm.title, 'Título') }}
+                        {{ form_widget(serviceForm.title, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div></div>
+                    <div>
+                        {{ form_label(serviceForm.startDate, 'Fecha y hora de inicio') }}
+                        {{ form_widget(serviceForm.startDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.endDate, 'Fecha y hora de finalización') }}
+                        {{ form_widget(serviceForm.endDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.registrationLimitDate, 'Límite de inscripción') }}
+                        {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.timeAtBase, 'Hora en base') }}
+                        {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.departureTime, 'Hora de salida') }}
+                        {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.maxAttendees, 'Máximo asistentes') }}
+                        {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.type, 'Tipo de servicio') }}
+                        {{ form_widget(serviceForm.type, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.category, 'Categoría') }}
+                        {{ form_widget(serviceForm.category, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                </div>
+                <div class="mt-6">
+                    {{ form_label(serviceForm.description, 'Descripción') }}
+                    {{ form_widget(serviceForm.description, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm', 'rows': 10}}) }}
+                </div>
+            </div>
+
+            <div id="avanzado" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        {{ form_label(serviceForm.locality, 'Localidad') }}
+                        {{ form_widget(serviceForm.locality, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div>
+                        {{ form_label(serviceForm.requester, 'Solicitante') }}
+                        {{ form_widget(serviceForm.requester, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm'}}) }}
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_widget(serviceForm.collaboration_with_other_services) }}
+                    </div>
+                </div>
+            </div>
+
+            <div id="asistencias" class="tab-content hidden">
+                <p>Confirmaciones de asistencia (contenido pendiente)</p>
+            </div>
+            <div id="claves" class="tab-content hidden">
+                <p>Claves (contenido pendiente)</p>
+            </div>
+            <div id="intervenciones" class="tab-content hidden">
+                <p>Intervenciones (contenido pendiente)</p>
+            </div>
+            <div id="otros" class="tab-content hidden">
+                <p>Otros (contenido pendiente)</p>
+            </div>
+            <div id="materiales" class="tab-content hidden">
+                <p>Materiales (contenido pendiente)</p>
+            </div>
+            <div id="vehiculos" class="tab-content hidden">
+                <p>Vehículos (contenido pendiente)</p>
+            </div>
+            <div id="incidencias" class="tab-content hidden">
+                <p>Incidencias (contenido pendiente)</p>
+            </div>
+            <div id="comunicaciones" class="tab-content hidden">
+                <p>Comunicaciones (contenido pendiente)</p>
+            </div>
+            <div id="adjuntos" class="tab-content hidden">
+                <p>Adjuntos (contenido pendiente)</p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-8">
+                <a href="{{ path('app_services_list') }}" class="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                    Cancelar
+                </a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Guardar Cambios
+                </button>
+            </div>
+            {{ form_end(serviceForm) }}
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const tabs = document.querySelectorAll('.tab-link');
+        const contents = document.querySelectorAll('.tab-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function (event) {
+                event.preventDefault();
+
+                tabs.forEach(t => {
+                    t.classList.remove('active-tab', 'border-blue-500', 'text-blue-600');
+                    t.classList.add('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                });
+
+                this.classList.add('active-tab', 'border-blue-500', 'text-blue-600');
+                this.classList.remove('border-transparent', 'text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+
+                contents.forEach(content => {
+                    content.classList.add('hidden');
+                });
+
+                const activeContent = document.querySelector(this.getAttribute('href'));
+                if (activeContent) {
+                    activeContent.classList.remove('hidden');
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
