@@ -2,13 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\ServiceRepository; // Asume que se generará automáticamente
+use App\Repository\ServiceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBal\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Gedmo\Mapping\Annotation as Gedmo; // Para usar el slug
+use Gedmo\Mapping\Annotation as Gedmo;
 
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
-#[ORM\Table(name: 'service')] // Nombre explícito de la tabla
+#[ORM\Table(name: 'service')]
 class Service
 {
     #[ORM\Id]
@@ -17,63 +19,71 @@ class Service
     private ?int $id = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $numeration = null; // Numeración
+    private ?string $numeration = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $title = null; // Título (requerido)
+    private ?string $title = null;
 
     #[Gedmo\Slug(fields: ['title'])]
     #[ORM\Column(length: 255, unique: true)]
-    private ?string $slug = null; // Slug para URLs amigables, se generará automáticamente
+    private ?string $slug = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $startDate = null; // Fecha y hora de inicio (requerido)
+    private ?\DateTimeInterface $startDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $endDate = null; // Fecha y hora de finalización (requerido)
+    private ?\DateTimeInterface $endDate = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $registrationLimitDate = null; // Límite de inscripción
+    private ?\DateTimeInterface $registrationLimitDate = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $timeAtBase = null; // Hora en base
+    private ?\DateTimeInterface $timeAtBase = null;
 
     #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $departureTime = null; // Hora de salida
+    private ?\DateTimeInterface $departureTime = null;
 
     #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $maxAttendees = null; // Máximo asistentes
+    private ?int $maxAttendees = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    private ?string $type = null; // Tipo de servicio (ej. evento, formación)
+    private ?string $type = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    private ?string $category = null; // Categoría del servicio (ej. rescate, medio ambiente)
+    private ?string $category = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $description = null; // Descripción (se usará Textarea para el formulario)
+    private ?string $description = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $recipients = null; // Para los checkboxes de "Enviar a destinatario"
+    private ?array $recipients = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'create')]
-    private ?\DateTimeImmutable $createdAt = null; // Fecha de creación
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(type: Types::DATETIME_IMMUTABLE)]
     #[Gedmo\Timestampable(on: 'update')]
     private ?\DateTimeImmutable $updatedAt = null;
 
-  
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $collaboration_with_other_services = false;
 
-      
-    // Constructor para inicializar fechas automáticamente si no se establecen
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $locality = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $requester = null;
+
+    #[ORM\OneToMany(mappedBy: 'service', targetEntity: AssistanceConfirmation::class, orphanRemoval: true)]
+    private Collection $assistanceConfirmations;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = new \DateTimeImmutable();
+        $this->assistanceConfirmations = new ArrayCollection();
     }
-
 
     public function getId(): ?int
     {
@@ -245,8 +255,69 @@ class Service
         return $this;
     }
 
+    public function isCollaborationWithOtherServices(): ?bool
+    {
+        return $this->collaboration_with_other_services;
+    }
 
- 
+    public function setCollaborationWithOtherServices(bool $collaboration_with_other_services): static
+    {
+        $this->collaboration_with_other_services = $collaboration_with_other_services;
 
-    
+        return $this;
+    }
+
+    public function getLocality(): ?string
+    {
+        return $this->locality;
+    }
+
+    public function setLocality(?string $locality): static
+    {
+        $this->locality = $locality;
+
+        return $this;
+    }
+
+    public function getRequester(): ?string
+    {
+        return $this->requester;
+    }
+
+    public function setRequester(?string $requester): static
+    {
+        $this->requester = $requester;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AssistanceConfirmation>
+     */
+    public function getAssistanceConfirmations(): Collection
+    {
+        return $this->assistanceConfirmations;
+    }
+
+    public function addAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
+    {
+        if (!$this->assistanceConfirmations->contains($assistanceConfirmation)) {
+            $this->assistanceConfirmations->add($assistanceConfirmation);
+            $assistanceConfirmation->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
+    {
+        if ($this->assistanceConfirmations->removeElement($assistanceConfirmation)) {
+            // set the owning side to null (unless already changed)
+            if ($assistanceConfirmation->getService() === $this) {
+                $assistanceConfirmation->setService(null);
+            }
+        }
+
+        return $this;
+    }
 }

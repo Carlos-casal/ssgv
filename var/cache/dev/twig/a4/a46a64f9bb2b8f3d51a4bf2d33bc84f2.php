@@ -32,12 +32,13 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $this->blocks = [
             'page_title' => [$this, 'block_page_title'],
             'content' => [$this, 'block_content'],
+            'javascripts' => [$this, 'block_javascripts'],
         ];
     }
 
     protected function doGetParent(array $context): bool|string|Template|TemplateWrapper
     {
-        // line 1
+        // line 3
         return "layout/app.html.twig";
     }
 
@@ -50,7 +51,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "template", "service/edit_service.html.twig"));
 
-        $this->parent = $this->load("layout/app.html.twig", 1);
+        $this->parent = $this->load("layout/app.html.twig", 3);
         yield from $this->parent->unwrap()->yield($context, array_merge($this->blocks, $blocks));
         
         $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
@@ -60,7 +61,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
 
     }
 
-    // line 3
+    // line 5
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -73,8 +74,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "page_title"));
 
-        yield "Editar Servicio: ";
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["service"]) || array_key_exists("service", $context) ? $context["service"] : (function () { throw new RuntimeError('Variable "service" does not exist.', 3, $this->source); })()), "title", [], "any", false, false, false, 3), "html", null, true);
+        yield "Editar Servicio";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
 
@@ -84,7 +84,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         yield from [];
     }
 
-    // line 5
+    // line 7
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -97,279 +97,326 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "content"));
 
-        // line 6
-        yield "<div class=\"p-6\">
-    <div class=\"max-w-3xl mx-auto\">
-        <div class=\"bg-white rounded-xl shadow-sm border border-gray-200 p-6\">
-            <div class=\"mb-6\">
-                <h2 class=\"text-xl font-semibold text-gray-900\">Editar Servicio</h2>
-                <p class=\"text-gray-600 mt-1\">Modifica la información del servicio \"";
-        // line 11
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["service"]) || array_key_exists("service", $context) ? $context["service"] : (function () { throw new RuntimeError('Variable "service" does not exist.', 11, $this->source); })()), "title", [], "any", false, false, false, 11), "html", null, true);
-        yield "\".</p>
+        // line 8
+        yield "
+    <div class=\"container mx-auto p-6\">
+        <h1 class=\"text-2xl font-bold mb-6 text-gray-900\">Editar Servicio</h1>
+
+        ";
+        // line 13
+        yield "        ";
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 13, $this->source); })()), "flashes", ["success"], "method", false, false, false, 13));
+        foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
+            // line 14
+            yield "            <div class=\"bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4\" role=\"alert\">
+                <span class=\"block sm:inline\">";
+            // line 15
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
+            yield "</span>
             </div>
-
-            ";
-        // line 15
-        yield "            ";
-        // line 16
-        yield "            ";
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 16, $this->source); })()), 'form_start', ["action" => $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, (isset($context["service"]) || array_key_exists("service", $context) ? $context["service"] : (function () { throw new RuntimeError('Variable "service" does not exist.', 16, $this->source); })()), "id", [], "any", false, false, false, 16)]), "method" => "POST", "attr" => ["class" => "space-y-6"]]);
-        yield "
-
-                <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
-                    <div>
-                        ";
-        // line 20
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 20, $this->source); })()), "numeration", [], "any", false, false, false, 20), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Numeración:"]);
-        // line 21
-        yield "
-                        ";
-        // line 22
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 22, $this->source); })()), "numeration", [], "any", false, false, false, 22), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
+        ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
+        // line 18
+        yield "        ";
+        $context['_parent'] = $context;
+        $context['_seq'] = CoreExtension::ensureTraversable(CoreExtension::getAttribute($this->env, $this->source, (isset($context["app"]) || array_key_exists("app", $context) ? $context["app"] : (function () { throw new RuntimeError('Variable "app" does not exist.', 18, $this->source); })()), "flashes", ["error"], "method", false, false, false, 18));
+        foreach ($context['_seq'] as $context["_key"] => $context["message"]) {
+            // line 19
+            yield "            <div class=\"bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4\" role=\"alert\">
+                <span class=\"block sm:inline\">";
+            // line 20
+            yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($context["message"], "html", null, true);
+            yield "</span>
+            </div>
+        ";
+        }
+        $_parent = $context['_parent'];
+        unset($context['_seq'], $context['_key'], $context['message'], $context['_parent']);
+        $context = array_intersect_key($context, $_parent) + $_parent;
         // line 23
         yield "
-                        ";
-        // line 24
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 24, $this->source); })()), "numeration", [], "any", false, false, false, 24), 'errors');
-        yield "
-                    </div>
+        ";
+        // line 25
+        yield "        <div class=\"mb-4 border-b border-gray-200 dark:border-gray-700\">
+            <ul class=\"flex flex-wrap -mb-px text-sm font-medium text-center\" id=\"myTab\" data-tabs-toggle=\"#myTabContent\" role=\"tablist\">
+                <li class=\"me-2\" role=\"presentation\">
+                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg\" id=\"basic-data-tab\" data-tabs-target=\"#basic-data\" type=\"button\" role=\"tab\" aria-controls=\"basic-data\" aria-selected=\"true\">Datos Básicos</button>
+                </li>
+                <li class=\"me-2\" role=\"presentation\">
+                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300\" id=\"attendance-confirmation-tab\" data-tabs-target=\"#attendance-confirmation\" type=\"button\" role=\"tab\" aria-controls=\"attendance-confirmation\" aria-selected=\"false\">Confirmación de Asistencia</button>
+                </li>
+                ";
+        // line 34
+        yield "            </ul>
+        </div>
 
-                    <div>
-                        ";
-        // line 28
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 28, $this->source); })()), "title", [], "any", false, false, false, 28), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Título:"]);
-        // line 29
-        yield "
-                        ";
-        // line 30
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 30, $this->source); })()), "title", [], "any", false, false, false, 30), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 31
-        yield "
-                        ";
-        // line 32
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 32, $this->source); })()), "title", [], "any", false, false, false, 32), 'errors');
-        yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 36
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 36, $this->source); })()), "slug", [], "any", false, false, false, 36), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Slug:"]);
-        // line 37
-        yield "
-                        ";
+        ";
         // line 38
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 38, $this->source); })()), "slug", [], "any", false, false, false, 38), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50", "readonly" => CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 38, $this->source); })()), "slug", [], "any", false, false, false, 38), "vars", [], "any", false, false, false, 38), "disabled", [], "any", false, false, false, 38)]]);
-        // line 39
-        yield " 
-                        ";
+        yield "        <div id=\"myTabContent\">
+            ";
         // line 40
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 40, $this->source); })()), "slug", [], "any", false, false, false, 40), 'errors');
+        yield "            <div class=\"p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"basic-data\" role=\"tabpanel\" aria-labelledby=\"basic-data-tab\">
+                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Formulario de Datos Básicos</h2>
+                ";
+        // line 43
+        yield "                ";
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 43, $this->source); })()), 'form_start', ["attr" => ["class" => "bg-white p-6 rounded-lg shadow-md"], "enctype" => "multipart/form-data"]);
         yield "
-                        <p class=\"mt-1 text-xs text-gray-500\">El slug se genera automáticamente si se deja vacío o puede ser modificado.</p>
-                    </div>
 
-                    <div>
-                        ";
-        // line 45
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 45, $this->source); })()), "startDate", [], "any", false, false, false, 45), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Fecha de Inicio:"]);
+                ";
         // line 46
-        yield "
-                        ";
-        // line 47
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 47, $this->source); })()), "startDate", [], "any", false, false, false, 47), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
+        yield "                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
+                    ";
         // line 48
+        yield "                    <div class=\"col-span-1\">
+                        <h3 class=\"text-lg font-medium text-gray-900 mb-4 border-b pb-2\">Datos del Servicio</h3>
+                        <div class=\"mb-4\">
+                            ";
+        // line 51
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 51, $this->source); })()), "title", [], "any", false, false, false, 51), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
-        // line 49
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 49, $this->source); })()), "startDate", [], "any", false, false, false, 49), 'errors');
-        yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 53
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 53, $this->source); })()), "endDate", [], "any", false, false, false, 53), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Fecha de Fin:"]);
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 54
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 54, $this->source); })()), "numeration", [], "any", false, false, false, 54), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
-        // line 55
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 55, $this->source); })()), "endDate", [], "any", false, false, false, 55), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 56
-        yield "
-                        ";
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 57
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 57, $this->source); })()), "endDate", [], "any", false, false, false, 57), 'errors');
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 57, $this->source); })()), "startDate", [], "any", false, false, false, 57), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 61
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 61, $this->source); })()), "registrationLimitDate", [], "any", false, false, false, 61), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Fecha Límite de Registro:"]);
-        // line 62
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
+        // line 60
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 60, $this->source); })()), "endDate", [], "any", false, false, false, 60), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 63
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 63, $this->source); })()), "registrationLimitDate", [], "any", false, false, false, 63), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 64
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 63, $this->source); })()), "maxAttendees", [], "any", false, false, false, 63), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
-        // line 65
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 65, $this->source); })()), "registrationLimitDate", [], "any", false, false, false, 65), 'errors');
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
+        // line 66
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "type", [], "any", false, false, false, 66), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                    </div>
-
-                    <div>
-                        ";
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 69
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 69, $this->source); })()), "timeAtBase", [], "any", false, false, false, 69), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Hora en Base:"]);
-        // line 70
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 69, $this->source); })()), "category", [], "any", false, false, false, 69), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
-        // line 71
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 71, $this->source); })()), "timeAtBase", [], "any", false, false, false, 71), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 72
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 72, $this->source); })()), "description", [], "any", false, false, false, 72), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
-                        ";
-        // line 73
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 73, $this->source); })()), "timeAtBase", [], "any", false, false, false, 73), 'errors');
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
+        // line 75
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 75, $this->source); })()), "recipients", [], "any", false, false, false, 75), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
+                        </div>
                     </div>
-
-                    <div>
-                        ";
-        // line 77
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 77, $this->source); })()), "departureTime", [], "any", false, false, false, 77), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Hora de Salida:"]);
-        // line 78
-        yield "
-                        ";
+                    ";
         // line 79
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 79, $this->source); })()), "departureTime", [], "any", false, false, false, 79), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 80
-        yield "
+        yield "                    <div class=\"col-span-1\">
                         ";
         // line 81
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 81, $this->source); })()), "departureTime", [], "any", false, false, false, 81), 'errors');
-        yield "
-                    </div>
-
-                    <div>
+        yield "                    </div>
+                    <div class=\"col-span-1\">
                         ";
-        // line 85
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 85, $this->source); })()), "maxAttendees", [], "any", false, false, false, 85), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Máximo de Asistentes:"]);
-        // line 86
-        yield "
-                        ";
-        // line 87
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 87, $this->source); })()), "maxAttendees", [], "any", false, false, false, 87), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 88
-        yield "
-                        ";
-        // line 89
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 89, $this->source); })()), "maxAttendees", [], "any", false, false, false, 89), 'errors');
-        yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 93
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 93, $this->source); })()), "type", [], "any", false, false, false, 93), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Tipo:"]);
-        // line 94
-        yield "
-                        ";
-        // line 95
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 95, $this->source); })()), "type", [], "any", false, false, false, 95), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 96
-        yield "
-                        ";
-        // line 97
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 97, $this->source); })()), "type", [], "any", false, false, false, 97), 'errors');
-        yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 101
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 101, $this->source); })()), "category", [], "any", false, false, false, 101), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Categoría:"]);
-        // line 102
-        yield "
-                        ";
-        // line 103
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 103, $this->source); })()), "category", [], "any", false, false, false, 103), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 104
-        yield "
-                        ";
-        // line 105
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 105, $this->source); })()), "category", [], "any", false, false, false, 105), 'errors');
-        yield "
-                    </div>
-
-                    <div>
-                        ";
-        // line 109
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 109, $this->source); })()), "recipients", [], "any", false, false, false, 109), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Receptores:"]);
-        // line 110
-        yield "
-                        ";
-        // line 111
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 111, $this->source); })()), "recipients", [], "any", false, false, false, 111), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"]]);
-        // line 112
-        yield " 
-                        ";
-        // line 113
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 113, $this->source); })()), "recipients", [], "any", false, false, false, 113), 'errors');
-        yield "
-                    </div>
-
-                    
+        // line 84
+        yield "                    </div>
                 </div>
 
-                <div class=\"mt-6\">
-                    ";
-        // line 120
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 120, $this->source); })()), "description", [], "any", false, false, false, 120), 'label', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700 mb-1"], "label" => "Descripción:"]);
-        // line 121
-        yield "
-                    ";
-        // line 122
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 122, $this->source); })()), "description", [], "any", false, false, false, 122), 'widget', ["attr" => ["class" => "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", "rows" => 5]]);
-        // line 123
-        yield "
-                    ";
-        // line 124
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 124, $this->source); })()), "description", [], "any", false, false, false, 124), 'errors');
-        yield "
-                </div>
-                
-                ";
-        // line 128
-        yield "                ";
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 128, $this->source); })()), "_token", [], "any", false, false, false, 128), 'row');
-        yield "
-
-                <div class=\"flex gap-3 pt-6 border-t border-gray-200 mt-8\">
-                    ";
-        // line 132
-        yield "                    <a href=\"";
-        yield $this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_services_list");
-        yield "\" 
-                       class=\"flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-center text-sm font-medium\">
-                        Cancelar
-                    </a>
-                    <button type=\"submit\" 
-                            class=\"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium\">
+                <div class=\"mt-6 text-center\">
+                    <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out\">
                         Guardar Cambios
                     </button>
                 </div>
-            ";
-        // line 141
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["serviceForm"]) || array_key_exists("serviceForm", $context) ? $context["serviceForm"] : (function () { throw new RuntimeError('Variable "serviceForm" does not exist.', 141, $this->source); })()), 'form_end');
+
+                ";
+        // line 93
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 93, $this->source); })()), 'form_end');
         yield "
-        </div>
+            </div>
+
+            ";
+        // line 97
+        yield "            ";
+        // line 98
+        yield "            <div class=\"hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"attendance-confirmation\" role=\"tabpanel\" aria-labelledby=\"attendance-confirmation-tab\">
+                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Confirmación de Asistencia a Servicios</h2>
+
+                ";
+        // line 101
+        if ((($tmp =  !Twig\Extension\CoreExtension::testEmpty((isset($context["services_attendance"]) || array_key_exists("services_attendance", $context) ? $context["services_attendance"] : (function () { throw new RuntimeError('Variable "services_attendance" does not exist.', 101, $this->source); })()))) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+            // line 102
+            yield "                    <div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\">
+                        <table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\">
+                            <thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\">
+                                <tr>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Voluntario</th>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Estado de Asistencia</th>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ";
+            // line 112
+            $context['_parent'] = $context;
+            $context['_seq'] = CoreExtension::ensureTraversable((isset($context["services_attendance"]) || array_key_exists("services_attendance", $context) ? $context["services_attendance"] : (function () { throw new RuntimeError('Variable "services_attendance" does not exist.', 112, $this->source); })()));
+            foreach ($context['_seq'] as $context["_key"] => $context["volunteerService"]) {
+                // line 113
+                yield "                                    <tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700\">
+                                        <td class=\"px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">
+                                            ";
+                // line 116
+                yield "                                            ";
+                // line 117
+                yield "                                            ";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "volunteer", [], "any", false, false, false, 117), "name", [], "any", false, false, false, 117), "html", null, true);
+                yield " ";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "volunteer", [], "any", false, false, false, 117), "lastName", [], "any", false, false, false, 117), "html", null, true);
+                yield "
+                                        </td>
+                                        <td class=\"px-6 py-4\">
+                                            ";
+                // line 121
+                yield "                                            ";
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "status", [], "any", false, false, false, 121), "html", null, true);
+                yield "
+                                        </td>
+                                        <td class=\"px-6 py-4\">
+                                            ";
+                // line 125
+                yield "                                            <a href=\"#\" class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\">Cambiar Estado</a>
+                                        </td>
+                                    </tr>
+                                ";
+            }
+            $_parent = $context['_parent'];
+            unset($context['_seq'], $context['_key'], $context['volunteerService'], $context['_parent']);
+            $context = array_intersect_key($context, $_parent) + $_parent;
+            // line 129
+            yield "                            </tbody>
+                        </table>
+                    </div>
+                ";
+        } else {
+            // line 133
+            yield "                    <p class=\"text-gray-600 dark:text-gray-300\">No hay asistencias registradas para este servicio aún.</p>
+                ";
+        }
+        // line 135
+        yield "            </div>
+            ";
+        // line 137
+        yield "        </div>
     </div>
-</div>
+
+";
+        
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
+
+        
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->leave($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof);
+
+        yield from [];
+    }
+
+    // line 142
+    /**
+     * @return iterable<null|scalar|\Stringable>
+     */
+    public function block_javascripts(array $context, array $blocks = []): iterable
+    {
+        $macros = $this->macros;
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2 = $this->extensions["Symfony\\Bundle\\WebProfilerBundle\\Twig\\WebProfilerExtension"];
+        $__internal_5a27a8ba21ca79b61932376b2fa922d2->enter($__internal_5a27a8ba21ca79b61932376b2fa922d2_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
+        $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
+
+        // line 143
+        yield "    ";
+        yield from $this->yieldParentBlock("javascripts", $context, $blocks);
+        yield " ";
+        // line 144
+        yield "
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabsContainer = document.getElementById('myTab');
+            const tabContents = document.getElementById('myTabContent');
+
+            if (tabsContainer && tabContents) {
+                tabsContainer.addEventListener('click', function(event) {
+                    const clickedButton = event.target.closest('[role=\"tab\"]'); // Encuentra el botón de la pestaña clickeado
+                    if (!clickedButton) {
+                        return; // No es un botón de pestaña, salimos
+                    }
+
+                    const targetId = clickedButton.dataset.tabsTarget; // Obtiene el ID del contenido objetivo (ej. '#basic-data')
+                    const targetContent = tabContents.querySelector(targetId);
+
+                    if (!targetContent) {
+                        console.error('Contenido de pestaña no encontrado para:', targetId);
+                        return;
+                    }
+
+                    // 1. Ocultar todos los contenidos de las pestañas
+                    tabContents.querySelectorAll('[role=\"tabpanel\"]').forEach(panel => {
+                        panel.classList.add('hidden');
+                        panel.setAttribute('aria-hidden', 'true'); // Mejor accesibilidad
+                    });
+
+                    // 2. Desactivar visualmente todas las pestañas
+                    tabsContainer.querySelectorAll('[role=\"tab\"]').forEach(tabButton => {
+                        tabButton.setAttribute('aria-selected', 'false');
+                        // Ajusta las clases para el estilo de pestaña inactiva (ej. borde gris, texto gris)
+                        tabButton.classList.remove('text-blue-600', 'border-blue-600'); // Quita estilos de activa
+                        tabButton.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Añade estilos de inactiva
+                    });
+
+                    // 3. Mostrar el contenido de la pestaña clickeada
+                    targetContent.classList.remove('hidden');
+                    targetContent.setAttribute('aria-hidden', 'false');
+
+                    // 4. Activar visualmente la pestaña clickeada
+                    clickedButton.setAttribute('aria-selected', 'true');
+                    // Ajusta las clases para el estilo de pestaña activa (ej. borde azul, texto azul)
+                    clickedButton.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Quita estilos de inactiva
+                    clickedButton.classList.add('text-blue-600', 'border-blue-600'); // Añade estilos de activa
+                });
+
+                // Opcional: Activar la primera pestaña por defecto al cargar
+                // Esto simula un click en la primera pestaña
+                const initialTab = tabsContainer.querySelector('[role=\"tab\"][aria-selected=\"true\"]') || tabsContainer.querySelector('[role=\"tab\"]');
+                if(initialTab) {
+                    initialTab.click();
+                } else {
+                    // Si no hay ninguna pestaña seleccionada por defecto, muestra el primer panel
+                    const firstPanel = tabContents.querySelector('[role=\"tabpanel\"]');
+                    if (firstPanel) {
+                        firstPanel.classList.remove('hidden');
+                        firstPanel.setAttribute('aria-hidden', 'false');
+                    }
+                }
+            }
+        });
+    </script>
 ";
         
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->leave($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof);
@@ -401,155 +448,216 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  368 => 141,  355 => 132,  348 => 128,  342 => 124,  339 => 123,  337 => 122,  334 => 121,  332 => 120,  322 => 113,  319 => 112,  317 => 111,  314 => 110,  312 => 109,  305 => 105,  302 => 104,  300 => 103,  297 => 102,  295 => 101,  288 => 97,  285 => 96,  283 => 95,  280 => 94,  278 => 93,  271 => 89,  268 => 88,  266 => 87,  263 => 86,  261 => 85,  254 => 81,  251 => 80,  249 => 79,  246 => 78,  244 => 77,  237 => 73,  234 => 72,  232 => 71,  229 => 70,  227 => 69,  220 => 65,  217 => 64,  215 => 63,  212 => 62,  210 => 61,  203 => 57,  200 => 56,  198 => 55,  195 => 54,  193 => 53,  186 => 49,  183 => 48,  181 => 47,  178 => 46,  176 => 45,  168 => 40,  165 => 39,  163 => 38,  160 => 37,  158 => 36,  151 => 32,  148 => 31,  146 => 30,  143 => 29,  141 => 28,  134 => 24,  131 => 23,  129 => 22,  126 => 21,  124 => 20,  116 => 16,  114 => 15,  108 => 11,  101 => 6,  88 => 5,  64 => 3,  41 => 1,);
+        return array (  358 => 144,  354 => 143,  341 => 142,  327 => 137,  324 => 135,  320 => 133,  314 => 129,  305 => 125,  298 => 121,  289 => 117,  287 => 116,  283 => 113,  279 => 112,  267 => 102,  265 => 101,  260 => 98,  258 => 97,  252 => 93,  241 => 84,  237 => 81,  234 => 79,  228 => 75,  222 => 72,  216 => 69,  210 => 66,  204 => 63,  198 => 60,  192 => 57,  186 => 54,  180 => 51,  175 => 48,  172 => 46,  166 => 43,  162 => 40,  159 => 38,  154 => 34,  144 => 25,  141 => 23,  132 => 20,  129 => 19,  124 => 18,  115 => 15,  112 => 14,  107 => 13,  101 => 8,  88 => 7,  65 => 5,  42 => 3,);
     }
 
     public function getSourceContext(): Source
     {
-        return new Source("{% extends 'layout/app.html.twig' %}
+        return new Source("{# templates/service/edit_service.html.twig #}
 
-{% block page_title %}Editar Servicio: {{ service.title }}{% endblock %}
+{% extends 'layout/app.html.twig' %} {# Asegúrate de que tu layout base es 'layout/app.html.twig' #}
+
+{% block page_title %}Editar Servicio{% endblock %}
 
 {% block content %}
-<div class=\"p-6\">
-    <div class=\"max-w-3xl mx-auto\">
-        <div class=\"bg-white rounded-xl shadow-sm border border-gray-200 p-6\">
-            <div class=\"mb-6\">
-                <h2 class=\"text-xl font-semibold text-gray-900\">Editar Servicio</h2>
-                <p class=\"text-gray-600 mt-1\">Modifica la información del servicio \"{{ service.title }}\".</p>
+
+    <div class=\"container mx-auto p-6\">
+        <h1 class=\"text-2xl font-bold mb-6 text-gray-900\">Editar Servicio</h1>
+
+        {# Mensajes flash #}
+        {% for message in app.flashes('success') %}
+            <div class=\"bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4\" role=\"alert\">
+                <span class=\"block sm:inline\">{{ message }}</span>
             </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class=\"bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4\" role=\"alert\">
+                <span class=\"block sm:inline\">{{ message }}</span>
+            </div>
+        {% endfor %}
 
-            {# Ajusta 'app_service_update' al nombre de tu ruta para procesar la actualización del servicio #}
-            {# Asume que serviceForm es el nombre de tu variable de formulario #}
-            {{ form_start(serviceForm, {'action': path('app_service_edit', {'id': service.id}), 'method': 'POST', 'attr': {'class': 'space-y-6'}}) }}
+        {# Contenedor principal para las pestañas de navegación #}
+        <div class=\"mb-4 border-b border-gray-200 dark:border-gray-700\">
+            <ul class=\"flex flex-wrap -mb-px text-sm font-medium text-center\" id=\"myTab\" data-tabs-toggle=\"#myTabContent\" role=\"tablist\">
+                <li class=\"me-2\" role=\"presentation\">
+                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg\" id=\"basic-data-tab\" data-tabs-target=\"#basic-data\" type=\"button\" role=\"tab\" aria-controls=\"basic-data\" aria-selected=\"true\">Datos Básicos</button>
+                </li>
+                <li class=\"me-2\" role=\"presentation\">
+                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300\" id=\"attendance-confirmation-tab\" data-tabs-target=\"#attendance-confirmation\" type=\"button\" role=\"tab\" aria-controls=\"attendance-confirmation\" aria-selected=\"false\">Confirmación de Asistencia</button>
+                </li>
+                {# Si tienes más pestañas, añádelas aquí con sus respectivos IDs y data-tabs-target #}
+            </ul>
+        </div>
 
-                <div class=\"grid grid-cols-1 md:grid-cols-2 gap-6\">
-                    <div>
-                        {{ form_label(serviceForm.numeration, 'Numeración:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.numeration, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.numeration) }}
+        {# Contenido de las pestañas #}
+        <div id=\"myTabContent\">
+            {# Contenido de Datos Básicos #}
+            <div class=\"p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"basic-data\" role=\"tabpanel\" aria-labelledby=\"basic-data-tab\">
+                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Formulario de Datos Básicos</h2>
+                {# Contenedor principal del formulario con estilos #}
+                {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
+
+                {# CONTENEDOR PRINCIPAL DEL FORMULARIO CON 3 COLUMNAS #}
+                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
+                    {# Columna 1: Datos del Servicio #}
+                    <div class=\"col-span-1\">
+                        <h3 class=\"text-lg font-medium text-gray-900 mb-4 border-b pb-2\">Datos del Servicio</h3>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.title, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.numeration, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.startDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.endDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.maxAttendees, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.type, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.category, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.description, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class=\"mb-4\">
+                            {{ form_row(form.recipients, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.title, 'Título:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.title, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.title) }}
+                    {# Aquí puedes añadir Columna 2 y Columna 3 si las tienes en tu diseño #}
+                    <div class=\"col-span-1\">
+                        {# Otros campos o información relacionados con el servicio #}
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.slug, 'Slug:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.slug, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50', 'readonly': serviceForm.slug.vars.disabled }})
-                        }} 
-                        {{ form_errors(serviceForm.slug) }}
-                        <p class=\"mt-1 text-xs text-gray-500\">El slug se genera automáticamente si se deja vacío o puede ser modificado.</p>
+                    <div class=\"col-span-1\">
+                        {# Más campos o información relacionados con el servicio #}
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.startDate, 'Fecha de Inicio:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.startDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.startDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.endDate, 'Fecha de Fin:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.endDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.endDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.registrationLimitDate, 'Fecha Límite de Registro:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.registrationLimitDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.timeAtBase, 'Hora en Base:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.timeAtBase) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.departureTime, 'Hora de Salida:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.departureTime) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.maxAttendees, 'Máximo de Asistentes:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.maxAttendees) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.type, 'Tipo:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.type, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.type) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.category, 'Categoría:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.category, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.category) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.recipients, 'Receptores:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.recipients, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }} 
-                        {{ form_errors(serviceForm.recipients) }}
-                    </div>
-
-                    
                 </div>
 
-                <div class=\"mt-6\">
-                    {{ form_label(serviceForm.description, 'Descripción:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                    }}
-                    {{ form_widget(serviceForm.description, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm', 'rows': 5}})
-                    }}
-                    {{ form_errors(serviceForm.description) }}
-                </div>
-                
-                {# Campo para el token CSRF, usualmente renderizado por form_end o form_rest si no se personaliza #}
-                {{ form_row(serviceForm._token) }}
-
-                <div class=\"flex gap-3 pt-6 border-t border-gray-200 mt-8\">
-                    {# Ajusta 'app_service_list' al nombre de tu ruta de listado o a la ruta de visualización del servicio #}
-                    <a href=\"{{ path('app_services_list') }}\" 
-                       class=\"flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-center text-sm font-medium\">
-                        Cancelar
-                    </a>
-                    <button type=\"submit\" 
-                            class=\"flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium\">
+                <div class=\"mt-6 text-center\">
+                    <button type=\"submit\" class=\"bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out\">
                         Guardar Cambios
                     </button>
                 </div>
-            {{ form_end(serviceForm) }}
+
+                {{ form_end(form) }}
+            </div>
+
+            {# Contenido de Confirmación de Asistencia #}
+            {# Este div inicialmente tendrá la clase 'hidden' y el JS la quitará al activar la pestaña #}
+            <div class=\"hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"attendance-confirmation\" role=\"tabpanel\" aria-labelledby=\"attendance-confirmation-tab\">
+                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Confirmación de Asistencia a Servicios</h2>
+
+                {% if services_attendance is not empty %}
+                    <div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\">
+                        <table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\">
+                            <thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\">
+                                <tr>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Voluntario</th>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Estado de Asistencia</th>
+                                    <th scope=\"col\" class=\"px-6 py-3\">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for volunteerService in services_attendance %}
+                                    <tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700\">
+                                        <td class=\"px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">
+                                            {# Asumiendo que VolunteerService tiene un método getVolunteer() que devuelve la entidad Volunteer #}
+                                            {# Y que la entidad Volunteer tiene métodos getName() y getLastName() #}
+                                            {{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}
+                                        </td>
+                                        <td class=\"px-6 py-4\">
+                                            {# Asumiendo que VolunteerService tiene un método getStatus() #}
+                                            {{ volunteerService.status }}
+                                        </td>
+                                        <td class=\"px-6 py-4\">
+                                            {# Aquí puedes añadir botones o enlaces para cambiar el estado de asistencia #}
+                                            <a href=\"#\" class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\">Cambiar Estado</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class=\"text-gray-600 dark:text-gray-300\">No hay asistencias registradas para este servicio aún.</p>
+                {% endif %}
+            </div>
+            {# Aquí puedes añadir más divs para el contenido de otras pestañas #}
         </div>
     </div>
-</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }} {# Mantiene cualquier JS que venga del layout padre #}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabsContainer = document.getElementById('myTab');
+            const tabContents = document.getElementById('myTabContent');
+
+            if (tabsContainer && tabContents) {
+                tabsContainer.addEventListener('click', function(event) {
+                    const clickedButton = event.target.closest('[role=\"tab\"]'); // Encuentra el botón de la pestaña clickeado
+                    if (!clickedButton) {
+                        return; // No es un botón de pestaña, salimos
+                    }
+
+                    const targetId = clickedButton.dataset.tabsTarget; // Obtiene el ID del contenido objetivo (ej. '#basic-data')
+                    const targetContent = tabContents.querySelector(targetId);
+
+                    if (!targetContent) {
+                        console.error('Contenido de pestaña no encontrado para:', targetId);
+                        return;
+                    }
+
+                    // 1. Ocultar todos los contenidos de las pestañas
+                    tabContents.querySelectorAll('[role=\"tabpanel\"]').forEach(panel => {
+                        panel.classList.add('hidden');
+                        panel.setAttribute('aria-hidden', 'true'); // Mejor accesibilidad
+                    });
+
+                    // 2. Desactivar visualmente todas las pestañas
+                    tabsContainer.querySelectorAll('[role=\"tab\"]').forEach(tabButton => {
+                        tabButton.setAttribute('aria-selected', 'false');
+                        // Ajusta las clases para el estilo de pestaña inactiva (ej. borde gris, texto gris)
+                        tabButton.classList.remove('text-blue-600', 'border-blue-600'); // Quita estilos de activa
+                        tabButton.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Añade estilos de inactiva
+                    });
+
+                    // 3. Mostrar el contenido de la pestaña clickeada
+                    targetContent.classList.remove('hidden');
+                    targetContent.setAttribute('aria-hidden', 'false');
+
+                    // 4. Activar visualmente la pestaña clickeada
+                    clickedButton.setAttribute('aria-selected', 'true');
+                    // Ajusta las clases para el estilo de pestaña activa (ej. borde azul, texto azul)
+                    clickedButton.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Quita estilos de inactiva
+                    clickedButton.classList.add('text-blue-600', 'border-blue-600'); // Añade estilos de activa
+                });
+
+                // Opcional: Activar la primera pestaña por defecto al cargar
+                // Esto simula un click en la primera pestaña
+                const initialTab = tabsContainer.querySelector('[role=\"tab\"][aria-selected=\"true\"]') || tabsContainer.querySelector('[role=\"tab\"]');
+                if(initialTab) {
+                    initialTab.click();
+                } else {
+                    // Si no hay ninguna pestaña seleccionada por defecto, muestra el primer panel
+                    const firstPanel = tabContents.querySelector('[role=\"tabpanel\"]');
+                    if (firstPanel) {
+                        firstPanel.classList.remove('hidden');
+                        firstPanel.setAttribute('aria-hidden', 'false');
+                    }
+                }
+            }
+        });
+    </script>
 {% endblock %}", "service/edit_service.html.twig", "C:\\xampp\\htdocs\\gesion_volunratios\\templates\\service\\edit_service.html.twig");
     }
 }

@@ -475,6 +475,10 @@
         <argument type="service" id=".service_locator.ZyP9f7K.App\Controller\VolunteerRegistrationController"/>
       </call>
     </service>
+    <service id="App\Entity\AssistanceConfirmation" class="App\Entity\AssistanceConfirmation" autowire="true" autoconfigure="true">
+      <tag name="container.excluded" source="because it's a Doctrine entity"/>
+      <tag name="container.excluded" source="with #[Doctrine\ORM\Mapping\Entity] attribute"/>
+    </service>
     <service id="App\Entity\Service" class="App\Entity\Service" autowire="true" autoconfigure="true">
       <tag name="container.excluded" source="because it's a Doctrine entity"/>
       <tag name="container.excluded" source="with #[Doctrine\ORM\Mapping\Entity] attribute"/>
@@ -487,6 +491,10 @@
       <tag name="container.excluded" source="because it's a Doctrine entity"/>
       <tag name="container.excluded" source="with #[Doctrine\ORM\Mapping\Entity] attribute"/>
     </service>
+    <service id="App\Entity\VolunteerService" class="App\Entity\VolunteerService" autowire="true" autoconfigure="true">
+      <tag name="container.excluded" source="because it's a Doctrine entity"/>
+      <tag name="container.excluded" source="with #[Doctrine\ORM\Mapping\Entity] attribute"/>
+    </service>
     <service id="App\Form\ServiceType" class="App\Form\ServiceType" autowire="true" autoconfigure="true">
       <tag name="form.type" csrf_token_id="%.form.type_extension.csrf.token_id%"/>
     </service>
@@ -495,6 +503,10 @@
     </service>
     <service id="App\Form\VolunteerType" class="App\Form\VolunteerType" autowire="true" autoconfigure="true">
       <tag name="form.type" csrf_token_id="%.form.type_extension.csrf.token_id%"/>
+    </service>
+    <service id="App\Repository\AssistanceConfirmationRepository" class="App\Repository\AssistanceConfirmationRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
     </service>
     <service id="App\Repository\ServiceRepository" class="App\Repository\ServiceRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
@@ -505,6 +517,10 @@
       <argument type="service" id="doctrine"/>
     </service>
     <service id="App\Repository\VolunteerRepository" class="App\Repository\VolunteerRepository" autowire="true" autoconfigure="true">
+      <tag name="doctrine.repository_service"/>
+      <argument type="service" id="doctrine"/>
+    </service>
+    <service id="App\Repository\VolunteerServiceRepository" class="App\Repository\VolunteerServiceRepository" autowire="true" autoconfigure="true">
       <tag name="doctrine.repository_service"/>
       <argument type="service" id="doctrine"/>
     </service>
@@ -5650,7 +5666,7 @@
     <service id="doctrine.orm.configuration" class="Doctrine\ORM\Configuration" abstract="true"/>
     <service id="doctrine.orm.entity_manager.abstract" class="Doctrine\ORM\EntityManager" lazy="true" abstract="true"/>
     <service id="doctrine.orm.container_repository_factory" class="Doctrine\Bundle\DoctrineBundle\Repository\ContainerRepositoryFactory">
-      <argument type="service" id=".service_locator.Y.Fs3V6"/>
+      <argument type="service" id=".service_locator.9bhWfZR"/>
     </service>
     <service id="doctrine.orm.manager_configurator.abstract" class="Doctrine\Bundle\DoctrineBundle\ManagerConfigurator" abstract="true">
       <argument type="collection"/>
@@ -8078,24 +8094,32 @@
     <service id=".instanceof.Symfony\Contracts\Service\ServiceSubscriberInterface.0.App\Controller\VolunteerRegistrationController" class="App\Controller\VolunteerRegistrationController" autowire="true" abstract="true"/>
     <service id=".instanceof.Symfony\Bundle\FrameworkBundle\Controller\AbstractController.0.App\Controller\VolunteerRegistrationController" class="App\Controller\VolunteerRegistrationController" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Controller\VolunteerRegistrationController" class="App\Controller\VolunteerRegistrationController" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.App\Entity\AssistanceConfirmation.0.App\Entity\AssistanceConfirmation" class="App\Entity\AssistanceConfirmation" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Entity\AssistanceConfirmation" class="App\Entity\AssistanceConfirmation" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.App\Entity\Service.0.App\Entity\Service" class="App\Entity\Service" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Entity\Service" class="App\Entity\Service" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.App\Entity\User.0.App\Entity\User" class="App\Entity\User" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Entity\User" class="App\Entity\User" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.App\Entity\Volunteer.0.App\Entity\Volunteer" class="App\Entity\Volunteer" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Entity\Volunteer" class="App\Entity\Volunteer" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.App\Entity\VolunteerService.0.App\Entity\VolunteerService" class="App\Entity\VolunteerService" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Entity\VolunteerService" class="App\Entity\VolunteerService" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\ServiceType" class="App\Form\ServiceType" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Form\ServiceType" class="App\Form\ServiceType" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\UserType" class="App\Form\UserType" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Form\UserType" class="App\Form\UserType" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Symfony\Component\Form\FormTypeInterface.0.App\Form\VolunteerType" class="App\Form\VolunteerType" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Form\VolunteerType" class="App\Form\VolunteerType" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\AssistanceConfirmationRepository" class="App\Repository\AssistanceConfirmationRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\AssistanceConfirmationRepository" class="App\Repository\AssistanceConfirmationRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\ServiceRepository" class="App\Repository\ServiceRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\ServiceRepository" class="App\Repository\ServiceRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\UserRepository" class="App\Repository\UserRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\UserRepository" class="App\Repository\UserRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\VolunteerRepository" class="App\Repository\VolunteerRepository" autowire="true" abstract="true"/>
     <service id=".abstract.instanceof.App\Repository\VolunteerRepository" class="App\Repository\VolunteerRepository" autowire="true" autoconfigure="true" abstract="true"/>
+    <service id=".instanceof.Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepositoryInterface.0.App\Repository\VolunteerServiceRepository" class="App\Repository\VolunteerServiceRepository" autowire="true" abstract="true"/>
+    <service id=".abstract.instanceof.App\Repository\VolunteerServiceRepository" class="App\Repository\VolunteerServiceRepository" autowire="true" autoconfigure="true" abstract="true"/>
     <service id=".service_locator.pRu6x_4" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
@@ -9113,12 +9137,14 @@
         <argument key="stof_doctrine_extensions.listener.timestampable" type="service_closure" id="stof_doctrine_extensions.listener.timestampable"/>
       </argument>
     </service>
-    <service id=".service_locator.Y.Fs3V6" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.9bhWfZR" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
+        <argument key="App\Repository\AssistanceConfirmationRepository" type="service_closure" id="App\Repository\AssistanceConfirmationRepository"/>
         <argument key="App\Repository\ServiceRepository" type="service_closure" id="App\Repository\ServiceRepository"/>
         <argument key="App\Repository\UserRepository" type="service_closure" id="App\Repository\UserRepository"/>
         <argument key="App\Repository\VolunteerRepository" type="service_closure" id="App\Repository\VolunteerRepository"/>
+        <argument key="App\Repository\VolunteerServiceRepository" type="service_closure" id="App\Repository\VolunteerServiceRepository"/>
       </argument>
     </service>
     <service id=".service_locator.BxSdgVt" class="Symfony\Component\DependencyInjection\ServiceLocator">

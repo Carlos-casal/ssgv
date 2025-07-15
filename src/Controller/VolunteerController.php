@@ -4,6 +4,9 @@ namespace App\Controller;
 
 use App\Entity\Volunteer;
 use App\Entity\User;
+// Importa la entidad VolunteerService si ya la creaste.
+// Si aún no la has creado, recuerda el paso 1 de mi respuesta anterior sobre cómo crearla
+// use App\Entity\VolunteerService; // <--- Descomenta si ya tienes esta entidad
 use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,8 +22,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
 
-/* #[Route('/personal')]
- */class VolunteerController extends AbstractController
+// #[Route('/personal')] // Comentario de línea para la ruta '/personal'
+class VolunteerController extends AbstractController
 {
     #[Route('/voluntarios', name: 'app_volunteer_list')]
     // Inyecta PaginatorInterface para la paginación
@@ -387,9 +390,15 @@ use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
             }
         }
 
+        // Aquí es donde necesitamos añadir la lógica para pasar los datos de asistencia
+        // Esto asume que tienes una relación Volunteer->getVolunteerServices() en tu entidad Volunteer
+        $servicesAttendance = $volunteer->getVolunteerServices();
+
+
         return $this->render('volunteer/edit_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
+            'services_attendance' => $servicesAttendance, // <--- Nueva línea
             'current_section' => 'personal-editar'
         ]);
     }

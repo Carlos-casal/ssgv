@@ -67,34 +67,34 @@ class ServiceController extends AbstractController
     }
 
     
-#[Route('/servicios-{slug}', name: 'app_service_show', methods: ['GET'])]
-    public function show(Service $service): Response // Symfony inyecta el servicio automáticamente por el ID
+    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
+    public function show(Service $service): Response
     {
-        // Si el servicio no se encuentra, Symfony automáticamente lanza un 404
-        // De lo contrario, el objeto $service ya está cargado con los datos correctos
+        $form = $this->createForm(ServiceType::class, $service);
 
-        return $this->render('service/show.html.twig', [
+        return $this->render('service/show_service.html.twig', [
             'service' => $service,
+            'serviceForm' => $form->createView(),
         ]);
     }
 
-    #[Route('editar-{id}', name: 'app_service_edit', methods: ['GET', 'POST'])] // O la ruta que uses para editar
-public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
-{
-    $form = $this->createForm(ServiceType::class, $service);
-    $form->handleRequest($request);
+    #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(ServiceType::class, $service);
+        $form->handleRequest($request);
 
-    if ($form->isSubmitted() && $form->isValid()) {
-        $entityManager->flush();
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
 
-        $this->addFlash('success', 'Servicio actualizado correctamente.');
+            $this->addFlash('success', 'Servicio actualizado correctamente.');
 
-        return $this->redirectToRoute('app_service_show', ['id' => $service->getId()], Response::HTTP_SEE_OTHER); // Redirige a donde quieras
+            return $this->redirectToRoute('app_service_show', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
+        }
+
+        return $this->render('service/show_service.html.twig', [
+            'service' => $service,
+            'serviceForm' => $form->createView(),
+        ]);
     }
-
-    return $this->render('service/edit_service.html.twig', [
-        'service' => $service,
-        'serviceForm' => $form->createView(), // Aquí pasas 'serviceForm'
-    ]);
-}
 }

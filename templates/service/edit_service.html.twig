@@ -1,145 +1,206 @@
-{% extends 'layout/app.html.twig' %}
+{# templates/service/edit_service.html.twig #}
 
-{% block page_title %}Editar Servicio: {{ service.title }}{% endblock %}
+{% extends 'layout/app.html.twig' %} {# Asegúrate de que tu layout base es 'layout/app.html.twig' #}
+
+{% block page_title %}Editar Servicio{% endblock %}
 
 {% block content %}
-<div class="p-6">
-    <div class="max-w-3xl mx-auto">
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div class="mb-6">
-                <h2 class="text-xl font-semibold text-gray-900">Editar Servicio</h2>
-                <p class="text-gray-600 mt-1">Modifica la información del servicio "{{ service.title }}".</p>
+
+    <div class="container mx-auto p-6">
+        <h1 class="text-2xl font-bold mb-6 text-gray-900">Editar Servicio</h1>
+
+        {# Mensajes flash #}
+        {% for message in app.flashes('success') %}
+            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
             </div>
+        {% endfor %}
+        {% for message in app.flashes('error') %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                <span class="block sm:inline">{{ message }}</span>
+            </div>
+        {% endfor %}
 
-            {# Ajusta 'app_service_update' al nombre de tu ruta para procesar la actualización del servicio #}
-            {# Asume que serviceForm es el nombre de tu variable de formulario #}
-            {{ form_start(serviceForm, {'action': path('app_service_edit', {'id': service.id}), 'method': 'POST', 'attr': {'class': 'space-y-6'}}) }}
+        {# Contenedor principal para las pestañas de navegación #}
+        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
+                <li class="me-2" role="presentation">
+                    <button class="inline-block p-4 border-b-2 rounded-t-lg" id="basic-data-tab" data-tabs-target="#basic-data" type="button" role="tab" aria-controls="basic-data" aria-selected="true">Datos Básicos</button>
+                </li>
+                <li class="me-2" role="presentation">
+                    <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="attendance-confirmation-tab" data-tabs-target="#attendance-confirmation" type="button" role="tab" aria-controls="attendance-confirmation" aria-selected="false">Confirmación de Asistencia</button>
+                </li>
+                {# Si tienes más pestañas, añádelas aquí con sus respectivos IDs y data-tabs-target #}
+            </ul>
+        </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        {{ form_label(serviceForm.numeration, 'Numeración:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.numeration, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.numeration) }}
+        {# Contenido de las pestañas #}
+        <div id="myTabContent">
+            {# Contenido de Datos Básicos #}
+            <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="basic-data" role="tabpanel" aria-labelledby="basic-data-tab">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900">Formulario de Datos Básicos</h2>
+                {# Contenedor principal del formulario con estilos #}
+                {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
+
+                {# CONTENEDOR PRINCIPAL DEL FORMULARIO CON 3 COLUMNAS #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {# Columna 1: Datos del Servicio #}
+                    <div class="col-span-1">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Datos del Servicio</h3>
+                        <div class="mb-4">
+                            {{ form_row(form.title, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.numeration, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.startDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.endDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.maxAttendees, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.type, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.category, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.description, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.recipients, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.title, 'Título:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.title, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.title) }}
+                    {# Aquí puedes añadir Columna 2 y Columna 3 si las tienes en tu diseño #}
+                    <div class="col-span-1">
+                        {# Otros campos o información relacionados con el servicio #}
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.slug, 'Slug:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.slug, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm bg-gray-50', 'readonly': serviceForm.slug.vars.disabled }})
-                        }} 
-                        {{ form_errors(serviceForm.slug) }}
-                        <p class="mt-1 text-xs text-gray-500">El slug se genera automáticamente si se deja vacío o puede ser modificado.</p>
+                    <div class="col-span-1">
+                        {# Más campos o información relacionados con el servicio #}
                     </div>
-
-                    <div>
-                        {{ form_label(serviceForm.startDate, 'Fecha de Inicio:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.startDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.startDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.endDate, 'Fecha de Fin:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.endDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.endDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.registrationLimitDate, 'Fecha Límite de Registro:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.registrationLimitDate) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.timeAtBase, 'Hora en Base:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.timeAtBase) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.departureTime, 'Hora de Salida:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.departureTime) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.maxAttendees, 'Máximo de Asistentes:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.maxAttendees) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.type, 'Tipo:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.type, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.type) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.category, 'Categoría:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.category, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }}
-                        {{ form_errors(serviceForm.category) }}
-                    </div>
-
-                    <div>
-                        {{ form_label(serviceForm.recipients, 'Receptores:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                        }}
-                        {{ form_widget(serviceForm.recipients, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm'}})
-                        }} 
-                        {{ form_errors(serviceForm.recipients) }}
-                    </div>
-
-                    
                 </div>
 
-                <div class="mt-6">
-                    {{ form_label(serviceForm.description, 'Descripción:', {'label_attr': {'class': 'block text-sm font-medium text-gray-700 mb-1'}})
-                    }}
-                    {{ form_widget(serviceForm.description, {'attr': {'class': 'mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm', 'rows': 5}})
-                    }}
-                    {{ form_errors(serviceForm.description) }}
-                </div>
-                
-                {# Campo para el token CSRF, usualmente renderizado por form_end o form_rest si no se personaliza #}
-                {{ form_row(serviceForm._token) }}
-
-                <div class="flex gap-3 pt-6 border-t border-gray-200 mt-8">
-                    {# Ajusta 'app_service_list' al nombre de tu ruta de listado o a la ruta de visualización del servicio #}
-                    <a href="{{ path('app_services_list') }}" 
-                       class="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-center text-sm font-medium">
-                        Cancelar
-                    </a>
-                    <button type="submit" 
-                            class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium">
+                <div class="mt-6 text-center">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
                         Guardar Cambios
                     </button>
                 </div>
-            {{ form_end(serviceForm) }}
+
+                {{ form_end(form) }}
+            </div>
+
+            {# Contenido de Confirmación de Asistencia #}
+            {# Este div inicialmente tendrá la clase 'hidden' y el JS la quitará al activar la pestaña #}
+            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="attendance-confirmation" role="tabpanel" aria-labelledby="attendance-confirmation-tab">
+                <h2 class="text-xl font-semibold mb-4 text-gray-900">Confirmación de Asistencia a Servicios</h2>
+
+                {% if services_attendance is not empty %}
+                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">Voluntario</th>
+                                    <th scope="col" class="px-6 py-3">Estado de Asistencia</th>
+                                    <th scope="col" class="px-6 py-3">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for volunteerService in services_attendance %}
+                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                            {# Asumiendo que VolunteerService tiene un método getVolunteer() que devuelve la entidad Volunteer #}
+                                            {# Y que la entidad Volunteer tiene métodos getName() y getLastName() #}
+                                            {{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {# Asumiendo que VolunteerService tiene un método getStatus() #}
+                                            {{ volunteerService.status }}
+                                        </td>
+                                        <td class="px-6 py-4">
+                                            {# Aquí puedes añadir botones o enlaces para cambiar el estado de asistencia #}
+                                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Cambiar Estado</a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-gray-600 dark:text-gray-300">No hay asistencias registradas para este servicio aún.</p>
+                {% endif %}
+            </div>
+            {# Aquí puedes añadir más divs para el contenido de otras pestañas #}
         </div>
     </div>
-</div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }} {# Mantiene cualquier JS que venga del layout padre #}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabsContainer = document.getElementById('myTab');
+            const tabContents = document.getElementById('myTabContent');
+
+            if (tabsContainer && tabContents) {
+                tabsContainer.addEventListener('click', function(event) {
+                    const clickedButton = event.target.closest('[role="tab"]'); // Encuentra el botón de la pestaña clickeado
+                    if (!clickedButton) {
+                        return; // No es un botón de pestaña, salimos
+                    }
+
+                    const targetId = clickedButton.dataset.tabsTarget; // Obtiene el ID del contenido objetivo (ej. '#basic-data')
+                    const targetContent = tabContents.querySelector(targetId);
+
+                    if (!targetContent) {
+                        console.error('Contenido de pestaña no encontrado para:', targetId);
+                        return;
+                    }
+
+                    // 1. Ocultar todos los contenidos de las pestañas
+                    tabContents.querySelectorAll('[role="tabpanel"]').forEach(panel => {
+                        panel.classList.add('hidden');
+                        panel.setAttribute('aria-hidden', 'true'); // Mejor accesibilidad
+                    });
+
+                    // 2. Desactivar visualmente todas las pestañas
+                    tabsContainer.querySelectorAll('[role="tab"]').forEach(tabButton => {
+                        tabButton.setAttribute('aria-selected', 'false');
+                        // Ajusta las clases para el estilo de pestaña inactiva (ej. borde gris, texto gris)
+                        tabButton.classList.remove('text-blue-600', 'border-blue-600'); // Quita estilos de activa
+                        tabButton.classList.add('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Añade estilos de inactiva
+                    });
+
+                    // 3. Mostrar el contenido de la pestaña clickeada
+                    targetContent.classList.remove('hidden');
+                    targetContent.setAttribute('aria-hidden', 'false');
+
+                    // 4. Activar visualmente la pestaña clickeada
+                    clickedButton.setAttribute('aria-selected', 'true');
+                    // Ajusta las clases para el estilo de pestaña activa (ej. borde azul, texto azul)
+                    clickedButton.classList.remove('text-gray-500', 'border-transparent', 'hover:text-gray-600', 'hover:border-gray-300'); // Quita estilos de inactiva
+                    clickedButton.classList.add('text-blue-600', 'border-blue-600'); // Añade estilos de activa
+                });
+
+                // Opcional: Activar la primera pestaña por defecto al cargar
+                // Esto simula un click en la primera pestaña
+                const initialTab = tabsContainer.querySelector('[role="tab"][aria-selected="true"]') || tabsContainer.querySelector('[role="tab"]');
+                if(initialTab) {
+                    initialTab.click();
+                } else {
+                    // Si no hay ninguna pestaña seleccionada por defecto, muestra el primer panel
+                    const firstPanel = tabContents.querySelector('[role="tabpanel"]');
+                    if (firstPanel) {
+                        firstPanel.classList.remove('hidden');
+                        firstPanel.setAttribute('aria-hidden', 'false');
+                    }
+                }
+            }
+        });
+    </script>
 {% endblock %}

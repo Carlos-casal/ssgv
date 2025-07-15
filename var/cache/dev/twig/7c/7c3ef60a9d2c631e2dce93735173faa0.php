@@ -183,14 +183,17 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                                 </td>
                                 <td class=\"px-6 py-4\">
                                     <div class=\"flex items-center gap-2\">
-                                        <a href=\"#\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver (ruta pendiente)\">
+                                        <a href=\"";
+                // line 64
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_show", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 64)]), "html", null, true);
+                yield "\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
                                             <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
                                         </a>
                                         <a href=\"";
                 // line 67
                 yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 67)]), "html", null, true);
                 yield "\"
-                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar (ruta pendiente)\">
+                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
                                             <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
                                         </a>
                                         <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">
@@ -270,7 +273,7 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  240 => 97,  234 => 94,  231 => 93,  228 => 92,  223 => 88,  215 => 82,  212 => 81,  199 => 73,  191 => 67,  181 => 60,  175 => 57,  169 => 54,  163 => 51,  154 => 45,  148 => 42,  139 => 39,  137 => 38,  109 => 14,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  243 => 97,  237 => 94,  234 => 93,  231 => 92,  226 => 88,  218 => 82,  215 => 81,  202 => 73,  194 => 67,  188 => 64,  181 => 60,  175 => 57,  169 => 54,  163 => 51,  154 => 45,  148 => 42,  139 => 39,  137 => 38,  109 => 14,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -338,11 +341,11 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                                 </td>
                                 <td class=\"px-6 py-4\">
                                     <div class=\"flex items-center gap-2\">
-                                        <a href=\"#\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver (ruta pendiente)\">
+                                        <a href=\"{{ path('app_service_show', {'id': service.id}) }}\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
                                             <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
                                         </a>
                                         <a href=\"{{ path('app_service_edit', {'id': service.id}) }}\"
-                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar (ruta pendiente)\">
+                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
                                             <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
                                         </a>
                                         <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">

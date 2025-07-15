@@ -61,11 +61,11 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        <a href="#" class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Ver (ruta pendiente)">
+                                        <a href="{{ path('app_service_show', {'id': service.id}) }}" class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Ver">
                                             <i data-lucide="eye" class="w-4 h-4"></i>
                                         </a>
                                         <a href="{{ path('app_service_edit', {'id': service.id}) }}"
-                                        class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar (ruta pendiente)">
+                                        class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
                                             <i data-lucide="edit" class="w-4 h-4"></i>
                                         </a>
                                         <form method="post" action="#" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este servicio?');" style="display:inline;">

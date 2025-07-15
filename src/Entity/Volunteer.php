@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\VolunteerRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBal\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -113,6 +115,20 @@ class Volunteer
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
+
+     #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: AssistanceConfirmation::class)]
+    private Collection $assistanceConfirmations;
+
+    /**
+     * @var Collection<int, VolunteerService>
+     */
+    #[ORM\OneToMany(targetEntity: VolunteerService::class, mappedBy: 'volunteer')]
+    private Collection $volunteerServices;
+
+    public function __construct()
+    {
+        $this->volunteerServices = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -490,6 +506,66 @@ class Volunteer
     public function setProfilePicture(?string $profilePicture): static
     {
         $this->profilePicture = $profilePicture;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VolunteerService>
+     */
+    public function getVolunteerServices(): Collection
+    {
+        return $this->volunteerServices;
+    }
+
+    public function addVolunteerService(VolunteerService $volunteerService): static
+    {
+        if (!$this->volunteerServices->contains($volunteerService)) {
+            $this->volunteerServices->add($volunteerService);
+            $volunteerService->setVolunteer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVolunteerService(VolunteerService $volunteerService): static
+    {
+        if ($this->volunteerServices->removeElement($volunteerService)) {
+            // set the owning side to null (unless already changed)
+            if ($volunteerService->getVolunteer() === $this) {
+                $volunteerService->setVolunteer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, AssistanceConfirmation>
+     */
+    public function getAssistanceConfirmations(): Collection
+    {
+        return $this->assistanceConfirmations;
+    }
+
+    public function addAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
+    {
+        if (!$this->assistanceConfirmations->contains($assistanceConfirmation)) {
+            $this->assistanceConfirmations->add($assistanceConfirmation);
+            $assistanceConfirmation->setVolunteer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAssistanceConfirmation(AssistanceConfirmation $assistanceConfirmation): static
+    {
+        if ($this->assistanceConfirmations->removeElement($assistanceConfirmation)) {
+            // set the owning side to null (unless already changed)
+            if ($assistanceConfirmation->getVolunteer() === $this) {
+                $assistanceConfirmation->setVolunteer(null);
+            }
+        }
 
         return $this;
     }
