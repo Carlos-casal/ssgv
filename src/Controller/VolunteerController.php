@@ -452,4 +452,19 @@ use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
             'current_section' => 'personal-informes'
         ]);
     }
+
+    #[Route('/volunteers', name: 'app_volunteers_json', methods: ['GET'])]
+    public function getVolunteersJson(VolunteerRepository $volunteerRepository): Response
+    {
+        $volunteers = $volunteerRepository->findAll();
+        $data = [];
+        foreach ($volunteers as $volunteer) {
+            $data[] = [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName(),
+            ];
+        }
+
+        return $this->json($data);
+    }
 }
