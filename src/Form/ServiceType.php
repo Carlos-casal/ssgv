@@ -120,12 +120,18 @@ class ServiceType extends AbstractType
                 'required' => false,
                 'help' => 'Selecciona a quién deseas enviar la información del servicio.',
             ])
-            // Si tienes la propiedad 'eys' y necesitas que sea parte del formulario, ejemplo:
-            // ->add('eys', TextType::class, [
-            //     'label' => 'Campo EYS',
-            //     'required' => true,
-            // ])
-        ;
+            ->add('collaboration_with_other_services', CheckboxType::class, [
+                'label' => 'Colaboración con otros servicios de emergencias',
+                'required' => false,
+            ])
+            ->add('locality', TextType::class, [
+                'label' => 'Localidad',
+                'required' => false,
+            ])
+            ->add('requester', TextType::class, [
+                'label' => 'Solicitante',
+                'required' => false,
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

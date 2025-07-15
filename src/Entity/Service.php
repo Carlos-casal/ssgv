@@ -64,7 +64,14 @@ class Service
     #[Gedmo\Timestampable(on: 'update')]
     private ?\DateTimeImmutable $updatedAt = null;
 
-  
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $collaboration_with_other_services = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $locality = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $requester = null;
 
       
     // Constructor para inicializar fechas automáticamente si no se establecen
@@ -245,8 +252,39 @@ class Service
         return $this;
     }
 
+    public function isCollaborationWithOtherServices(): ?bool
+    {
+        return $this->collaboration_with_other_services;
+    }
 
- 
+    public function setCollaborationWithOtherServices(bool $collaboration_with_other_services): static
+    {
+        $this->collaboration_with_other_services = $collaboration_with_other_services;
 
-    
+        return $this;
+    }
+
+    public function getLocality(): ?string
+    {
+        return $this->locality;
+    }
+
+    public function setLocality(?string $locality): static
+    {
+        $this->locality = $locality;
+
+        return $this;
+    }
+
+    public function getRequester(): ?string
+    {
+        return $this->requester;
+    }
+
+    public function setRequester(?string $requester): static
+    {
+        $this->requester = $requester;
+
+        return $this;
+    }
 }
