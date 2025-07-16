@@ -4,15 +4,25 @@ namespace App\Controller;
 
  
 use App\Repository\VolunteerRepository;
+use App\Repository\ServiceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Security;
 
 class DashboardController extends AbstractController
 {
     #[Route('/', name: 'app_dashboard')]
-    public function index(VolunteerRepository $volunteerRepository): Response
+    public function index(VolunteerRepository $volunteerRepository, ServiceRepository $serviceRepository, Security $security): Response
     {
+        if ($security->isGranted('ROLE_VOLUNTEER')) {
+            $services = $serviceRepository->findAll();
+            return $this->render('dashboard/volunteer_dashboard.html.twig', [
+                'services' => $services,
+                'current_section' => 'inicio'
+            ]);
+        }
+
         $volunteers = $volunteerRepository->findAll();
         $activeVolunteers = $volunteerRepository->findByStatus('active');
         
