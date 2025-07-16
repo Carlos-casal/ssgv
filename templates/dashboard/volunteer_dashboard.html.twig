@@ -30,8 +30,11 @@
                             <td>{{ service.time|date('H:i') }}</td>
                             <td>{{ service.location }}</td>
                             <td>
-                                <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="btn btn-success btn-sm">Asisto</a>
-                                <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="btn btn-danger btn-sm">No Asisto</a>
+                                {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
+                                    <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="btn btn-danger btn-sm">No Asisto</a>
+                                {% else %}
+                                    <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="btn btn-success btn-sm">Asisto</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
