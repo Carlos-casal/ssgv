@@ -89,12 +89,13 @@ class ServiceController extends AbstractController
 
             $this->addFlash('success', 'Servicio actualizado correctamente.');
 
-            return $this->redirectToRoute('app_service_show', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
         }
 
-        return $this->render('service/show_service.html.twig', [
+        return $this->render('service/edit_service.html.twig', [
             'service' => $service,
-            'serviceForm' => $form->createView(),
+            'form' => $form->createView(),
+            'services_attendance' => $service->getVolunteerServices(),
         ]);
     }
 }
