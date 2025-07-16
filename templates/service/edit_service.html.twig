@@ -21,30 +21,21 @@
             </div>
         {% endfor %}
 
-        {# Contenedor principal para las pestañas de navegación #}
-        <div class="mb-4 border-b border-gray-200 dark:border-gray-700">
-            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
-                <li class="me-2" role="presentation">
-                    <button class="inline-block p-4 border-b-2 rounded-t-lg" id="basic-data-tab" data-tabs-target="#basic-data" type="button" role="tab" aria-controls="basic-data" aria-selected="true">Datos Básicos</button>
-                </li>
-                <li class="me-2" role="presentation">
-                    <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300" id="attendance-confirmation-tab" data-tabs-target="#attendance-confirmation" type="button" role="tab" aria-controls="attendance-confirmation" aria-selected="false">Confirmación de Asistencia</button>
-                </li>
-                {# Si tienes más pestañas, añádelas aquí con sus respectivos IDs y data-tabs-target #}
-            </ul>
-        </div>
-
-        {# Contenido de las pestañas #}
-        <div id="myTabContent">
-            {# Contenido de Datos Básicos #}
-            <div class="p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="basic-data" role="tabpanel" aria-labelledby="basic-data-tab">
-                <h2 class="text-xl font-semibold mb-4 text-gray-900">Formulario de Datos Básicos</h2>
-                {# Contenedor principal del formulario con estilos #}
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="datos_basicos-tab" data-toggle="tab" href="#datos_basicos" role="tab" aria-controls="datos_basicos"
+                aria-selected="true"><i class="fas fa-file-signature"></i> Datos básicos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="asistencias-tab" data-toggle="tab" href="#asistencias" role="tab" aria-controls="asistencias"
+                aria-selected="false"><i class="fas fa-users"></i> Confirmaciones de asistencia</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade show active" id="datos_basicos" role="tabpanel" aria-labelledby="datos_basicos-tab">
                 {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
 
-                {# CONTENEDOR PRINCIPAL DEL FORMULARIO CON 3 COLUMNAS #}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {# Columna 1: Datos del Servicio #}
                     <div class="col-span-1">
                         <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Datos del Servicio</h3>
                         <div class="mb-4">
@@ -75,13 +66,6 @@
                             {{ form_row(form.recipients, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                         </div>
                     </div>
-                    {# Aquí puedes añadir Columna 2 y Columna 3 si las tienes en tu diseño #}
-                    <div class="col-span-1">
-                        {# Otros campos o información relacionados con el servicio #}
-                    </div>
-                    <div class="col-span-1">
-                        {# Más campos o información relacionados con el servicio #}
-                    </div>
                 </div>
 
                 <div class="mt-6 text-center">
@@ -92,61 +76,38 @@
 
                 {{ form_end(form) }}
             </div>
-
-            {# Contenido de Confirmación de Asistencia #}
-            <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="attendance-confirmation" role="tabpanel" aria-labelledby="attendance-confirmation-tab">
-                <div class="flex justify-between items-center mb-4">
-                    <h2 class="text-xl font-semibold text-gray-900">Confirmación de Asistencia a Servicios</h2>
-                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
-                        Añadir Usuario
-                    </button>
+            <div class="tab-pane fade" id="asistencias" role="tabpanel" aria-labelledby="asistencias-tab">
+                <div class="row">
+                    <div class="col-lg-12" style="padding-left:2em;">
+                        <button type="button" class="pcam-btn-gris" id="servicios_btn_add_respuesta_voluntario" onclick="servicios_asistentes_add_open_modal()"><i class="fas fa-plus-square"></i> Añadir usuarios</button>
+                        <button type="button" class="pcam-btn-gris" id="servicios_btn_fichar_todos" onclick="servicios_fichar_todos_open_modal()"><i class="fas fa-clock"></i> Fichar a todos</button>
+                    </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {# Columna de Asistirá #}
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">Asistirá</h3>
-                        <div class="space-y-2">
-                            {% for volunteerService in services_attendance|filter(v => v.status == 'confirmed') %}
-                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
-                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
-                                </div>
-                            {% else %}
-                                <p class="text-gray-500">Nadie ha confirmado asistencia.</p>
-                            {% endfor %}
-                        </div>
+                <div class="row" style="padding: 0em 1em 0em 1em !important;">
+                    <div class="col-lg-4" style="margin-top:1em;">
+                    <button type="button" class="list-group-item list-group-item-action active">Asisten <span class="badge badge-light" id="n_asistentes"></span></button>
+                        <ul class="list-group" id="servicio-listado-asistentes">
+
+                        </ul>
                     </div>
 
-                    {# Columna de Reserva #}
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">Reserva</h3>
-                        <div class="space-y-2">
-                            {% for volunteerService in services_attendance|filter(v => v.status == 'on_hold') %}
-                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
-                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
-                                </div>
-                            {% else %}
-                                <p class="text-gray-500">No hay nadie en reserva.</p>
-                            {% endfor %}
-                        </div>
+                    <div class="col-lg-4" style="margin-top:1em;">
+                    <button type="button" class="list-group-item list-group-item-action active">Reserva <span class="badge badge-light" id="n_reserva"></span></button>
+                    <ul class="list-group" id="servicio-listado-reserva">
+
+                    </ul>
                     </div>
 
-                    {# Columna de No Asistirá #}
-                    <div class="bg-white p-4 rounded-lg shadow">
-                        <h3 class="text-lg font-bold text-gray-800 mb-3">No Asistirá</h3>
-                        <div class="space-y-2">
-                            {% for volunteerService in services_attendance|filter(v => v.status == 'cancelled') %}
-                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
-                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
-                                </div>
-                            {% else %}
-                                <p class="text-gray-500">Nadie ha cancelado la asistencia.</p>
-                            {% endfor %}
-                        </div>
+                    <div class="col-lg-4" style="margin-top:1em;">
+                    <button type="button" class="list-group-item list-group-item-action active">No asisten <span class="badge badge-light" id="n_no_asistentes"></span></button>
+                    <ul class="list-group" id="servicio-listado-no-asistentes">
+
+                    </ul>
                     </div>
+
                 </div>
             </div>
-            {# Aquí puedes añadir más divs para el contenido de otras pestañas #}
         </div>
     </div>
 
