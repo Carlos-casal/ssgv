@@ -98,4 +98,55 @@ class ServiceController extends AbstractController
             'services_attendance' => $service->getAssistanceConfirmations(),
         ]);
     }
+
+    #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
+    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Component\Security\Core\Security $security): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+
+        $user = $security->getUser();
+        $volunteer = $user->getVolunteer();
+
+        $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
+        $assistanceConfirmation->setVolunteer($volunteer);
+        $assistanceConfirmation->setService($service);
+        $assistanceConfirmation->setHasAttended(true);
+
+        $entityManager->persist($assistanceConfirmation);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Has confirmado tu asistencia.');
+
+        return $this->redirectToRoute('app_dashboard');
+    }
+
+    #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
+    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Component\Security\Core\Security $security): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+
+        $user = $security->getUser();
+        $volunteer = $user->getVolunteer();
+
+        $assistanceConfirmation = $entityManager->getRepository(\App\Entity\AssistanceConfirmation::class)->findOneBy([
+            'volunteer' => $volunteer,
+            'service' => $service,
+        ]);
+
+        if ($assistanceConfirmation) {
+            $assistanceConfirmation->setHasAttended(false);
+        } else {
+            $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
+            $assistanceConfirmation->setVolunteer($volunteer);
+            $assistanceConfirmation->setService($service);
+            $assistanceConfirmation->setHasAttended(false);
+            $entityManager->persist($assistanceConfirmation);
+        }
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Has confirmado tu no asistencia.');
+
+        return $this->redirectToRoute('app_dashboard');
+    }
 }

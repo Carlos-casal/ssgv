@@ -119,9 +119,13 @@ class Volunteer
     #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: AssistanceConfirmation::class)]
     private Collection $assistanceConfirmations;
 
+    #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: VolunteerService::class)]
+    private Collection $volunteerServices;
+
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
+        $this->volunteerServices = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -525,6 +529,36 @@ class Volunteer
             // set the owning side to null (unless already changed)
             if ($assistanceConfirmation->getVolunteer() === $this) {
                 $assistanceConfirmation->setVolunteer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VolunteerService>
+     */
+    public function getVolunteerServices(): Collection
+    {
+        return $this->volunteerServices;
+    }
+
+    public function addVolunteerService(VolunteerService $volunteerService): static
+    {
+        if (!$this->volunteerServices->contains($volunteerService)) {
+            $this->volunteerServices->add($volunteerService);
+            $volunteerService->setVolunteer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVolunteerService(VolunteerService $volunteerService): static
+    {
+        if ($this->volunteerServices->removeElement($volunteerService)) {
+            // set the owning side to null (unless already changed)
+            if ($volunteerService->getVolunteer() === $this) {
+                $volunteerService->setVolunteer(null);
             }
         }
 
