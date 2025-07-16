@@ -45,7 +45,7 @@
                                     <p class="font-medium text-gray-900">{{ service.title }}</p>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                   
+                                    {{ attendeesByService[service.id] | default(0) }}
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-900"> 
                                 {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}

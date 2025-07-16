@@ -23,9 +23,21 @@ class ServiceController extends AbstractController
         // Obtiene todos los servicios de la base de datos
         $services = $serviceRepository->findAll();
 
+        $attendeesByService = [];
+        foreach ($services as $service) {
+            $attendees = 0;
+            foreach ($service->getAssistanceConfirmations() as $confirmation) {
+                if ($confirmation->isHasAttended()) {
+                    $attendees++;
+                }
+            }
+            $attendeesByService[$service->getId()] = $attendees;
+        }
+
         // Renderiza la plantilla Twig y le pasa los servicios
         return $this->render('service/list_service.html.twig', [
             'services' => $services,
+            'attendeesByService' => $attendeesByService,
         ]);
     }
     /**
