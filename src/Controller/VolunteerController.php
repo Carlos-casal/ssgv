@@ -175,7 +175,7 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // *** AHORA, OBTENEMOS LA INSTANCIA DE USER QUE HA SIDO HIDRATADA POR EL FORMULARIO ***
+            // *** AHORA, OBTENEMOS LA INSTANCIA DE USER CHE HA SIDO HIDRATADA POR EL FORMULARIO ***
             $hydratedVolunteer = $form->getData(); // Obtiene el objeto Volunteer con todos los datos rellenados por el formulario
             $hydratedUser = $hydratedVolunteer->getUser(); // Obtiene el objeto User que está dentro del Volunteer rellenado
 
@@ -398,6 +398,7 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/edit_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
+            'services_attendance' => $servicesAttendance, // <--- Nueva línea
             'current_section' => 'personal-editar'
         ]);
     }
