@@ -398,7 +398,6 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/edit_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
-            'services_attendance' => $servicesAttendance, // <--- Nueva línea
             'current_section' => 'personal-editar'
         ]);
     }
