@@ -10,3 +10,7 @@ edf6ad,127.0.0.1,GET,http://ssgv.local/,1752663574,,200,request
 dc4ab2,127.0.0.1,GET,http://ssgv.local/,1752663610,,200,request
 61cc2c,127.0.0.1,GET,http://ssgv.local/,1752663686,,200,request
 182a74,127.0.0.1,GET,http://ssgv.local/,1752663728,,200,request
+51fbca,127.0.0.1,GET,http://ssgv.local/logout,1752664865,,302,request
+859b34,127.0.0.1,GET,http://ssgv.local/login,1752664866,,200,request
+357c2b,127.0.0.1,POST,http://ssgv.local/login,1752664872,,302,request
+af0d48,127.0.0.1,GET,http://ssgv.local/,1752664872,,200,request
