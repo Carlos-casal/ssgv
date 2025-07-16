@@ -95,7 +95,7 @@ class ServiceController extends AbstractController
         return $this->render('service/edit_service.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
-            'services_attendance' => $service->getVolunteerServices(),
+            'services_attendance' => $service->getAssistanceConfirmations(),
         ]);
     }
 }

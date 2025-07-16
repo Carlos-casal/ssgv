@@ -94,44 +94,57 @@
             </div>
 
             {# Contenido de Confirmación de Asistencia #}
-            {# Este div inicialmente tendrá la clase 'hidden' y el JS la quitará al activar la pestaña #}
             <div class="hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800" id="attendance-confirmation" role="tabpanel" aria-labelledby="attendance-confirmation-tab">
-                <h2 class="text-xl font-semibold mb-4 text-gray-900">Confirmación de Asistencia a Servicios</h2>
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-gray-900">Confirmación de Asistencia a Servicios</h2>
+                    <button class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
+                        Añadir Usuario
+                    </button>
+                </div>
 
-                {% if services_attendance is not empty %}
-                    <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-                        <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                                <tr>
-                                    <th scope="col" class="px-6 py-3">Voluntario</th>
-                                    <th scope="col" class="px-6 py-3">Estado de Asistencia</th>
-                                    <th scope="col" class="px-6 py-3">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for volunteerService in services_attendance %}
-                                    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                                        <td class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                                            {# Asumiendo que VolunteerService tiene un método getVolunteer() que devuelve la entidad Volunteer #}
-                                            {# Y que la entidad Volunteer tiene métodos getName() y getLastName() #}
-                                            {{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            {# Asumiendo que VolunteerService tiene un método getStatus() #}
-                                            {{ volunteerService.status }}
-                                        </td>
-                                        <td class="px-6 py-4">
-                                            {# Aquí puedes añadir botones o enlaces para cambiar el estado de asistencia #}
-                                            <a href="#" class="font-medium text-blue-600 dark:text-blue-500 hover:underline">Cambiar Estado</a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {# Columna de Asistirá #}
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Asistirá</h3>
+                        <div class="space-y-2">
+                            {% for volunteerService in services_attendance|filter(v => v.status == 'confirmed') %}
+                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
+                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-500">Nadie ha confirmado asistencia.</p>
+                            {% endfor %}
+                        </div>
                     </div>
-                {% else %}
-                    <p class="text-gray-600 dark:text-gray-300">No hay asistencias registradas para este servicio aún.</p>
-                {% endif %}
+
+                    {# Columna de Reserva #}
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">Reserva</h3>
+                        <div class="space-y-2">
+                            {% for volunteerService in services_attendance|filter(v => v.status == 'on_hold') %}
+                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
+                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-500">No hay nadie en reserva.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    {# Columna de No Asistirá #}
+                    <div class="bg-white p-4 rounded-lg shadow">
+                        <h3 class="text-lg font-bold text-gray-800 mb-3">No Asistirá</h3>
+                        <div class="space-y-2">
+                            {% for volunteerService in services_attendance|filter(v => v.status == 'cancelled') %}
+                                <div class="p-3 bg-gray-100 rounded-md shadow-sm">
+                                    <p class="font-medium text-gray-900">{{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}</p>
+                                </div>
+                            {% else %}
+                                <p class="text-gray-500">Nadie ha cancelado la asistencia.</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
             {# Aquí puedes añadir más divs para el contenido de otras pestañas #}
         </div>
