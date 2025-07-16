@@ -139,106 +139,81 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $context = array_intersect_key($context, $_parent) + $_parent;
         // line 23
         yield "
-        ";
-        // line 25
-        yield "        <div class=\"mb-4 border-b border-gray-200 dark:border-gray-700\">
-            <ul class=\"flex flex-wrap -mb-px text-sm font-medium text-center\" id=\"myTab\" data-tabs-toggle=\"#myTabContent\" role=\"tablist\">
-                <li class=\"me-2\" role=\"presentation\">
-                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg\" id=\"basic-data-tab\" data-tabs-target=\"#basic-data\" type=\"button\" role=\"tab\" aria-controls=\"basic-data\" aria-selected=\"true\">Datos Básicos</button>
-                </li>
-                <li class=\"me-2\" role=\"presentation\">
-                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300\" id=\"attendance-confirmation-tab\" data-tabs-target=\"#attendance-confirmation\" type=\"button\" role=\"tab\" aria-controls=\"attendance-confirmation\" aria-selected=\"false\">Confirmación de Asistencia</button>
-                </li>
+        <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">
+            <li class=\"nav-item\">
+                <a class=\"nav-link active\" id=\"datos_basicos-tab\" data-toggle=\"tab\" href=\"#datos_basicos\" role=\"tab\" aria-controls=\"datos_basicos\"
+                aria-selected=\"true\"><i class=\"fas fa-file-signature\"></i> Datos básicos</a>
+            </li>
+            <li class=\"nav-item\">
+                <a class=\"nav-link\" id=\"asistencias-tab\" data-toggle=\"tab\" href=\"#asistencias\" role=\"tab\" aria-controls=\"asistencias\"
+                aria-selected=\"false\"><i class=\"fas fa-users\"></i> Confirmaciones de asistencia</a>
+            </li>
+        </ul>
+        <div class=\"tab-content\" id=\"myTabContent\">
+            <div class=\"tab-pane fade show active\" id=\"datos_basicos\" role=\"tabpanel\" aria-labelledby=\"datos_basicos-tab\">
                 ";
-        // line 34
-        yield "            </ul>
-        </div>
-
-        ";
-        // line 38
-        yield "        <div id=\"myTabContent\">
-            ";
-        // line 40
-        yield "            <div class=\"p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"basic-data\" role=\"tabpanel\" aria-labelledby=\"basic-data-tab\">
-                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Formulario de Datos Básicos</h2>
-                ";
-        // line 43
-        yield "                ";
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 43, $this->source); })()), 'form_start', ["attr" => ["class" => "bg-white p-6 rounded-lg shadow-md"], "enctype" => "multipart/form-data"]);
+        // line 36
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 36, $this->source); })()), 'form_start', ["attr" => ["class" => "bg-white p-6 rounded-lg shadow-md"], "enctype" => "multipart/form-data"]);
         yield "
 
-                ";
-        // line 46
-        yield "                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
-                    ";
-        // line 48
-        yield "                    <div class=\"col-span-1\">
+                <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
+                    <div class=\"col-span-1\">
                         <h3 class=\"text-lg font-medium text-gray-900 mb-4 border-b pb-2\">Datos del Servicio</h3>
                         <div class=\"mb-4\">
                             ";
+        // line 42
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 42, $this->source); })()), "title", [], "any", false, false, false, 42), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield "
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
+        // line 45
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 45, $this->source); })()), "numeration", [], "any", false, false, false, 45), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield "
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
+        // line 48
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 48, $this->source); })()), "startDate", [], "any", false, false, false, 48), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield "
+                        </div>
+                        <div class=\"mb-4\">
+                            ";
         // line 51
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 51, $this->source); })()), "title", [], "any", false, false, false, 51), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 51, $this->source); })()), "endDate", [], "any", false, false, false, 51), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                         <div class=\"mb-4\">
                             ";
         // line 54
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 54, $this->source); })()), "numeration", [], "any", false, false, false, 54), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 54, $this->source); })()), "maxAttendees", [], "any", false, false, false, 54), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                         <div class=\"mb-4\">
                             ";
         // line 57
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 57, $this->source); })()), "startDate", [], "any", false, false, false, 57), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 57, $this->source); })()), "type", [], "any", false, false, false, 57), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                         <div class=\"mb-4\">
                             ";
         // line 60
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 60, $this->source); })()), "endDate", [], "any", false, false, false, 60), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 60, $this->source); })()), "category", [], "any", false, false, false, 60), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                         <div class=\"mb-4\">
                             ";
         // line 63
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 63, $this->source); })()), "maxAttendees", [], "any", false, false, false, 63), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 63, $this->source); })()), "description", [], "any", false, false, false, 63), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                         <div class=\"mb-4\">
                             ";
         // line 66
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "type", [], "any", false, false, false, 66), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
-        yield "
-                        </div>
-                        <div class=\"mb-4\">
-                            ";
-        // line 69
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 69, $this->source); })()), "category", [], "any", false, false, false, 69), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
-        yield "
-                        </div>
-                        <div class=\"mb-4\">
-                            ";
-        // line 72
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 72, $this->source); })()), "description", [], "any", false, false, false, 72), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
-        yield "
-                        </div>
-                        <div class=\"mb-4\">
-                            ";
-        // line 75
-        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 75, $this->source); })()), "recipients", [], "any", false, false, false, 75), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
+        yield $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->searchAndRenderBlock(CoreExtension::getAttribute($this->env, $this->source, (isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 66, $this->source); })()), "recipients", [], "any", false, false, false, 66), 'row', ["label_attr" => ["class" => "block text-sm font-medium text-gray-700"]]);
         yield "
                         </div>
                     </div>
-                    ";
-        // line 79
-        yield "                    <div class=\"col-span-1\">
-                        ";
-        // line 81
-        yield "                    </div>
-                    <div class=\"col-span-1\">
-                        ";
-        // line 84
-        yield "                    </div>
                 </div>
 
                 <div class=\"mt-6 text-center\">
@@ -248,83 +223,43 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
                 </div>
 
                 ";
-        // line 93
-        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 93, $this->source); })()), 'form_end');
+        // line 77
+        yield         $this->env->getRuntime('Symfony\Component\Form\FormRenderer')->renderBlock((isset($context["form"]) || array_key_exists("form", $context) ? $context["form"] : (function () { throw new RuntimeError('Variable "form" does not exist.', 77, $this->source); })()), 'form_end');
         yield "
             </div>
-
-            ";
-        // line 97
-        yield "            ";
-        // line 98
-        yield "            <div class=\"hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"attendance-confirmation\" role=\"tabpanel\" aria-labelledby=\"attendance-confirmation-tab\">
-                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Confirmación de Asistencia a Servicios</h2>
-
-                ";
-        // line 101
-        if ((($tmp =  !Twig\Extension\CoreExtension::testEmpty((isset($context["services_attendance"]) || array_key_exists("services_attendance", $context) ? $context["services_attendance"] : (function () { throw new RuntimeError('Variable "services_attendance" does not exist.', 101, $this->source); })()))) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
-            // line 102
-            yield "                    <div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\">
-                        <table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\">
-                            <thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\">
-                                <tr>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Voluntario</th>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Estado de Asistencia</th>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ";
-            // line 112
-            $context['_parent'] = $context;
-            $context['_seq'] = CoreExtension::ensureTraversable((isset($context["services_attendance"]) || array_key_exists("services_attendance", $context) ? $context["services_attendance"] : (function () { throw new RuntimeError('Variable "services_attendance" does not exist.', 112, $this->source); })()));
-            foreach ($context['_seq'] as $context["_key"] => $context["volunteerService"]) {
-                // line 113
-                yield "                                    <tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700\">
-                                        <td class=\"px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">
-                                            ";
-                // line 116
-                yield "                                            ";
-                // line 117
-                yield "                                            ";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "volunteer", [], "any", false, false, false, 117), "name", [], "any", false, false, false, 117), "html", null, true);
-                yield " ";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "volunteer", [], "any", false, false, false, 117), "lastName", [], "any", false, false, false, 117), "html", null, true);
-                yield "
-                                        </td>
-                                        <td class=\"px-6 py-4\">
-                                            ";
-                // line 121
-                yield "                                            ";
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, $context["volunteerService"], "status", [], "any", false, false, false, 121), "html", null, true);
-                yield "
-                                        </td>
-                                        <td class=\"px-6 py-4\">
-                                            ";
-                // line 125
-                yield "                                            <a href=\"#\" class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\">Cambiar Estado</a>
-                                        </td>
-                                    </tr>
-                                ";
-            }
-            $_parent = $context['_parent'];
-            unset($context['_seq'], $context['_key'], $context['volunteerService'], $context['_parent']);
-            $context = array_intersect_key($context, $_parent) + $_parent;
-            // line 129
-            yield "                            </tbody>
-                        </table>
+            <div class=\"tab-pane fade\" id=\"asistencias\" role=\"tabpanel\" aria-labelledby=\"asistencias-tab\">
+                <div class=\"row\">
+                    <div class=\"col-lg-12\" style=\"padding-left:2em;\">
+                        <button type=\"button\" class=\"pcam-btn-gris\" id=\"servicios_btn_add_respuesta_voluntario\" onclick=\"servicios_asistentes_add_open_modal()\"><i class=\"fas fa-plus-square\"></i> Añadir usuarios</button>
+                        <button type=\"button\" class=\"pcam-btn-gris\" id=\"servicios_btn_fichar_todos\" onclick=\"servicios_fichar_todos_open_modal()\"><i class=\"fas fa-clock\"></i> Fichar a todos</button>
                     </div>
-                ";
-        } else {
-            // line 133
-            yield "                    <p class=\"text-gray-600 dark:text-gray-300\">No hay asistencias registradas para este servicio aún.</p>
-                ";
-        }
-        // line 135
-        yield "            </div>
-            ";
-        // line 137
-        yield "        </div>
+                </div>
+
+                <div class=\"row\" style=\"padding: 0em 1em 0em 1em !important;\">
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">Asisten <span class=\"badge badge-light\" id=\"n_asistentes\"></span></button>
+                        <ul class=\"list-group\" id=\"servicio-listado-asistentes\">
+
+                        </ul>
+                    </div>
+
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">Reserva <span class=\"badge badge-light\" id=\"n_reserva\"></span></button>
+                    <ul class=\"list-group\" id=\"servicio-listado-reserva\">
+
+                    </ul>
+                    </div>
+
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">No asisten <span class=\"badge badge-light\" id=\"n_no_asistentes\"></span></button>
+                    <ul class=\"list-group\" id=\"servicio-listado-no-asistentes\">
+
+                    </ul>
+                    </div>
+
+                </div>
+            </div>
+        </div>
     </div>
 
 ";
@@ -337,7 +272,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         yield from [];
     }
 
-    // line 142
+    // line 116
     /**
      * @return iterable<null|scalar|\Stringable>
      */
@@ -350,11 +285,11 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f = $this->extensions["Symfony\\Bridge\\Twig\\Extension\\ProfilerExtension"];
         $__internal_6f47bbe9983af81f1e7450e9a3e3768f->enter($__internal_6f47bbe9983af81f1e7450e9a3e3768f_prof = new \Twig\Profiler\Profile($this->getTemplateName(), "block", "javascripts"));
 
-        // line 143
+        // line 117
         yield "    ";
         yield from $this->yieldParentBlock("javascripts", $context, $blocks);
         yield " ";
-        // line 144
+        // line 118
         yield "
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -448,7 +383,7 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  358 => 144,  354 => 143,  341 => 142,  327 => 137,  324 => 135,  320 => 133,  314 => 129,  305 => 125,  298 => 121,  289 => 117,  287 => 116,  283 => 113,  279 => 112,  267 => 102,  265 => 101,  260 => 98,  258 => 97,  252 => 93,  241 => 84,  237 => 81,  234 => 79,  228 => 75,  222 => 72,  216 => 69,  210 => 66,  204 => 63,  198 => 60,  192 => 57,  186 => 54,  180 => 51,  175 => 48,  172 => 46,  166 => 43,  162 => 40,  159 => 38,  154 => 34,  144 => 25,  141 => 23,  132 => 20,  129 => 19,  124 => 18,  115 => 15,  112 => 14,  107 => 13,  101 => 8,  88 => 7,  65 => 5,  42 => 3,);
+        return array (  293 => 118,  289 => 117,  276 => 116,  227 => 77,  213 => 66,  207 => 63,  201 => 60,  195 => 57,  189 => 54,  183 => 51,  177 => 48,  171 => 45,  165 => 42,  156 => 36,  141 => 23,  132 => 20,  129 => 19,  124 => 18,  115 => 15,  112 => 14,  107 => 13,  101 => 8,  88 => 7,  65 => 5,  42 => 3,);
     }
 
     public function getSourceContext(): Source
@@ -476,30 +411,21 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
             </div>
         {% endfor %}
 
-        {# Contenedor principal para las pestañas de navegación #}
-        <div class=\"mb-4 border-b border-gray-200 dark:border-gray-700\">
-            <ul class=\"flex flex-wrap -mb-px text-sm font-medium text-center\" id=\"myTab\" data-tabs-toggle=\"#myTabContent\" role=\"tablist\">
-                <li class=\"me-2\" role=\"presentation\">
-                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg\" id=\"basic-data-tab\" data-tabs-target=\"#basic-data\" type=\"button\" role=\"tab\" aria-controls=\"basic-data\" aria-selected=\"true\">Datos Básicos</button>
-                </li>
-                <li class=\"me-2\" role=\"presentation\">
-                    <button class=\"inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300 dark:hover:text-gray-300\" id=\"attendance-confirmation-tab\" data-tabs-target=\"#attendance-confirmation\" type=\"button\" role=\"tab\" aria-controls=\"attendance-confirmation\" aria-selected=\"false\">Confirmación de Asistencia</button>
-                </li>
-                {# Si tienes más pestañas, añádelas aquí con sus respectivos IDs y data-tabs-target #}
-            </ul>
-        </div>
-
-        {# Contenido de las pestañas #}
-        <div id=\"myTabContent\">
-            {# Contenido de Datos Básicos #}
-            <div class=\"p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"basic-data\" role=\"tabpanel\" aria-labelledby=\"basic-data-tab\">
-                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Formulario de Datos Básicos</h2>
-                {# Contenedor principal del formulario con estilos #}
+        <ul class=\"nav nav-tabs\" id=\"myTab\" role=\"tablist\">
+            <li class=\"nav-item\">
+                <a class=\"nav-link active\" id=\"datos_basicos-tab\" data-toggle=\"tab\" href=\"#datos_basicos\" role=\"tab\" aria-controls=\"datos_basicos\"
+                aria-selected=\"true\"><i class=\"fas fa-file-signature\"></i> Datos básicos</a>
+            </li>
+            <li class=\"nav-item\">
+                <a class=\"nav-link\" id=\"asistencias-tab\" data-toggle=\"tab\" href=\"#asistencias\" role=\"tab\" aria-controls=\"asistencias\"
+                aria-selected=\"false\"><i class=\"fas fa-users\"></i> Confirmaciones de asistencia</a>
+            </li>
+        </ul>
+        <div class=\"tab-content\" id=\"myTabContent\">
+            <div class=\"tab-pane fade show active\" id=\"datos_basicos\" role=\"tabpanel\" aria-labelledby=\"datos_basicos-tab\">
                 {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
 
-                {# CONTENEDOR PRINCIPAL DEL FORMULARIO CON 3 COLUMNAS #}
                 <div class=\"grid grid-cols-1 md:grid-cols-3 gap-6\">
-                    {# Columna 1: Datos del Servicio #}
                     <div class=\"col-span-1\">
                         <h3 class=\"text-lg font-medium text-gray-900 mb-4 border-b pb-2\">Datos del Servicio</h3>
                         <div class=\"mb-4\">
@@ -530,13 +456,6 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
                             {{ form_row(form.recipients, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                         </div>
                     </div>
-                    {# Aquí puedes añadir Columna 2 y Columna 3 si las tienes en tu diseño #}
-                    <div class=\"col-span-1\">
-                        {# Otros campos o información relacionados con el servicio #}
-                    </div>
-                    <div class=\"col-span-1\">
-                        {# Más campos o información relacionados con el servicio #}
-                    </div>
                 </div>
 
                 <div class=\"mt-6 text-center\">
@@ -547,48 +466,38 @@ class __TwigTemplate_96d062f5df1f28c5a6756ce0fa91b412 extends Template
 
                 {{ form_end(form) }}
             </div>
-
-            {# Contenido de Confirmación de Asistencia #}
-            {# Este div inicialmente tendrá la clase 'hidden' y el JS la quitará al activar la pestaña #}
-            <div class=\"hidden p-4 rounded-lg bg-gray-50 dark:bg-gray-800\" id=\"attendance-confirmation\" role=\"tabpanel\" aria-labelledby=\"attendance-confirmation-tab\">
-                <h2 class=\"text-xl font-semibold mb-4 text-gray-900\">Confirmación de Asistencia a Servicios</h2>
-
-                {% if services_attendance is not empty %}
-                    <div class=\"relative overflow-x-auto shadow-md sm:rounded-lg\">
-                        <table class=\"w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400\">
-                            <thead class=\"text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400\">
-                                <tr>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Voluntario</th>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Estado de Asistencia</th>
-                                    <th scope=\"col\" class=\"px-6 py-3\">Acciones</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for volunteerService in services_attendance %}
-                                    <tr class=\"bg-white border-b dark:bg-gray-800 dark:border-gray-700\">
-                                        <td class=\"px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white\">
-                                            {# Asumiendo que VolunteerService tiene un método getVolunteer() que devuelve la entidad Volunteer #}
-                                            {# Y que la entidad Volunteer tiene métodos getName() y getLastName() #}
-                                            {{ volunteerService.volunteer.name }} {{ volunteerService.volunteer.lastName }}
-                                        </td>
-                                        <td class=\"px-6 py-4\">
-                                            {# Asumiendo que VolunteerService tiene un método getStatus() #}
-                                            {{ volunteerService.status }}
-                                        </td>
-                                        <td class=\"px-6 py-4\">
-                                            {# Aquí puedes añadir botones o enlaces para cambiar el estado de asistencia #}
-                                            <a href=\"#\" class=\"font-medium text-blue-600 dark:text-blue-500 hover:underline\">Cambiar Estado</a>
-                                        </td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+            <div class=\"tab-pane fade\" id=\"asistencias\" role=\"tabpanel\" aria-labelledby=\"asistencias-tab\">
+                <div class=\"row\">
+                    <div class=\"col-lg-12\" style=\"padding-left:2em;\">
+                        <button type=\"button\" class=\"pcam-btn-gris\" id=\"servicios_btn_add_respuesta_voluntario\" onclick=\"servicios_asistentes_add_open_modal()\"><i class=\"fas fa-plus-square\"></i> Añadir usuarios</button>
+                        <button type=\"button\" class=\"pcam-btn-gris\" id=\"servicios_btn_fichar_todos\" onclick=\"servicios_fichar_todos_open_modal()\"><i class=\"fas fa-clock\"></i> Fichar a todos</button>
                     </div>
-                {% else %}
-                    <p class=\"text-gray-600 dark:text-gray-300\">No hay asistencias registradas para este servicio aún.</p>
-                {% endif %}
+                </div>
+
+                <div class=\"row\" style=\"padding: 0em 1em 0em 1em !important;\">
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">Asisten <span class=\"badge badge-light\" id=\"n_asistentes\"></span></button>
+                        <ul class=\"list-group\" id=\"servicio-listado-asistentes\">
+
+                        </ul>
+                    </div>
+
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">Reserva <span class=\"badge badge-light\" id=\"n_reserva\"></span></button>
+                    <ul class=\"list-group\" id=\"servicio-listado-reserva\">
+
+                    </ul>
+                    </div>
+
+                    <div class=\"col-lg-4\" style=\"margin-top:1em;\">
+                    <button type=\"button\" class=\"list-group-item list-group-item-action active\">No asisten <span class=\"badge badge-light\" id=\"n_no_asistentes\"></span></button>
+                    <ul class=\"list-group\" id=\"servicio-listado-no-asistentes\">
+
+                    </ul>
+                    </div>
+
+                </div>
             </div>
-            {# Aquí puedes añadir más divs para el contenido de otras pestañas #}
         </div>
     </div>
 

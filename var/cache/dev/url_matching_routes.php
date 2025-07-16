@@ -54,11 +54,17 @@ return [
                         .')'
                     .')'
                 .')'
-                .'|/servicios/([^/]++)(?'
-                    .'|(*:224)'
-                    .'|/editar(*:239)'
+                .'|/servicio(?'
+                    .'|s/([^/]++)(?'
+                        .'|(*:227)'
+                        .'|/editar(*:242)'
+                    .')'
+                    .'|/([^/]++)/(?'
+                        .'|asistir(*:271)'
+                        .'|no\\-asistir(*:290)'
+                    .')'
                 .')'
-                .'|/editar_voluntario\\-([^/]++)(*:276)'
+                .'|/editar_voluntario\\-([^/]++)(*:328)'
             .')/?$}sDu',
     ],
     [ // $dynamicRoutes
@@ -70,9 +76,11 @@ return [
         168 => [[['_route' => '_profiler_exception', '_controller' => 'web_profiler.controller.exception_panel::body'], ['token'], null, null, false, false, null]],
         181 => [[['_route' => '_profiler_exception_css', '_controller' => 'web_profiler.controller.exception_panel::stylesheet'], ['token'], null, null, false, false, null]],
         191 => [[['_route' => '_profiler', '_controller' => 'web_profiler.controller.profiler::panelAction'], ['token'], null, null, false, true, null]],
-        224 => [[['_route' => 'app_service_show', '_controller' => 'App\\Controller\\ServiceController::show'], ['id'], ['GET' => 0], null, false, true, null]],
-        239 => [[['_route' => 'app_service_edit', '_controller' => 'App\\Controller\\ServiceController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
-        276 => [
+        227 => [[['_route' => 'app_service_show', '_controller' => 'App\\Controller\\ServiceController::show'], ['id'], ['GET' => 0], null, false, true, null]],
+        242 => [[['_route' => 'app_service_edit', '_controller' => 'App\\Controller\\ServiceController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, false, null]],
+        271 => [[['_route' => 'app_service_attend', '_controller' => 'App\\Controller\\ServiceController::attend'], ['id'], ['GET' => 0], null, false, false, null]],
+        290 => [[['_route' => 'app_service_unattend', '_controller' => 'App\\Controller\\ServiceController::unattend'], ['id'], ['GET' => 0], null, false, false, null]],
+        328 => [
             [['_route' => 'app_volunteer_edit', '_controller' => 'App\\Controller\\VolunteerController::edit'], ['id'], ['GET' => 0, 'POST' => 1], null, false, true, null],
             [null, null, null, null, false, false, 0],
         ],
