@@ -20,82 +20,82 @@ class Volunteer
     private ?string $name = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $lastName = null; // Apellidos
+    private ?string $lastName = null;
 
     #[ORM\Column(length: 20)]
     private ?string $phone = null;
 
     #[ORM\Column(length: 15, unique: true, nullable: true)]
-    private ?string $dni = null; // DNI
+    private ?string $dni = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $dateOfBirth = null; // Fecha de Nacimiento
+    private ?\DateTimeInterface $dateOfBirth = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    private ?string $streetType = null; // Tipo de vía (ej. Calle, Avenida)
+    private ?string $streetType = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $address = null; // Dirección (nombre de la calle, número, piso, puerta)
+    private ?string $address = null;
 
     #[ORM\Column(length: 10, nullable: true)]
-    private ?string $postalCode = null; // Código Postal
+    private ?string $postalCode = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    private ?string $province = null; // Provincia
+    private ?string $province = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    private ?string $city = null; // Población
+    private ?string $city = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $contactPerson1 = null; // Persona de Contacto 1
+    private ?string $contactPerson1 = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    private ?string $contactPhone1 = null; // Teléfono Persona de Contacto 1
+    private ?string $contactPhone1 = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $contactPerson2 = null; // Persona de Contacto 2
+    private ?string $contactPerson2 = null;
 
     #[ORM\Column(length: 20, nullable: true)]
-    private ?string $contactPhone2 = null; // Teléfono Persona de Contacto 2
+    private ?string $contactPhone2 = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $allergies = null; // Tipo de Alergias / Consideraciones de salud
+    private ?string $allergies = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    private ?string $profession = null; // Profesión
+    private ?string $profession = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    private ?string $employmentStatus = null; // Situacion laboral
+    private ?string $employmentStatus = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $drivingLicenses = null; // Permiso de conducir (AHORA ?array y null por defecto)
+    private ?array $drivingLicenses = null;
 
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $drivingLicenseExpiryDate = null; // Fecha de caducidad permiso conducir
+    private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $languages = null; // Idiomas
+    private ?string $languages = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $motivation = null; // Motivos por los que quiere ser voluntario
+    private ?string $motivation = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    private ?string $howKnown = null; // ¿Cómo nos ha conocido?
+    private ?string $howKnown = null;
 
     #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $hasVolunteeredBefore = null; // ¿Ha realizado funciones de voluntariado con anterioridad?
+    private ?bool $hasVolunteeredBefore = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $previousVolunteeringInstitutions = null; // En caso afirmativo, indique la institución o instituciones
+    private ?string $previousVolunteeringInstitutions = null;
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $otherQualifications = null; // Otros Títulos, lugar y año
+    private ?string $otherQualifications = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $navigationLicenses = null; // Permiso de navegación (AHORA ?array y null por defecto)
+    private ?array $navigationLicenses = null;
 
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $specificQualifications = null; // Titulaciones específicas agrupadas (AHORA ?array y null por defecto)
+    private ?array $specificQualifications = null;
 
     #[ORM\Column(length: 100)]
     private ?string $role = null;
@@ -116,18 +116,12 @@ class Volunteer
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
 
-     #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: AssistanceConfirmation::class)]
+    #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: AssistanceConfirmation::class)]
     private Collection $assistanceConfirmations;
-
-    /**
-     * @var Collection<int, VolunteerService>
-     */
-    #[ORM\OneToMany(targetEntity: VolunteerService::class, mappedBy: 'volunteer')]
-    private Collection $volunteerServices;
 
     public function __construct()
     {
-        $this->volunteerServices = new ArrayCollection();
+        $this->assistanceConfirmations = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -322,7 +316,6 @@ class Volunteer
         return $this;
     }
 
-    // Asegúrate de que los getters de arrays siempre devuelvan un array (vacío si es null)
     public function getDrivingLicenses(): array
     {
         return $this->drivingLicenses ?? [];
@@ -411,7 +404,6 @@ class Volunteer
         return $this;
     }
 
-    // Asegúrate de que los getters de arrays siempre devuelvan un array (vacío si es null)
     public function getNavigationLicenses(): array
     {
         return $this->navigationLicenses ?? [];
@@ -423,7 +415,6 @@ class Volunteer
         return $this;
     }
 
-    // Asegúrate de que los getters de arrays siempre devuelvan un array (vacío si es null)
     public function getSpecificQualifications(): array
     {
         return $this->specificQualifications ?? [];
@@ -506,36 +497,6 @@ class Volunteer
     public function setProfilePicture(?string $profilePicture): static
     {
         $this->profilePicture = $profilePicture;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, VolunteerService>
-     */
-    public function getVolunteerServices(): Collection
-    {
-        return $this->volunteerServices;
-    }
-
-    public function addVolunteerService(VolunteerService $volunteerService): static
-    {
-        if (!$this->volunteerServices->contains($volunteerService)) {
-            $this->volunteerServices->add($volunteerService);
-            $volunteerService->setVolunteer($this);
-        }
-
-        return $this;
-    }
-
-    public function removeVolunteerService(VolunteerService $volunteerService): static
-    {
-        if ($this->volunteerServices->removeElement($volunteerService)) {
-            // set the owning side to null (unless already changed)
-            if ($volunteerService->getVolunteer() === $this) {
-                $volunteerService->setVolunteer(null);
-            }
-        }
 
         return $this;
     }

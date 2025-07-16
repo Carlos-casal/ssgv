@@ -114,7 +114,7 @@ class __TwigTemplate_731a8bb1753944bf18c48585bb9804af extends Template
                     <p class=\"text-sm font-medium text-gray-600\">Voluntarios Activos</p>
                     <p class=\"text-3xl font-bold text-gray-900 mt-2\">";
         // line 21
-        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 21, $this->source); })()), "active_volunteers", [], "any", false, false, false, 21), "html", null, true);
+        yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(CoreExtension::getAttribute($this->env, $this->source, (isset($context["stats"]) || array_key_exists("stats", $context) ? $context["stats"] : (function () { throw new RuntimeError('Variable "stats" does not exist.', 21, $this->source); })()), "total_volunteers", [], "any", false, false, false, 21), "html", null, true);
         yield "</p>
                     <div class=\"flex items-center mt-2\">
                         <span class=\"text-sm font-medium text-green-600\">+";
@@ -337,7 +337,7 @@ class __TwigTemplate_731a8bb1753944bf18c48585bb9804af extends Template
             <div class=\"flex items-center justify-between\">
                 <div>
                     <p class=\"text-sm font-medium text-gray-600\">Voluntarios Activos</p>
-                    <p class=\"text-3xl font-bold text-gray-900 mt-2\">{{ stats.active_volunteers }}</p>
+                    <p class=\"text-3xl font-bold text-gray-900 mt-2\">{{ stats.total_volunteers }}</p>
                     <div class=\"flex items-center mt-2\">
                         <span class=\"text-sm font-medium text-green-600\">+{{ stats.total_volunteers - stats.active_volunteers }}</span>
                         <span class=\"text-sm text-gray-500 ml-1\">este mes</span>

@@ -20,7 +20,7 @@ class AssistanceConfirmation
     #[ORM\JoinColumn(nullable: false)]
     private ?Service $service = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'assistanceConfirmations')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Volunteer $volunteer = null;
 
