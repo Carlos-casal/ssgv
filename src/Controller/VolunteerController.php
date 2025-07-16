@@ -390,11 +390,6 @@ class VolunteerController extends AbstractController
             }
         }
 
-        // Aquí es donde necesitamos añadir la lógica para pasar los datos de asistencia
-        // Esto asume que tienes una relación Volunteer->getVolunteerServices() en tu entidad Volunteer
-        $servicesAttendance = $volunteer->getVolunteerServices();
-
-
         return $this->render('volunteer/edit_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
