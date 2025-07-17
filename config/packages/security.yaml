@@ -29,7 +29,7 @@ security:
 
     role_hierarchy:
         ROLE_ADVISER: ROLE_USER
-        ROLE_ADMIN: ROLE_ADVISER
+        ROLE_ADMIN: ROLE_ADMIN
 
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
@@ -37,7 +37,7 @@ security:
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/servicios/new, roles: ROLE_ADMIN }
         - { path: ^/servicios/\d+/editar, roles: ROLE_ADMIN }
-        - { path: ^/servicios/\d+/asistencia, roles: ROLE_ADVISER }
+        - { path: ^/servicios/\d+/asistencia, roles: ROLE_ADMIN }
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

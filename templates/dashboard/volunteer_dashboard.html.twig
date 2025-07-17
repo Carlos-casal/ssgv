@@ -1,62 +1,97 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Listado de sercicos{% endblock %}
+{% block title %}Listado de Servicios{% endblock %}
 
- 
 {% block body %}
-<div class="p-6 space-y-6">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+<div class="p-6 space-y-6"> {# Main page wrapper with padding and vertical spacing #}
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6"> {# Header block #}
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Listado de Servicios</h2>
- 
-
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Servicios Disponibles</h1>
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Lista de Servicios</h6>
+            <p class="text-gray-600">Gestiona todos los servicios programados</p>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>Nombre del Servicio</th>
-                            <th>Fecha</th>
-                            <th>Hora</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for service in services %}
-                        <tr>
-                            <td>{{ service.title }}</td>
-                            <td>{{ service.startDate|date('d/m/Y') }}</td>
-                            <td>{{ service.registrationLimitDate|date('H:i') }}</td>
-                            
-                            <td>
-                                {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
-                                    <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="btn btn-danger btn-sm">No Asisto</a>
-                                {% else %}
-                                    <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="btn btn-success btn-sm">Asisto</a>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
- 
+        {# Button for creating a new service (uncomment if desired) #}
+        {#
+        <div class="flex gap-3">
+            <a href="{{ path('app_service_new') }}"
+               class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nuevo Servicio
+            </a>
         </div>
+        #}
     </div>
 
-        {# Paginación (si aplica) #}
-        {% if services is defined and services.getTotalItemCount is defined and services.count > 0 %}
-            <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
-                {{ knp_pagination_render(services) }}
+    {# This is the grid container for your service cards #}
+    {# The classes below will create a responsive grid: 1 column on small, 2 on medium, 3 on large, and 6 on extra-large screens #}
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6">
+        {% if services is defined and services is not empty %}
+            {% for service in services %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                    {# Top section of the card: Title and Numeration #}
+                    <div class="p-4">
+                        <h3 class="text-lg font-bold text-gray-900">{{ service.title }}</h3>
+                        <p class="text-sm text-gray-600">{{ service.numeration ?? 'N/A' }}</p>
+                    </div>
+
+                    {# Middle section of the card: Service details #}
+                    <div class="p-4 border-t border-gray-200">
+                        <p class="text-sm text-gray-900 mb-1"><strong>Fecha:</strong> {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</p>
+                        <p class="text-sm text-gray-900 mb-1"><strong>Límite de inscripción:</strong> {{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</p>
+                        <p class="text-sm text-gray-900 mb-1"><strong>Tipo:</strong> {{ service.type ?? 'N/A' }}</p>
+                        <p class="text-sm text-gray-900"><strong>Categoría:</strong> {{ service.category ?? 'N/A' }}</p>
+                    </div>
+
+                    {# Bottom section of the card: Actions (Attend/Unattend buttons for volunteers) #}
+                    <div class="p-4 mt-auto bg-gray-50 border-t border-gray-200 flex gap-2">
+                        {# Display "No Asistir" if the user is already assisting, otherwise "Asistir" #}
+                        {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
+                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                                No Asistir
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                Asistir
+                            </a>
+                        {% endif %}
+                        
+                        {# Optional: Admin/Management actions (uncomment and add role condition if needed) #}
+                        {#
+                        {% if is_granted('ROLE_ADMIN') %} {# Example: Only for users with 'ROLE_ADMIN' #}
+                            <div class="flex items-center gap-2 ml-auto">
+                                <a href="{{ path('app_service_show', {'id': service.id}) }}" class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Ver">
+                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
+                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                </a>
+                                <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
+                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                </a>
+                                <form method="post" action="#" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este servicio?');" style="display:inline;">
+                                    {# <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}"> #}
+                                    <button type="submit" class="p-1 text-red-600 hover:bg-red-50 rounded" title="Eliminar (ruta pendiente)">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        {% endif %}
+                        #}
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            {# Message displayed if no services are found. It will span all columns of the grid. #}
+            <div class="col-span-full px-6 py-8 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">
+                No se encontraron servicios.
             </div>
         {% endif %}
     </div>
+
+    {# Pagination block (if applicable, for KnpPaginatorBundle) #}
+    {% if services is defined and services.getTotalItemCount is defined and services.count > 0 %}
+        <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200 rounded-b-xl shadow-sm mt-6">
+            {{ knp_pagination_render(services) }}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}

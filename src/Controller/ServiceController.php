@@ -184,7 +184,7 @@ class ServiceController extends AbstractController
     #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
     public function attendance(Service $service): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_ADVISER');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
