@@ -4,73 +4,94 @@
 
 
 {% block body %}
-<div class="p-6 space-y-6">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900">Listado de Servicios</h2>
+<div class="row">
+    <div class="col-lg-12">
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="abiertos-tab" data-toggle="tab" href="#abiertos" role="tab" aria-controls="abiertos"
+                aria-selected="true"><i class="fas fa-folder-open"></i> Abiertos</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="archivados-tab" data-toggle="tab" href="#archivados" role="tab" aria-controls="archivados"
+                aria-selected="false"><i class="fas fa-archive"></i> Archivados</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="ayuda-tab" data-toggle="tab" href="#ayuda" role="tab" aria-controls="ayuda"
+                aria-selected="false"><i class="fas fa-question-circle"></i> Ayuda</a>
+            </li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="abiertos" role="tabpanel" aria-labelledby="abiertos-tab">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div style="padding:1em;">
+                            <table id="tablaListadoServicios" class="table table-striped" style="width:100%">
+                                <thead>
+                                    <tr>
+                                        <th>Nº</th>
+                                        <th>Título</th>
+                                        <th>Asistentes</th>
+                                        <th>Fecha</th>
+                                        <th>Limite inscripción</th>
+                                        <th>Tipo</th>
+                                        <th>Categoría</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listadoServicios">
+                                    {% if services is defined and services is not empty %}
+                                        {% for service in services %}
+                                            <tr>
+                                                <td>{{ service.numeration ?? 'N/A' }}</td>
+                                                <td>{{ service.title }}</td>
+                                                <td>{{ attendeesByService[service.id] | default(0) }}</td>
+                                                <td>{{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                                <td>{{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                                <td>{{ service.type ?? 'N/A' }}</td>
+                                                <td>{{ service.category ?? 'N/A' }}</td>
+                                                <td>
+                                                    {% if is_granted('ROLE_VOLUNTEER') %}
+                                                        {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
+                                                            {# If already attending, show "No Asistir" #}
+                                                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="btn btn-danger btn-sm">
+                                                                No Asistir
+                                                            </a>
+                                                        {% else %}
+                                                            {# If not attending, show "Asistir" #}
+                                                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="btn btn-success btn-sm">
+                                                                Asistir
+                                                            </a>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="btn btn-info btn-sm" title="Editar">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                        <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="btn btn-primary btn-sm" title="Asistencia">
+                                                            <i class="fas fa-users"></i>
+                                                        </a>
+                                                    {% endif %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="8" class="text-center">No se encontraron servicios.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div> <!-- Cierra row -->
+            </div> <!-- Cierra tab de servicios abiertos -->
+            <div class="tab-pane fade" id="archivados" role="tabpanel" aria-labelledby="archivados-tab">
+                <p>Archivados</p>
+            </div> <!-- Cierra tab de servicios archivados -->
 
-
-<div class="container-fluid">
-    <h1 class="h3 mb-4 text-gray-800">Servicios Disponibles</h1>
-
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 p-6"> {# Grid container for the cards #}
-    {% if services is defined and services is not empty %}
-        {% for service in services %}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
-                {# Top section: Title and Numeration #}
-                <div class="p-4">
-                    <h3 class="text-lg font-bold text-gray-900">{{ service.title }}</h3>
-                    <p class="text-sm text-gray-600">{{ service.numeration ?? 'N/A' }}</p>
-                </div>
-
-                {# Middle section: Details (Date, Limit, Type, Category) #}
-                <div class="p-4 border-t border-gray-200">
-                    <p class="text-sm text-gray-900 mb-1"><strong>Fecha:</strong> {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</p>
-                    <p class="text-sm text-gray-900 mb-1"><strong>Límite de inscripción:</strong> {{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</p>
-                    <p class="text-sm text-gray-900 mb-1"><strong>Tipo:</strong> {{ service.type ?? 'N/A' }}</p>
-                    <p class="text-sm text-gray-900"><strong>Categoría:</strong> {{ service.category ?? 'N/A' }}</p>
-                    {% if is_granted('ROLE_ADMIN') %}
-                        <p class="text-sm text-gray-900"><strong>Asistentes:</strong> {{ attendeesByService[service.id] | default(0) }}</p>
-                    {% endif %}
-                </div>
-
-                {# Bottom section: Actions (Attend/Unattend buttons) #}
-                <div class="p-4 mt-auto bg-gray-50 border-t border-gray-200 flex gap-2">
-                    {% if is_granted('ROLE_VOLUNTEER') %}
-                        {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
-                            {# If already attending, show "No Asistir" #}
-                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                                No Asistir
-                            </a>
-                        {% else %}
-                            {# If not attending, show "Asistir" #}
-                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-                                Asistir
-                            </a>
-                        {% endif %}
-                    {% else %}
-                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
-                            <i data-lucide="edit" class="w-4 h-4"></i>
-                        </a>
-                        <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
-                            <i data-lucide="users" class="w-4 h-4"></i>
-                        </a>
-                    {% endif %}
-                </div>
-            </div>
-        {% endfor %}
-    {% else %}
-        <div class="col-span-full px-6 py-8 text-center text-gray-500 bg-white rounded-xl shadow-sm border border-gray-200">
-            No se encontraron servicios.
+            <div class="tab-pane fade" id="ayuda" role="tabpanel" aria-labelledby="ayuda-tab">
+                <p>Ayuda</p>
+            </div> <!-- Cierra ayuda -->
         </div>
-    {% endif %}
-</div>
-        {# Paginación (si aplica) #}
-        {% if services is defined and services.getTotalItemCount is defined and services.count > 0 %}
-            <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
-                {{ knp_pagination_render(services) }}
-            </div>
-        {% endif %}
-    </div>
-</div>
+    </div> <!-- Cierra col-lg-12 -->
+</div> <!-- Cierra row -->
 {% endblock %}
