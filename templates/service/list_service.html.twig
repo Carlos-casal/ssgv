@@ -19,94 +19,119 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Npº</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Título</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Asistentes</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Fecha</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Limite inscripción </th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Tipo</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Categoria</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% if services is defined and services is not empty %}
-                        {% for service in services %} 
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">{{ service.numeration ?? 'N/A' }}</p>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <p class="font-medium text-gray-900">{{ service.title }}</p>
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                    {{ attendeesByService[service.id] | default(0) }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900"> 
-                                {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ service.registrationLimitDate ? service.registrationLimitDate |date('d/m/Y H:i') : 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ service.type ?? 'N/A' }}
-                                </td>
-                                 <td class="px-6 py-4 text-sm text-gray-900">
-                                {{ service.category ?? 'N/A' }}
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        {% if is_granted('ROLE_VOLUNTEER') %}
-                                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="p-1 text-green-600 hover:bg-green-50 rounded" title="Asistir">
-                                                <i data-lucide="check" class="w-4 h-4"></i>
-                                            </a>
-                                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="p-1 text-red-600 hover:bg-red-50 rounded" title="No Asistir">
-                                                <i data-lucide="x" class="w-4 h-4"></i>
-                                            </a>
-                                        {% endif %}
-                                        {% if not is_granted('ROLE_VOLUNTEER') %}
-                                            <a href="{{ path('app_service_show', {'id': service.id}) }}" class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Ver">
-                                                <i data-lucide="eye" class="w-4 h-4"></i>
-                                            </a>
-                                            <a href="{{ path('app_service_edit', {'id': service.id}) }}"
-                                            class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
-                                                <i data-lucide="edit" class="w-4 h-4"></i>
-                                            </a>
-                                            <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
-                                                <i data-lucide="users" class="w-4 h-4"></i>
-                                            </a>
-                                            <form method="post" action="#" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este servicio?');" style="display:inline;">
-                                                {# <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}"> #}
-                                                <button type="submit" class="p-1 text-red-600 hover:bg-red-50 rounded" title="Eliminar (ruta pendiente)">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </form>
-                                        {% endif %}
-                                    </div>
+    {% if is_granted('ROLE_VOLUNTEER') %}
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% if services is defined and services is not empty %}
+                {% for service in services %}
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+                        <div class="p-4">
+                            <h3 class="text-lg font-bold text-gray-900">{{ service.title }}</h3>
+                            <p class="text-sm text-gray-600">{{ service.numeration ?? 'N/A' }}</p>
+                        </div>
+                        <div class="p-4 border-t border-gray-200">
+                            <p class="text-sm text-gray-900"><strong>Fecha:</strong> {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</p>
+                            <p class="text-sm text-gray-900"><strong>Límite de inscripción:</strong> {{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</p>
+                            <p class="text-sm text-gray-900"><strong>Tipo:</strong> {{ service.type ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-900"><strong>Categoría:</strong> {{ service.category ?? 'N/A' }}</p>
+                        </div>
+                        <div class="p-4 mt-auto bg-gray-50 border-t border-gray-200 flex gap-2">
+                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                                Asistir
+                            </a>
+                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="flex-1 text-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                                No Asistir
+                            </a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="col-span-full text-center text-gray-500">
+                    No se encontraron servicios.
+                </div>
+            {% endif %}
+        </div>
+    {% else %}
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Npº</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Título</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Asistentes</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Fecha</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Limite inscripción </th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Tipo</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Categoria</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% if services is defined and services is not empty %}
+                            {% for service in services %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-900">{{ service.numeration ?? 'N/A' }}</p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-900">{{ service.title }}</p>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                        {{ attendeesByService[service.id] | default(0) }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ service.registrationLimitDate ? service.registrationLimitDate |date('d/m/Y H:i') : 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ service.type ?? 'N/A' }}
+                                    </td>
+                                     <td class="px-6 py-4 text-sm text-gray-900">
+                                    {{ service.category ?? 'N/A' }}
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            {% if not is_granted('ROLE_VOLUNTEER') %}
+                                                <a href="{{ path('app_service_show', {'id': service.id}) }}" class="p-1 text-blue-600 hover:bg-blue-50 rounded" title="Ver">
+                                                    <i data-lucide="eye" class="w-4 h-4"></i>
+                                                </a>
+                                                <a href="{{ path('app_service_edit', {'id': service.id}) }}"
+                                                class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
+                                                    <i data-lucide="edit" class="w-4 h-4"></i>
+                                                </a>
+                                                <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
+                                                    <i data-lucide="users" class="w-4 h-4"></i>
+                                                </a>
+                                                <form method="post" action="#" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este servicio?');" style="display:inline;">
+                                                    {# <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}"> #}
+                                                    <button type="submit" class="p-1 text-red-600 hover:bg-red-50 rounded" title="Eliminar (ruta pendiente)">
+                                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                    No se encontraron servicios.
                                 </td>
                             </tr>
-                        {% endfor %}
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                                No se encontraron servicios.
-                            </td>
-                        </tr>
-                    {% endif %}
-                </tbody>
-            </table>
-        </div>
-        {# Paginación (si aplica) #}
-        {% if services is defined and services.getTotalItemCount is defined and services.count > 0 %}
-            <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
-                {{ knp_pagination_render(services) }}
+                        {% endif %}
+                    </tbody>
+                </table>
             </div>
-        {% endif %}
-    </div>
+            {# Paginación (si aplica) #}
+            {% if services is defined and services.getTotalItemCount is defined and services.count > 0 %}
+                <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
+                    {{ knp_pagination_render(services) }}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
