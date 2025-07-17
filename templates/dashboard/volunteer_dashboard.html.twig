@@ -34,7 +34,7 @@
                             <td>{{ service.title }}</td>
                             <td>{{ service.startDate|date('d/m/Y') }}</td>
                             <td>{{ service.registrationLimitDate|date('H:i') }}</td>
-                            <td>{{ service.location }}</td>
+                            
                             <td>
                                 {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
                                     <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="btn btn-danger btn-sm">No Asisto</a>
