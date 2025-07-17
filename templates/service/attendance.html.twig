@@ -1,0 +1,78 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block page_title %}Asistencia al Servicio: {{ service.title }}{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Asistencia al Servicio: {{ service.title }}</h2>
+            <p class="text-gray-600">A continuación se muestra la lista de asistentes y no asistentes.</p>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <h3 class="text-lg font-bold text-gray-900 p-4 border-b">Asistentes</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Nombre</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Apellidos</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% set attendees = service.assistanceConfirmations|filter(c => c.hasAttended) %}
+                        {% if attendees is not empty %}
+                            {% for confirmation in attendees %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.name }}</td>
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.lastName }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+                                    No hay asistentes confirmados.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <h3 class="text-lg font-bold text-gray-900 p-4 border-b">No Asistentes</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Nombre</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Apellidos</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% set nonAttendees = service.assistanceConfirmations|filter(c => not c.hasAttended) %}
+                        {% if nonAttendees is not empty %}
+                            {% for confirmation in nonAttendees %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.name }}</td>
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.lastName }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+                                    No hay voluntarios que no asistan.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

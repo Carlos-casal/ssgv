@@ -18,10 +18,15 @@ class ServiceController extends AbstractController
      * Esta es la nueva acción que acabamos de crear.
      */
     #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
-    public function listServices(ServiceRepository $serviceRepository): Response
+    public function listServices(ServiceRepository $serviceRepository, \Symfony\Component\Security\Core\Security $security): Response
     {
-        // Obtiene todos los servicios de la base de datos
-        $services = $serviceRepository->findAll();
+        $user = $security->getUser();
+
+        if ($this->isGranted('ROLE_VOLUNTEER')) {
+            $services = $serviceRepository->findBy(['type' => 'public']);
+        } else {
+            $services = $serviceRepository->findAll();
+        }
 
         $attendeesByService = [];
         foreach ($services as $service) {
@@ -119,12 +124,19 @@ class ServiceController extends AbstractController
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
 
-        $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
-        $assistanceConfirmation->setVolunteer($volunteer);
-        $assistanceConfirmation->setService($service);
-        $assistanceConfirmation->setHasAttended(true);
+        $assistanceConfirmation = $entityManager->getRepository(\App\Entity\AssistanceConfirmation::class)->findOneBy([
+            'volunteer' => $volunteer,
+            'service' => $service,
+        ]);
 
-        $entityManager->persist($assistanceConfirmation);
+        if (!$assistanceConfirmation) {
+            $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
+            $assistanceConfirmation->setVolunteer($volunteer);
+            $assistanceConfirmation->setService($service);
+            $entityManager->persist($assistanceConfirmation);
+        }
+
+        $assistanceConfirmation->setHasAttended(true);
         $entityManager->flush();
 
         $this->addFlash('success', 'Has confirmado tu asistencia.');
@@ -145,20 +157,28 @@ class ServiceController extends AbstractController
             'service' => $service,
         ]);
 
-        if ($assistanceConfirmation) {
-            $assistanceConfirmation->setHasAttended(false);
-        } else {
+        if (!$assistanceConfirmation) {
             $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
             $assistanceConfirmation->setVolunteer($volunteer);
             $assistanceConfirmation->setService($service);
-            $assistanceConfirmation->setHasAttended(false);
             $entityManager->persist($assistanceConfirmation);
         }
 
+        $assistanceConfirmation->setHasAttended(false);
         $entityManager->flush();
 
         $this->addFlash('success', 'Has confirmado tu no asistencia.');
 
         return $this->redirectToRoute('app_dashboard');
+    }
+
+    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
+    public function attendance(Service $service): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADVISER');
+
+        return $this->render('service/attendance.html.twig', [
+            'service' => $service,
+        ]);
     }
 }
