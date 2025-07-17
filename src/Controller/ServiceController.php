@@ -22,11 +22,7 @@ class ServiceController extends AbstractController
     {
         $user = $security->getUser();
 
-        if ($this->isGranted('ROLE_VOLUNTEER')) {
-            $services = $serviceRepository->findBy(['type' => 'public']);
-        } else {
-            $services = $serviceRepository->findAll();
-        }
+        $services = $serviceRepository->findAll();
 
         $attendeesByService = [];
         foreach ($services as $service) {
