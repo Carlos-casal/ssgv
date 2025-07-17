@@ -39,10 +39,21 @@ class ServiceController extends AbstractController
             $attendeesByService[$service->getId()] = $attendees;
         }
 
+        $assistanceByService = [];
+        foreach ($services as $service) {
+            $assistanceByService[$service->getId()] = false;
+            foreach ($service->getAssistanceConfirmations() as $confirmation) {
+                if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->isHasAttended()) {
+                    $assistanceByService[$service->getId()] = true;
+                }
+            }
+        }
+
         // Renderiza la plantilla Twig y le pasa los servicios
         return $this->render('service/list_service.html.twig', [
             'services' => $services,
             'attendeesByService' => $attendeesByService,
+            'assistanceByService' => $assistanceByService,
         ]);
     }
     /**
