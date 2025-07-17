@@ -1,5 +1,4 @@
 <div class="bg-white shadow-lg w-80 flex flex-col h-full" id="sidebar">
-    <!-- Header -->
     <div class="p-4 border-b border-gray-200">
         <div class="flex items-center gap-3">
             <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
@@ -12,18 +11,15 @@
         </div>
     </div>
 
-    <!-- Navigation -->
     <div class="flex-1 p-4 overflow-y-auto">
         <nav class="space-y-2">
-            <!-- Inicio -->
             <a href="{{ path('app_dashboard') }}" 
                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 {{ current_section|default('') == 'inicio' ? 'bg-blue-100 text-blue-700 font-medium' : 'text-gray-700 hover:bg-gray-100' }}">
                 <i data-lucide="home" class="w-5 h-5"></i>
                 <span class="text-sm">Inicio</span>
             </a>
 
-            {% if is_granted('ROLE_ADMIN') %}
-            <!-- Gestión -->
+            {% if not is_granted('ROLE_VOLUNTEER') %}
             <div class="mb-1">
                 <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('gestion')">
                     <i data-lucide="users" class="w-5 h-5"></i>
@@ -31,7 +27,6 @@
                     <i data-lucide="chevron-down" class="w-4 h-4" id="gestion-icon"></i>
                 </div>
                 <div class="ml-4 space-y-1" id="gestion-submenu">
-                    <!-- Personal -->
                     <div class="mb-1">
                         <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('personal')">
                             <i data-lucide="users" class="w-4 h-4"></i>
@@ -52,14 +47,12 @@
                         </div>
                     </div>
 
-                    <!-- Comunicados -->
                     <a href="{{ path('app_communications') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
                         <i data-lucide="phone" class="w-4 h-4"></i>
                         <span class="text-sm">Comunicados y Alertas</span>
                     </a>
 
-                    <!-- Vehículos -->
                     <a href="{{ path('app_vehicles') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
                         <i data-lucide="car" class="w-4 h-4"></i>
@@ -69,7 +62,6 @@
             </div>
             {% endif %}
 
-            <!-- Servicios -->
             <div class="mb-1">
                 <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('servicios')">
                     <i data-lucide="building" class="w-5 h-5"></i>
@@ -82,36 +74,38 @@
                         <i data-lucide="file-text" class="w-4 h-4"></i>
                         <span class="text-sm">Listado</span>
                     </a>
+                    {# Opciones dentro de Servicios, solo para ADMINS #}
                     {% if is_granted('ROLE_ADMIN') %}
-                    <a href="{{ path('app_services_reports') }}"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                        <span class="text-sm">Informes</span>
-                    </a>
-                    <a href="{{ path('app_services_schedules') }}"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                        <i data-lucide="check-square" class="w-4 h-4"></i>
-                        <span class="text-sm">Cuadrantes</span>
-                    </a>
+                        <a href="{{ path('app_services_reports') }}"
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                            <span class="text-sm">Informes</span>
+                        </a>
+                        <a href="{{ path('app_services_schedules') }}"
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                            <i data-lucide="check-square" class="w-4 h-4"></i>
+                            <span class="text-sm">Cuadrantes</span>
+                        </a>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- GESDOC -->
+            {% if not is_granted('ROLE_VOLUNTEER') %}
             <a href="{{ path('app_gesdoc') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
                 <i data-lucide="file-text" class="w-5 h-5"></i>
                 <span class="text-sm">GESDOC</span>
             </a>
+            {% endif %}
 
-            <!-- CENTRAL -->
+            {% if not is_granted('ROLE_VOLUNTEER') %}
             <a href="{{ path('app_central') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
                 <i data-lucide="phone" class="w-5 h-5"></i>
                 <span class="text-sm">CENTRAL</span>
             </a>
+            {% endif %}
 
-            <!-- ESTADÍSTICAS -->
             {% if not is_granted('ROLE_VOLUNTEER') %}
             <a href="{{ path('app_statistics') }}"
                class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
@@ -122,14 +116,14 @@
         </nav>
     </div>
 
-    <!-- User section -->
     <div class="p-4 border-t border-gray-200">
         <div class="flex items-center gap-3 mb-3">
             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                 <i data-lucide="user" class="w-4 h-4 text-gray-600"></i>
             </div>
             <div class="flex-1">
-               {# <p class="font-medium text-sm text-gray-900">{{ app.user.name }}</p> #}
+                {# Puedes descomentar la siguiente línea si tu entidad de usuario tiene una propiedad 'name' #}
+                {# <p class="font-medium text-sm text-gray-900">{{ app.user.name }}</p> #}
                 <p class="text-xs text-gray-500">{{ app.user.email }}</p>
             </div>
         </div>
@@ -142,27 +136,51 @@
 </div>
 
 <script>
+/**
+ * Alterna la visibilidad de un submenú y el icono de flecha asociado.
+ * @param {string} menuId El ID base del menú (e.g., 'gestion', 'servicios').
+ */
 function toggleSubmenu(menuId) {
     const submenu = document.getElementById(menuId + '-submenu');
     const icon = document.getElementById(menuId + '-icon');
     
-    if (submenu.style.display === 'none') {
-        submenu.style.display = 'block';
-        icon.setAttribute('data-lucide', 'chevron-down');
-    } else {
-        submenu.style.display = 'none';
-        icon.setAttribute('data-lucide', 'chevron-right');
+    // Solo proceder si el submenú existe en el DOM
+    if (submenu) {
+        // Alternar la visibilidad
+        if (submenu.style.display === 'none' || submenu.style.display === '') {
+            submenu.style.display = 'block';
+            if (icon) icon.setAttribute('data-lucide', 'chevron-down'); // Cambia el ícono a flecha hacia abajo
+        } else {
+            submenu.style.display = 'none';
+            if (icon) icon.setAttribute('data-lucide', 'chevron-right'); // Cambia el ícono a flecha hacia la derecha
+        }
+        // Vuelve a renderizar los íconos Lucide después de cambiar el atributo 'data-lucide'
+        if (typeof lucide !== 'undefined' && lucide.createIcons) {
+            lucide.createIcons();
+        }
     }
-    lucide.createIcons();
 }
 
-// Inicializar menús expandidos
 document.addEventListener('DOMContentLoaded', function() {
-    // Expandir menú de gestión por defecto
+    // La lógica de inicio ya no necesita expandir submenús ocultos por rol.
+    // Solo expande si están presentes en el DOM.
     const gestionSubmenu = document.getElementById('gestion-submenu');
     const personalSubmenu = document.getElementById('personal-submenu');
     
-    if (gestionSubmenu) gestionSubmenu.style.display = 'block';
-    if (personalSubmenu) personalSubmenu.style.display = 'block';
+    if (gestionSubmenu) {
+        gestionSubmenu.style.display = 'block';
+        const gestionIcon = document.getElementById('gestion-icon');
+        if (gestionIcon) gestionIcon.setAttribute('data-lucide', 'chevron-down');
+    }
+    if (personalSubmenu) {
+        personalSubmenu.style.display = 'block';
+        const personalIcon = document.getElementById('personal-icon');
+        if (personalIcon) personalIcon.setAttribute('data-lucide', 'chevron-down');
+    }
+
+    // Asegurarse de que los iconos se renderizan correctamente al cargar
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+    }
 });
 </script>
