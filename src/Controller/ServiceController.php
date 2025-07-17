@@ -18,7 +18,7 @@ class ServiceController extends AbstractController
      * Esta es la nueva acción que acabamos de crear.
      */
     #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
-    public function listServices(ServiceRepository $serviceRepository, \Symfony\Component\Security\Core\Security $security): Response
+    public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $user = $security->getUser();
 
@@ -117,7 +117,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
-    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Component\Security\Core\Security $security): Response
+    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
@@ -145,7 +145,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
-    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Component\Security\Core\Security $security): Response
+    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
