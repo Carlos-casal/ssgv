@@ -13,8 +13,8 @@ class AssistanceConfirmation
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $status = null;
+    #[ORM\Column]
+    private ?bool $hasAttended = null;
 
     #[ORM\ManyToOne(inversedBy: 'assistanceConfirmations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -29,14 +29,14 @@ class AssistanceConfirmation
         return $this->id;
     }
 
-    public function getStatus(): ?string
+    public function isHasAttended(): ?bool
     {
-        return $this->status;
+        return $this->hasAttended;
     }
 
-    public function setStatus(string $status): static
+    public function setHasAttended(bool $hasAttended): static
     {
-        $this->status = $status;
+        $this->hasAttended = $hasAttended;
 
         return $this;
     }
