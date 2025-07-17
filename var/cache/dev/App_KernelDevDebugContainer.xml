@@ -552,7 +552,7 @@
     </service>
     <service id="argument_resolver.service" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">
       <tag priority="-50" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\ServiceValueResolver">controller.argument_value_resolver</tag>
-      <argument type="service" id=".service_locator.gUwuf70"/>
+      <argument type="service" id=".service_locator.nRY4yuE"/>
     </service>
     <service id="argument_resolver.default" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">
       <tag priority="-100" name="Symfony\Component\HttpKernel\Controller\ArgumentResolver\DefaultValueResolver">controller.argument_value_resolver</tag>
@@ -3709,7 +3709,7 @@
     </service>
     <service id="argument_resolver.not_tagged_controller" class="Symfony\Component\HttpKernel\Controller\ArgumentResolver\NotTaggedControllerValueResolver">
       <tag name="controller.argument_value_resolver" priority="-200"/>
-      <argument type="service" id=".service_locator.gUwuf70"/>
+      <argument type="service" id=".service_locator.nRY4yuE"/>
     </service>
     <service id="debug.log_processor" class="Symfony\Bridge\Monolog\Processor\DebugProcessor">
       <tag name="kernel.reset" method="reset"/>
@@ -8654,19 +8654,20 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.zHyJIs5" method="withContext"/>
     </service>
-    <service id=".service_locator.MkkPcrP" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.JkZ3JTB" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="volunteerRepository" type="service_closure" id="App\Repository\VolunteerRepository"/>
         <argument key="serviceRepository" type="service_closure" id="App\Repository\ServiceRepository"/>
+        <argument key="assistanceConfirmationRepository" type="service_closure" id="App\Repository\AssistanceConfirmationRepository"/>
         <argument key="security" type="service_closure" id="security.helper"/>
       </argument>
     </service>
-    <service id=".service_locator.MkkPcrP.App\Controller\DashboardController::index()" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.JkZ3JTB.App\Controller\DashboardController::index()" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\DashboardController::index()"/>
       <argument>App\Controller\DashboardController::index()</argument>
       <argument type="service" id="service_container"/>
-      <factory service=".service_locator.MkkPcrP" method="withContext"/>
+      <factory service=".service_locator.JkZ3JTB" method="withContext"/>
     </service>
     <service id=".service_locator.3QECKYg" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
@@ -8680,17 +8681,18 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.3QECKYg" method="withContext"/>
     </service>
-    <service id=".service_locator..wKp6bH" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Wd5sNgM" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="serviceRepository" type="service_closure" id="App\Repository\ServiceRepository"/>
+        <argument key="security" type="service_closure" id="security.helper"/>
       </argument>
     </service>
-    <service id=".service_locator..wKp6bH.App\Controller\ServiceController::listServices()" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.Wd5sNgM.App\Controller\ServiceController::listServices()" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\ServiceController::listServices()"/>
       <argument>App\Controller\ServiceController::listServices()</argument>
       <argument type="service" id="service_container"/>
-      <factory service=".service_locator..wKp6bH" method="withContext"/>
+      <factory service=".service_locator.Wd5sNgM" method="withContext"/>
     </service>
     <service id=".service_locator.egipcEH" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
@@ -8729,39 +8731,31 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.7gwO4lR" method="withContext"/>
     </service>
-    <service id=".errored.lmhawWl" class="Symfony\Component\Security\Core\Security">
-      <tag name="container.error" message="Cannot determine controller argument for &quot;App\Controller\ServiceController::attend()&quot;: the $security argument is type-hinted with the non-existent class or interface: &quot;Symfony\Component\Security\Core\Security&quot;."/>
-    </service>
-    <service id=".service_locator.UMF9I6e" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.86Kiu4b" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="service" type="service_closure" id="App\Entity\Service"/>
         <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
-        <argument key="security" type="service_closure" id=".errored.lmhawWl"/>
+        <argument key="security" type="service_closure" id="security.helper"/>
       </argument>
     </service>
-    <service id=".service_locator.UMF9I6e.App\Controller\ServiceController::attend()" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.86Kiu4b.App\Controller\ServiceController::attend()" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\ServiceController::attend()"/>
       <argument>App\Controller\ServiceController::attend()</argument>
       <argument type="service" id="service_container"/>
-      <factory service=".service_locator.UMF9I6e" method="withContext"/>
+      <factory service=".service_locator.86Kiu4b" method="withContext"/>
     </service>
-    <service id=".errored.6eEVCau" class="Symfony\Component\Security\Core\Security">
-      <tag name="container.error" message="Cannot determine controller argument for &quot;App\Controller\ServiceController::unattend()&quot;: the $security argument is type-hinted with the non-existent class or interface: &quot;Symfony\Component\Security\Core\Security&quot;."/>
-    </service>
-    <service id=".service_locator.HrZ3P21" class="Symfony\Component\DependencyInjection\ServiceLocator">
-      <tag name="container.service_locator"/>
-      <argument type="collection">
-        <argument key="service" type="service_closure" id="App\Entity\Service"/>
-        <argument key="entityManager" type="service_closure" id="doctrine.orm.default_entity_manager"/>
-        <argument key="security" type="service_closure" id=".errored.6eEVCau"/>
-      </argument>
-    </service>
-    <service id=".service_locator.HrZ3P21.App\Controller\ServiceController::unattend()" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.86Kiu4b.App\Controller\ServiceController::unattend()" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator_context" id="App\Controller\ServiceController::unattend()"/>
       <argument>App\Controller\ServiceController::unattend()</argument>
       <argument type="service" id="service_container"/>
-      <factory service=".service_locator.HrZ3P21" method="withContext"/>
+      <factory service=".service_locator.86Kiu4b" method="withContext"/>
+    </service>
+    <service id=".service_locator.LXavkRP.App\Controller\ServiceController::attendance()" class="Symfony\Component\DependencyInjection\ServiceLocator">
+      <tag name="container.service_locator_context" id="App\Controller\ServiceController::attendance()"/>
+      <argument>App\Controller\ServiceController::attendance()</argument>
+      <argument type="service" id="service_container"/>
+      <factory service=".service_locator.LXavkRP" method="withContext"/>
     </service>
     <service id=".service_locator.T9SYb7Z" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
@@ -8821,21 +8815,22 @@
       <argument type="service" id="service_container"/>
       <factory service=".service_locator.WyVX2u3" method="withContext"/>
     </service>
-    <service id=".service_locator.gUwuf70" class="Symfony\Component\DependencyInjection\ServiceLocator">
+    <service id=".service_locator.nRY4yuE" class="Symfony\Component\DependencyInjection\ServiceLocator">
       <tag name="container.service_locator"/>
       <argument type="collection">
         <argument key="kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.zHyJIs5.kernel::registerContainerConfiguration()"/>
         <argument key="App\Kernel::registerContainerConfiguration" type="service_closure" id=".service_locator.zHyJIs5.kernel::registerContainerConfiguration()"/>
         <argument key="kernel::loadRoutes" type="service_closure" id=".service_locator.zHyJIs5.kernel::loadRoutes()"/>
         <argument key="App\Kernel::loadRoutes" type="service_closure" id=".service_locator.zHyJIs5.kernel::loadRoutes()"/>
-        <argument key="App\Controller\DashboardController::index" type="service_closure" id=".service_locator.MkkPcrP.App\Controller\DashboardController::index()"/>
+        <argument key="App\Controller\DashboardController::index" type="service_closure" id=".service_locator.JkZ3JTB.App\Controller\DashboardController::index()"/>
         <argument key="App\Controller\SecurityController::login" type="service_closure" id=".service_locator.3QECKYg.App\Controller\SecurityController::login()"/>
-        <argument key="App\Controller\ServiceController::listServices" type="service_closure" id=".service_locator..wKp6bH.App\Controller\ServiceController::listServices()"/>
+        <argument key="App\Controller\ServiceController::listServices" type="service_closure" id=".service_locator.Wd5sNgM.App\Controller\ServiceController::listServices()"/>
         <argument key="App\Controller\ServiceController::new" type="service_closure" id=".service_locator.egipcEH.App\Controller\ServiceController::new()"/>
         <argument key="App\Controller\ServiceController::show" type="service_closure" id=".service_locator.LXavkRP.App\Controller\ServiceController::show()"/>
         <argument key="App\Controller\ServiceController::edit" type="service_closure" id=".service_locator.7gwO4lR.App\Controller\ServiceController::edit()"/>
-        <argument key="App\Controller\ServiceController::attend" type="service_closure" id=".service_locator.UMF9I6e.App\Controller\ServiceController::attend()"/>
-        <argument key="App\Controller\ServiceController::unattend" type="service_closure" id=".service_locator.HrZ3P21.App\Controller\ServiceController::unattend()"/>
+        <argument key="App\Controller\ServiceController::attend" type="service_closure" id=".service_locator.86Kiu4b.App\Controller\ServiceController::attend()"/>
+        <argument key="App\Controller\ServiceController::unattend" type="service_closure" id=".service_locator.86Kiu4b.App\Controller\ServiceController::unattend()"/>
+        <argument key="App\Controller\ServiceController::attendance" type="service_closure" id=".service_locator.LXavkRP.App\Controller\ServiceController::attendance()"/>
         <argument key="App\Controller\VolunteerController::list" type="service_closure" id=".service_locator.T9SYb7Z.App\Controller\VolunteerController::list()"/>
         <argument key="App\Controller\VolunteerController::new" type="service_closure" id=".service_locator.rg_k2Ip.App\Controller\VolunteerController::new()"/>
         <argument key="App\Controller\VolunteerController::registration" type="service_closure" id=".service_locator.rg_k2Ip.App\Controller\VolunteerController::registration()"/>
@@ -8843,14 +8838,15 @@
         <argument key="App\Controller\VolunteerController::exportCsv" type="service_closure" id=".service_locator.WyVX2u3.App\Controller\VolunteerController::exportCsv()"/>
         <argument key="kernel:registerContainerConfiguration" type="service_closure" id=".service_locator.zHyJIs5.kernel::registerContainerConfiguration()"/>
         <argument key="kernel:loadRoutes" type="service_closure" id=".service_locator.zHyJIs5.kernel::loadRoutes()"/>
-        <argument key="App\Controller\DashboardController:index" type="service_closure" id=".service_locator.MkkPcrP.App\Controller\DashboardController::index()"/>
+        <argument key="App\Controller\DashboardController:index" type="service_closure" id=".service_locator.JkZ3JTB.App\Controller\DashboardController::index()"/>
         <argument key="App\Controller\SecurityController:login" type="service_closure" id=".service_locator.3QECKYg.App\Controller\SecurityController::login()"/>
-        <argument key="App\Controller\ServiceController:listServices" type="service_closure" id=".service_locator..wKp6bH.App\Controller\ServiceController::listServices()"/>
+        <argument key="App\Controller\ServiceController:listServices" type="service_closure" id=".service_locator.Wd5sNgM.App\Controller\ServiceController::listServices()"/>
         <argument key="App\Controller\ServiceController:new" type="service_closure" id=".service_locator.egipcEH.App\Controller\ServiceController::new()"/>
         <argument key="App\Controller\ServiceController:show" type="service_closure" id=".service_locator.LXavkRP.App\Controller\ServiceController::show()"/>
         <argument key="App\Controller\ServiceController:edit" type="service_closure" id=".service_locator.7gwO4lR.App\Controller\ServiceController::edit()"/>
-        <argument key="App\Controller\ServiceController:attend" type="service_closure" id=".service_locator.UMF9I6e.App\Controller\ServiceController::attend()"/>
-        <argument key="App\Controller\ServiceController:unattend" type="service_closure" id=".service_locator.HrZ3P21.App\Controller\ServiceController::unattend()"/>
+        <argument key="App\Controller\ServiceController:attend" type="service_closure" id=".service_locator.86Kiu4b.App\Controller\ServiceController::attend()"/>
+        <argument key="App\Controller\ServiceController:unattend" type="service_closure" id=".service_locator.86Kiu4b.App\Controller\ServiceController::unattend()"/>
+        <argument key="App\Controller\ServiceController:attendance" type="service_closure" id=".service_locator.LXavkRP.App\Controller\ServiceController::attendance()"/>
         <argument key="App\Controller\VolunteerController:list" type="service_closure" id=".service_locator.T9SYb7Z.App\Controller\VolunteerController::list()"/>
         <argument key="App\Controller\VolunteerController:new" type="service_closure" id=".service_locator.rg_k2Ip.App\Controller\VolunteerController::new()"/>
         <argument key="App\Controller\VolunteerController:registration" type="service_closure" id=".service_locator.rg_k2Ip.App\Controller\VolunteerController::registration()"/>
@@ -11155,7 +11151,7 @@
     <service id="Knp\Component\Pager\ArgumentAccess\ArgumentAccessInterface" alias="Knp\Component\Pager\ArgumentAccess\RequestArgumentAccess"/>
     <service id="container.env_var_processors_locator" alias=".service_locator.pRu6x_4" public="true"/>
     <service id="twig.loader.filesystem" alias="twig.loader.native_filesystem"/>
-    <service id="argument_resolver.controller_locator" alias=".service_locator.gUwuf70"/>
+    <service id="argument_resolver.controller_locator" alias=".service_locator.nRY4yuE"/>
     <service id="doctrine.id_generator_locator" alias=".service_locator.BxSdgVt"/>
     <service id="twig.loader" alias="twig.loader.native_filesystem"/>
     <service id="Psr\Log\LoggerInterface $requestLogger" alias="monolog.logger.request"/>
@@ -11200,14 +11196,13 @@
     <service id="messenger.bus.default" alias="debug.traced.messenger.bus.default"/>
     <service id="doctrine.orm.default_metadata_driver" alias=".doctrine.orm.default_metadata_driver"/>
     <service id=".service_locator.n_ENPtW" alias=".service_locator.zHyJIs5"/>
-    <service id=".service_locator._ugWmvC" alias=".service_locator.MkkPcrP"/>
+    <service id=".service_locator.mle_7DL" alias=".service_locator.JkZ3JTB"/>
     <service id=".service_locator.Nrz07Zz" alias=".service_locator.3QECKYg"/>
-    <service id=".service_locator.te1JX0P" alias=".service_locator..wKp6bH"/>
+    <service id=".service_locator.6EvTx.B" alias=".service_locator.Wd5sNgM"/>
     <service id=".service_locator.5Vd5JYV" alias=".service_locator.egipcEH"/>
     <service id=".service_locator.DQM.zcb" alias=".service_locator.LXavkRP"/>
     <service id=".service_locator.9XKSetx" alias=".service_locator.7gwO4lR"/>
-    <service id=".service_locator.uUXkYqw" alias=".service_locator.UMF9I6e"/>
-    <service id=".service_locator.QQc78aU" alias=".service_locator.HrZ3P21"/>
+    <service id=".service_locator.AOsDUUg" alias=".service_locator.86Kiu4b"/>
     <service id=".service_locator.VNHi235" alias=".service_locator.T9SYb7Z"/>
     <service id=".service_locator.I46HC5g" alias=".service_locator.rg_k2Ip"/>
     <service id=".service_locator.oHvvHkK" alias=".service_locator.5D8TDWv"/>

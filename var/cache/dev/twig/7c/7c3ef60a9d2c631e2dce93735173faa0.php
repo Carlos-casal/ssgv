@@ -155,7 +155,10 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                 yield "</p>
                                 </td>
                                 <td class=\"px-6 py-4 text-sm text-gray-900\">
-                                   
+                                    ";
+                // line 48
+                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape(((CoreExtension::getAttribute($this->env, $this->source, ($context["attendeesByService"] ?? null), CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 48), [], "array", true, true, false, 48)) ? (Twig\Extension\CoreExtension::default(CoreExtension::getAttribute($this->env, $this->source, (isset($context["attendeesByService"]) || array_key_exists("attendeesByService", $context) ? $context["attendeesByService"] : (function () { throw new RuntimeError('Variable "attendeesByService" does not exist.', 48, $this->source); })()), CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 48), [], "array", false, false, false, 48), 0)) : (0)), "html", null, true);
+                yield "
                                 </td>
                                 <td class=\"px-6 py-4 text-sm text-gray-900\"> 
                                 ";
@@ -183,27 +186,53 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                                 </td>
                                 <td class=\"px-6 py-4\">
                                     <div class=\"flex items-center gap-2\">
-                                        <a href=\"";
+                                        ";
                 // line 64
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_show", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 64)]), "html", null, true);
-                yield "\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
-                                            <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
-                                        </a>
-                                        <a href=\"";
-                // line 67
-                yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 67)]), "html", null, true);
-                yield "\"
-                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
-                                            <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
-                                        </a>
-                                        <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">
-                                            ";
-                // line 73
-                yield "                                            <button type=\"submit\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"Eliminar (ruta pendiente)\">
-                                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                            </button>
-                                        </form>
-                                    </div>
+                if ((($tmp = $this->extensions['Symfony\Bridge\Twig\Extension\SecurityExtension']->isGranted("ROLE_VOLUNTEER")) && $tmp instanceof Markup ? (string) $tmp : $tmp)) {
+                    // line 65
+                    yield "                                            <a href=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_attend", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 65)]), "html", null, true);
+                    yield "\" class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Asistir\">
+                                                <i data-lucide=\"check\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"";
+                    // line 68
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_unattend", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 68)]), "html", null, true);
+                    yield "\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"No Asistir\">
+                                                <i data-lucide=\"x\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                        ";
+                } else {
+                    // line 72
+                    yield "                                            <a href=\"";
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_show", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 72)]), "html", null, true);
+                    yield "\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
+                                                <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"";
+                    // line 75
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_edit", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 75)]), "html", null, true);
+                    yield "\"
+                                            class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
+                                                <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"";
+                    // line 79
+                    yield $this->env->getRuntime('Twig\Runtime\EscaperRuntime')->escape($this->extensions['Symfony\Bridge\Twig\Extension\RoutingExtension']->getPath("app_service_attendance", ["id" => CoreExtension::getAttribute($this->env, $this->source, $context["service"], "id", [], "any", false, false, false, 79)]), "html", null, true);
+                    yield "\" class=\"p-1 text-purple-600 hover:bg-purple-50 rounded\" title=\"Asistencia\">
+                                                <i data-lucide=\"users\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">
+                                                ";
+                    // line 84
+                    yield "                                                <button type=\"submit\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"Eliminar (ruta pendiente)\">
+                                                    <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                                </button>
+                                            </form>
+                                        ";
+                }
+                // line 89
+                yield "                                    </div>
                                 </td>
                             </tr>
                         ";
@@ -211,10 +240,10 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
             $_parent = $context['_parent'];
             unset($context['_seq'], $context['_key'], $context['service'], $context['_parent']);
             $context = array_intersect_key($context, $_parent) + $_parent;
-            // line 81
+            // line 93
             yield "                    ";
         } else {
-            // line 82
+            // line 94
             yield "                        <tr>
                             <td colspan=\"7\" class=\"px-6 py-8 text-center text-gray-500\">
                                 No se encontraron servicios.
@@ -222,24 +251,24 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                         </tr>
                     ";
         }
-        // line 88
+        // line 100
         yield "                </tbody>
             </table>
         </div>
         ";
-        // line 92
+        // line 104
         yield "        ";
-        if (((array_key_exists("services", $context) && CoreExtension::getAttribute($this->env, $this->source, ($context["services"] ?? null), "getTotalItemCount", [], "any", true, true, false, 92)) && (CoreExtension::getAttribute($this->env, $this->source, (isset($context["services"]) || array_key_exists("services", $context) ? $context["services"] : (function () { throw new RuntimeError('Variable "services" does not exist.', 92, $this->source); })()), "count", [], "any", false, false, false, 92) > 0))) {
-            // line 93
+        if (((array_key_exists("services", $context) && CoreExtension::getAttribute($this->env, $this->source, ($context["services"] ?? null), "getTotalItemCount", [], "any", true, true, false, 104)) && (CoreExtension::getAttribute($this->env, $this->source, (isset($context["services"]) || array_key_exists("services", $context) ? $context["services"] : (function () { throw new RuntimeError('Variable "services" does not exist.', 104, $this->source); })()), "count", [], "any", false, false, false, 104) > 0))) {
+            // line 105
             yield "            <div class=\"navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200\">
                 ";
-            // line 94
-            yield $this->env->getRuntime('Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime')->render($this->env, (isset($context["services"]) || array_key_exists("services", $context) ? $context["services"] : (function () { throw new RuntimeError('Variable "services" does not exist.', 94, $this->source); })()));
+            // line 106
+            yield $this->env->getRuntime('Knp\Bundle\PaginatorBundle\Twig\Extension\PaginationRuntime')->render($this->env, (isset($context["services"]) || array_key_exists("services", $context) ? $context["services"] : (function () { throw new RuntimeError('Variable "services" does not exist.', 106, $this->source); })()));
             yield "
             </div>
         ";
         }
-        // line 97
+        // line 109
         yield "    </div>
 </div>
 ";
@@ -273,7 +302,7 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
      */
     public function getDebugInfo(): array
     {
-        return array (  243 => 97,  237 => 94,  234 => 93,  231 => 92,  226 => 88,  218 => 82,  215 => 81,  202 => 73,  194 => 67,  188 => 64,  181 => 60,  175 => 57,  169 => 54,  163 => 51,  154 => 45,  148 => 42,  139 => 39,  137 => 38,  109 => 14,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
+        return array (  272 => 109,  266 => 106,  263 => 105,  260 => 104,  255 => 100,  247 => 94,  244 => 93,  235 => 89,  228 => 84,  221 => 79,  214 => 75,  207 => 72,  200 => 68,  193 => 65,  191 => 64,  184 => 60,  178 => 57,  172 => 54,  166 => 51,  160 => 48,  154 => 45,  148 => 42,  139 => 39,  137 => 38,  109 => 14,  100 => 6,  87 => 5,  64 => 3,  41 => 1,);
     }
 
     public function getSourceContext(): Source
@@ -325,7 +354,7 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                                     <p class=\"font-medium text-gray-900\">{{ service.title }}</p>
                                 </td>
                                 <td class=\"px-6 py-4 text-sm text-gray-900\">
-                                   
+                                    {{ attendeesByService[service.id] | default(0) }}
                                 </td>
                                 <td class=\"px-6 py-4 text-sm text-gray-900\"> 
                                 {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}
@@ -341,19 +370,31 @@ class __TwigTemplate_2af0ab0417eb83171324f2ff2b392a24 extends Template
                                 </td>
                                 <td class=\"px-6 py-4\">
                                     <div class=\"flex items-center gap-2\">
-                                        <a href=\"{{ path('app_service_show', {'id': service.id}) }}\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
-                                            <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
-                                        </a>
-                                        <a href=\"{{ path('app_service_edit', {'id': service.id}) }}\"
-                                        class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
-                                            <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
-                                        </a>
-                                        <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">
-                                            {# <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete' ~ service.id) }}\"> #}
-                                            <button type=\"submit\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"Eliminar (ruta pendiente)\">
-                                                <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
-                                            </button>
-                                        </form>
+                                        {% if is_granted('ROLE_VOLUNTEER') %}
+                                            <a href=\"{{ path('app_service_attend', {'id': service.id}) }}\" class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Asistir\">
+                                                <i data-lucide=\"check\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"{{ path('app_service_unattend', {'id': service.id}) }}\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"No Asistir\">
+                                                <i data-lucide=\"x\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                        {% else %}
+                                            <a href=\"{{ path('app_service_show', {'id': service.id}) }}\" class=\"p-1 text-blue-600 hover:bg-blue-50 rounded\" title=\"Ver\">
+                                                <i data-lucide=\"eye\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"{{ path('app_service_edit', {'id': service.id}) }}\"
+                                            class=\"p-1 text-green-600 hover:bg-green-50 rounded\" title=\"Editar\">
+                                                <i data-lucide=\"edit\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <a href=\"{{ path('app_service_attendance', {'id': service.id}) }}\" class=\"p-1 text-purple-600 hover:bg-purple-50 rounded\" title=\"Asistencia\">
+                                                <i data-lucide=\"users\" class=\"w-4 h-4\"></i>
+                                            </a>
+                                            <form method=\"post\" action=\"#\" onsubmit=\"return confirm('¿Estás seguro de que quieres eliminar este servicio?');\" style=\"display:inline;\">
+                                                {# <input type=\"hidden\" name=\"_token\" value=\"{{ csrf_token('delete' ~ service.id) }}\"> #}
+                                                <button type=\"submit\" class=\"p-1 text-red-600 hover:bg-red-50 rounded\" title=\"Eliminar (ruta pendiente)\">
+                                                    <i data-lucide=\"trash-2\" class=\"w-4 h-4\"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
                                     </div>
                                 </td>
                             </tr>
