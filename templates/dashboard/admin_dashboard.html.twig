@@ -18,9 +18,9 @@
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Voluntarios Activos</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ stats.total_volunteers }}</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">123</p> {# Replace with dynamic data #}
                     <div class="flex items-center mt-2">
-                        <span class="text-sm font-medium text-green-600">+{{ stats.total_volunteers - stats.active_volunteers }}</span>
+                        <span class="text-sm font-medium text-green-600">+12</span>
                         <span class="text-sm text-gray-500 ml-1">este mes</span>
                     </div>
                 </div>
@@ -84,16 +84,22 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
             <div class="space-y-4">
-                {% for activity in recent_activities %}
-                    <div class="flex items-start gap-3">
-                        <div class="w-2 h-2 rounded-full mt-2 {{ activity.type == 'success' ? 'bg-green-500' : activity.type == 'warning' ? 'bg-orange-500' : 'bg-blue-500' }}"></div>
-                        <div class="flex-1">
-                            <p class="text-sm font-medium text-gray-900">{{ activity.action }}</p>
-                            <p class="text-sm text-gray-600">{{ activity.user }}</p>
-                            <p class="text-xs text-gray-500 mt-1">{{ activity.time }}</p>
-                        </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
+                        <p class="text-sm text-gray-600">María García</p>
+                        <p class="text-xs text-gray-500 mt-1">Hace 2 horas</p>
                     </div>
-                {% endfor %}
+                </div>
+                <div class="flex items-start gap-3">
+                    <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                    <div class="flex-1">
+                        <p class="text-sm font-medium text-gray-900">Servicio completado</p>
+                        <p class="text-sm text-gray-600">Equipo Alpha</p>
+                        <p class="text-xs text-gray-500 mt-1">Hace 4 horas</p>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -101,16 +107,22 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Eventos</h3>
             <div class="space-y-4">
-                {% for event in upcoming_events %}
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <h4 class="font-medium text-gray-900">{{ event.title }}</h4>
-                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                            <span>📅 {{ event.date }}</span>
-                            <span>🕐 {{ event.time }}</span>
-                            <span>👥 {{ event.participants }} participantes</span>
-                        </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-900">Formación en Primeros Auxilios</h4>
+                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <span>📅 15 Mar 2024</span>
+                        <span>🕐 10:00</span>
+                        <span>👥 25 participantes</span>
                     </div>
-                {% endfor %}
+                </div>
+                <div class="border border-gray-200 rounded-lg p-4">
+                    <h4 class="font-medium text-gray-900">Simulacro de Emergencia</h4>
+                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                        <span>📅 18 Mar 2024</span>
+                        <span>🕐 09:00</span>
+                        <span>👥 40 participantes</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -123,10 +135,10 @@
                 <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
                 <span class="font-medium">Añadir Voluntario</span>
             </a>
-            <button class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <a href="{{ path('app_service_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <i data-lucide="calendar" class="w-5 h-5 text-green-600"></i>
                 <span class="font-medium">Programar Servicio</span>
-            </button>
+            </a>
             <button class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
                 <span class="font-medium">Ver Estadísticas</span>

@@ -22,6 +22,7 @@
                 <span class="text-sm">Inicio</span>
             </a>
 
+            {% if is_granted('ROLE_ADMIN') %}
             <!-- Gestión -->
             <div class="mb-1">
                 <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('gestion')">
@@ -51,32 +52,6 @@
                         </div>
                     </div>
 
-                    <!-- Servicios -->
-                    <div class="mb-1">
-                        <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('servicios')">
-                            <i data-lucide="building" class="w-4 h-4"></i>
-                            <span class="flex-1 text-sm">Servicios</span>
-                            <i data-lucide="chevron-down" class="w-4 h-4" id="servicios-icon"></i>
-                        </div>
-                        <div class="ml-4 space-y-1" id="servicios-submenu" style="display: none;">
-                            <a href="{{ path('app_services_list') }}"
-                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                                <i data-lucide="file-text" class="w-4 h-4"></i>
-                                <span class="text-sm">Listado</span>
-                            </a>
-                            <a href="{{ path('app_services_reports') }}"
-                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                                <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
-                                <span class="text-sm">Informes</span>
-                            </a>
-                            <a href="{{ path('app_services_schedules') }}"
-                               class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                                <i data-lucide="check-square" class="w-4 h-4"></i>
-                                <span class="text-sm">Cuadrantes</span>
-                            </a>
-                        </div>
-                    </div>
-
                     <!-- Comunicados -->
                     <a href="{{ path('app_communications') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
@@ -90,6 +65,35 @@
                         <i data-lucide="car" class="w-4 h-4"></i>
                         <span class="text-sm">Vehículos</span>
                     </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Servicios -->
+            <div class="mb-1">
+                <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('servicios')">
+                    <i data-lucide="building" class="w-5 h-5"></i>
+                    <span class="flex-1 text-sm">Servicios</span>
+                    <i data-lucide="chevron-down" class="w-4 h-4" id="servicios-icon"></i>
+                </div>
+                <div class="ml-4 space-y-1" id="servicios-submenu" style="display: none;">
+                    <a href="{{ path('app_services_list') }}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        <span class="text-sm">Listado</span>
+                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('app_services_reports') }}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                        <i data-lucide="bar-chart-3" class="w-4 h-4"></i>
+                        <span class="text-sm">Informes</span>
+                    </a>
+                    <a href="{{ path('app_services_schedules') }}"
+                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
+                        <i data-lucide="check-square" class="w-4 h-4"></i>
+                        <span class="text-sm">Cuadrantes</span>
+                    </a>
+                    {% endif %}
                 </div>
             </div>
 
