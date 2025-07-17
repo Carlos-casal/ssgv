@@ -25,11 +25,12 @@ class VolunteerService
     #[ORM\JoinColumn(nullable: false)]
     private ?Service $service = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $attendedAt = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $startTime = null;
 
-    #[ORM\Column(type: Types::FLOAT, nullable: true)]
-    private ?float $hours = null;
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $endTime = null;
+
 
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
@@ -63,29 +64,6 @@ class VolunteerService
         return $this;
     }
 
-    public function getAttendedAt(): ?\DateTimeInterface
-    {
-        return $this->attendedAt;
-    }
-
-    public function setAttendedAt(\DateTimeInterface $attendedAt): static
-    {
-        $this->attendedAt = $attendedAt;
-
-        return $this;
-    }
-
-    public function getHours(): ?float
-    {
-        return $this->hours;
-    }
-
-    public function setHours(?float $hours): static
-    {
-        $this->hours = $hours;
-
-        return $this;
-    }
 
     public function getNotes(): ?string
     {
@@ -97,5 +75,38 @@ class VolunteerService
         $this->notes = $notes;
 
         return $this;
+    }
+
+    public function getStartTime(): ?\DateTimeInterface
+    {
+        return $this->startTime;
+    }
+
+    public function setStartTime(?\DateTimeInterface $startTime): static
+    {
+        $this->startTime = $startTime;
+
+        return $this;
+    }
+
+    public function getEndTime(): ?\DateTimeInterface
+    {
+        return $this->endTime;
+    }
+
+    public function setEndTime(?\DateTimeInterface $endTime): static
+    {
+        $this->endTime = $endTime;
+
+        return $this;
+    }
+
+    public function getHours(): ?float
+    {
+        if ($this->startTime && $this->endTime) {
+            $diff = $this->endTime->getTimestamp() - $this->startTime->getTimestamp();
+            return $diff / 3600;
+        }
+        return 0;
     }
 }

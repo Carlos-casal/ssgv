@@ -455,4 +455,12 @@ class VolunteerController extends AbstractController
             'current_section' => 'personal-informes'
         ]);
     }
+
+    #[Route('/{id}/informe-horas', name: 'app_volunteer_hours_report', methods: ['GET'])]
+    public function hoursReport(Volunteer $volunteer): Response
+    {
+        return $this->render('volunteer/hours_report.html.twig', [
+            'volunteer' => $volunteer,
+        ]);
+    }
 }
