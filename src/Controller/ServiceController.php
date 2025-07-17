@@ -36,11 +36,13 @@ class ServiceController extends AbstractController
         }
 
         $assistanceByService = [];
-        foreach ($services as $service) {
-            $assistanceByService[$service->getId()] = false;
-            foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->isHasAttended()) {
-                    $assistanceByService[$service->getId()] = true;
+        if ($this->isGranted('ROLE_VOLUNTEER')) {
+            foreach ($services as $service) {
+                $assistanceByService[$service->getId()] = false;
+                foreach ($service->getAssistanceConfirmations() as $confirmation) {
+                    if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->isHasAttended()) {
+                        $assistanceByService[$service->getId()] = true;
+                    }
                 }
             }
         }
