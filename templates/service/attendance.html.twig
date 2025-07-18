@@ -132,27 +132,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            const ficharBtn = document.getElementById('fichar-btn');
-            const ficharModal = document.getElementById('fichar-modal');
-            const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
-            const ficharForm = document.getElementById('fichar-form');
-
-            if (ficharBtn) {
-                ficharBtn.addEventListener('click', () => {
+            document.body.addEventListener('click', function(event) {
+                if (event.target.matches('#fichar-btn')) {
+                    const ficharModal = document.getElementById('fichar-modal');
                     if (ficharModal) {
                         ficharModal.classList.remove('hidden');
                     }
-                });
-            }
+                }
 
-            if (cancelFicharBtn) {
-                cancelFicharBtn.addEventListener('click', () => {
+                if (event.target.matches('#cancel-fichar-btn')) {
+                    const ficharModal = document.getElementById('fichar-modal');
                     if (ficharModal) {
                         ficharModal.classList.add('hidden');
                     }
-                });
-            }
+                }
+            });
 
+            const ficharForm = document.getElementById('fichar-form');
             if (ficharForm) {
                 ficharForm.addEventListener('submit', (e) => {
                     // The form will now submit normally
