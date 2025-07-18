@@ -67,7 +67,7 @@ class Service
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $collaboration_with_other_services = false;
+    private bool $collaborationWithOtherServices = false;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $locality = null;
@@ -80,8 +80,6 @@ class Service
 
     public function __construct()
     {
-        $this->createdAt = new \DateTimeImmutable();
-        $this->updatedAt = new \DateTimeImmutable();
         $this->assistanceConfirmations = new ArrayCollection();
     }
 
@@ -255,20 +253,14 @@ class Service
         return $this;
     }
 
-    /**
-     * Get the value of collaboration_with_other_services.
-     */
     public function isCollaborationWithOtherServices(): bool
     {
-        return $this->collaboration_with_other_services;
+        return $this->collaborationWithOtherServices;
     }
 
-    /**
-     * Set the value of collaboration_with_other_services.
-     */
-    public function setCollaborationWithOtherServices(bool $collaboration_with_other_services): static
+    public function setCollaborationWithOtherServices(bool $collaborationWithOtherServices): static
     {
-        $this->collaboration_with_other_services = $collaboration_with_other_services;
+        $this->collaborationWithOtherServices = $collaborationWithOtherServices;
 
         return $this;
     }

@@ -11,6 +11,11 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: VolunteerRepository::class)]
 class Volunteer
 {
+    public const STATUS_ACTIVE = 'Activo';
+    public const STATUS_SUSPENDED = 'Suspensión';
+    public const STATUS_INACTIVE = 'Baja';
+    public const STATUS_PENDING = 'pending';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -101,7 +106,7 @@ class Volunteer
     private ?string $role = null;
 
     #[ORM\Column(length: 20)]
-    private ?string $status = 'Activo';
+    private ?string $status = self::STATUS_ACTIVE;
 
     #[ORM\Column(type: 'datetime')]
     private ?\DateTimeInterface $joinDate = null;

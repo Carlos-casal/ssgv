@@ -126,14 +126,14 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
-    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security): Response
+    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
 
-        $assistanceConfirmation = $entityManager->getRepository(\App\Entity\AssistanceConfirmation::class)->findOneBy([
+        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy([
             'volunteer' => $volunteer,
             'service' => $service,
         ]);
@@ -154,14 +154,14 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
-    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security): Response
+    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
 
-        $assistanceConfirmation = $entityManager->getRepository(\App\Entity\AssistanceConfirmation::class)->findOneBy([
+        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy([
             'volunteer' => $volunteer,
             'service' => $service,
         ]);
