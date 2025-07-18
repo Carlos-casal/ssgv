@@ -128,18 +128,22 @@
 {% block javascripts %}
     {{ parent() }}
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('turbo:load', () => {
             const ficharBtn = document.getElementById('fichar-btn');
             const ficharModal = document.getElementById('fichar-modal');
             const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
 
-            ficharBtn.addEventListener('click', () => {
-                ficharModal.classList.remove('hidden');
-            });
+            if (ficharBtn) {
+                ficharBtn.addEventListener('click', () => {
+                    ficharModal.classList.remove('hidden');
+                });
+            }
 
-            cancelFicharBtn.addEventListener('click', () => {
-                ficharModal.classList.add('hidden');
-            });
+            if (cancelFicharBtn) {
+                cancelFicharBtn.addEventListener('click', () => {
+                    ficharModal.classList.add('hidden');
+                });
+            }
         });
     </script>
 {% endblock %}
