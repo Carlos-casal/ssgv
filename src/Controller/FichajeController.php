@@ -21,6 +21,9 @@ class FichajeController extends AbstractController
         $endTime = new \DateTime($data['end-time']);
         $volunteerIds = $data['volunteers'] ?? [];
 
+        $duration = $endTime->getTimestamp() - $startTime->getTimestamp();
+        $durationInMinutes = round($duration / 60);
+
         foreach ($volunteerIds as $volunteerId) {
             $volunteer = $volunteerRepository->find($volunteerId);
             if ($volunteer) {
@@ -29,6 +32,7 @@ class FichajeController extends AbstractController
                 $volunteerService->setService($service);
                 $volunteerService->setStartTime($startTime);
                 $volunteerService->setEndTime($endTime);
+                $volunteerService->setDuration($durationInMinutes);
                 $entityManager->persist($volunteerService);
             }
         }
