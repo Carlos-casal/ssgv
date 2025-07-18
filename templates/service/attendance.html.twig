@@ -132,28 +132,34 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            document.body.addEventListener('click', function(event) {
-                if (event.target.matches('#fichar-btn')) {
-                    const ficharModal = document.getElementById('fichar-modal');
-                    if (ficharModal) {
-                        ficharModal.classList.remove('hidden');
-                    }
+            setTimeout(() => {
+                const ficharBtn = document.getElementById('fichar-btn');
+                const ficharModal = document.getElementById('fichar-modal');
+                const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
+                const ficharForm = document.getElementById('fichar-form');
+
+                if (ficharBtn) {
+                    ficharBtn.addEventListener('click', () => {
+                        if (ficharModal) {
+                            ficharModal.classList.remove('hidden');
+                        }
+                    });
                 }
 
-                if (event.target.matches('#cancel-fichar-btn')) {
-                    const ficharModal = document.getElementById('fichar-modal');
-                    if (ficharModal) {
-                        ficharModal.classList.add('hidden');
-                    }
+                if (cancelFicharBtn) {
+                    cancelFicharBtn.addEventListener('click', () => {
+                        if (ficharModal) {
+                            ficharModal.classList.add('hidden');
+                        }
+                    });
                 }
-            });
 
-            const ficharForm = document.getElementById('fichar-form');
-            if (ficharForm) {
-                ficharForm.addEventListener('submit', (e) => {
-                    // The form will now submit normally
-                });
-            }
+                if (ficharForm) {
+                    ficharForm.addEventListener('submit', (e) => {
+                        // The form will now submit normally
+                    });
+                }
+            }, 100); // 100ms delay
         });
     </script>
 {% endblock %}
