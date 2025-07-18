@@ -12,8 +12,7 @@
     </div>
 
     <div class="flex justify-end mb-4">
-        <button id="fichar-btn" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            <i data-lucide="clock" class="w-4 h-4"></i>
+        <button id="fichar-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
             Fichar
         </button>
     </div>
@@ -130,36 +129,17 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+            const ficharBtn = document.getElementById('fichar-btn');
+            const ficharModal = document.getElementById('fichar-modal');
+            const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
 
-            setTimeout(() => {
-                const ficharBtn = document.getElementById('fichar-btn');
-                const ficharModal = document.getElementById('fichar-modal');
-                const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
-                const ficharForm = document.getElementById('fichar-form');
+            ficharBtn.addEventListener('click', () => {
+                ficharModal.classList.remove('hidden');
+            });
 
-                if (ficharBtn) {
-                    ficharBtn.addEventListener('click', () => {
-                        if (ficharModal) {
-                            ficharModal.classList.remove('hidden');
-                        }
-                    });
-                }
-
-                if (cancelFicharBtn) {
-                    cancelFicharBtn.addEventListener('click', () => {
-                        if (ficharModal) {
-                            ficharModal.classList.add('hidden');
-                        }
-                    });
-                }
-
-                if (ficharForm) {
-                    ficharForm.addEventListener('submit', (e) => {
-                        // The form will now submit normally
-                    });
-                }
-            }, 100); // 100ms delay
+            cancelFicharBtn.addEventListener('click', () => {
+                ficharModal.classList.add('hidden');
+            });
         });
     </script>
 {% endblock %}
