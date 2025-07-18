@@ -21,11 +21,13 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
+use Symfony\Component\Security\Http\Attribute\Security;
 
 // #[Route('/personal')] // Comentario de línea para la ruta '/personal'
 class VolunteerController extends AbstractController
 {
     #[Route('/voluntarios', name: 'app_volunteer_list')]
+    #[Security("is_granted('ROLE_ADMIN')")]
     // Inyecta PaginatorInterface para la paginación
     public function list(
         Request $request,
@@ -74,9 +76,9 @@ class VolunteerController extends AbstractController
         // Estadísticas (estas siguen obteniendo todos los datos, podrías optimizarlas si el volumen es muy grande)
         $stats = [
             'total' => $volunteerRepository->count([]), // Usar count para eficiencia
-            'Activo' => $volunteerRepository->count(['status' => 'Activo']),
-            'Suspensión' => $volunteerRepository->count(['status' => 'Suspensión']),
-            'Baja' => $volunteerRepository->count(['status' => 'Baja']),
+            'Activo' => $volunteerRepository->count(['status' => Volunteer::STATUS_ACTIVE]),
+            'Suspensión' => $volunteerRepository->count(['status' => Volunteer::STATUS_SUSPENDED]),
+            'Baja' => $volunteerRepository->count(['status' => Volunteer::STATUS_INACTIVE]),
         ];
 
         return $this->render('volunteer/list_volunteer.html.twig', [
@@ -89,6 +91,7 @@ class VolunteerController extends AbstractController
     }
 
     #[Route('/nuevo_voluntario', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
+    #[Security("is_granted('ROLE_ADMIN')")]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
     {
         $volunteer = new Volunteer();
@@ -222,7 +225,7 @@ class VolunteerController extends AbstractController
                 }
             }
 
-            $hydratedVolunteer->setStatus('pending');
+            $hydratedVolunteer->setStatus(Volunteer::STATUS_PENDING);
             if (!$hydratedVolunteer->getJoinDate()) {
                 $hydratedVolunteer->setJoinDate(new \DateTime());
             }
@@ -246,22 +249,14 @@ class VolunteerController extends AbstractController
     }
 
     #[Route('/editar_voluntario-{id}', name: 'app_volunteer_edit', methods: ['GET', 'POST'])]
+    #[Security("is_granted('ROLE_ADMIN')")]
     public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
     {
         $user = $volunteer->getUser();
-        $originalUserId = null;
-        $originalUserEmail = 'N/A';
-        $originalUserObjectHash = 'N/A';
-
-        if ($user) {
-            $originalUserId = $user->getId();
-            $originalUserEmail = $user->getEmail();
-            $originalUserObjectHash = spl_object_hash($user);
-            $this->addFlash('debug_pre_form', 'Antes de crear formulario. User ID: ' . ($originalUserId ?: 'NULL') . ', Email: ' . $originalUserEmail . ', Hash: ' . $originalUserObjectHash);
-        } else {
-            // Esto no debería ocurrir en un flujo de edición si el voluntario siempre debe tener un usuario
-            $this->addFlash('error', 'ERROR CRÍTICO: No hay usuario asociado al voluntario ANTES de crear el formulario.');
-            return $this->redirectToRoute('app_volunteer_list'); 
+        if (!$user) {
+            // This should not happen in a normal flow if a volunteer must have a user.
+            $this->addFlash('error', 'ERROR CRÍTICO: No hay un usuario asociado a este voluntario.');
+            return $this->redirectToRoute('app_volunteer_list');
         }
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
@@ -270,123 +265,49 @@ class VolunteerController extends AbstractController
 
         $form->handleRequest($request);
 
-        $userFromVolunteerAfterHandle = $volunteer->getUser();
-        $userFromVolunteerAfterHandleId = $userFromVolunteerAfterHandle ? $userFromVolunteerAfterHandle->getId() : 'NULL';
-        $userFromVolunteerAfterHandleEmail = $userFromVolunteerAfterHandle ? $userFromVolunteerAfterHandle->getEmail() : 'N/A';
-        $userFromVolunteerAfterHandleObjectHash = $userFromVolunteerAfterHandle ? spl_object_hash($userFromVolunteerAfterHandle) : 'N/A';
-
-        $this->addFlash('debug_post_handle', 'Después de handleRequest. User en Volunteer ID: ' . $userFromVolunteerAfterHandleId . ', Email: ' . $userFromVolunteerAfterHandleEmail . '. Hash Original: ' . $originalUserObjectHash . ', Hash Actual en Volunteer: ' . $userFromVolunteerAfterHandleObjectHash);
-
-        if ($originalUserObjectHash !== $userFromVolunteerAfterHandleObjectHash && $userFromVolunteerAfterHandle !== null) {
-            $this->addFlash('debug_post_handle_WARN', '¡ALERTA OBJETO USER CAMBIÓ! El hash del objeto User en Volunteer cambió después de handleRequest.');
-        } else if ($userFromVolunteerAfterHandle !== null) {
-            $this->addFlash('debug_post_handle_OK', 'El objeto User en Volunteer NO fue reemplazado (mismo hash) después de handleRequest.');
-        } else {
-             $this->addFlash('debug_post_handle_ERROR', 'ERROR: No hay usuario en Volunteer DESPUÉS de handleRequest.');
-        }
-
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->addFlash('debug_submit_valid', 'Formulario enviado y válido.');
-
-            $userFromForm = $volunteer->getUser(); // Este es el usuario que tiene los datos del formulario (potencialmente nueva instancia)
-
-            if (!$userFromForm) {
-                 $this->addFlash('error', 'Error crítico en submit: No hay usuario en Volunteer tras ser válido el form.');
-                return $this->render('volunteer/edit_volunteer.html.twig', ['volunteer' => $volunteer, 'form' => $form->createView(), 'current_section' => 'personal-editar']);
-            }
-
-            $finalUserEntity = null;
-            // Estrategia: Si el objeto User fue reemplazado (diferente hash) y teníamos un ID original.
-            if ($originalUserObjectHash !== spl_object_hash($userFromForm) && $originalUserId !== null) {
-                $this->addFlash('debug_strategy', 'Estrategia: Objeto User fue reemplazado. Intentando actualizar entidad User original de BD (ID: ' . $originalUserId . ').');
-                $userFromDb = $entityManager->getRepository(User::class)->find($originalUserId);
-                if ($userFromDb) {
-                    // Copiar datos del usuario del formulario ($userFromForm) al usuario de la BD ($userFromDb)
-                    $userFromDb->setEmail($userFromForm->getEmail()); // Actualizar email
-                    // La contraseña se maneja más abajo si se proveyó una nueva.
-                    // Si UserType tuviera otros campos mapeados para User, se copiarían aquí.
-                    
-                    $volunteer->setUser($userFromDb); // RE-ASOCIAR la entidad User gestionada y correcta al Volunteer
-                    $finalUserEntity = $userFromDb; // Esta es la entidad que Doctrine debe gestionar y actualizar
-                    $this->addFlash('debug_strategy_OK', 'Entidad User original (ID: ' . $originalUserId . ') recuperada y re-asociada. Email ahora: ' . $userFromDb->getEmail());
-                } else {
-                    $this->addFlash('error', 'Error crítico: Usuario original (ID: ' . $originalUserId . ') no encontrado en BD. No se puede actualizar de forma segura.');
-                    // Como fallback, podríamos intentar usar $userFromForm, pero es probable que falle con duplicado si el email no cambió.
-                    // O mejor, mostrar error y no hacer flush.
-                    $finalUserEntity = $userFromForm; // Esto es riesgoso si el email no es único para una NUEVA entidad.
-                     $this->addFlash('debug_strategy_FAIL', 'Fallback: usando el objeto User del formulario (potencialmente problemático).');
-                }
-            } else {
-                // El objeto User no fue reemplazado, o es un escenario donde no deberíamos cargar de BD (ej. nuevo voluntario, aunque aquí es 'edit').
-                $finalUserEntity = $userFromForm;
-                 $this->addFlash('debug_strategy', 'Estrategia: Objeto User no fue reemplazado o no había ID original válido. Usando User directamente del Volunteer.');
-            }
-
-            // Procesar contraseña con la entidad User final que hemos determinado
+            // Handle password update
             $plainPassword = $form->get('user')->get('password')->getData();
-            if ($plainPassword && $finalUserEntity) { 
-                $hashedPassword = $userPasswordHasher->hashPassword($finalUserEntity, $plainPassword);
-                $finalUserEntity->setPassword($hashedPassword);
-                $this->addFlash('debug_password', 'Nueva contraseña hasheada y establecida para User ID: ' . ($finalUserEntity->getId() ?: 'NULL'));
-            } else if ($plainPassword && !$finalUserEntity) {
-                 $this->addFlash('debug_password_FAIL', 'Se proveyó contraseña pero finalUserEntity es NULL.');
+            if ($plainPassword) {
+                $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
+                $user->setPassword($hashedPassword);
             }
 
+            // Handle profile picture upload
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
             if ($profilePictureFile) {
                 $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$profilePictureFile->guessExtension();
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
+
                 try {
-                    $profilePictureFile->move($this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures', $newFilename);
+                    $profilePictureFile->move(
+                        $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures',
+                        $newFilename
+                    );
+
+                    // Remove old picture if it exists
                     if ($volunteer->getProfilePicture()) {
                         $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures/'.$volunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) { $filesystem->remove($oldFilePath); }
+                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $volunteer->getProfilePicture();
+                        if ($filesystem->exists($oldFilePath)) {
+                            $filesystem->remove($oldFilePath);
+                        }
                     }
+
                     $volunteer->setProfilePicture($newFilename);
-                    $this->addFlash('debug_picture', 'Foto de perfil procesada.');
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
-            
-            // Depuración de UnitOfWork con finalUserEntity
-            $unitOfWork = $entityManager->getUnitOfWork();
-            if ($finalUserEntity) {
-                $userState = $unitOfWork->getEntityState($finalUserEntity);
-                $flashMessage = 'Estado del finalUserEntity (ID: ' . ($finalUserEntity->getId() ?: 'NULL') . ', Email: ' . $finalUserEntity->getEmail() . ') en UnitOfWork ANTES de flush: ';
-                switch ($userState) {
-                    case \Doctrine\ORM\UnitOfWork::STATE_NEW: $flashMessage .= 'NUEVO (NEW)'; break;
-                    case \Doctrine\ORM\UnitOfWork::STATE_MANAGED: $flashMessage .= 'GESTIONADO (MANAGED)'; break;
-                    case \Doctrine\ORM\UnitOfWork::STATE_DETACHED: $flashMessage .= 'DESVINCULADO (DETACHED)'; break;
-                    case \Doctrine\ORM\UnitOfWork::STATE_REMOVED: $flashMessage .= 'ELIMINADO (REMOVED)'; break;
-                    default: $flashMessage .= 'DESCONOCIDO (' . $userState . ')';
-                }
-                $this->addFlash('debug_uow_state', $flashMessage);
-                if ($unitOfWork->isScheduledForInsert($finalUserEntity)) { $this->addFlash('debug_uow_insert', 'UOW: finalUserEntity está programado para INSERTAR.'); }
-                if ($unitOfWork->isScheduledForUpdate($finalUserEntity)) { $this->addFlash('debug_uow_update', 'UOW: finalUserEntity está programado para ACTUALIZAR.'); }
-                if ($unitOfWork->isScheduledForDelete($finalUserEntity)) { $this->addFlash('debug_uow_delete', 'UOW: finalUserEntity está programado para ELIMINAR.'); }
-            } else {
-                $this->addFlash('debug_uow_state_ERROR', 'ERROR: finalUserEntity es NULL antes de verificar UnitOfWork.');
-            }
-
-            $this->addFlash('debug_pre_flush', 'Intentando flush. Volunteer ID: ' . $volunteer->getId() . '. User asociado (finalUserEntity) ID: ' . ($finalUserEntity ? ($finalUserEntity->getId() ?: 'NULL') : 'NULL'));
 
             try {
                 $entityManager->flush();
                 $this->addFlash('success', 'Voluntario actualizado exitosamente.');
                 return $this->redirectToRoute('app_volunteer_list', [], Response::HTTP_SEE_OTHER);
             } catch (\Exception $e) {
-                $this->addFlash('error', 'Error durante flush: ' . $e->getMessage());
-                return $this->render('volunteer/edit_volunteer.html.twig', ['volunteer' => $volunteer, 'form' => $form->createView(), 'current_section' => 'personal-editar']);
-            }
-
-        } elseif ($form->isSubmitted() && !$form->isValid()) {
-            $this->addFlash('debug_submit_invalid', 'Formulario enviado pero NO válido.');
-            foreach ($form->getErrors(true, true) as $error) {
-                $this->addFlash('debug_form_errors', $error->getOrigin()->getName() .': '. $error->getMessage());
+                $this->addFlash('error', 'Error al actualizar el voluntario: ' . $e->getMessage());
             }
         }
 
@@ -398,12 +319,13 @@ class VolunteerController extends AbstractController
     }
 
     #[Route('/exportar-csv', name: 'app_volunteer_export_csv')]
+    #[Security("is_granted('ROLE_ADMIN')")]
     public function exportCsv(VolunteerRepository $volunteerRepository): Response
     {
         $volunteers = $volunteerRepository->findAll();
 
         // Asegúrate de que el orden y la cantidad de columnas aquí coincidan con los datos que extraes
-        $csvData = "Nombre,Apellidos,DNI,Email,Teléfono,Fecha Nacimiento,Tipo Calle,Dirección,Código Postal,Provincia,Contacto Emergencia,Teléfono Emergencia,Grupo Sanguíneo,Alergias,Condiciones Médicas,Profesión,Estado Empleo,Licencias Conducir,Licencias Navegación,Cualificaciones,Rol,Estado,Fecha Ingreso,Especialización\n";
+        $csvData = "Nombre,Apellidos,DNI,Email,Teléfono,Fecha Nacimiento,Tipo Calle,Dirección,Código Postal,Provincia,Contacto Emergencia,Teléfono Emergencia,Alergias,Profesión,Estado Empleo,Licencias Conducir,Licencias Navegación,Cualificaciones,Rol,Estado,Fecha Ingreso,Especialización\n";
 
         foreach ($volunteers as $volunteer) {
             $userEmail = $volunteer->getUser() ? $volunteer->getUser()->getEmail() : '';
@@ -420,13 +342,11 @@ class VolunteerController extends AbstractController
                 $volunteer->getAddress() ?? '',
                 $volunteer->getPostalCode() ?? '',
                 $volunteer->getProvince() ?? '',
-                $volunteer->getEmergencyContactName() ?? '',
-                $volunteer->getEmergencyContactPhone() ?? '',
-                $volunteer->getBloodType() ?? '',
+                $volunteer->getContactPerson1() ?? '',
+                $volunteer->getContactPhone1() ?? '',
                 $volunteer->getAllergies() ?? '',
-                $volunteer->getMedicalConditions() ?? '',
                 $volunteer->getProfession() ?? '',
-                $volunteer->getEmploymentStatus() ?? '', // Corregido: Usar getEmploymentStatus() si existe
+                $volunteer->getEmploymentStatus() ?? '',
                 implode(';', $volunteer->getDrivingLicenses() ?? []),
                 implode(';', $volunteer->getNavigationLicenses() ?? []),
                 implode(';', $volunteer->getSpecificQualifications() ?? []),
@@ -453,6 +373,14 @@ class VolunteerController extends AbstractController
             'title' => 'Informes de Personal',
             'description' => 'Esta funcionalidad será implementada próximamente con todas las herramientas necesarias para una gestión eficiente.',
             'current_section' => 'personal-informes'
+        ]);
+    }
+
+    #[Route('/{id}/informe-horas', name: 'app_volunteer_hours_report', methods: ['GET'])]
+    public function hoursReport(Volunteer $volunteer): Response
+    {
+        return $this->render('volunteer/hours_report.html.twig', [
+            'volunteer' => $volunteer,
         ]);
     }
 }
