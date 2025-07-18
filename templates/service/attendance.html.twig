@@ -124,24 +124,40 @@
     </div>
 </div>
 
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const ficharBtn = document.getElementById('fichar-btn');
-        const ficharModal = document.getElementById('fichar-modal');
-        const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
-        const ficharForm = document.getElementById('fichar-form');
+{% endblock %}
 
-        ficharBtn.addEventListener('click', () => {
-            ficharModal.classList.remove('hidden');
-        });
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
 
-        cancelFicharBtn.addEventListener('click', () => {
-            ficharModal.classList.add('hidden');
-        });
+            const ficharBtn = document.getElementById('fichar-btn');
+            const ficharModal = document.getElementById('fichar-modal');
+            const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
+            const ficharForm = document.getElementById('fichar-form');
 
-        ficharForm.addEventListener('submit', (e) => {
-            // The form will now submit normally
+            if (ficharBtn) {
+                ficharBtn.addEventListener('click', () => {
+                    if (ficharModal) {
+                        ficharModal.classList.remove('hidden');
+                    }
+                });
+            }
+
+            if (cancelFicharBtn) {
+                cancelFicharBtn.addEventListener('click', () => {
+                    if (ficharModal) {
+                        ficharModal.classList.add('hidden');
+                    }
+                });
+            }
+
+            if (ficharForm) {
+                ficharForm.addEventListener('submit', (e) => {
+                    // The form will now submit normally
+                });
+            }
         });
-    });
-</script>
+    </script>
 {% endblock %}
