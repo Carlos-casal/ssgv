@@ -35,6 +35,9 @@ class VolunteerService
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $notes = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $duration = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -101,12 +104,15 @@ class VolunteerService
         return $this;
     }
 
-    public function getHours(): ?float
+    public function getDuration(): ?int
     {
-        if ($this->startTime && $this->endTime) {
-            $diff = $this->endTime->getTimestamp() - $this->startTime->getTimestamp();
-            return $diff / 3600;
-        }
-        return 0;
+        return $this->duration;
+    }
+
+    public function setDuration(?int $duration): static
+    {
+        $this->duration = $duration;
+
+        return $this;
     }
 }
