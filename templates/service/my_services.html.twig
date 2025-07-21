@@ -22,14 +22,14 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% if assistanceConfirmations is defined and assistanceConfirmations is not empty %}
-                        {% for confirmation in assistanceConfirmations %}
+                    {% if volunteerServices is defined and volunteerServices is not empty %}
+                        {% for volunteerService in volunteerServices %}
                             <tr class="border-b border-gray-200">
-                                <td class="p-2 text-sm">{{ confirmation.service.title }}</td>
-                                <td class="p-2 text-sm">{{ confirmation.checkIn ? confirmation.checkIn|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ volunteerService.service.title }}</td>
+                                <td class="p-2 text-sm">{{ volunteerService.startTime ? volunteerService.startTime|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">
-                                    {% if confirmation.checkIn and confirmation.checkOut %}
-                                        {{ confirmation.checkOut|date_diff(confirmation.checkIn)|format('%h horas %i minutos') }}
+                                    {% if volunteerService.duration %}
+                                        {{ volunteerService.duration }} minutos
                                     {% else %}
                                         N/A
                                     {% endif %}
