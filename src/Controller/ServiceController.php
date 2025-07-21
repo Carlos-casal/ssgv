@@ -197,28 +197,31 @@ class ServiceController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
-        $startOfYear = new \DateTime(date('Y-01-01'));
-        $endOfYear = new \DateTime(date('Y-12-31'));
 
-        $volunteerServices = $volunteerServiceRepository->createQueryBuilder('vs')
-            ->innerJoin('vs.service', 's')
-            ->andWhere('vs.volunteer = :volunteer')
-            ->andWhere('vs.duration IS NOT NULL')
-            ->andWhere('s.startDate BETWEEN :start_of_year AND :end_of_year')
-            ->setParameter('volunteer', $user->getVolunteer())
-            ->setParameter('start_of_year', $startOfYear)
-            ->setParameter('end_of_year', $endOfYear)
-            ->getQuery()
-            ->getResult();
+        $volunteerServices = $volunteerServiceRepository->findBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
 
-        $totalDuration = 0;
+        $servicesByYear = [];
         foreach ($volunteerServices as $volunteerService) {
-            $totalDuration += $volunteerService->getDuration();
+            if ($volunteerService->getDuration()) {
+                $year = $volunteerService->getService()->getStartDate()->format('Y');
+                if (!isset($servicesByYear[$year])) {
+                    $servicesByYear[$year] = [];
+                }
+                $servicesByYear[$year][] = $volunteerService;
+            }
+        }
+
+        $totalDurationCurrentYear = 0;
+        $currentYear = date('Y');
+        if (isset($servicesByYear[$currentYear])) {
+            foreach ($servicesByYear[$currentYear] as $volunteerService) {
+                $totalDurationCurrentYear += $volunteerService->getDuration();
+            }
         }
 
         return $this->render('service/my_services.html.twig', [
-            'volunteerServices' => $volunteerServices,
-            'totalDuration' => $totalDuration,
+            'servicesByYear' => $servicesByYear,
+            'totalDurationCurrentYear' => $totalDurationCurrentYear,
         ]);
     }
 }
