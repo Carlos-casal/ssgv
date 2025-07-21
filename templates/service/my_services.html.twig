@@ -1,0 +1,49 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Mis Servicios{% endblock %}
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Mis Servicios Realizados</h2>
+            <p class="text-gray-600">Aquí puedes ver todos los servicios en los que has participado.</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-4">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Nombre del Servicio</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Día y Hora</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Duración Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if services is defined and services is not empty %}
+                        {% for service in services %}
+                            <tr class="border-b border-gray-200">
+                                <td class="p-2 text-sm">{{ service.title }}</td>
+                                <td class="p-2 text-sm">{{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">
+                                    {% if service.startDate and service.endDate %}
+                                        {{ service.endDate|date_diff(service.startDate)|format('%h horas %i minutos') }}
+                                    {% else %}
+                                        N/A
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="p-4 text-center text-gray-500">No has participado en ningún servicio todavía.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
