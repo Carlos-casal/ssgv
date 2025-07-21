@@ -219,9 +219,12 @@ class ServiceController extends AbstractController
             }
         }
 
+        $lastService = $volunteerServiceRepository->findOneBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
+
         return $this->render('service/my_services.html.twig', [
             'servicesByYear' => $servicesByYear,
             'totalDurationCurrentYear' => $totalDurationCurrentYear,
+            'lastService' => $lastService,
         ]);
     }
 }

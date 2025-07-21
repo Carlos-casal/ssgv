@@ -14,6 +14,9 @@
             {% else %}
                 <p class="text-gray-600">Aquí puedes ver todos los servicios en los que has participado.</p>
             {% endif %}
+            {% if lastService is defined and lastService is not null %}
+                <p class="text-gray-600">Último servicio: {{ lastService.service.title }} ({{ lastService.startTime|date('d/m/Y') }})</p>
+            {% endif %}
         </div>
     </div>
 
