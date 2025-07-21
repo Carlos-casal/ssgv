@@ -200,12 +200,20 @@ class ServiceController extends AbstractController
         $volunteerServices = $volunteerServiceRepository->createQueryBuilder('vs')
             ->andWhere('vs.volunteer = :volunteer')
             ->andWhere('vs.duration IS NOT NULL')
+            ->andWhere('vs.startTime >= :start_of_year')
             ->setParameter('volunteer', $user->getVolunteer())
+            ->setParameter('start_of_year', new \DateTime(date('Y-01-01')))
             ->getQuery()
             ->getResult();
 
+        $totalDuration = 0;
+        foreach ($volunteerServices as $volunteerService) {
+            $totalDuration += $volunteerService->getDuration();
+        }
+
         return $this->render('service/my_services.html.twig', [
             'volunteerServices' => $volunteerServices,
+            'totalDuration' => $totalDuration,
         ]);
     }
 }
