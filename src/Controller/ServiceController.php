@@ -197,7 +197,12 @@ class ServiceController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
-        $volunteerServices = $volunteerServiceRepository->findBy(['volunteer' => $user->getVolunteer()]);
+        $volunteerServices = $volunteerServiceRepository->createQueryBuilder('vs')
+            ->andWhere('vs.volunteer = :volunteer')
+            ->andWhere('vs.duration IS NOT NULL')
+            ->setParameter('volunteer', $user->getVolunteer())
+            ->getQuery()
+            ->getResult();
 
         return $this->render('service/my_services.html.twig', [
             'volunteerServices' => $volunteerServices,
