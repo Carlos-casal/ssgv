@@ -197,13 +197,17 @@ class ServiceController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
+        $startOfYear = new \DateTime(date('Y-01-01'));
+        $endOfYear = new \DateTime(date('Y-12-31'));
+
         $volunteerServices = $volunteerServiceRepository->createQueryBuilder('vs')
             ->innerJoin('vs.service', 's')
             ->andWhere('vs.volunteer = :volunteer')
             ->andWhere('vs.duration IS NOT NULL')
-            ->andWhere('s.startDate >= :start_of_year')
+            ->andWhere('s.startDate BETWEEN :start_of_year AND :end_of_year')
             ->setParameter('volunteer', $user->getVolunteer())
-            ->setParameter('start_of_year', new \DateTime(date('Y-01-01')))
+            ->setParameter('start_of_year', $startOfYear)
+            ->setParameter('end_of_year', $endOfYear)
             ->getQuery()
             ->getResult();
 
