@@ -55,4 +55,17 @@ class ServiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findServicesByVolunteer($volunteer): array
+    {
+        return $this->createQueryBuilder('s')
+            ->innerJoin('s.assistanceConfirmations', 'ac')
+            ->andWhere('ac.volunteer = :volunteer')
+            ->andWhere('ac.hasAttended = :hasAttended')
+            ->setParameter('volunteer', $volunteer)
+            ->setParameter('hasAttended', true)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

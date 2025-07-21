@@ -190,4 +190,17 @@ class ServiceController extends AbstractController
             'service' => $service,
         ]);
     }
+
+    #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
+    public function myServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+
+        $user = $security->getUser();
+        $services = $serviceRepository->findServicesByVolunteer($user->getVolunteer());
+
+        return $this->render('service/my_services.html.twig', [
+            'services' => $services,
+        ]);
+    }
 }
