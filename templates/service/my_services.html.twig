@@ -7,7 +7,13 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Mis Servicios Realizados</h2>
-            <p class="text-gray-600">Aquí puedes ver todos los servicios en los que has participado.</p>
+            {% if totalDuration is defined %}
+                {% set hours = (totalDuration / 60)|round(0, 'floor') %}
+                {% set minutes = totalDuration % 60 %}
+                <p class="text-gray-600">Total de horas realizadas este año: {{ hours ~ 'h ' ~ minutes ~ 'm' }}</p>
+            {% else %}
+                <p class="text-gray-600">Aquí puedes ver todos los servicios en los que has participado.</p>
+            {% endif %}
         </div>
     </div>
 
