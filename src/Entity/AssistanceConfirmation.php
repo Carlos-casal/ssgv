@@ -24,6 +24,12 @@ class AssistanceConfirmation
     #[ORM\JoinColumn(nullable: false)]
     private ?Volunteer $volunteer = null;
 
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $checkIn = null;
+
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $checkOut = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +67,30 @@ class AssistanceConfirmation
     public function setVolunteer(?Volunteer $volunteer): static
     {
         $this->volunteer = $volunteer;
+
+        return $this;
+    }
+
+    public function getCheckIn(): ?\DateTimeInterface
+    {
+        return $this->checkIn;
+    }
+
+    public function setCheckIn(?\DateTimeInterface $checkIn): static
+    {
+        $this->checkIn = $checkIn;
+
+        return $this;
+    }
+
+    public function getCheckOut(): ?\DateTimeInterface
+    {
+        return $this->checkOut;
+    }
+
+    public function setCheckOut(?\DateTimeInterface $checkOut): static
+    {
+        $this->checkOut = $checkOut;
 
         return $this;
     }
