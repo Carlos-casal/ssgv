@@ -198,9 +198,10 @@ class ServiceController extends AbstractController
 
         $user = $security->getUser();
         $volunteerServices = $volunteerServiceRepository->createQueryBuilder('vs')
+            ->innerJoin('vs.service', 's')
             ->andWhere('vs.volunteer = :volunteer')
             ->andWhere('vs.duration IS NOT NULL')
-            ->andWhere('vs.startTime >= :start_of_year')
+            ->andWhere('s.startDate >= :start_of_year')
             ->setParameter('volunteer', $user->getVolunteer())
             ->setParameter('start_of_year', new \DateTime(date('Y-01-01')))
             ->getQuery()
