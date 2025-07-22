@@ -1,3 +1,4 @@
+<?php
 namespace App\Controller;
 
 use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
