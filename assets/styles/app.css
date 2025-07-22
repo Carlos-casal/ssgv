@@ -11,3 +11,12 @@
 /* body {
     background-color: lightblue;
 } */
+
+.fc-day-today {
+    background-color: #f0f8ff !important;
+}
+
+.service-event {
+    background-color: #e6fffa !important;
+    border-color: #38b2ac !important;
+}
