@@ -20,3 +20,17 @@
     background-color: #e6fffa !important;
     border-color: #38b2ac !important;
 }
+
+.fc-theme-standard .fc-scrollgrid,
+.fc-theme-standard .fc-scrollgrid-section-header,
+.fc-theme-standard .fc-scrollgrid-section-body,
+.fc-theme-standard .fc-scrollgrid-section-footer,
+.fc-scrollgrid-section-header > *,
+.fc-scrollgrid-section-body > *,
+.fc-scrollgrid-section-footer > * {
+    border: none;
+}
+
+.fc-daygrid-day-frame {
+    border: 1px solid #ddd;
+}
