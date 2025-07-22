@@ -3,54 +3,189 @@
 {% block title %}Calendario de Servicios{% endblock %}
 
 {% block content %}
-<div class="p-6">
-    <div id="calendar"></div>
-    <div id="service-list-container" class="mt-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Servicios del día</h3>
-        <ul id="serviceList" class="list-disc list-inside">
-        </ul>
+<div class="flex items-center justify-center py-8 px-4">
+    <div class="max-w-sm w-full shadow-lg">
+        <div class="md:p-8 p-5 dark:bg-gray-800 bg-white rounded-t">
+            <div class="px-4 flex items-center justify-between">
+                <span  tabindex="0" class="focus:outline-none  text-base font-bold dark:text-gray-100 text-gray-800" id="month-year"></span>
+                <div class="flex items-center">
+                    <button aria-label="calendar backward" class="focus:text-gray-400 hover:text-gray-400 text-gray-800 dark:text-gray-100" id="prev-month">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-chevron-left" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <polyline points="15 6 9 12 15 18" />
+                        </svg>
+                    </button>
+                    <button aria-label="calendar forward" class="focus:text-gray-400 hover:text-gray-400 ml-3 text-gray-800 dark:text-gray-100" id="next-month">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler  icon-tabler-chevron-right" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <polyline points="9 6 15 12 9 18" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between pt-12 overflow-x-auto">
+                <table class="w-full">
+                    <thead>
+                        <tr>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Lu</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Ma</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Mi</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Ju</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Vi</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Sa</p>
+                                </div>
+                            </th>
+                            <th>
+                                <div class="w-full flex justify-center">
+                                    <p class="text-base font-medium text-center text-gray-800 dark:text-gray-100">Do</p>
+                                </div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="md:py-8 py-5 md:px-16 px-5 dark:bg-gray-700 bg-gray-50 rounded-b">
+            <div class="px-4" id="service-list">
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js'></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            var calendarEl = document.getElementById('calendar');
-            var calendar = new FullCalendar.Calendar(calendarEl, {
-                initialView: 'dayGridMonth',
-                locale: 'es',
-                events: '/api/services',
-                eventClassNames: 'service-event',
-                eventDisplay: 'block',
-                firstDay: 1,
-                showNonCurrentDates: false,
-                dateClick: function(info) {
-                    fetch('/api/services?start=' + info.dateStr + '&end=' + info.dateStr)
-                        .then(response => response.json())
-                        .then(data => {
-                            var serviceList = document.getElementById('serviceList');
-                            serviceList.innerHTML = '';
-                            if (data.length > 0) {
-                                data.forEach(service => {
-                                    var li = document.createElement('li');
-                                    var a = document.createElement('a');
-                                    a.href = service.url;
-                                    a.textContent = service.title;
-                                    li.appendChild(a);
-                                    serviceList.appendChild(li);
-                                });
-                            } else {
-                                var li = document.createElement('li');
-                                li.textContent = 'No hay servicios para este día.';
-                                serviceList.appendChild(li);
+            const monthYear = document.getElementById('month-year');
+            const prevMonthButton = document.getElementById('prev-month');
+            const nextMonthButton = document.getElementById('next-month');
+            const calendarBody = document.getElementById('calendar-body');
+            const serviceList = document.getElementById('service-list');
+
+            let currentDate = new Date();
+
+            function renderCalendar() {
+                const year = currentDate.getFullYear();
+                const month = currentDate.getMonth();
+
+                monthYear.textContent = new Intl.DateTimeFormat('es-ES', { year: 'numeric', month: 'long' }).format(currentDate);
+
+                const firstDayOfMonth = new Date(year, month, 1);
+                const lastDayOfMonth = new Date(year, month + 1, 0);
+
+                const firstDayOfWeek = (firstDayOfMonth.getDay() + 6) % 7;
+                const totalDays = lastDayOfMonth.getDate();
+
+                calendarBody.innerHTML = '';
+
+                let date = 1;
+                for (let i = 0; i < 6; i++) {
+                    const row = document.createElement('tr');
+                    for (let j = 0; j < 7; j++) {
+                        if (i === 0 && j < firstDayOfWeek) {
+                            const cell = document.createElement('td');
+                            row.appendChild(cell);
+                        } else if (date > totalDays) {
+                            break;
+                        } else {
+                            const cell = document.createElement('td');
+                            const div = document.createElement('div');
+                            div.classList.add('px-2', 'py-2', 'cursor-pointer', 'flex', 'w-full', 'justify-center');
+                            const p = document.createElement('p');
+                            p.classList.add('text-base', 'text-gray-500', 'dark:text-gray-100', 'font-medium');
+                            p.textContent = date;
+
+                            const today = new Date();
+                            if (date === today.getDate() && year === today.getFullYear() && month === today.getMonth()) {
+                                p.classList.add('text-blue-500');
                             }
-                        });
+
+                            const dateStr = new Date(year, month, date).toISOString().slice(0,10);
+                            fetch('/api/services?start=' + dateStr + '&end=' + dateStr)
+                                .then(response => response.json())
+                                .then(data => {
+                                    if (data.length > 0) {
+                                        p.parentElement.classList.add('service-day');
+                                    }
+                                });
+
+                            div.addEventListener('click', () => {
+                                const selectedDate = new Date(year, month, p.textContent);
+                                const dateStr = selectedDate.toISOString().slice(0,10);
+                                fetch('/api/services?start=' + dateStr + '&end=' + dateStr)
+                                    .then(response => response.json())
+                                    .then(data => {
+                                        serviceList.innerHTML = '';
+                                        if (data.length > 0) {
+                                            data.forEach(service => {
+                                                const div = document.createElement('div');
+                                                div.classList.add('border-b', 'pb-4', 'border-gray-400', 'border-dashed', 'pt-5');
+                                                const p1 = document.createElement('p');
+                                                p1.classList.add('text-xs', 'font-light', 'leading-3', 'text-gray-500', 'dark:text-gray-300');
+                                                p1.textContent = new Date(service.start).toLocaleTimeString('es-ES', {hour: '2-digit', minute:'2-digit'});
+                                                const a = document.createElement('a');
+                                                a.tabIndex = 0;
+                                                a.classList.add('focus:outline-none', 'text-lg', 'font-medium', 'leading-5', 'text-gray-800', 'dark:text-gray-100', 'mt-2');
+                                                a.textContent = service.title;
+                                                a.href = service.url;
+                                                div.appendChild(p1);
+                                                div.appendChild(a);
+                                                serviceList.appendChild(div);
+                                            });
+                                        } else {
+                                            const p = document.createElement('p');
+                                            p.textContent = 'No hay servicios para este día.';
+                                            serviceList.appendChild(p);
+                                        }
+                                    });
+                            });
+
+                            div.appendChild(p);
+                            cell.appendChild(div);
+                            row.appendChild(cell);
+                            date++;
+                        }
+                    }
+                    calendarBody.appendChild(row);
                 }
+            }
+
+            prevMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar();
             });
-            calendar.render();
+
+            nextMonthButton.addEventListener('click', () => {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar();
+            });
+
+            renderCalendar();
         });
     </script>
 {% endblock %}

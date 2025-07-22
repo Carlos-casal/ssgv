@@ -12,16 +12,7 @@
     background-color: lightblue;
 } */
 
-.fc-day-today .fc-daygrid-day-number {
-    color: #007bff !important;
-    font-weight: bold;
-}
-
-.service-event .fc-daygrid-day-number {
-    position: relative;
-}
-
-.service-event .fc-daygrid-day-number:after {
+.service-day .fc-daygrid-day-number:after {
     content: '';
     position: absolute;
     bottom: 0;
@@ -31,18 +22,4 @@
     height: 6px;
     border-radius: 50%;
     background-color: #38b2ac;
-}
-
-.fc-theme-standard .fc-scrollgrid,
-.fc-theme-standard .fc-scrollgrid-section-header,
-.fc-theme-standard .fc-scrollgrid-section-body,
-.fc-theme-standard .fc-scrollgrid-section-footer,
-.fc-scrollgrid-section-header > *,
-.fc-scrollgrid-section-body > *,
-.fc-scrollgrid-section-footer > * {
-    border: none;
-}
-
-.fc-daygrid-day-frame {
-    border: 1px solid #ddd;
 }
