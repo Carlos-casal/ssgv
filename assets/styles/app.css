@@ -13,23 +13,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background-color: #fff;
-}
-
-.dark .dark\:bg-gray-800 {
-    background-color: #1f2937;
-}
-
-.dark .dark\:text-gray-100 {
-    color: #f3f4f6;
-}
-
-.dark .dark\:bg-gray-700 {
-    background-color: #374151;
-}
-
-.dark .dark\:text-gray-300 {
-    color: #d1d5db;
+    background-color: #000;
 }
 
 .text-blue-500 {
