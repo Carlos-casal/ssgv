@@ -227,4 +227,36 @@ class ServiceController extends AbstractController
             'lastService' => $lastService,
         ]);
     }
+
+    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('service/calendar.html.twig');
+    }
+
+    #[Route('/api/services', name: 'api_services', methods: ['GET'])]
+    public function getServices(ServiceRepository $serviceRepository, Request $request): Response
+    {
+        $start = new \DateTime($request->query->get('start'));
+        $end = new \DateTime($request->query->get('end'));
+
+        $services = $serviceRepository->createQueryBuilder('s')
+            ->where('s.startDate BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+
+        $events = [];
+        foreach ($services as $service) {
+            $events[] = [
+                'title' => $service->getTitle(),
+                'start' => $service->getStartDate()->format('Y-m-d'),
+                'end' => $service->getEndDate()->format('Y-m-d'),
+                'url' => $this->generateUrl('app_service_show', ['id' => $service->getId()]),
+            ];
+        }
+
+        return $this->json($events);
+    }
 }
