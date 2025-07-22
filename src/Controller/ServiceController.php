@@ -254,6 +254,7 @@ class ServiceController extends AbstractController
                 'start' => $service->getStartDate()->format('Y-m-d'),
                 'end' => $service->getEndDate()->format('Y-m-d'),
                 'url' => $this->generateUrl('app_service_show', ['id' => $service->getId()]),
+                'id_service' => $service->getId()
             ];
         }
 

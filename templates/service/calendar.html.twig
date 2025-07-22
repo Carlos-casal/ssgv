@@ -60,7 +60,7 @@
                                 data.forEach(service => {
                                     var li = document.createElement('li');
                                     var a = document.createElement('a');
-                                    a.href = service.url;
+                                    a.href = '/servicios/' + service.id_service;
                                     a.textContent = service.title;
                                     li.appendChild(a);
                                     serviceList.appendChild(li);
