@@ -19,7 +19,7 @@
                 {% set lastServiceTime = lastService.startTime|date("U") %}
                 {% set diff = (now - lastServiceTime) / (24 * 3600) %}
                 <p class="text-gray-600">
-                    Último servicio:
+                    Último servicio: 
                     <span class="
                         {% if diff > 90 %}
                             text-red-500
