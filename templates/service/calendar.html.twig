@@ -25,6 +25,7 @@
                 events: '/api/services',
                 eventClassNames: 'service-event',
                 eventDisplay: 'block',
+                firstDay: 1,
                 dateClick: function(info) {
                     fetch('/api/services?start=' + info.dateStr + '&end=' + info.dateStr)
                         .then(response => response.json())

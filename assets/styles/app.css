@@ -12,13 +12,25 @@
     background-color: lightblue;
 } */
 
-.fc-day-today {
-    background-color: #f0f8ff !important;
+.fc-day-today .fc-daygrid-day-number {
+    color: #007bff !important;
+    font-weight: bold;
 }
 
-.service-event {
-    background-color: #e6fffa !important;
-    border-color: #38b2ac !important;
+.service-event .fc-daygrid-day-number {
+    position: relative;
+}
+
+.service-event .fc-daygrid-day-number:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #38b2ac;
 }
 
 .fc-theme-standard .fc-scrollgrid,
