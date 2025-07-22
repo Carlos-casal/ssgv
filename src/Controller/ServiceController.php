@@ -92,17 +92,6 @@ class ServiceController extends AbstractController
     }
 
     
-    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(Service $service): Response
-    {
-        $form = $this->createForm(ServiceType::class, $service);
-
-        return $this->render('service/show_service.html.twig', [
-            'service' => $service,
-            'serviceForm' => $form->createView(),
-        ]);
-    }
-
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
@@ -253,7 +242,7 @@ class ServiceController extends AbstractController
                 'title' => $service->getTitle(),
                 'start' => $service->getStartDate()->format('Y-m-d'),
                 'end' => $service->getEndDate()->format('Y-m-d'),
-                'url' => $this->generateUrl('app_service_show', ['id' => $service->getId()]),
+                'url' => $this->generateUrl('app_service_edit', ['id' => $service->getId()]),
                 'id_service' => $service->getId()
             ];
         }
