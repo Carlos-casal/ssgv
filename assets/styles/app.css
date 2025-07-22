@@ -12,10 +12,10 @@
     background-color: lightblue;
 } */
 
-.service-day .fc-daygrid-day-number:after {
+.service-day:after {
     content: '';
     position: absolute;
-    bottom: 0;
+    bottom: 4px;
     left: 50%;
     transform: translateX(-50%);
     width: 6px;
