@@ -38,8 +38,8 @@ class VolunteerType extends AbstractType
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
-                'html5' => true,
                 'required' => false,
+                'attr' => ['class' => 'flatpickr-input'],
             ])
             ->add('streetType', ChoiceType::class, [
                 'label' => 'Tipo de Vía',
@@ -153,8 +153,8 @@ class VolunteerType extends AbstractType
             ->add('drivingLicenseExpiryDate', DateType::class, [
                 'label' => 'Fecha de Caducidad del Permiso de Conducción',
                 'widget' => 'single_text',
-                'html5' => true,
                 'required' => false,
+                'attr' => ['class' => 'flatpickr-input'],
             ])
 
             // --- Otros Datos e Intereses ---
