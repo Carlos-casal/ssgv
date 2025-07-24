@@ -23,6 +23,14 @@ class ServiceController extends AbstractController
 
         $services = $serviceRepository->findAll();
 
+        if (empty($services)) {
+            return $this->render('service/list_service.html.twig', [
+                'services' => [],
+                'attendeesByService' => [],
+                'assistanceByService' => [],
+            ]);
+        }
+
         $attendeesByService = [];
         foreach ($services as $service) {
             $attendees = 0;
