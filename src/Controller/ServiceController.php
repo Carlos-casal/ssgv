@@ -227,4 +227,12 @@ class ServiceController extends AbstractController
             'lastService' => $lastService,
         ]);
     }
+
+    #[Route('/services/available', name: 'app_available_services')]
+    public function availableServices(): Response
+    {
+        return $this->render('service/available_services.html.twig', [
+            'current_section' => 'available-services',
+        ]);
+    }
 }
