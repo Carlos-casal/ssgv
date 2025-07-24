@@ -29,8 +29,10 @@
 
         {% set services_by_day = {} %}
         {% for service in services %}
-            {% set day_of_service = service.startDate|date('j') %}
-            {% set services_by_day = services_by_day|merge({(day_of_service): true}) %}
+            {% if service.startDate|date('Y-m') == year ~ '-' ~ month %}
+                {% set day_of_service = service.startDate|date('j') %}
+                {% set services_by_day = services_by_day|merge({(day_of_service): true}) %}
+            {% endif %}
         {% endfor %}
 
         <div class="grid grid-cols-7 gap-2 text-center">
