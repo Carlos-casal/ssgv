@@ -13,35 +13,10 @@
             </a>
         </div>
 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-    <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Servicios</h3>
-    <div class="space-y-4">
-        {% for service in services %}
-            <div class="border border-gray-200 rounded-lg p-4">
-                <h4 class="font-medium text-gray-900">{{ service.name }}</h4>
-                <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                    <span>📅 {{ service.date|date('d M Y') }}</span>
-                    <span>🕐 {{ service.time|date('H:i') }}</span>
-                    <span>📍 {{ service.location }}</span>
-                </div>
-                <div class="mt-4">
-                    {% if assistanceByService[service.id] is defined %}
-                        {% if assistanceByService[service.id] %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                Asistencia Confirmada
-                            </span>
-                        {% else %}
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                Asistencia No Confirmada
-                            </span>
-                        {% endif %}
-                    {% else %}
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                            Pendiente de Confirmación
-                        </span>
-                    {% endif %}
-                </div>
-            </div>
-        {% endfor %}
-    </div>
+    <h3 class="text-lg font-semibold text-gray-900 mb-4">Servicios Disponibles</h3>
+    <p class="text-gray-600 mb-4">Consulta los servicios disponibles y apúntate.</p>
+    <a href="{{ path('app_available_services') }}" class="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        Ver servicios
+    </a>
 </div>
     {% endblock %}
