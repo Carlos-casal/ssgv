@@ -101,8 +101,12 @@ class ServiceController extends AbstractController
 
     
     #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(Service $service): Response
+    public function show(?Service $service): Response
     {
+        if (!$service) {
+            throw $this->createNotFoundException('El servicio solicitado no existe.');
+        }
+
         $form = $this->createForm(ServiceType::class, $service);
 
         return $this->render('service/show_service.html.twig', [
