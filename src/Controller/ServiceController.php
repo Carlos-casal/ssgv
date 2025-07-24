@@ -92,17 +92,6 @@ class ServiceController extends AbstractController
     }
 
     
-    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(Service $service): Response
-    {
-        $form = $this->createForm(ServiceType::class, $service);
-
-        return $this->render('service/show_service.html.twig', [
-            'service' => $service,
-            'serviceForm' => $form->createView(),
-        ]);
-    }
-
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
@@ -228,11 +217,45 @@ class ServiceController extends AbstractController
         ]);
     }
 
+< feature/quick-access-menu
+    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('service/calendar.html.twig');
+    }
+
+    #[Route('/api/services', name: 'api_services', methods: ['GET'])]
+    public function getServices(ServiceRepository $serviceRepository, Request $request): Response
+    {
+        $start = new \DateTime($request->query->get('start'));
+        $end = new \DateTime($request->query->get('end'));
+
+        $services = $serviceRepository->createQueryBuilder('s')
+            ->where('s.startDate BETWEEN :start AND :end')
+            ->setParameter('start', $start)
+            ->setParameter('end', $end)
+            ->getQuery()
+            ->getResult();
+
+        $events = [];
+        foreach ($services as $service) {
+            $events[] = [
+                'title' => $service->getTitle(),
+                'start' => $service->getStartDate()->format('Y-m-d'),
+                'end' => $service->getEndDate()->format('Y-m-d'),
+                'url' => $this->generateUrl('app_service_edit', ['id' => $service->getId()]),
+                'id_service' => $service->getId()
+            ];
+        }
+
+        return $this->json($events);
+
     #[Route('/services/available', name: 'app_available_services')]
     public function availableServices(): Response
     {
         return $this->render('service/available_services.html.twig', [
             'current_section' => 'available-services',
         ]);
+ main
     }
 }
