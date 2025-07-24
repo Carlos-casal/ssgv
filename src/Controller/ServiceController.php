@@ -217,6 +217,7 @@ class ServiceController extends AbstractController
         ]);
     }
 
+< feature/quick-access-menu
     #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
     public function calendar(): Response
     {
@@ -248,5 +249,13 @@ class ServiceController extends AbstractController
         }
 
         return $this->json($events);
+
+    #[Route('/services/available', name: 'app_available_services')]
+    public function availableServices(): Response
+    {
+        return $this->render('service/available_services.html.twig', [
+            'current_section' => 'available-services',
+        ]);
+ main
     }
 }
