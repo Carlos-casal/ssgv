@@ -50,11 +50,41 @@
             {% for day in 1..days_in_month %}
                 {% set current_day = year ~ "-" ~ month ~ "-" ~ day|format('%02d') %}
                 {% set has_service = day in services_by_day %}
-                <div class="p-2 border rounded {% if current_day == now %}bg-blue-500 text-white{% elseif has_service %}bg-black text-white{% endif %}">
+                <div class="p-2 border rounded cursor-pointer {% if current_day == now %}bg-blue-500 text-white{% elseif has_service %}bg-black text-white{% endif %}" onclick="getServices({{ year }}, {{ month }}, {{ day }})">
                     {{ day }}
                 </div>
             {% endfor %}
         </div>
+
+        <div id="services-container" class="mt-6"></div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function getServices(year, month, day) {
+            const url = `/services/${year}/${month}/${day}`;
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('services-container');
+                    container.innerHTML = '';
+                    if (data.length > 0) {
+                        data.forEach(service => {
+                            const serviceElement = document.createElement('div');
+                            serviceElement.classList.add('p-4', 'border', 'rounded', 'mb-2');
+                            serviceElement.innerHTML = `
+                                <h3 class="font-bold">${service.title}</h3>
+                                <p>${service.description}</p>
+                            `;
+                            container.appendChild(serviceElement);
+                        });
+                    } else {
+                        container.innerHTML = '<p>No hay servicios para este día.</p>';
+                    }
+                });
+        }
+    </script>
 {% endblock %}
