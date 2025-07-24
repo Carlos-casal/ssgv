@@ -68,4 +68,19 @@ class ServiceRepository extends ServiceEntityRepository
             ->getResult()
         ;
     }
+
+    public function findByDate(\DateTimeInterface $date): array
+    {
+        $startOfDay = (clone $date)->setTime(0, 0, 0);
+        $endOfDay = (clone $date)->setTime(23, 59, 59);
+
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.startDate >= :start')
+            ->andWhere('s.startDate <= :end')
+            ->setParameter('start', $startOfDay)
+            ->setParameter('end', $endOfDay)
+            ->getQuery()
+            ->getResult()
+        ;
+    }
 }

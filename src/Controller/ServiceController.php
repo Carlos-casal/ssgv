@@ -264,4 +264,12 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    #[Route('/services/{year}/{month}/{day}', name: 'app_services_by_day', methods: ['GET'])]
+    public function servicesByDay(ServiceRepository $serviceRepository, $year, $month, $day): Response
+    {
+        $date = new \DateTime("$year-$month-$day");
+        $services = $serviceRepository->findByDate($date);
+
+        return $this->json($services);
+    }
 }
