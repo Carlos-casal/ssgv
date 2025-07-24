@@ -138,8 +138,12 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
-    public function attend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
+        if (!$service) {
+            throw $this->createNotFoundException('El servicio solicitado no existe.');
+        }
+
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
@@ -166,8 +170,12 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
-    public function unattend(Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    public function unattend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
+        if (!$service) {
+            throw $this->createNotFoundException('El servicio solicitado no existe.');
+        }
+
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
 
         $user = $security->getUser();
