@@ -6,11 +6,19 @@
 <div class="p-6">
     <h1 class="text-2xl font-bold mb-4">Calendario de Servicios</h1>
     <div class="bg-white p-6 rounded-lg shadow-md">
+        {% set date = date(year ~ '-' ~ month ~ '-01') %}
+        {% set prev_month = date|date_modify("-1 month") %}
+        {% set next_month = date|date_modify("+1 month") %}
+
+        <div class="flex justify-between items-center mb-4">
+            <a href="{{ path('app_service_calendar', {'year': prev_month|date('Y'), 'month': prev_month|date('m')}) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">&lt;</a>
+            <h2 class="text-xl font-bold">{{ date|date('F Y') }}</h2>
+            <a href="{{ path('app_service_calendar', {'year': next_month|date('Y'), 'month': next_month|date('m')}) }}" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">&gt;</a>
+        </div>
+
+        {% set days_in_month = date|date('t') %}
+        {% set first_day_of_month = date|date('N') %}
         {% set now = "now"|date("Y-m-d") %}
-        {% set month = "now"|date("m") %}
-        {% set year = "now"|date("Y") %}
-        {% set days_in_month = "now"|date("t") %}
-        {% set first_day_of_month = "now"|date("Y-m-01")|date("N") %}
 
         <div class="grid grid-cols-7 gap-2 text-center">
             <div class="font-bold">Lunes</div>
