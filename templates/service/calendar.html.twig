@@ -75,9 +75,27 @@
                         data.forEach(service => {
                             const serviceElement = document.createElement('div');
                             serviceElement.classList.add('p-4', 'border', 'rounded', 'mb-2');
+
+                            let assistanceText = '';
+                            if (service.assistance === true) {
+                                assistanceText = '<span class="text-green-500">Asistirás</span>';
+                            } else if (service.assistance === false) {
+                                assistanceText = '<span class="text-red-500">No asistirás</span>';
+                            } else {
+                                assistanceText = '<span class="text-gray-500">Pendiente</span>';
+                            }
+
                             serviceElement.innerHTML = `
                                 <h3 class="font-bold">${service.title}</h3>
-                                <p>${service.description}</p>
+                                <p><strong>Fecha de inicio:</strong> ${service.startDate}</p>
+                                <p><strong>Fecha de fin:</strong> ${service.endDate}</p>
+                                <p><strong>Límite de inscripción:</strong> ${service.registrationLimitDate}</p>
+                                <p><strong>Asistencia:</strong> ${assistanceText}</p>
+                                <div class="mt-2">
+                                    <a href="/servicio/${service.id}/asistir" class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">Asistir</a>
+                                    <a href="/servicio/${service.id}/no-asistir" class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">No Asistir</a>
+                                    <a href="/service/${service.id}/view" class="px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Ver</a>
+                                </div>
                             `;
                             container.appendChild(serviceElement);
                         });
