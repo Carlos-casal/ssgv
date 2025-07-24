@@ -27,11 +27,10 @@
         {% set first_day_of_month = date|date('N') %}
         {% set now = "now"|date("Y-m-d") %}
 
-        {% set services_by_day = {} %}
+        {% set services_by_day = [] %}
         {% for service in services %}
             {% if service.startDate is not null and service.startDate|date('Y-m') == year ~ '-' ~ month %}
-                {% set day_of_service = service.startDate|date('j') %}
-                {% set services_by_day = services_by_day|merge({(day_of_service): true}) %}
+                {% set services_by_day = services_by_day|merge([service.startDate|date('j')]) %}
             {% endif %}
         {% endfor %}
 
@@ -50,7 +49,7 @@
 
             {% for day in 1..days_in_month %}
                 {% set current_day = year ~ "-" ~ month ~ "-" ~ day|format('%02d') %}
-                {% set has_service = services_by_day[day] is defined %}
+                {% set has_service = day in services_by_day %}
                 <div class="p-2 border rounded {% if current_day == now %}bg-blue-500 text-white{% elseif has_service %}bg-black text-white{% endif %}">
                     {{ day }}
                 </div>
