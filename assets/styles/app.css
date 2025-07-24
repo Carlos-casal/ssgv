@@ -4,10 +4,18 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Puedes añadir tu propio CSS personalizado aquí si es necesario,
-   pero la mayoría de los estilos deberían venir de las clases de Tailwind en tu Twig. */
+.service-day:after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #000;
+}
 
-/* Ejemplo del fondo azul claro que tenías, si quieres eliminarlo: */
-/* body {
-    background-color: lightblue;
-} */
+.text-blue-500 {
+    color: #3b82f6;
+}
