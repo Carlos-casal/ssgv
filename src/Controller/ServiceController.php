@@ -217,7 +217,7 @@ class ServiceController extends AbstractController
         ]);
     }
 
-< feature/quick-access-menu
+ feature/quick-access-menu
     #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
     public function calendar(): Response
     {
