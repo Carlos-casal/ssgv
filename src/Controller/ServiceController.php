@@ -101,15 +101,18 @@ class ServiceController extends AbstractController
 
     
     #[Route('/servicios/calendario/{year}/{month}', name: 'app_service_calendar', methods: ['GET'], defaults: ['year' => null, 'month' => null])]
-    public function calendar(Request $request, $year, $month): Response
+    public function calendar(Request $request, ServiceRepository $serviceRepository, $year, $month): Response
     {
         $now = new \DateTime();
         $year = $year ?? $now->format('Y');
         $month = $month ?? $now->format('m');
 
+        $services = $serviceRepository->findAll();
+
         return $this->render('service/calendar.html.twig', [
             'year' => $year,
             'month' => $month,
+            'services' => $services,
         ]);
     }
 
