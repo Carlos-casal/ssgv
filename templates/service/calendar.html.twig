@@ -6,7 +6,32 @@
 <div class="p-6">
     <h1 class="text-2xl font-bold mb-4">Calendario de Servicios</h1>
     <div class="bg-white p-6 rounded-lg shadow-md">
-        <p>Aquí se mostrará un calendario con los servicios.</p>
+        {% set now = "now"|date("Y-m-d") %}
+        {% set month = "now"|date("m") %}
+        {% set year = "now"|date("Y") %}
+        {% set days_in_month = "now"|date("t") %}
+        {% set first_day_of_month = "now"|date("Y-m-01")|date("N") %}
+
+        <div class="grid grid-cols-7 gap-2 text-center">
+            <div class="font-bold">Lunes</div>
+            <div class="font-bold">Martes</div>
+            <div class="font-bold">Miércoles</div>
+            <div class="font-bold">Jueves</div>
+            <div class="font-bold">Viernes</div>
+            <div class="font-bold">Sábado</div>
+            <div class="font-bold">Domingo</div>
+
+            {% for i in 1..first_day_of_month-1 %}
+                <div></div>
+            {% endfor %}
+
+            {% for day in 1..days_in_month %}
+                {% set current_day = year ~ "-" ~ month ~ "-" ~ day|format('%02d') %}
+                <div class="p-2 border rounded {% if current_day == now %}bg-blue-500 text-white{% endif %}">
+                    {{ day }}
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
 {% endblock %}
