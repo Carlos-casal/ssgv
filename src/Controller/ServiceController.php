@@ -235,4 +235,10 @@ class ServiceController extends AbstractController
             'current_section' => 'available-services',
         ]);
     }
+
+    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('service/calendar.html.twig');
+    }
 }
