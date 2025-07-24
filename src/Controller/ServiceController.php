@@ -100,6 +100,12 @@ class ServiceController extends AbstractController
     }
 
     
+    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('service/calendar.html.twig');
+    }
+
     #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
     public function show(?Service $service): Response
     {
@@ -248,9 +254,4 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
-    public function calendar(): Response
-    {
-        return $this->render('service/calendar.html.twig');
-    }
 }
