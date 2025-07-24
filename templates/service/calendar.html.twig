@@ -3,6 +3,15 @@
 {% block title %}Calendario de Servicios{% endblock %}
 
 {% block content %}
+ feature/volunteer-dashboard-dynamic-services
+<div class="p-6">
+    <h1 class="text-2xl font-bold mb-4">Calendario de Servicios</h1>
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <p>Aquí se mostrará un calendario con los servicios.</p>
+    </div>
+</div>
+{% endblock %}
+
 <div class="flex items-center justify-center py-8 px-4" {{ stimulus_controller('calendar') }}>
     <div class="max-w-lg w-full shadow-lg">
         <div class="md:p-8 p-5 bg-white rounded-t">
@@ -80,3 +89,4 @@
 {% block javascripts %}
     {{ parent() }}
 {% endblock %}
+

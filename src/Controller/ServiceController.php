@@ -258,4 +258,14 @@ class ServiceController extends AbstractController
         ]);
  main
     }
+ feature/volunteer-dashboard-dynamic-services
+
+    #[Route('/servicios/calendario', name: 'app_service_calendar', methods: ['GET'])]
+    public function calendar(): Response
+    {
+        return $this->render('service/calendar.html.twig');
+    }
 }
+
+}
+ 
