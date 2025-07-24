@@ -270,6 +270,15 @@ class ServiceController extends AbstractController
         $date = new \DateTime("$year-$month-$day");
         $services = $serviceRepository->findByDate($date);
 
-        return $this->json($services);
+        $data = [];
+        foreach ($services as $service) {
+            $data[] = [
+                'id' => $service->getId(),
+                'title' => $service->getTitle(),
+                'description' => $service->getDescription(),
+            ];
+        }
+
+        return $this->json($data);
     }
 }
