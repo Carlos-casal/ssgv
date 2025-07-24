@@ -265,20 +265,41 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/services/{year}/{month}/{day}', name: 'app_services_by_day', methods: ['GET'])]
-    public function servicesByDay(ServiceRepository $serviceRepository, $year, $month, $day): Response
+    public function servicesByDay(ServiceRepository $serviceRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, \Symfony\Bundle\SecurityBundle\Security $security, $year, $month, $day): Response
     {
         $date = new \DateTime("$year-$month-$day");
         $services = $serviceRepository->findByDate($date);
+        $user = $security->getUser();
 
         $data = [];
         foreach ($services as $service) {
+            $assistance = null;
+            if ($user && $this->isGranted('ROLE_VOLUNTEER')) {
+                $volunteer = $user->getVolunteer();
+                $confirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+                if ($confirmation) {
+                    $assistance = $confirmation->isHasAttended();
+                }
+            }
+
             $data[] = [
                 'id' => $service->getId(),
                 'title' => $service->getTitle(),
-                'description' => $service->getDescription(),
+                'startDate' => $service->getStartDate() ? $service->getStartDate()->format('Y-m-d H:i:s') : null,
+                'endDate' => $service->getEndDate() ? $service->getEndDate()->format('Y-m-d H:i:s') : null,
+                'registrationLimitDate' => $service->getRegistrationLimitDate() ? $service->getRegistrationLimitDate()->format('Y-m-d H:i:s') : null,
+                'assistance' => $assistance,
             ];
         }
 
         return $this->json($data);
+    }
+
+    #[Route('/service/{id}/view', name: 'app_service_view', methods: ['GET'])]
+    public function view(Service $service): Response
+    {
+        return $this->render('service/view.html.twig', [
+            'service' => $service,
+        ]);
     }
 }
