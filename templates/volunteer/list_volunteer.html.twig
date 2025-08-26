@@ -77,10 +77,10 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Contacto</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Carnet de conducir</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Titulacion Sanitaria</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Permiso de Navegación</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900 hidden md:table-cell">Contacto</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900 hidden lg:table-cell">Carnet de conducir</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900 hidden xl:table-cell">Titulacion Sanitaria</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900 hidden lg:table-cell">Permiso de Navegación</th>
                         <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
                     </tr>
                 </thead>
@@ -101,14 +101,14 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden md:table-cell">
                                 <div>
                                     <p class="text-sm text-gray-900">{{ volunteer.phone }}</p>
                                     {# Asegúrate de que volunteer.user.email esté disponible si user puede ser null #}
                                     <p class="text-sm text-gray-500">{{ volunteer.user ? volunteer.user.email : 'N/A' }}</p> 
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden lg:table-cell">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.drivingLicenses is not empty %}
                                         {{ volunteer.drivingLicenses|join(', ') }}
@@ -117,7 +117,7 @@
                                     {% endif %}
                                 </p>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
+                            <td class="px-6 py-4 text-sm text-gray-900 hidden xl:table-cell">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.specificQualifications is not empty %}
                                         {{ volunteer.specificQualifications|join(', ') }}
@@ -126,7 +126,7 @@
                                     {% endif %}
                                 </p>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 hidden lg:table-cell">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.navigationLicenses is not empty %}
                                         {{ volunteer.navigationLicenses|join(', ') }}

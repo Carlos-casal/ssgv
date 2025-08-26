@@ -1,7 +1,12 @@
 <header class="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
     <div class="flex items-center justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
+        <div class="flex items-center gap-4">
+            <!-- Mobile menu button -->
+            <button id="sidebar-toggle" class="lg:hidden p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{% block page_title %}Dashboard{% endblock %}</h1>
             <p class="text-sm text-gray-500 mt-1">
                 {{ "now"|date("l, d \\d\\e F \\d\\e Y") }}
             </p>
