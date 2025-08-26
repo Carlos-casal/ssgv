@@ -4,28 +4,25 @@ namespace App\Controller;
 
 use App\Entity\Volunteer;
 use App\Entity\User;
-// Importa la entidad VolunteerService si ya la creaste.
-// Si aún no la has creado, recuerda el paso 1 de mi respuesta anterior sobre cómo crearla
-// use App\Entity\VolunteerService; // <--- Descomenta si ya tienes esta entidad
 use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\FileUploader;
+use App\Service\VolunteerManager;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
 use Symfony\Component\Security\Http\Attribute\Security;
-
-// #[Route('/personal')] // Comentario de línea para la ruta '/personal'
 class VolunteerController extends AbstractController
 {
+    public function __construct(
+        private readonly FileUploader $fileUploader,
+        private readonly VolunteerManager $volunteerManager
+    ) {
+    }
     #[Route('/voluntarios', name: 'app_volunteer_list')]
     #[Security("is_granted('ROLE_ADMIN')")]
     // Inyecta PaginatorInterface para la paginación
@@ -39,32 +36,8 @@ class VolunteerController extends AbstractController
         $page = $request->query->getInt('page', 1); // Obtiene el número de página de la URL, por defecto 1
         $limit = 10; // Define cuántos elementos quieres por página
 
-        // Crea un QueryBuilder para construir la consulta de los voluntarios
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
-                                            ->leftJoin('v.user', 'u') // Asume que Volunteer tiene una relación con User
-                                            ->addSelect('u'); // Para poder buscar por email de usuario, si es necesario
-
-        // Aplica filtros de búsqueda si hay un término
-        if ($searchTerm) {
-            $queryBuilder->andWhere(
-                $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->like('v.name', ':search'),
-                    $queryBuilder->expr()->like('v.lastName', ':search'),
-                    $queryBuilder->expr()->like('v.dni', ':search'),
-                    $queryBuilder->expr()->like('u.email', ':search') // Búsqueda por email del usuario
-                )
-            )
-            ->setParameter('search', '%' . $searchTerm . '%');
-        } 
-        
-        // Aplica filtros por estado si no es "all"
-        if ($filterStatus !== 'all') {
-            $queryBuilder->andWhere('v.status = :status')
-                         ->setParameter('status', $filterStatus);
-        }
-
-        // Ordena los resultados para una paginación consistente
-        $queryBuilder->orderBy('v.id', 'ASC'); 
+        // Crea la consulta de los voluntarios usando el método del repositorio
+        $queryBuilder = $volunteerRepository->createPaginatorQueryBuilder($searchTerm, $filterStatus);
 
         // Pagina la consulta usando el servicio KnpPaginator
         $pagination = $paginator->paginate(
@@ -74,12 +47,7 @@ class VolunteerController extends AbstractController
         );
 
         // Estadísticas (estas siguen obteniendo todos los datos, podrías optimizarlas si el volumen es muy grande)
-        $stats = [
-            'total' => $volunteerRepository->count([]), // Usar count para eficiencia
-            'Activo' => $volunteerRepository->count(['status' => Volunteer::STATUS_ACTIVE]),
-            'Suspensión' => $volunteerRepository->count(['status' => Volunteer::STATUS_SUSPENDED]),
-            'Baja' => $volunteerRepository->count(['status' => Volunteer::STATUS_INACTIVE]),
-        ];
+        $stats = $volunteerRepository->getStatusStats();
 
         return $this->render('volunteer/list_volunteer.html.twig', [
             'pagination' => $pagination, // ¡Pasamos el objeto de paginación a la vista!
@@ -92,7 +60,7 @@ class VolunteerController extends AbstractController
 
     #[Route('/nuevo_voluntario', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
-    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function new(Request $request): Response
     {
         $volunteer = new Volunteer();
         $user = new User(); // CORRECTO: Instanciar User aquí
@@ -102,65 +70,25 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('user')->get('password')->getData();
-
-            if ($plainPassword) { // Solo hashear si se proporcionó una contraseña
-                $hashedPassword = $userPasswordHasher->hashPassword(
-                    $user, 
-                    $plainPassword
-                );
-                $user->setPassword($hashedPassword);
-            }
-            $user->setRoles(['ROLE_VOLUNTEER']); // Usando ROLE_VOLUNTEER según tu código
-
-            /** @var UploadedFile $profilePictureFile */
+            /** @var UploadedFile|null $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
-
-            // Manejar la subida del archivo de la foto
             if ($profilePictureFile) {
-                $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                // Esto es para limpiar el nombre de archivo, haciéndolo seguro para URLs
-                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$profilePictureFile->guessExtension();
-
                 try {
-                    $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures', // Directorio de destino
-                        $newFilename
-                    );
-                    // Si ya existe una foto (aunque en 'new' no debería haber, es buena práctica), bórrala.
-                    // Esta lógica es más común en 'edit', pero no causa daño aquí.
-                    if ($volunteer->getProfilePicture()) {
-                        $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures/'.$volunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) {
-                            $filesystem->remove($oldFilePath);
-                        }
-                    }
-                    // ¡IMPORTANTE! Asignar el nombre del archivo a la entidad Volunteer
-                    $volunteer->setProfilePicture($newFilename); 
-                } catch (FileException $e) {
-                    // Manejar el error de subida de archivo si ocurre
+                    $newFilename = $this->fileUploader->upload($profilePictureFile);
+                    $volunteer->setProfilePicture($newFilename);
+                } catch (\RuntimeException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
-                    // Puedes considerar no persistir el voluntario si la subida falla críticamente
-                    // return $this->redirectToRoute('app_volunteer_new'); 
                 }
             }
 
-            // Establecer fecha de ingreso si no está definida
-            if (!$volunteer->getJoinDate()) {
-                $volunteer->setJoinDate(new \DateTime());
-            }
-
-            $entityManager->persist($user);
-            $entityManager->persist($volunteer);
-            $entityManager->flush();
+            $plainPassword = $form->get('user')->get('password')->getData();
+            $this->volunteerManager->processNewVolunteer($volunteer, $plainPassword);
 
             $this->addFlash('success', 'Voluntario creado exitosamente.');
             return $this->redirectToRoute('app_volunteer_list');
         }
 
-        return $this->render('volunteer/new_volunterr.html.twig', [
+        return $this->render('volunteer/new_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
             'current_section' => 'personal-nuevo'
@@ -168,7 +96,7 @@ class VolunteerController extends AbstractController
     }
 
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function registration(Request $request): Response
     {
         $volunteer = new Volunteer();
         $user = new User(); // Creas la instancia de User
@@ -178,66 +106,21 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // *** AHORA, OBTENEMOS LA INSTANCIA DE USER QUE HA SIDO HIDRATADA POR EL FORMULARIO ***
-            $hydratedVolunteer = $form->getData(); // Obtiene el objeto Volunteer con todos los datos rellenados por el formulario
-            $hydratedUser = $hydratedVolunteer->getUser(); // Obtiene el objeto User que está dentro del Volunteer rellenado
-
-            $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
-            $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
-
-            $plainPassword = $form->get('user')->get('password')->getData();
-
-            if ($plainPassword) {
-                // *** APLICAMOS EL HASHING A LA INSTANCIA DE USER CORRECTA ***
-                $hashedPassword = $userPasswordHasher->hashPassword(
-                    $hydratedUser, // ¡Usar $hydratedUser aquí!
-                    $plainPassword
-                );
-                $hydratedUser->setPassword($hashedPassword); // ¡Setear la contraseña en $hydratedUser!
-            }
-            // *** ASIGNAMOS LOS ROLES A LA INSTANCIA DE USER CORRECTA ***
-            $hydratedUser->setRoles(['ROLE_VOLUNTEER']); // ¡Usar $hydratedUser aquí!
-
-            /** @var UploadedFile $profilePictureFile */
+            /** @var UploadedFile|null $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
-
-            // Manejar la subida del archivo de la foto
             if ($profilePictureFile) {
-                $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
-
                 try {
-                    $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures',
-                        $newFilename
-                    );
-                    if ($hydratedVolunteer->getProfilePicture()) {
-                        $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $hydratedVolunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) {
-                            $filesystem->remove($oldFilePath);
-                        }
-                    }
-                    $hydratedVolunteer->setProfilePicture($newFilename); // Asignar a $hydratedVolunteer
-                } catch (FileException $e) {
+                    $newFilename = $this->fileUploader->upload($profilePictureFile);
+                    $volunteer->setProfilePicture($newFilename);
+                } catch (\RuntimeException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            $hydratedVolunteer->setStatus(Volunteer::STATUS_PENDING);
-            if (!$hydratedVolunteer->getJoinDate()) {
-                $hydratedVolunteer->setJoinDate(new \DateTime());
-            }
+            $plainPassword = $form->get('user')->get('password')->getData();
+            $this->volunteerManager->processRegistration($volunteer, $plainPassword);
 
-            // *** PERSISTIR AMBAS ENTIDADES ***
-            // Ahora, persistimos la instancia de User que ya fue rellenada y modificada
-            $entityManager->persist($hydratedUser);
-            // Y persistimos el Volunteer, que ya tiene la referencia al User correcto
-            $entityManager->persist($hydratedVolunteer);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
+            $this->addFlash('success', 'Solicitud de inscripción enviada correctamente.');
             return $this->redirectToRoute('app_volunteer_registration');
         }
 
@@ -250,10 +133,9 @@ class VolunteerController extends AbstractController
 
     #[Route('/editar_voluntario-{id}', name: 'app_volunteer_edit', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
-    public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function edit(Request $request, Volunteer $volunteer): Response
     {
-        $user = $volunteer->getUser();
-        if (!$user) {
+        if (!$volunteer->getUser()) {
             // This should not happen in a normal flow if a volunteer must have a user.
             $this->addFlash('error', 'ERROR CRÍTICO: No hay un usuario asociado a este voluntario.');
             return $this->redirectToRoute('app_volunteer_list');
@@ -266,49 +148,23 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle password update
-            $plainPassword = $form->get('user')->get('password')->getData();
-            if ($plainPassword) {
-                $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
-                $user->setPassword($hashedPassword);
-            }
-
-            // Handle profile picture upload
-            /** @var UploadedFile $profilePictureFile */
+            /** @var UploadedFile|null $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
             if ($profilePictureFile) {
-                $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
-
                 try {
-                    $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures',
-                        $newFilename
-                    );
-
-                    // Remove old picture if it exists
-                    if ($volunteer->getProfilePicture()) {
-                        $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $volunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) {
-                            $filesystem->remove($oldFilePath);
-                        }
-                    }
-
+                    $oldFilename = $volunteer->getProfilePicture();
+                    $newFilename = $this->fileUploader->upload($profilePictureFile, $oldFilename);
                     $volunteer->setProfilePicture($newFilename);
-                } catch (FileException $e) {
+                } catch (\RuntimeException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            try {
-                $entityManager->flush();
-                $this->addFlash('success', 'Voluntario actualizado exitosamente.');
-                return $this->redirectToRoute('app_volunteer_list', [], Response::HTTP_SEE_OTHER);
-            } catch (\Exception $e) {
-                $this->addFlash('error', 'Error al actualizar el voluntario: ' . $e->getMessage());
-            }
+            $plainPassword = $form->get('user')->get('password')->getData();
+            $this->volunteerManager->processUpdate($volunteer, $plainPassword);
+
+            $this->addFlash('success', 'Voluntario actualizado exitosamente.');
+            return $this->redirectToRoute('app_volunteer_list', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('volunteer/edit_volunteer.html.twig', [
@@ -331,7 +187,7 @@ class VolunteerController extends AbstractController
             $userEmail = $volunteer->getUser() ? $volunteer->getUser()->getEmail() : '';
 
             $csvData .= sprintf(
-                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
                 $volunteer->getName(),
                 $volunteer->getLastName() ?? '',
                 $volunteer->getDni() ?? '',
