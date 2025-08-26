@@ -243,7 +243,7 @@ class VolunteerType extends AbstractType
             // --- Datos de Acceso (del UserType anidado) ---
             ->add('user', UserType::class, [
                 'label' => false, // La etiqueta general se puede poner en la plantilla si es necesario
-                'by_reference' => false,
+                'by_reference' => true,
                 // Pasar la opción 'is_edit' al UserType
                 'is_edit' => $options['is_edit'],
             ])

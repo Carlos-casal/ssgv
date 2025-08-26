@@ -114,7 +114,7 @@ class Volunteer
     #[ORM\Column(length: 255)]
     private ?string $specialization = null;
 
-    #[ORM\OneToOne(inversedBy: 'volunteer', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(inversedBy: 'volunteer', cascade: ['remove'])]
     #[ORM\JoinColumn(nullable: false)]
     private ?User $user = null;
 
