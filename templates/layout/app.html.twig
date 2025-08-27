@@ -10,9 +10,6 @@
     
     <!-- Main content -->
     <div class="flex-1 flex flex-col overflow-hidden">
-        <!-- Header -->
-        {% include 'layout/header.html.twig' %}
-        
         <!-- Main content area -->
         <main class="flex-1 overflow-y-auto">
             {% for message in app.flashes('success') %}
