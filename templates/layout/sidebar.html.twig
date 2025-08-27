@@ -19,28 +19,6 @@
                 <span class="text-sm">Inicio</span>
             </a>
 
-            {# Menú de Acceso Rápido solo para ROLE_VOLUNTEER #}
-            {% if is_granted('ROLE_VOLUNTEER') %}
-            <div class="mb-1">
-                <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('quick-access')">
-                    <i data-lucide="zap" class="w-5 h-5"></i> {# Icono para Acceso Rápido #}
-                    <span class="flex-1 text-sm">Acceso rápido</span>
-                    <i data-lucide="chevron-down" class="w-4 h-4" id="quick-access-icon"></i>
-                </div>
-                <div class="ml-4 space-y-1" id="quick-access-submenu" style="display: block;">
-                    <a href="{{ path('app_services_list') }}"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                        <i data-lucide="briefcase" class="w-4 h-4"></i>
-                        <span class="text-sm">Servicios</span>
-                    </a>
-                    <a href="{{ path('app_my_services') }}"
-                       class="flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 text-gray-700 hover:bg-gray-100">
-                        <i data-lucide="star" class="w-4 h-4"></i>
-                        <span class="text-sm">Mis servicios</span>
-                    </a>
-                </div>
-            </div>
-            {% endif %}
 
             {% if not is_granted('ROLE_VOLUNTEER') %}
             <div class="mb-1">
@@ -85,6 +63,7 @@
             </div>
             {% endif %}
 
+            {% if not is_granted('ROLE_VOLUNTEER') %}
             <div class="mb-1">
                 <div class="flex items-center gap-3 px-3 py-2 text-gray-700 cursor-pointer" onclick="toggleSubmenu('servicios')">
                     <i data-lucide="building" class="w-5 h-5"></i>
@@ -112,6 +91,7 @@
                     {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             {% if not is_granted('ROLE_VOLUNTEER') %}
             <a href="{{ path('app_gesdoc') }}"
