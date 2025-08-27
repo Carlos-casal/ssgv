@@ -305,20 +305,52 @@ class ServiceController extends AbstractController
         #[Route('/servicio/{id}/compartir', name: 'app_service_share', methods: ['GET'])]
         public function share(Service $service, \Symfony\Component\Routing\Generator\UrlGeneratorInterface $urlGenerator): Response
         {
-            $attendUrl = $urlGenerator->generate('app_service_attend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
-            $unattendUrl = $urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+            // Formateo de fechas y horas
+            $dayMap = ['Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles', 'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado', 'Sunday' => 'Domingo'];
+            $monthMap = ['January' => 'Enero', 'February' => 'Febrero', 'March' => 'Marzo', 'April' => 'Abril', 'May' => 'Mayo', 'June' => 'Junio', 'July' => 'Julio', 'August' => 'Agosto', 'September' => 'Septiembre', 'October' => 'Octubre', 'November' => 'Noviembre', 'December' => 'Diciembre'];
 
-            $startDate = $service->getStartDate() ? $service->getStartDate()->format('d/m/Y H:i') : 'N/D';
-            $endDate = $service->getEndDate() ? $service->getEndDate()->format('d/m/Y H:i') : 'N/D';
+            $dayOfWeek = $dayMap[$service->getStartDate()->format('l')];
+            $dayOfMonth = $service->getStartDate()->format('d');
+            $monthName = $monthMap[$service->getStartDate()->format('F')];
+            $fullDate = sprintf('%s %s de %s', $dayOfWeek, $dayOfMonth, $monthName);
 
-            $message = sprintf(
-                "*¡Nuevo Servicio Disponible!*\n\n*Servicio:* %s\n*Fecha de Inicio:* %s\n*Fecha de Fin:* %s\n\nPor favor, confirma tu asistencia:\n\n*QUIERO ASISTIR:*\n%s\n\n*NO PUEDO ASISTIR:*\n%s",
-                $service->getTitle(),
-                $startDate,
-                $endDate,
-                $attendUrl,
-                $unattendUrl
-            );
+            $baseTime = $service->getTimeAtBase() ? $service->getTimeAtBase()->format('H:i') : 'N/D';
+            $departureTime = $service->getDepartureTime() ? $service->getDepartureTime()->format('H:i') : 'N/D';
+            $endTime = $service->getEndDate() ? $service->getEndDate()->format('H:i') : 'N/D';
+
+            // Construcción del mensaje
+            $messageParts = [];
+            $messageParts[] = sprintf('El día que es "%s"', $fullDate);
+            $messageParts[] = sprintf('Nombre del servicio "%s"', $service->getTitle());
+            $messageParts[] = ""; // Salto de línea
+            $messageParts[] = sprintf('H. Base %s', $baseTime);
+            $messageParts[] = sprintf('H. Salida %s', $departureTime);
+            $messageParts[] = sprintf('Fin %s', $endTime);
+            $messageParts[] = ""; // Salto de línea
+
+            if ($service->isHasSupplies()) {
+                $messageParts[] = 'Avituallamiento: Si (en caso de que asistas indícame si eres alérgico a algo)';
+            } else {
+                $messageParts[] = 'Avituallamiento: No';
+            }
+            $messageParts[] = ""; // Salto de línea
+
+            if ($service->getSvaCount() > 0 || $service->getSvbCount() > 0) {
+                $messageParts[] = 'Ambulancias: Si';
+                if ($service->getSvaCount() > 0) {
+                    $messageParts[] = sprintf('- SVA (%d) 🚑', $service->getSvaCount());
+                }
+                if ($service->getSvbCount() > 0) {
+                    $messageParts[] = sprintf('- SVB (%d) 🚑', $service->getSvbCount());
+                }
+            }
+            $messageParts[] = ""; // Salto de línea
+
+            if ($service->getResponsiblePerson()) {
+                $messageParts[] = sprintf('Responsable: "%s"', $service->getResponsiblePerson());
+            }
+
+            $message = implode("\n", $messageParts);
 
             $whatsAppUrl = 'https://wa.me/?text=' . urlencode($message);
 
