@@ -131,6 +131,25 @@ class ServiceType extends AbstractType
             ->add('requester', TextType::class, [
                 'label' => 'Solicitante',
                 'required' => false,
+            ])
+            ->add('hasSupplies', CheckboxType::class, [
+                'label' => 'Avituallamiento Disponible',
+                'required' => false,
+            ])
+            ->add('svaCount', IntegerType::class, [
+                'label' => 'Nº Ambulancias SVA',
+                'required' => false,
+                'attr' => ['min' => 0, 'placeholder' => '0'],
+            ])
+            ->add('svbCount', IntegerType::class, [
+                'label' => 'Nº Ambulancias SVB',
+                'required' => false,
+                'attr' => ['min' => 0, 'placeholder' => '0'],
+            ])
+            ->add('responsiblePerson', TextType::class, [
+                'label' => 'Responsable del Servicio',
+                'required' => false,
+                'attr' => ['placeholder' => 'Nombre del responsable'],
             ]);
     }
 
