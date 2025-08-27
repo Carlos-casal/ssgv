@@ -1,0 +1,71 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Compartir Servicio{% endblock %}
+
+{% block content %}
+<div class="p-6">
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-2xl mx-auto">
+        <h1 class="text-2xl font-bold mb-2">Compartir Servicio</h1>
+        <p class="text-gray-600 mb-6">Copia el siguiente mensaje y pégalo en tu grupo de WhatsApp para notificar a los voluntarios.</p>
+
+        <div id="share-message" class="bg-gray-100 p-4 rounded-lg border border-gray-200 whitespace-pre-wrap font-mono text-sm">
+*¡Nuevo Servicio Disponible!*
+
+*Servicio:* {{ service.title }}
+*Fecha de Inicio:* {{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/D' }}
+*Fecha de Fin:* {{ service.endDate ? service.endDate|date('d/m/Y H:i') : 'N/D' }}
+
+Por favor, confirma tu asistencia:
+
+*QUIERO ASISTIR:*
+{{ attend_url }}
+
+*NO PUEDO ASISTIR:*
+{{ unattend_url }}
+        </div>
+
+        <button id="copy-button" class="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+            <i data-lucide="copy" class="w-4 h-4"></i>
+            Copiar Mensaje
+        </button>
+        <span id="copy-success" class="ml-4 text-green-600 hidden font-medium">¡Copiado!</span>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const copyButton = document.getElementById('copy-button');
+            const shareMessage = document.getElementById('share-message');
+            const successMessage = document.getElementById('copy-success');
+
+            if (copyButton && shareMessage) {
+                copyButton.addEventListener('click', function() {
+                    // Usar innerText para preservar los saltos de línea que WhatsApp entiende
+                    const textToCopy = shareMessage.innerText;
+
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        // Éxito al copiar
+                        successMessage.classList.remove('hidden');
+                        copyButton.classList.add('bg-green-600', 'hover:bg-green-700');
+                        copyButton.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Copiado';
+                        lucide.createIcons(); // Re-renderizar el ícono
+
+                        setTimeout(() => {
+                            successMessage.classList.add('hidden');
+                            copyButton.classList.remove('bg-green-600', 'hover:bg-green-700');
+                            copyButton.innerHTML = '<i data-lucide="copy" class="w-4 h-4"></i> Copiar Mensaje';
+                            lucide.createIcons(); // Re-renderizar el ícono
+                        }, 2500);
+
+                    }).catch(err => {
+                        console.error('Error al copiar el texto: ', err);
+                        alert('Error al copiar el mensaje. Por favor, cópialo manualmente.');
+                    });
+                });
+            }
+        });
+    </script>
+{% endblock %}
