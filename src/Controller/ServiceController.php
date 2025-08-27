@@ -88,9 +88,8 @@ class ServiceController extends AbstractController
             // Opcional: Añadir un mensaje flash para confirmar la creación
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
 
-            // 6. Redirigir a la lista de servicios después de crear uno nuevo
-            // Usamos 'list_service' que es el nombre de la nueva ruta
-            return $this->redirectToRoute('app_services_list');
+            // 6. Redirigir a la nueva página para compartir el servicio
+            return $this->redirectToRoute('app_service_share', ['id' => $service->getId()]);
         }
 
         // 7. Renderizar la plantilla Twig, pasando el formulario
@@ -302,4 +301,17 @@ class ServiceController extends AbstractController
             'service' => $service,
         ]);
     }
+
+        #[Route('/servicio/{id}/compartir', name: 'app_service_share', methods: ['GET'])]
+        public function share(Service $service, \Symfony\Component\Routing\Generator\UrlGeneratorInterface $urlGenerator): Response
+        {
+            $attendUrl = $urlGenerator->generate('app_service_attend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+            $unattendUrl = $urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+
+            return $this->render('service/share.html.twig', [
+                'service' => $service,
+                'attend_url' => $attendUrl,
+                'unattend_url' => $unattendUrl,
+            ]);
+        }
 }
