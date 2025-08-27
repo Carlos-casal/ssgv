@@ -308,10 +308,24 @@ class ServiceController extends AbstractController
             $attendUrl = $urlGenerator->generate('app_service_attend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
             $unattendUrl = $urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
 
+            $startDate = $service->getStartDate() ? $service->getStartDate()->format('d/m/Y H:i') : 'N/D';
+            $endDate = $service->getEndDate() ? $service->getEndDate()->format('d/m/Y H:i') : 'N/D';
+
+            $message = sprintf(
+                "*¡Nuevo Servicio Disponible!*\n\n*Servicio:* %s\n*Fecha de Inicio:* %s\n*Fecha de Fin:* %s\n\nPor favor, confirma tu asistencia:\n\n*QUIERO ASISTIR:*\n%s\n\n*NO PUEDO ASISTIR:*\n%s",
+                $service->getTitle(),
+                $startDate,
+                $endDate,
+                $attendUrl,
+                $unattendUrl
+            );
+
+            $whatsAppUrl = 'https://wa.me/?text=' . urlencode($message);
+
             return $this->render('service/share.html.twig', [
                 'service' => $service,
-                'attend_url' => $attendUrl,
-                'unattend_url' => $unattendUrl,
+                'whatsapp_url' => $whatsAppUrl,
+                'raw_message' => $message
             ]);
         }
 }
