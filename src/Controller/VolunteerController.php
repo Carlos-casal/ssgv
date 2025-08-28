@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Volunteer;
 use App\Entity\User;
+use App\Form\ProfileType;
 use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
 use App\Service\FileUploader;
@@ -239,4 +240,35 @@ class VolunteerController extends AbstractController
             'volunteer' => $volunteer,
         ]);
     }
+
+        #[Route('/perfil/editar', name: 'app_profile_edit', methods: ['GET', 'POST'])]
+        #[Security("is_granted('ROLE_USER')")]
+        public function editProfile(Request $request): Response
+        {
+            /** @var \App\Entity\User $user */
+            $user = $this->getUser();
+            $volunteer = $user->getVolunteer();
+
+            if (!$volunteer) {
+                $this->addFlash('error', 'No se ha encontrado un perfil de voluntario asociado a tu cuenta.');
+                return $this->redirectToRoute('app_dashboard');
+            }
+
+            $form = $this->createForm(ProfileType::class, $volunteer);
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $plainPassword = $form->get('user')->get('password')->getData();
+                $this->volunteerManager->processUpdate($volunteer, $plainPassword);
+
+                $this->addFlash('success', 'Tu perfil ha sido actualizado correctamente.');
+
+                return $this->redirectToRoute('app_profile_edit');
+            }
+
+            return $this->render('volunteer/edit_profile.html.twig', [
+                'form' => $form->createView(),
+                'current_section' => 'perfil'
+            ]);
+        }
 }
