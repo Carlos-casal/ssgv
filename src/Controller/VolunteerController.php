@@ -266,9 +266,11 @@ class VolunteerController extends AbstractController
                 return $this->redirectToRoute('app_profile_edit');
             }
 
-            return $this->render('volunteer/edit_profile.html.twig', [
+            return $this->render('volunteer/edit_volunteer.html.twig', [
+                'volunteer' => $volunteer,
                 'form' => $form->createView(),
-                'current_section' => 'perfil'
+                'current_section' => 'perfil',
+                'is_profile_page' => true,
             ]);
         }
 }
