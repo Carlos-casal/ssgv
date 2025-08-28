@@ -2,12 +2,18 @@
 
 {% extends 'layout/app.html.twig' %} {# Usamos 'layout/app.html.twig' como base, ajusta si tu layout base es diferente #}
 
-{% block page_title %}Editar Voluntario{% endblock %}
+{% block page_title %}{% if is_profile_page|default(false) %}Editar Mi Perfil{% else %}Editar Voluntario{% endif %}{% endblock %}
 
 {% block content %}
 
     <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-6 text-gray-900">Editar Voluntario</h1>
+        <h1 class="text-2xl font-bold mb-6 text-gray-900">
+            {% if is_profile_page|default(false) %}
+                Editar Mi Perfil
+            {% else %}
+                Editar Voluntario
+            {% endif %}
+        </h1>
 
         {# Mensajes flash #}
         {% for message in app.flashes('success') %}
