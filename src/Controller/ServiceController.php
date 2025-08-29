@@ -2,10 +2,12 @@
 namespace App\Controller;
 
 use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
+use App\Form\AssistanceConfirmationType;
 use App\Form\ServiceType; // Asegúrate de que esta línea exista para el formulario ServiceType
 use App\Repository\ServiceRepository; // ¡Importante! Necesitamos el repositorio para listar servicios
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
@@ -216,13 +218,42 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_dashboard');
     }
 
-    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
-    public function attendance(Service $service): Response
+    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET', 'POST'])]
+    public function attendance(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        // Pre-fill check-in/out times for attendees if they are null
+        foreach ($service->getAssistanceConfirmations() as $confirmation) {
+            if ($confirmation->isHasAttended() && !$confirmation->getCheckInTime()) {
+                // Use service start time if time at base is not set
+                $checkInTime = $service->getTimeAtBase() ?? $service->getStartDate();
+                $confirmation->setCheckInTime($checkInTime);
+            }
+            if ($confirmation->isHasAttended() && !$confirmation->getCheckOutTime()) {
+                $confirmation->setCheckOutTime($service->getEndDate());
+            }
+        }
+
+        $form = $this->createFormBuilder($service)
+            ->add('assistanceConfirmations', CollectionType::class, [
+                'entry_type' => AssistanceConfirmationType::class,
+                'entry_options' => ['label' => false],
+                'by_reference' => false, // Important for the setters to be called
+            ])
+            ->getForm();
+
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Las horas de los asistentes han sido actualizadas.');
+            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+        }
+
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
+            'form' => $form->createView(),
         ]);
     }
 
