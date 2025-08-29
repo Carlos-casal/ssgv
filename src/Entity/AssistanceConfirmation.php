@@ -24,6 +24,12 @@ class AssistanceConfirmation
     #[ORM\JoinColumn(nullable: false)]
     private ?Volunteer $volunteer = null;
 
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $checkInTime = null;
+
+    #[ORM\Column(type: \Doctrine\DBAL\Types\Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $checkOutTime = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -61,6 +67,30 @@ class AssistanceConfirmation
     public function setVolunteer(?Volunteer $volunteer): static
     {
         $this->volunteer = $volunteer;
+
+        return $this;
+    }
+
+    public function getCheckInTime(): ?\DateTimeInterface
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(?\DateTimeInterface $checkInTime): static
+    {
+        $this->checkInTime = $checkInTime;
+
+        return $this;
+    }
+
+    public function getCheckOutTime(): ?\DateTimeInterface
+    {
+        return $this->checkOutTime;
+    }
+
+    public function setCheckOutTime(?\DateTimeInterface $checkOutTime): static
+    {
+        $this->checkOutTime = $checkOutTime;
 
         return $this;
     }
