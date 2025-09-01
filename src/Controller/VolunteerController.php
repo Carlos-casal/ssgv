@@ -384,15 +384,41 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    #[Route('/voluntarios/list-all', name: 'app_volunteer_list_all', methods: ['GET'])]
+    public function listAll(VolunteerRepository $volunteerRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $volunteers = $volunteerRepository->findBy([], ['lastName' => 'ASC', 'name' => 'ASC']);
+
+        $data = [];
+        foreach ($volunteers as $volunteer) {
+            $data[] = [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName(),
+                'lastName' => $volunteer->getLastName(),
+                'dni' => $volunteer->getDni(),
+            ];
+        }
+
+        return $this->json($data);
+    }
+
     #[Route('/voluntarios/search', name: 'app_volunteer_search', methods: ['GET'])]
     public function search(Request $request, VolunteerRepository $volunteerRepository): Response
     {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
         $query = $request->query->get('q', '');
-        if (strlen($query) < 2) {
-            return $this->json([]);
+
+        // Find a way to reuse the repository method from the list action
+        // For now, let's just build a simple query
+        $qb = $volunteerRepository->createQueryBuilder('v');
+
+        if ($query) {
+             $qb->where('v.name LIKE :query OR v.lastName LIKE :query OR v.dni LIKE :query')
+               ->setParameter('query', '%' . $query . '%');
         }
 
-        $volunteers = $volunteerRepository->findByTextSearch($query);
+        $volunteers = $qb->orderBy('v.lastName', 'ASC')->addOrderBy('v.name', 'ASC')->getQuery()->getResult();
 
         $data = [];
         foreach ($volunteers as $volunteer) {

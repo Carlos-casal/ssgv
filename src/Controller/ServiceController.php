@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
+use App\Entity\Volunteer;
 use App\Form\ServiceType; // Asegúrate de que esta línea exista para el formulario ServiceType
 use App\Repository\ServiceRepository; // ¡Importante! Necesitamos el repositorio para listar servicios
 use Doctrine\ORM\EntityManagerInterface;
@@ -222,63 +223,9 @@ class ServiceController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Create the form, but don't handle it here. It's for display in the modal.
-        $form = $this->createForm(ServiceType::class, $service);
-
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
-            'form' => $form->createView(),
         ]);
-    }
-
-    #[Route('/servicios/{id}/fichaje', name: 'app_service_fichaje', methods: ['POST'])]
-    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            $this->addFlash('success', 'Horas de fichaje actualizadas.');
-        } else {
-            $this->addFlash('danger', 'Hubo un error al actualizar las horas.');
-        }
-
-        return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
-    }
-
-    #[Route('/servicios/{id}/add-volunteer', name: 'app_service_add_volunteer', methods: ['POST'])]
-    public function addVolunteer(Request $request, Service $service, EntityManagerInterface $entityManager, \App\Repository\VolunteerRepository $volunteerRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $data = json_decode($request->getContent(), true);
-        $volunteerId = $data['volunteerId'] ?? null;
-
-        if (!$volunteerId) {
-            return $this->json(['status' => 'error', 'message' => 'Falta el ID del voluntario.'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $volunteer = $volunteerRepository->find($volunteerId);
-        if (!$volunteer) {
-            return $this->json(['status' => 'error', 'message' => 'Voluntario no encontrado.'], Response::HTTP_NOT_FOUND);
-        }
-
-        $existingConfirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
-        if ($existingConfirmation) {
-            return $this->json(['status' => 'error', 'message' => 'Este voluntario ya está en la lista de asistencia.'], Response::HTTP_CONFLICT);
-        }
-
-        $confirmation = new \App\Entity\AssistanceConfirmation();
-        $confirmation->setService($service);
-        $confirmation->setVolunteer($volunteer);
-        $confirmation->setHasAttended(true);
-
-        $entityManager->persist($confirmation);
-        $entityManager->flush();
-
-        return $this->json(['status' => 'success', 'message' => 'Voluntario añadido correctamente.']);
     }
 
     #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
@@ -355,5 +302,66 @@ class ServiceController extends AbstractController
         return $this->render('service/view.html.twig', [
             'service' => $service,
         ]);
+    }
+
+    #[Route('/servicios/{service}/toggle-attendance/{volunteer}', name: 'app_service_toggle_attendance', methods: ['POST'])]
+    public function toggleAttendance(Service $service, Volunteer $volunteer, EntityManagerInterface $entityManager, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $confirmation = $assistanceConfirmationRepository->findOneBy([
+            'service' => $service,
+            'volunteer' => $volunteer,
+        ]);
+
+        if (!$confirmation) {
+            return $this->json(['status' => 'error', 'message' => 'Confirmation not found.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $confirmation->setHasAttended(!$confirmation->isHasAttended());
+        $entityManager->flush();
+
+        return $this->json([
+            'status' => 'success',
+            'newState' => $confirmation->isHasAttended(),
+        ]);
+    }
+
+    #[Route('/servicios/{id}/add-volunteers', name: 'app_service_add_volunteers', methods: ['POST'])]
+    public function addVolunteers(Request $request, Service $service, EntityManagerInterface $entityManager, \App\Repository\VolunteerRepository $volunteerRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $data = json_decode($request->getContent(), true);
+        $volunteerIds = $data['volunteerIds'] ?? [];
+
+        if (empty($volunteerIds)) {
+            return $this->json(['status' => 'error', 'message' => 'No se proporcionaron IDs de voluntarios.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $addedCount = 0;
+        foreach ($volunteerIds as $volunteerId) {
+            $volunteer = $volunteerRepository->find($volunteerId);
+            if (!$volunteer) {
+                continue; // Or collect errors
+            }
+
+            $existingConfirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+            if ($existingConfirmation) {
+                continue; // Already in the list
+            }
+
+            $confirmation = new \App\Entity\AssistanceConfirmation();
+            $confirmation->setService($service);
+            $confirmation->setVolunteer($volunteer);
+            $confirmation->setHasAttended(true);
+            $entityManager->persist($confirmation);
+            $addedCount++;
+        }
+
+        if ($addedCount > 0) {
+            $entityManager->flush();
+        }
+
+        return $this->json(['status' => 'success', 'message' => $addedCount . ' voluntarios añadidos.']);
     }
 }

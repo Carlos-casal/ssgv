@@ -2,6 +2,7 @@
 
 namespace App\Tests\Controller;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
 use App\Entity\User;
 use App\Entity\Volunteer;
@@ -19,27 +20,6 @@ class ServiceControllerTest extends WebTestCase
         parent::setUp();
         $this->client = static::createClient();
         $this->entityManager = $this->client->getContainer()->get(EntityManagerInterface::class);
-
-        // Clean up database before test
-        $this->truncateEntities([
-            'App\Entity\AssistanceConfirmation',
-            'App\Entity\Service',
-            'App\Entity\Volunteer',
-            'App\Entity\User',
-        ]);
-    }
-
-    private function truncateEntities(array $entities)
-    {
-        $connection = $this->entityManager->getConnection();
-        $platform = $connection->getDatabasePlatform();
-
-        foreach ($entities as $entity) {
-            $query = $platform->getTruncateTableSQL(
-                $this->entityManager->getClassMetadata($entity)->getTableName(), true /* whether to cascade */
-            );
-            $connection->executeStatement($query);
-        }
     }
 
     private function createAdminUser(): User
@@ -54,13 +34,13 @@ class ServiceControllerTest extends WebTestCase
         return $user;
     }
 
-    private function createVolunteer(): Volunteer
+    private function createVolunteer(string $email = 'volunteer@test.com'): Volunteer
     {
         $volunteer = new Volunteer();
         $volunteer->setName('Test');
         $volunteer->setLastName('Volunteer');
-        $volunteer->setEmail('volunteer@test.com');
-        $volunteer->setDni('12345678Z');
+        $volunteer->setEmail($email);
+        $volunteer->setDni(uniqid('DNI_'));
         $this->entityManager->persist($volunteer);
         $this->entityManager->flush();
         return $volunteer;
@@ -77,67 +57,86 @@ class ServiceControllerTest extends WebTestCase
         return $service;
     }
 
-    public function testAddVolunteerToServiceAsAdmin()
+    private function createAssistanceConfirmation(Service $service, Volunteer $volunteer, bool $attending): AssistanceConfirmation
+    {
+        $confirmation = new AssistanceConfirmation();
+        $confirmation->setService($service);
+        $confirmation->setVolunteer($volunteer);
+        $confirmation->setHasAttended($attending);
+        $this->entityManager->persist($confirmation);
+        $this->entityManager->flush();
+        return $confirmation;
+    }
+
+    public function testAddVolunteersToServiceAsAdmin()
+    {
+        $adminUser = $this->createAdminUser();
+        $this->client->loginUser($adminUser);
+
+        $volunteer1 = $this->createVolunteer('v1@test.com');
+        $volunteer2 = $this->createVolunteer('v2@test.com');
+        $service = $this->createService();
+
+        $this->client->request(
+            'POST',
+            '/servicios/' . $service->getId() . '/add-volunteers',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['volunteerIds' => [$volunteer1->getId(), $volunteer2->getId()]])
+        );
+
+        $this->assertResponseIsSuccessful();
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertEquals('success', $response['status']);
+        $this->assertEquals('2 voluntarios añadidos.', $response['message']);
+
+        $confirmations = $this->entityManager->getRepository(AssistanceConfirmation::class)->findBy(['service' => $service]);
+        $this->assertCount(2, $confirmations);
+    }
+
+    public function testToggleAttendance()
     {
         $adminUser = $this->createAdminUser();
         $this->client->loginUser($adminUser);
 
         $volunteer = $this->createVolunteer();
         $service = $this->createService();
+        $confirmation = $this->createAssistanceConfirmation($service, $volunteer, true);
 
-        $this->client->request(
-            'POST',
-            '/servicios/' . $service->getId() . '/add-volunteer',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['volunteerId' => $volunteer->getId()])
-        );
+        $this->assertTrue($confirmation->isHasAttended());
+
+        $this->client->request('POST', '/servicios/' . $service->getId() . '/toggle-attendance/' . $volunteer->getId());
 
         $this->assertResponseIsSuccessful();
         $response = json_decode($this->client->getResponse()->getContent(), true);
         $this->assertEquals('success', $response['status']);
+        $this->assertFalse($response['newState']);
 
-        // Verify the confirmation was created
-        $confirmation = $this->entityManager->getRepository(\App\Entity\AssistanceConfirmation::class)->findOneBy([
-            'service' => $service,
-            'volunteer' => $volunteer,
-        ]);
+        $this->entityManager->refresh($confirmation);
+        $this->assertFalse($confirmation->isHasAttended());
 
-        $this->assertNotNull($confirmation);
+        // Toggle back
+        $this->client->request('POST', '/servicios/' . $service->getId() . '/toggle-attendance/' . $volunteer->getId());
+        $this->assertResponseIsSuccessful();
+        $response = json_decode($this->client->getResponse()->getContent(), true);
+        $this->assertTrue($response['newState']);
+
+        $this->entityManager->refresh($confirmation);
         $this->assertTrue($confirmation->isHasAttended());
-    }
-
-    public function testAddVolunteerToServiceAsNonAdmin()
-    {
-        // Create a non-admin user
-        $user = new User();
-        $user->setEmail('user@test.com');
-        $passwordHasher = $this->client->getContainer()->get(UserPasswordHasherInterface::class);
-        $user->setPassword($passwordHasher->hashPassword($user, 'password'));
-        $this->entityManager->persist($user);
-        $this->entityManager->flush();
-
-        $this->client->loginUser($user);
-
-        $volunteer = $this->createVolunteer();
-        $service = $this->createService();
-
-        $this->client->request(
-            'POST',
-            '/servicios/' . $service->getId() . '/add-volunteer',
-            [],
-            [],
-            ['CONTENT_TYPE' => 'application/json'],
-            json_encode(['volunteerId' => $volunteer->getId()])
-        );
-
-        $this->assertResponseStatusCodeSame(403); // Forbidden
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
+        // Clean up database after test
+        $connection = $this->entityManager->getConnection();
+        $platform = $connection->getDatabasePlatform();
+        $connection->executeStatement($platform->getTruncateTableSQL('assistance_confirmation', true));
+        $connection->executeStatement($platform->getTruncateTableSQL('service', true));
+        $connection->executeStatement($platform->getTruncateTableSQL('volunteer', true));
+        $connection->executeStatement($platform->getTruncateTableSQL('user', true));
+
         $this->entityManager->close();
         $this->entityManager = null; // avoid memory leaks
     }
