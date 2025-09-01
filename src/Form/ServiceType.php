@@ -3,7 +3,9 @@
 namespace App\Form;
 
 use App\Entity\Service;
+use App\Form\AssistanceConfirmationType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -131,6 +133,12 @@ class ServiceType extends AbstractType
             ->add('requester', TextType::class, [
                 'label' => 'Solicitante',
                 'required' => false,
+            ])
+            ->add('assistanceConfirmations', CollectionType::class, [
+                'entry_type' => AssistanceConfirmationType::class,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false, // Important for the relationship to be managed correctly
             ]);
     }
 
