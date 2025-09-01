@@ -15,7 +15,6 @@ use Symfony\Component\Form\Extension\Core\Type\DateType; // Para fecha_limite_in
 use Symfony\Component\Form\Extension\Core\Type\TimeType;   // Para hora_base y hora_salida
 use Symfony\Component\Form\Extension\Core\Type\IntegerType; // Para maximo_asistentes
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType; // Para tipo y categoría
-use Symfony\Component\Form\Extension\Core\Type\CollectionType; // Si necesitas para destinatarios
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType; // Para los destinatarios individuales
 // Si tienes la propiedad 'eys' o similar:
 use Symfony\Component\Form\Extension\Core\Type\HiddenType; // Ejemplo si 'eys' es un campo interno o auto-rellenado
