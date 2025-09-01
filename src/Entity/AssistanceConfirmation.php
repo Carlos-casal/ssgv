@@ -17,10 +17,10 @@ class AssistanceConfirmation
     #[ORM\Column]
     private ?bool $hasAttended = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $checkInTime = null;
 
-    #[ORM\Column(type: Types::TIME_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $checkOutTime = null;
 
     #[ORM\ManyToOne(inversedBy: 'assistanceConfirmations')]

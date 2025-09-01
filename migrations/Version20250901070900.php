@@ -20,7 +20,7 @@ final class Version20250901070900 extends AbstractMigration
     public function up(Schema $schema): void
     {
         // this up() migration is auto-generated, please modify it to your needs
-        $this->addSql('ALTER TABLE assistance_confirmation ADD check_in_time TIME DEFAULT NULL, ADD check_out_time TIME DEFAULT NULL');
+        $this->addSql('ALTER TABLE assistance_confirmation ADD check_in_time DATETIME DEFAULT NULL, ADD check_out_time DATETIME DEFAULT NULL');
     }
 
     public function down(Schema $schema): void
