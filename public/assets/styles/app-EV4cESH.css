@@ -1,0 +1,21 @@
+/* assets/styles/app.css (o login.css) */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.service-day:after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background-color: #000;
+}
+
+.text-blue-500 {
+    color: #3b82f6;
+}
