@@ -78,18 +78,6 @@ class Service
     #[ORM\OneToMany(mappedBy: 'service', targetEntity: AssistanceConfirmation::class, orphanRemoval: true)]
     private Collection $assistanceConfirmations;
 
-    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
-    private bool $hasSupplies = false;
-
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $svaCount = null;
-
-    #[ORM\Column(type: Types::INTEGER, nullable: true)]
-    private ?int $svbCount = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $responsiblePerson = null;
-
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
@@ -325,54 +313,6 @@ class Service
                 $assistanceConfirmation->setService(null);
             }
         }
-
-        return $this;
-    }
-
-    public function isHasSupplies(): ?bool
-    {
-        return $this->hasSupplies;
-    }
-
-    public function setHasSupplies(bool $hasSupplies): static
-    {
-        $this->hasSupplies = $hasSupplies;
-
-        return $this;
-    }
-
-    public function getSvaCount(): ?int
-    {
-        return $this->svaCount;
-    }
-
-    public function setSvaCount(?int $svaCount): static
-    {
-        $this->svaCount = $svaCount;
-
-        return $this;
-    }
-
-    public function getSvbCount(): ?int
-    {
-        return $this->svbCount;
-    }
-
-    public function setSvbCount(?int $svbCount): static
-    {
-        $this->svbCount = $svbCount;
-
-        return $this;
-    }
-
-    public function getResponsiblePerson(): ?string
-    {
-        return $this->responsiblePerson;
-    }
-
-    public function setResponsiblePerson(?string $responsiblePerson): static
-    {
-        $this->responsiblePerson = $responsiblePerson;
 
         return $this;
     }

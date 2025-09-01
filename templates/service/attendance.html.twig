@@ -1,73 +1,242 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block page_title %}Fichaje de Asistencia: {{ service.title }}{% endblock %}
+{% block page_title %}Asistencia al Servicio: {{ service.title }}{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
-    <div>
-        <h2 class="text-2xl font-bold text-gray-900">Fichaje de Asistencia: {{ service.title }}</h2>
-        <p class="text-gray-600">Registra las horas de entrada y salida de los voluntarios asistentes.</p>
-        <p class="text-sm text-gray-500 mt-2">
-            Horas por defecto del servicio:
-            <strong>Base:</strong> {{ service.timeAtBase ? service.timeAtBase|date('H:i') : service.startDate|date('H:i') }} |
-            <strong>Fin:</strong> {{ service.endDate|date('H:i') }}
-        </p>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Asistencia al Servicio: {{ service.title }}</h2>
+            <p class="text-gray-600">A continuación se muestra la lista de asistentes y no asistentes.</p>
+        </div>
     </div>
 
-    {{ form_start(form) }}
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="overflow-x-auto">
+    <!-- Add Volunteer Section -->
+    {% if is_granted('ROLE_ADMIN') %}
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 mb-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Añadir Voluntario Manualmente</h3>
+        <div class="flex items-center gap-2">
+            <input type="text" id="volunteer-search-input" class="form-input w-full" placeholder="Buscar por nombre, apellidos o DNI...">
+        </div>
+        <div id="volunteer-search-results" class="mt-2 border-gray-200 divide-y divide-gray-200"></div>
+    </div>
+    {% endif %}
+
+
+    <div class="flex justify-end mb-4">
+        <button id="fichar-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+            Fichar
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <h3 class="text-lg font-bold text-gray-900 p-4 border-b">Asistentes</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Nombre</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Apellidos</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendees-list" class="divide-y divide-gray-200">
+                        {% set attendees = service.assistanceConfirmations|filter(c => c.hasAttended) %}
+                        {% if attendees is not empty %}
+                            {% for confirmation in attendees %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.name }}</td>
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.lastName }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr id="no-attendees-row">
+                                <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+                                    No hay asistentes confirmados.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <h3 class="text-lg font-bold text-gray-900 p-4 border-b">No Asistentes</h3>
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Nombre</th>
+                            <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Apellidos</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% set nonAttendees = service.assistanceConfirmations|filter(c => not c.hasAttended) %}
+                        {% if nonAttendees is not empty %}
+                            {% for confirmation in nonAttendees %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.name }}</td>
+                                    <td class="px-6 py-4">{{ confirmation.volunteer.lastName }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="px-6 py-8 text-center text-gray-500">
+                                    No hay voluntarios que no asistan.
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Fichar Modal -->
+<div id="fichar-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-40">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-3xl max-h-[90vh] flex flex-col">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-bold">Fichar Asistencia</h3>
+            <button type="button" id="cancel-fichar-btn" class="p-1 rounded-full hover:bg-gray-200">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+        </div>
+
+        {{ form_start(form, {'action': path('app_service_fichaje', {'id': service.id})}) }}
+        <div class="overflow-y-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Hora de Entrada</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Hora de Salida</th>
+                        <th class="text-left px-4 py-2 text-sm font-medium text-gray-700">Voluntario</th>
+                        <th class="text-left px-4 py-2 text-sm font-medium text-gray-700">Hora Entrada</th>
+                        <th class="text-left px-4 py-2 text-sm font-medium text-gray-700">Hora Salida</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    {% set found_attendee = false %}
                     {% for confirmation_form in form.assistanceConfirmations %}
                         {% set confirmation = confirmation_form.vars.data %}
-                        {# Solo mostramos el formulario para los que han confirmado asistencia #}
                         {% if confirmation and confirmation.isHasAttended %}
-                            {% set found_attendee = true %}
-                            <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="font-medium text-gray-800">
-                                        {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastName }}
-                                    </div>
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap">
+                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastName }}
                                 </td>
-                                <td class="px-6 py-4">
-                                    {# Renderizamos el widget del subformulario #}
+                                <td class="px-4 py-2">
                                     {{ form_widget(confirmation_form.checkInTime) }}
-                                    {{ form_errors(confirmation_form.checkInTime) }}
                                 </td>
-                                <td class="px-6 py-4">
+                                <td class="px-4 py-2">
                                     {{ form_widget(confirmation_form.checkOutTime) }}
-                                    {{ form_errors(confirmation_form.checkOutTime) }}
                                 </td>
                             </tr>
                         {% endif %}
                     {% endfor %}
-
-                    {% if not found_attendee %}
-                        <tr>
-                            <td colspan="3" class="px-6 py-8 text-center text-gray-500">
-                                No hay asistentes confirmados para este servicio.
-                            </td>
-                        </tr>
-                    {% endif %}
                 </tbody>
             </table>
         </div>
+        <div class="flex justify-end gap-4 border-t pt-4 mt-auto">
+            <button type="button" id="cancel-fichar-btn-footer" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Guardar Horas</button>
+        </div>
+        {{ form_end(form) }}
     </div>
-
-    <div class="flex justify-end mt-6">
-        <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-            Guardar Horas
-        </button>
-    </div>
-    {{ form_end(form) }}
 </div>
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('turbo:load', () => {
+            const ficharBtn = document.getElementById('fichar-btn');
+            const ficharModal = document.getElementById('fichar-modal');
+            const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
+            const cancelFooterBtn = document.getElementById('cancel-fichar-btn-footer');
+
+            function openModal() {
+                if(ficharModal) ficharModal.classList.remove('hidden');
+            }
+
+            function closeModal() {
+                if(ficharModal) ficharModal.classList.add('hidden');
+            }
+
+            if (ficharBtn) {
+                ficharBtn.addEventListener('click', openModal);
+            }
+
+            if (cancelFicharBtn) {
+                cancelFicharBtn.addEventListener('click', closeModal);
+            }
+
+            if (cancelFooterBtn) {
+                cancelFooterBtn.addEventListener('click', closeModal);
+            }
+
+            // --- Manual Volunteer Add ---
+            const searchInput = document.getElementById('volunteer-search-input');
+            const searchResultsContainer = document.getElementById('volunteer-search-results');
+            const attendeesList = document.getElementById('attendees-list');
+            const serviceId = '{{ service.id }}';
+
+            if (searchInput) {
+                searchInput.addEventListener('input', async (e) => {
+                    const query = e.target.value;
+                    searchResultsContainer.innerHTML = '';
+
+                    if (query.length < 2) {
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`{{ path('app_volunteer_search') }}?q=${query}`);
+                        if (!response.ok) throw new Error('Network response was not ok');
+                        const volunteers = await response.json();
+
+                        volunteers.forEach(volunteer => {
+                            const resultItem = document.createElement('div');
+                            resultItem.className = 'p-2 hover:bg-gray-100 cursor-pointer';
+                            resultItem.textContent = `${volunteer.name} ${volunteer.lastName} (${volunteer.dni})`;
+                            resultItem.dataset.volunteerId = volunteer.id;
+                            searchResultsContainer.appendChild(resultItem);
+                        });
+                    } catch (error) {
+                        console.error('Error searching volunteers:', error);
+                        searchResultsContainer.innerHTML = '<div class="p-2 text-red-500">Error al buscar.</div>';
+                    }
+                });
+            }
+
+            if (searchResultsContainer) {
+                searchResultsContainer.addEventListener('click', async (e) => {
+                    if (e.target && e.target.dataset.volunteerId) {
+                        const volunteerId = e.target.dataset.volunteerId;
+
+                        try {
+                            const response = await fetch(`{{ path('app_service_add_volunteer', {'id': service.id}) }}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                },
+                                body: JSON.stringify({ volunteerId: volunteerId })
+                            });
+
+                            const result = await response.json();
+
+                            if (response.ok && result.status === 'success') {
+                                alert('Voluntario añadido correctamente. La página se recargará.');
+                                location.reload();
+                            } else {
+                                alert(`Error: ${result.message}`);
+                            }
+                        } catch (error) {
+                            console.error('Error adding volunteer:', error);
+                            alert('No se pudo añadir el voluntario.');
+                        }
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}

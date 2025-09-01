@@ -13,37 +13,6 @@ class VolunteerRepository extends ServiceEntityRepository
         parent::__construct($registry, Volunteer::class);
     }
 
-    public function createPaginatorQueryBuilder(string $searchTerm = '', string $filterStatus = 'all')
-    {
-        $queryBuilder = $this->createQueryBuilder('v')
-            ->leftJoin('v.user', 'u') // Asume que Volunteer tiene una relación con User
-            ->addSelect('u'); // Para poder buscar por email de usuario, si es necesario
-
-        // Aplica filtros de búsqueda si hay un término
-        if ($searchTerm) {
-            $queryBuilder->andWhere(
-                $queryBuilder->expr()->orX(
-                    $queryBuilder->expr()->like('v.name', ':search'),
-                    $queryBuilder->expr()->like('v.lastName', ':search'),
-                    $queryBuilder->expr()->like('v.dni', ':search'),
-                    $queryBuilder->expr()->like('u.email', ':search') // Búsqueda por email del usuario
-                )
-            )
-            ->setParameter('search', '%' . $searchTerm . '%');
-        }
-
-        // Aplica filtros por estado si no es "all"
-        if ($filterStatus !== 'all') {
-            $queryBuilder->andWhere('v.status = :status')
-                         ->setParameter('status', $filterStatus);
-        }
-
-        // Ordena los resultados para una paginación consistente
-        $queryBuilder->orderBy('v.id', 'ASC');
-
-        return $queryBuilder;
-    }
-
     public function findBySearchTerm(string $searchTerm): array
     {
         return $this->createQueryBuilder('v')
@@ -64,28 +33,13 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getResult();
     }
 
-    public function getStatusStats(): array
+    public function findByTextSearch(string $query): array
     {
-        $results = $this->createQueryBuilder('v')
-            ->select('v.status, COUNT(v.id) as status_count')
-            ->groupBy('v.status')
+        return $this->createQueryBuilder('v')
+            ->where('v.name LIKE :query OR v.lastName LIKE :query OR v.dni LIKE :query')
+            ->setParameter('query', '%' . $query . '%')
+            ->setMaxResults(10)
             ->getQuery()
-            ->getScalarResult();
-
-        $stats = [
-            'total' => 0,
-            Volunteer::STATUS_ACTIVE => 0,
-            Volunteer::STATUS_SUSPENDED => 0,
-            Volunteer::STATUS_INACTIVE => 0,
-        ];
-
-        foreach ($results as $result) {
-            if (isset($stats[$result['status']])) {
-                $stats[$result['status']] = (int) $result['status_count'];
-                $stats['total'] += (int) $result['status_count'];
-            }
-        }
-
-        return $stats;
+            ->getResult();
     }
 }
