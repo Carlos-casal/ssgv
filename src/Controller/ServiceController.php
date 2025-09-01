@@ -223,9 +223,32 @@ class ServiceController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
+        // Create the form for the 'fichar' modal
+        $form = $this->createForm(ServiceType::class, $service);
+
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
+            'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/servicios/{id}/fichaje', name: 'app_service_fichaje', methods: ['POST'])]
+    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $form = $this->createForm(ServiceType::class, $service);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Horas de fichaje actualizadas.');
+        } else {
+            // It's helpful to add an error flash if the form is not valid
+            $this->addFlash('danger', 'Hubo un error al actualizar las horas. Por favor, comprueba los datos.');
+        }
+
+        return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
     }
 
     #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
