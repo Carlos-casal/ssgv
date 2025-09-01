@@ -32,14 +32,4 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-
-    public function findByTextSearch(string $query): array
-    {
-        return $this->createQueryBuilder('v')
-            ->where('v.name LIKE :query OR v.lastName LIKE :query OR v.dni LIKE :query')
-            ->setParameter('query', '%' . $query . '%')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult();
-    }
 }
