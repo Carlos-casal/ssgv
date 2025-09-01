@@ -2,12 +2,10 @@
 namespace App\Controller;
 
 use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
-use App\Form\AssistanceConfirmationType;
 use App\Form\ServiceType; // Asegúrate de que esta línea exista para el formulario ServiceType
 use App\Repository\ServiceRepository; // ¡Importante! Necesitamos el repositorio para listar servicios
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
@@ -90,8 +88,9 @@ class ServiceController extends AbstractController
             // Opcional: Añadir un mensaje flash para confirmar la creación
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
 
-            // 6. Redirigir a la nueva página para compartir el servicio
-            return $this->redirectToRoute('app_service_share', ['id' => $service->getId()]);
+            // 6. Redirigir a la lista de servicios después de crear uno nuevo
+            // Usamos 'list_service' que es el nombre de la nueva ruta
+            return $this->redirectToRoute('app_services_list');
         }
 
         // 7. Renderizar la plantilla Twig, pasando el formulario
@@ -218,43 +217,68 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_dashboard');
     }
 
-    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET', 'POST'])]
-    public function attendance(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
+    public function attendance(Service $service): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Pre-fill check-in/out times for attendees if they are null
-        foreach ($service->getAssistanceConfirmations() as $confirmation) {
-            if ($confirmation->isHasAttended() && !$confirmation->getCheckInTime()) {
-                // Use service start time if time at base is not set
-                $checkInTime = $service->getTimeAtBase() ?? $service->getStartDate();
-                $confirmation->setCheckInTime($checkInTime);
-            }
-            if ($confirmation->isHasAttended() && !$confirmation->getCheckOutTime()) {
-                $confirmation->setCheckOutTime($service->getEndDate());
-            }
-        }
-
-        $form = $this->createFormBuilder($service)
-            ->add('assistanceConfirmations', CollectionType::class, [
-                'entry_type' => AssistanceConfirmationType::class,
-                'entry_options' => ['label' => false],
-                'by_reference' => false, // Important for the setters to be called
-            ])
-            ->getForm();
-
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            $this->addFlash('success', 'Las horas de los asistentes han sido actualizadas.');
-            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
-        }
+        // Create the form, but don't handle it here. It's for display in the modal.
+        $form = $this->createForm(ServiceType::class, $service);
 
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
         ]);
+    }
+
+    #[Route('/servicios/{id}/fichaje', name: 'app_service_fichaje', methods: ['POST'])]
+    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $form = $this->createForm(ServiceType::class, $service);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $entityManager->flush();
+            $this->addFlash('success', 'Horas de fichaje actualizadas.');
+        } else {
+            $this->addFlash('danger', 'Hubo un error al actualizar las horas.');
+        }
+
+        return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+    }
+
+    #[Route('/servicios/{id}/add-volunteer', name: 'app_service_add_volunteer', methods: ['POST'])]
+    public function addVolunteer(Request $request, Service $service, EntityManagerInterface $entityManager, \App\Repository\VolunteerRepository $volunteerRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $data = json_decode($request->getContent(), true);
+        $volunteerId = $data['volunteerId'] ?? null;
+
+        if (!$volunteerId) {
+            return $this->json(['status' => 'error', 'message' => 'Falta el ID del voluntario.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $volunteer = $volunteerRepository->find($volunteerId);
+        if (!$volunteer) {
+            return $this->json(['status' => 'error', 'message' => 'Voluntario no encontrado.'], Response::HTTP_NOT_FOUND);
+        }
+
+        $existingConfirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+        if ($existingConfirmation) {
+            return $this->json(['status' => 'error', 'message' => 'Este voluntario ya está en la lista de asistencia.'], Response::HTTP_CONFLICT);
+        }
+
+        $confirmation = new \App\Entity\AssistanceConfirmation();
+        $confirmation->setService($service);
+        $confirmation->setVolunteer($volunteer);
+        $confirmation->setHasAttended(true);
+
+        $entityManager->persist($confirmation);
+        $entityManager->flush();
+
+        return $this->json(['status' => 'success', 'message' => 'Voluntario añadido correctamente.']);
     }
 
     #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
@@ -332,63 +356,4 @@ class ServiceController extends AbstractController
             'service' => $service,
         ]);
     }
-
-        #[Route('/servicio/{id}/compartir', name: 'app_service_share', methods: ['GET'])]
-        public function share(Service $service, \Symfony\Component\Routing\Generator\UrlGeneratorInterface $urlGenerator): Response
-        {
-            // Formateo de fechas y horas
-            $dayMap = ['Monday' => 'Lunes', 'Tuesday' => 'Martes', 'Wednesday' => 'Miércoles', 'Thursday' => 'Jueves', 'Friday' => 'Viernes', 'Saturday' => 'Sábado', 'Sunday' => 'Domingo'];
-            $monthMap = ['January' => 'Enero', 'February' => 'Febrero', 'March' => 'Marzo', 'April' => 'Abril', 'May' => 'Mayo', 'June' => 'Junio', 'July' => 'Julio', 'August' => 'Agosto', 'September' => 'Septiembre', 'October' => 'Octubre', 'November' => 'Noviembre', 'December' => 'Diciembre'];
-
-            $dayOfWeek = $dayMap[$service->getStartDate()->format('l')];
-            $dayOfMonth = $service->getStartDate()->format('d');
-            $monthName = $monthMap[$service->getStartDate()->format('F')];
-            $fullDate = sprintf('%s %s de %s', $dayOfWeek, $dayOfMonth, $monthName);
-
-            $baseTime = $service->getTimeAtBase() ? $service->getTimeAtBase()->format('H:i') : 'N/D';
-            $departureTime = $service->getDepartureTime() ? $service->getDepartureTime()->format('H:i') : 'N/D';
-            $endTime = $service->getEndDate() ? $service->getEndDate()->format('H:i') : 'N/D';
-
-            // Construcción del mensaje
-            $messageParts = [];
-            $messageParts[] = sprintf('El día que es "%s"', $fullDate);
-            $messageParts[] = sprintf('Nombre del servicio "%s"', $service->getTitle());
-            $messageParts[] = ""; // Salto de línea
-            $messageParts[] = sprintf('H. Base %s', $baseTime);
-            $messageParts[] = sprintf('H. Salida %s', $departureTime);
-            $messageParts[] = sprintf('Fin %s', $endTime);
-            $messageParts[] = ""; // Salto de línea
-
-            if ($service->isHasSupplies()) {
-                $messageParts[] = 'Avituallamiento: Si (en caso de que asistas indícame si eres alérgico a algo)';
-            } else {
-                $messageParts[] = 'Avituallamiento: No';
-            }
-            $messageParts[] = ""; // Salto de línea
-
-            if ($service->getSvaCount() > 0 || $service->getSvbCount() > 0) {
-                $messageParts[] = 'Ambulancias: Si';
-                if ($service->getSvaCount() > 0) {
-                    $messageParts[] = sprintf('- SVA (%d) 🚑', $service->getSvaCount());
-                }
-                if ($service->getSvbCount() > 0) {
-                    $messageParts[] = sprintf('- SVB (%d) 🚑', $service->getSvbCount());
-                }
-            }
-            $messageParts[] = ""; // Salto de línea
-
-            if ($service->getResponsiblePerson()) {
-                $messageParts[] = sprintf('Responsable: "%s"', $service->getResponsiblePerson());
-            }
-
-            $message = implode("\n", $messageParts);
-
-            $whatsAppUrl = 'https://wa.me/?text=' . urlencode($message);
-
-            return $this->render('service/share.html.twig', [
-                'service' => $service,
-                'whatsapp_url' => $whatsAppUrl,
-                'raw_message' => $message
-            ]);
-        }
 }
