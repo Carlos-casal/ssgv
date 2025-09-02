@@ -3,9 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Service;
-use App\Form\AssistanceConfirmationType;
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -15,6 +13,7 @@ use Symfony\Component\Form\Extension\Core\Type\DateType; // Para fecha_limite_in
 use Symfony\Component\Form\Extension\Core\Type\TimeType;   // Para hora_base y hora_salida
 use Symfony\Component\Form\Extension\Core\Type\IntegerType; // Para maximo_asistentes
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType; // Para tipo y categoría
+use Symfony\Component\Form\Extension\Core\Type\CollectionType; // Si necesitas para destinatarios
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType; // Para los destinatarios individuales
 // Si tienes la propiedad 'eys' o similar:
 use Symfony\Component\Form\Extension\Core\Type\HiddenType; // Ejemplo si 'eys' es un campo interno o auto-rellenado
@@ -132,12 +131,6 @@ class ServiceType extends AbstractType
             ->add('requester', TextType::class, [
                 'label' => 'Solicitante',
                 'required' => false,
-            ])
-            ->add('assistanceConfirmations', CollectionType::class, [
-                'entry_type' => AssistanceConfirmationType::class,
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false, // Important for the relationship to be managed correctly
             ]);
     }
 
