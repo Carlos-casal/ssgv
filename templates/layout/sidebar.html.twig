@@ -29,7 +29,7 @@
                         <span class="flex-1 text-sm font-medium">GESTIÓN</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </a>
-                    <ul class="hidden pl-4 space-y-1">
+                    <ul class="pl-4 space-y-1">
                         <!-- PERSONAL -->
                         <li class="has-submenu">
                             <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
@@ -37,7 +37,7 @@
                                 <span class="flex-1 text-sm">PERSONAL</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="hidden pl-4 space-y-1">
+                            <ul class="pl-4 space-y-1">
                                 <li><a href="{{ path('app_volunteer_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                             </ul>
@@ -49,7 +49,7 @@
                                 <span class="flex-1 text-sm">SERVICIOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="hidden pl-4 space-y-1">
+                            <ul class="pl-4 space-y-1">
                                 <li><a href="{{ path('app_services_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">CUADRANTE</a></li>
@@ -63,7 +63,7 @@
                                 <span class="flex-1 text-sm font-medium">RECURSOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="hidden pl-4 space-y-1">
+                            <ul class="pl-4 space-y-1">
                                 <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm">VEHICULO</span></a></li>
                                 <!-- INVENTARIO -->
                                 <li class="has-submenu">
@@ -72,7 +72,7 @@
                                         <span class="flex-1 text-sm">INVENTARIO</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
-                                    <ul class="hidden pl-4 space-y-1">
+                                    <ul class="pl-4 space-y-1">
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ARTICULOS</a></li>
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ALMACENES</a></li>
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">PROVEEDORES</a></li>
@@ -88,7 +88,7 @@
                                         <span class="flex-1 text-sm">ARCE</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
-                                    <ul class="hidden pl-4 space-y-1">
+                                    <ul class="pl-4 space-y-1">
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                                     </ul>
                                 </li>
@@ -111,7 +111,7 @@
                         <span class="flex-1 text-sm font-medium">CONFIGURACION</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </a>
-                    <ul class="hidden pl-4 space-y-1">
+                    <ul class="pl-4 space-y-1">
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">SISTEMAS</a></li>
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">UTILIDADES</a></li>
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ADMINISTRACION</a></li>
@@ -155,20 +155,29 @@
         </a>
     </div>
 </div>
+<style>
+    .has-submenu > ul {
+        overflow: hidden;
+        max-height: 0;
+        transition: max-height 0.3s ease-in-out;
+    }
+    .has-submenu.submenu-open > ul {
+        max-height: 1000px; /* A large enough value to show all content */
+    }
+    .has-submenu.submenu-open > a > [data-lucide="chevron-right"] {
+        transform: rotate(90deg);
+    }
+</style>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        const submenuItems = document.querySelectorAll('.has-submenu > a');
+        const submenuItems = document.querySelectorAll('.has-submenu');
         submenuItems.forEach(item => {
-            item.addEventListener('click', function (e) {
-                e.preventDefault();
-                const submenu = this.nextElementSibling;
-                const icon = this.querySelector('[data-lucide="chevron-right"]');
-                if (submenu && submenu.tagName === 'UL') {
-                    submenu.classList.toggle('hidden');
-                    if (icon) {
-                        icon.classList.toggle('rotate-90');
-                    }
-                }
+            item.addEventListener('mouseenter', function () {
+                this.classList.add('submenu-open');
+            });
+
+            item.addEventListener('mouseleave', function () {
+                this.classList.remove('submenu-open');
             });
         });
     });
