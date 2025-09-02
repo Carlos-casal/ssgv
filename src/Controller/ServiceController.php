@@ -2,7 +2,6 @@
 namespace App\Controller;
 
 use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
-use App\Entity\Volunteer;
 use App\Form\ServiceType; // Asegúrate de que esta línea exista para el formulario ServiceType
 use App\Repository\ServiceRepository; // ¡Importante! Necesitamos el repositorio para listar servicios
 use Doctrine\ORM\EntityManagerInterface;
@@ -223,32 +222,9 @@ class ServiceController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        // Create the form for the 'fichar' modal
-        $form = $this->createForm(ServiceType::class, $service);
-
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
-            'form' => $form->createView(),
         ]);
-    }
-
-    #[Route('/servicios/{id}/fichaje', name: 'app_service_fichaje', methods: ['POST'])]
-    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            $this->addFlash('success', 'Horas de fichaje actualizadas.');
-        } else {
-            // It's helpful to add an error flash if the form is not valid
-            $this->addFlash('danger', 'Hubo un error al actualizar las horas. Por favor, comprueba los datos.');
-        }
-
-        return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
     }
 
     #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
@@ -325,66 +301,5 @@ class ServiceController extends AbstractController
         return $this->render('service/view.html.twig', [
             'service' => $service,
         ]);
-    }
-
-    #[Route('/servicios/{service}/toggle-attendance/{volunteer}', name: 'app_service_toggle_attendance', methods: ['POST'])]
-    public function toggleAttendance(Service $service, Volunteer $volunteer, EntityManagerInterface $entityManager, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
-        $confirmation = $assistanceConfirmationRepository->findOneBy([
-            'service' => $service,
-            'volunteer' => $volunteer,
-        ]);
-
-        if (!$confirmation) {
-            return $this->json(['status' => 'error', 'message' => 'Confirmation not found.'], Response::HTTP_NOT_FOUND);
-        }
-
-        $confirmation->setHasAttended(!$confirmation->isHasAttended());
-        $entityManager->flush();
-
-        return $this->json([
-            'status' => 'success',
-            'newState' => $confirmation->isHasAttended(),
-        ]);
-    }
-
-    #[Route('/servicios/{id}/add-volunteers', name: 'app_service_add_volunteers', methods: ['POST'])]
-    public function addVolunteers(Request $request, Service $service, EntityManagerInterface $entityManager, \App\Repository\VolunteerRepository $volunteerRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        $data = json_decode($request->getContent(), true);
-        $volunteerIds = $data['volunteerIds'] ?? [];
-
-        if (empty($volunteerIds)) {
-            return $this->json(['status' => 'error', 'message' => 'No se proporcionaron IDs de voluntarios.'], Response::HTTP_BAD_REQUEST);
-        }
-
-        $addedCount = 0;
-        foreach ($volunteerIds as $volunteerId) {
-            $volunteer = $volunteerRepository->find($volunteerId);
-            if (!$volunteer) {
-                continue; // Or collect errors
-            }
-
-            $existingConfirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
-            if ($existingConfirmation) {
-                continue; // Already in the list
-            }
-
-            $confirmation = new \App\Entity\AssistanceConfirmation();
-            $confirmation->setService($service);
-            $confirmation->setVolunteer($volunteer);
-            $confirmation->setHasAttended(true);
-            $entityManager->persist($confirmation);
-            $addedCount++;
-        }
-
-        if ($addedCount > 0) {
-            $entityManager->flush();
-        }
-
-        return $this->json(['status' => 'success', 'message' => $addedCount . ' voluntarios añadidos.']);
     }
 }
