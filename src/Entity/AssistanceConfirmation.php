@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\AssistanceConfirmationRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: AssistanceConfirmationRepository::class)]
@@ -15,6 +16,12 @@ class AssistanceConfirmation
 
     #[ORM\Column]
     private ?bool $hasAttended = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $checkInTime = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $checkOutTime = null;
 
     #[ORM\ManyToOne(inversedBy: 'assistanceConfirmations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -61,6 +68,30 @@ class AssistanceConfirmation
     public function setVolunteer(?Volunteer $volunteer): static
     {
         $this->volunteer = $volunteer;
+
+        return $this;
+    }
+
+    public function getCheckInTime(): ?\DateTimeInterface
+    {
+        return $this->checkInTime;
+    }
+
+    public function setCheckInTime(?\DateTimeInterface $checkInTime): static
+    {
+        $this->checkInTime = $checkInTime;
+
+        return $this;
+    }
+
+    public function getCheckOutTime(): ?\DateTimeInterface
+    {
+        return $this->checkOutTime;
+    }
+
+    public function setCheckOutTime(?\DateTimeInterface $checkOutTime): static
+    {
+        $this->checkOutTime = $checkOutTime;
 
         return $this;
     }
