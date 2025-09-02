@@ -15,7 +15,7 @@
         <nav class="space-y-1" id="main-nav">
             <ul class="space-y-1">
                 <li>
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                         <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="text-sm font-medium">INICIO</span>
                     </a>
@@ -23,56 +23,56 @@
 
                 {% if is_granted('ROLE_ADMIN') %}
                 <!-- GESTIÓN -->
-                <li class="relative group">
+                <li class="has-submenu">
                     <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                         <i data-lucide="folder-kanban" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">GESTIÓN</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover:rotate-90"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </a>
-                    <ul class="absolute left-full top-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover:block z-10">
+                    <ul class="hidden pl-4 space-y-1">
                         <!-- PERSONAL -->
-                        <li class="relative group/sub">
+                        <li class="has-submenu">
                             <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                                 <i data-lucide="users" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">PERSONAL</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/sub:rotate-90"></i>
+                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="absolute left-full top-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover/sub:block z-10">
-                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
+                            <ul class="hidden pl-4 space-y-1">
+                                <li><a href="{{ path('app_volunteer_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                             </ul>
                         </li>
                         <!-- SERVICIOS -->
-                        <li class="relative group/sub">
+                        <li class="has-submenu">
                             <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                                 <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">SERVICIOS</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/sub:rotate-90"></i>
+                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="absolute left-full top-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover/sub:block z-10">
-                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
+                            <ul class="hidden pl-4 space-y-1">
+                                <li><a href="{{ path('app_services_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                                 <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">CUADRANTE</a></li>
                             </ul>
                         </li>
                         <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
                         <!-- RECURSOS -->
-                        <li class="relative group/sub">
+                        <li class="has-submenu">
                             <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                                 <i data-lucide="archive" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm font-medium">RECURSOS</span>
-                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/sub:rotate-90"></i>
+                                <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
-                            <ul class="absolute left-full top-0 mt-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover/sub:block z-10">
+                            <ul class="hidden pl-4 space-y-1">
                                 <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm">VEHICULO</span></a></li>
                                 <!-- INVENTARIO -->
-                                <li class="relative group/sub-sub">
+                                <li class="has-submenu">
                                     <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                                         <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">INVENTARIO</span>
-                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/sub-sub:rotate-90"></i>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
-                                    <ul class="absolute left-full top-0 mt-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover/sub-sub:block z-10">
+                                    <ul class="hidden pl-4 space-y-1">
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ARTICULOS</a></li>
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ALMACENES</a></li>
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">PROVEEDORES</a></li>
@@ -82,13 +82,13 @@
                                     </ul>
                                 </li>
                                 <!-- ARCE -->
-                                <li class="relative group/sub-sub">
+                                <li class="has-submenu">
                                     <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                                         <i data-lucide="puzzle" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">ARCE</span>
-                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/sub-sub:rotate-90"></i>
+                                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
-                                    <ul class="absolute left-full top-0 mt-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover/sub-sub:block z-10">
+                                    <ul class="hidden pl-4 space-y-1">
                                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
                                     </ul>
                                 </li>
@@ -105,13 +105,13 @@
                 <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">ESTADISTICAS</span></a></li>
 
                 <!-- CONFIGURACION -->
-                <li class="relative group">
+                <li class="has-submenu">
                     <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
                         <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">CONFIGURACION</span>
-                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover:rotate-90"></i>
+                        <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </a>
-                    <ul class="absolute left-full top-0 ml-1 min-w-[200px] bg-white shadow-lg rounded-md border p-2 space-y-1 hidden group-hover:block z-10">
+                    <ul class="hidden pl-4 space-y-1">
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">SISTEMAS</a></li>
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">UTILIDADES</a></li>
                         <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ADMINISTRACION</a></li>
@@ -155,3 +155,21 @@
         </a>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const submenuItems = document.querySelectorAll('.has-submenu > a');
+        submenuItems.forEach(item => {
+            item.addEventListener('click', function (e) {
+                e.preventDefault();
+                const submenu = this.nextElementSibling;
+                const icon = this.querySelector('[data-lucide="chevron-right"]');
+                if (submenu && submenu.tagName === 'UL') {
+                    submenu.classList.toggle('hidden');
+                    if (icon) {
+                        icon.classList.toggle('rotate-90');
+                    }
+                }
+            });
+        });
+    });
+</script>
