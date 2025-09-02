@@ -58,13 +58,42 @@
             {# Recuadro de Datos Básicos (Derecha - md:w-1/2) #}
             <div class="w-full md:w-1/2 p-4 border border-gray-200 rounded-lg bg-white">
                 <h3 class="text-xl font-semibold mb-4 text-gray-800">Datos Básicos</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>{{ form_row(form.name) }}</div>
-                    <div>{{ form_row(form.lastName) }}</div>
-                    <div>{{ form_row(form.dni) }}</div>
-                    <div>{{ form_row(form.user.email) }}</div>
-                    <div>{{ form_row(form.phone) }}</div>
-                    <div>{{ form_row(form.dateOfBirth) }}</div>
+                <div class="grid grid-cols-2 gap-x-6">
+                    <!-- Fila 1: Nombre y Apellidos -->
+                    <div class="col-span-1">
+                        {{ form_label(form.name, 'Nombre') }}
+                        {{ form_widget(form.name, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.name) }}
+                    </div>
+                    <div class="col-span-1">
+                        {{ form_label(form.lastName, 'Apellidos') }}
+                        {{ form_widget(form.lastName, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.lastName) }}
+                    </div>
+
+                    <!-- Fila 2: Teléfono y Correo -->
+                    <div class="col-span-1 mt-4">
+                        {{ form_label(form.phone, 'Teléfono de contacto') }}
+                        {{ form_widget(form.phone, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.phone) }}
+                    </div>
+                    <div class="col-span-1 mt-4">
+                        {{ form_label(form.user.email, 'Correo') }}
+                        {{ form_widget(form.user.email, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.user.email) }}
+                    </div>
+
+                    <!-- Fila 3: DNI y Fecha de Nacimiento -->
+                    <div class="col-span-1 mt-4">
+                        {{ form_label(form.dni, 'DNI') }}
+                        {{ form_widget(form.dni, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.dni) }}
+                    </div>
+                    <div class="col-span-1 mt-4">
+                        {{ form_label(form.dateOfBirth, 'Fecha de nacimiento') }}
+                        {{ form_widget(form.dateOfBirth, {'attr': {'class': 'w-full'}}) }}
+                        {{ form_errors(form.dateOfBirth) }}
+                    </div>
                 </div>
             </div>
         </div>
