@@ -169,9 +169,16 @@
     }
 </style>
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
+    function setupSidebar() {
         const submenuItems = document.querySelectorAll('.has-submenu');
         submenuItems.forEach(item => {
+            // Remove existing listeners to avoid duplicates
+            item.replaceWith(item.cloneNode(true));
+        });
+
+        // Re-query the items after cloning
+        const newSubmenuItems = document.querySelectorAll('.has-submenu');
+        newSubmenuItems.forEach(item => {
             item.addEventListener('mouseenter', function () {
                 this.classList.add('submenu-open');
             });
@@ -180,5 +187,8 @@
                 this.classList.remove('submenu-open');
             });
         });
-    });
+    }
+
+    document.addEventListener('turbo:load', setupSidebar);
+    document.addEventListener('DOMContentLoaded', setupSidebar);
 </script>
