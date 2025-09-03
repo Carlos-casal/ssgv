@@ -104,8 +104,13 @@
         document.addEventListener('DOMContentLoaded', function() {
             if (document.getElementById('{{ serviceForm.description.vars.id }}')) {
                 CKEDITOR.replace('{{ serviceForm.description.vars.id }}', {
-                    // Remove the unwanted buttons.
-                    removeButtons: 'Cut,Copy,Paste,PasteText,PasteFromWord,Scayt,Link,Unlink,Anchor'
+                    toolbar: [
+                        { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', '-', 'Superscript', 'Subscript', '-', 'RemoveFormat' ] },
+                        { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
+                        { name: 'insert', items: [ 'HorizontalRule' ] },
+                        { name: 'styles', items: [ 'Format' ] },
+                        { name: 'document', items: [ 'Source' ] }
+                    ]
                 });
             }
         });
