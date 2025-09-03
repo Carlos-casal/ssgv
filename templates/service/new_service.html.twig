@@ -101,10 +101,22 @@
 
     <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (document.getElementById('{{ serviceForm.description.vars.id }}')) {
-                CKEDITOR.replace('{{ serviceForm.description.vars.id }}');
+        function initializeCKEditor() {
+            const editorId = '{{ serviceForm.description.vars.id }}';
+
+            // Destroy existing instance if it exists, to prevent errors on Turbo re-load
+            if (CKEDITOR.instances[editorId]) {
+                CKEDITOR.instances[editorId].destroy(true);
             }
-        });
+
+            // Create new instance if the textarea exists
+            if (document.getElementById(editorId)) {
+                CKEDITOR.replace(editorId);
+            }
+        }
+
+        // Listen for both initial page load and Turbo page loads
+        document.addEventListener('turbo:load', initializeCKEditor);
+        document.addEventListener('DOMContentLoaded', initializeCKEditor);
     </script>
 {% endblock %}
