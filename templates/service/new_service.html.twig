@@ -28,110 +28,59 @@
 
         {# Contenedor principal del formulario con sombra y bordes redondeados #}
         <div class="bg-white shadow-md rounded-lg p-6 mb-8">
-            {{ form_start(serviceForm, {'attr': {'class': 'grid grid-cols-1 md:grid-cols-2 gap-6'}}) }} {# Usamos grid para las columnas #}
+            {{ form_start(serviceForm) }}
 
-            {# Campo Numeración #}
-            <div>
-                {{ form_label(serviceForm.numeration, 'Numeración:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.numeration, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.numeration, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {# Fila 1: Numeración y Título #}
+                <div>{{ form_row(serviceForm.numeration) }}</div>
+                <div>{{ form_row(serviceForm.title) }}</div>
 
-            {# Campo Título #}
-            <div>
-                {{ form_label(serviceForm.title, 'Título:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.title, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.title, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                {# Fila 2: Fechas #}
+                <div>{{ form_row(serviceForm.startDate) }}</div>
+                <div>{{ form_row(serviceForm.endDate) }}</div>
 
-            {# Campo Slug (de solo lectura si es auto-generado) #}
-            <div>
-                {{ form_label(serviceForm.slug, 'Slug:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.slug, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline', 'readonly': 'readonly'}}) }}
-                {{ form_errors(serviceForm.slug, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                {# Fila 3: Límite y Asistentes #}
+                <div>{{ form_row(serviceForm.registrationLimitDate) }}</div>
+                <div>{{ form_row(serviceForm.maxAttendees) }}</div>
 
-            {# Campo Fecha de Inicio #}
-            <div>
-                {{ form_label(serviceForm.startDate, 'Fecha de Inicio:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.startDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.startDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                {# Fila 4: Horas #}
+                <div>{{ form_row(serviceForm.timeAtBase) }}</div>
+                <div>{{ form_row(serviceForm.departureTime) }}</div>
 
-            {# Campo Fecha de Fin #}
-            <div>
-                {{ form_label(serviceForm.endDate, 'Fecha de Fin:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.endDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.endDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                {# Fila 5: Tipo con botón #}
+                <div>
+                    {{ form_row(serviceForm.type) }}
+                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                        <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
+                        Añadir nuevo tipo
+                    </a>
+                </div>
 
-            {# Campo Fecha Límite de Registro #}
-            <div>
-                {{ form_label(serviceForm.registrationLimitDate, 'Fecha Límite de Registro:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.registrationLimitDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                {# Fila 6: Categoría con botón #}
+                <div>
+                    {{ form_row(serviceForm.category) }}
+                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                        <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
+                        Añadir nueva categoría
+                    </a>
+                </div>
 
-            {# Campo Hora en Base #}
-            <div>
-                {{ form_label(serviceForm.timeAtBase, 'Hora en Base:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.timeAtBase, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
+                {# Fila 7: Descripción #}
+                <div class="md:col-span-2">
+                    {{ form_row(serviceForm.description) }}
+                </div>
             </div>
 
-            {# Campo Hora de Salida #}
-            <div>
-                {{ form_label(serviceForm.departureTime, 'Hora de Salida:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.departureTime, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Máximo de Asistentes #}
-            <div>
-                {{ form_label(serviceForm.maxAttendees, 'Máximo de Asistentes:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.maxAttendees, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Tipo (si es un select) #}
-            <div>
-                {{ form_label(serviceForm.type, 'Tipo:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.type, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline appearance-none'}}) }} {# Para select inputs #}
-                {{ form_errors(serviceForm.type, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Categoría (si es un select) #}
-            <div>
-                {{ form_label(serviceForm.category, 'Categoría:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.category, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline appearance-none'}}) }} {# Para select inputs #}
-                {{ form_errors(serviceForm.category, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Recipients (si es un select múltiple o colección) #}
-            <div>
-                {{ form_label(serviceForm.recipients, 'Receptores:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.recipients, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }} {# Puede que necesites una librería JS para un select múltiple con buen estilo #}
-                {{ form_errors(serviceForm.recipients, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-                        
-            {# Campo Descripción (ocupa todo el ancho, por eso no está en el grid) #}
-            <div class="md:col-span-2"> {# Ocupa 2 columnas en pantallas medianas y más grandes #}
-                {{ form_label(serviceForm.description, 'Descripción:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.description, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-y'}}) }} {# h-32 para altura, resize-y para redimensionar verticalmente #}
-                {{ form_errors(serviceForm.description, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-            
-            {# Renderiza los campos restantes si los hubiera, o el campo "_token" #}
             {{ form_rest(serviceForm) }}
 
             {# Botones de acción #}
-            <div class="md:col-span-2 flex items-center justify-end mt-6"> {# Ocupa 2 columnas, alinea a la derecha #}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Guardar Servicio
-                </button>
-                <a href="{{ path('app_services_list') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-3">
+            <div class="flex items-center justify-end mt-6">
+                <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">
                     Volver a la Lista
                 </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
+                    Guardar Servicio
+                </button>
             </div>
 
             {{ form_end(serviceForm) }}

@@ -81,14 +81,6 @@ class ServiceType extends AbstractType
                 'required' => false,
             ])
 
-            ->add('slug', TextType::class, [
-                'label' => 'Slug (generado automáticamente)',
-                'required' => false, // No es requerido por el usuario, lo genera Gedmo
-                'disabled' => true, // El usuario no puede editarlo
-                // O también puedes usar:
-                // 'attr' => ['readonly' => true],
-            ])
-            
             ->add('category', ChoiceType::class, [
                 'label' => 'Categoría del Servicio',
                 'choices' => [
@@ -105,32 +97,6 @@ class ServiceType extends AbstractType
                 'label' => 'Descripción',
                 'required' => false,
                 'attr' => ['rows' => 5, 'placeholder' => 'Detalles del servicio...'],
-            ])
-            // Para 'Enviar a destinatario': asumiendo que son opciones estáticas por ahora
-            ->add('recipients', ChoiceType::class, [
-                'label' => 'Enviar a Destinatario',
-                'choices' => [
-                    'Voluntarios Activos' => 'voluntarios_activos',
-                    'Nuevos Voluntarios' => 'nuevos_voluntarios',
-                    'Junta Directiva' => 'junta_directiva',
-                    // Agrega más opciones de destinatarios si es necesario
-                ],
-                'multiple' => true,  // Permite seleccionar múltiples opciones
-                'expanded' => true,  // Renderiza como checkboxes
-                'required' => false,
-                'help' => 'Selecciona a quién deseas enviar la información del servicio.',
-            ])
-            ->add('collaboration_with_other_services', CheckboxType::class, [
-                'label' => 'Colaboración con otros servicios de emergencias',
-                'required' => false,
-            ])
-            ->add('locality', TextType::class, [
-                'label' => 'Localidad',
-                'required' => false,
-            ])
-            ->add('requester', TextType::class, [
-                'label' => 'Solicitante',
-                'required' => false,
             ]);
     }
 
