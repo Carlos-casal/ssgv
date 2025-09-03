@@ -88,11 +88,12 @@
             if (document.getElementById(editorId)) {
                 CKEDITOR.replace(editorId, {
                     toolbar: [
-                        { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', '-', 'Superscript', 'Subscript', '-', 'RemoveFormat' ] },
+                        { name: 'document', items: [ 'Source' ] },
+                        { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', 'Superscript', 'Subscript', '-', 'RemoveFormat' ] },
                         { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
+                        { name: 'links', items: [ 'Link', 'Unlink' ] },
                         { name: 'insert', items: [ 'HorizontalRule' ] },
-                        { name: 'styles', items: [ 'Format' ] },
-                        { name: 'document', items: [ 'Source' ] }
+                        { name: 'styles', items: [ 'Format' ] }
                     ]
                 });
             }
