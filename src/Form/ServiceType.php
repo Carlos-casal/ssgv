@@ -49,19 +49,19 @@ class ServiceType extends AbstractType
             ->add('registrationLimitDate', DateType::class, [ // Usamos DateType porque es solo fecha
                 'label' => 'Fecha Límite de Inscripción',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'html5' => true,
             ])
             ->add('timeAtBase', TimeType::class, [
                 'label' => 'Hora en Base',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'html5' => true,
             ])
             ->add('departureTime', TimeType::class, [
                 'label' => 'Hora de Salida',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'html5' => true,
             ])
             ->add('maxAttendees', IntegerType::class, [
@@ -78,7 +78,7 @@ class ServiceType extends AbstractType
                     // Agrega más tipos si es necesario
                 ],
                 'placeholder' => 'Selecciona un tipo',
-                'required' => false,
+                'required' => true,
             ])
 
             ->add('category', ChoiceType::class, [
@@ -91,7 +91,7 @@ class ServiceType extends AbstractType
                     // Agrega más categorías si es necesario
                 ],
                 'placeholder' => 'Selecciona una categoría',
-                'required' => false,
+                'required' => true,
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Descripción',
