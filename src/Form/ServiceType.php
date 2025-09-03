@@ -9,15 +9,11 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
-use Symfony\Component\Form\Extension\Core\Type\DateType; // Para fecha_limite_inscripcion
-use Symfony\Component\Form\Extension\Core\Type\TimeType;   // Para hora_base y hora_salida
-use Symfony\Component\Form\Extension\Core\Type\IntegerType; // Para maximo_asistentes
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType; // Para tipo y categoría
-use Symfony\Component\Form\Extension\Core\Type\CollectionType; // Si necesitas para destinatarios
-use Symfony\Component\Form\Extension\Core\Type\CheckboxType; // Para los destinatarios individuales
-// Si tienes la propiedad 'eys' o similar:
-use Symfony\Component\Form\Extension\Core\Type\HiddenType; // Ejemplo si 'eys' es un campo interno o auto-rellenado
-
+use Symfony\Component\Form\Extension\Core\Type\DateType;
+use Symfony\Component\Form\Extension\Core\Type\TimeType;
+use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 
 class ServiceType extends AbstractType
 {
@@ -36,9 +32,9 @@ class ServiceType extends AbstractType
             ])
             ->add('startDate', DateTimeType::class, [
                 'label' => 'Fecha y Hora de Inicio',
-                'widget' => 'single_text', // Muestra un único input para fecha y hora
+                'widget' => 'single_text',
                 'required' => true,
-                'html5' => true, // Habilita los tipos de input HTML5 para fecha/hora
+                'html5' => true,
             ])
             ->add('endDate', DateTimeType::class, [
                 'label' => 'Fecha y Hora de Fin',
@@ -46,7 +42,7 @@ class ServiceType extends AbstractType
                 'required' => true,
                 'html5' => true,
             ])
-            ->add('registrationLimitDate', DateType::class, [ // Usamos DateType porque es solo fecha
+            ->add('registrationLimitDate', DateType::class, [
                 'label' => 'Fecha Límite de Inscripción',
                 'widget' => 'single_text',
                 'required' => true,
@@ -66,7 +62,7 @@ class ServiceType extends AbstractType
             ])
             ->add('maxAttendees', IntegerType::class, [
                 'label' => 'Máximo Asistentes',
-                'required' => false,
+                'required' => false, // This was not marked as required by the user's '*'
                 'attr' => ['min' => 1, 'placeholder' => 'Ej: 50'],
             ])
             ->add('type', ChoiceType::class, [
@@ -75,12 +71,10 @@ class ServiceType extends AbstractType
                     'Evento' => 'evento',
                     'Formación' => 'formacion',
                     'Campaña' => 'campana',
-                    // Agrega más tipos si es necesario
                 ],
                 'placeholder' => 'Selecciona un tipo',
                 'required' => true,
             ])
-
             ->add('category', ChoiceType::class, [
                 'label' => 'Categoría del Servicio',
                 'choices' => [
@@ -88,7 +82,6 @@ class ServiceType extends AbstractType
                     'Medio Ambiente' => 'medio_ambiente',
                     'Rescate' => 'rescate',
                     'Educación' => 'educacion',
-                    // Agrega más categorías si es necesario
                 ],
                 'placeholder' => 'Selecciona una categoría',
                 'required' => true,
