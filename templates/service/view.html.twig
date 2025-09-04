@@ -4,12 +4,44 @@
 
 {% block content %}
 <div class="p-6">
-    <h1 class="text-2xl font-bold mb-4">{{ service.title }}</h1>
     <div class="bg-white p-6 rounded-lg shadow-md">
-        <p><strong>Descripción:</strong> {{ service.description }}</p>
-        <p><strong>Fecha de inicio:</strong> {{ service.startDate ? service.startDate|date('Y-m-d H:i:s') : 'N/A' }}</p>
-        <p><strong>Fecha de fin:</strong> {{ service.endDate ? service.endDate|date('Y-m-d H:i:s') : 'N/A' }}</p>
-        <p><strong>Límite de inscripción:</strong> {{ service.registrationLimitDate ? service.registrationLimitDate|date('Y-m-d H:i:s') : 'N/A' }}</p>
+        <h2 class="text-xl font-bold mb-4 border-b pb-2">Resumen del Servicio para WhatsApp</h2>
+
+        {# Using pre-wrap to respect newlines and spaces from the formatted text #}
+        <div class="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-md">
+            <strong>{{ service.startDate|format_datetime(locale='es', pattern='EEEE d ''de'' MMMM')|capitalize }}</strong>
+            <strong>{{ service.title }}</strong>
+
+            H. Base: {{ service.timeAtBase ? service.timeAtBase|date('H:i') : 'N/A' }}
+            H. Salida: {{ service.departureTime ? service.departureTime|date('H:i') : 'N/A' }}
+            Fin: {{ service.endDate ? service.endDate|date('H:i') : 'N/A' }} aprox
+
+            Descripción:
+            {{ service.description|raw }}
+
+            {% if service.hasProvisions %}
+            Avituallamiento: Sí
+            {% endif %}
+
+            {% if service.afluencia %}
+            Afluencia: {{ service.afluencia|capitalize }} {% if service.afluencia == 'alta' %}🔴{% endif %}
+            {% endif %}
+
+            {% if service.numSvb > 0 or service.numSva > 0 or service.numSvae > 0 %}
+            Ambulancias:
+                {% if service.numSvb > 0 %}> {{ service.numSvb }} SVB 🚑{% endif %}
+                {% if service.numSva > 0 %}> {{ service.numSva }} SVA 🚑{% endif %}
+                {% if service.numSvae > 0 %}> {{ service.numSvae }} SVAE 🚑{% endif %}
+            {% endif %}
+
+            {% if service.numMedical > 0 %}
+            Médico y enfermería: {{ service.numMedical }} 🥼🩺
+            {% endif %}
+
+            {% if service.hasFieldHospital %}
+            Hospital de campaña: Sí 🏥
+            {% endif %}
+        </div>
     </div>
 </div>
 {% endblock %}
