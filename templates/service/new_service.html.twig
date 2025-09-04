@@ -5,10 +5,10 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        label {
+        .p-6.mb-8 label {
             color: black;
         }
-        label.required:after {
+        .p-6.mb-8 label.required:after {
             content: " *";
             color: red;
         }
@@ -33,30 +33,66 @@
             {{ form_start(serviceForm) }}
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>{{ form_row(serviceForm.numeration) }}</div>
-                <div>{{ form_row(serviceForm.title) }}</div>
-                <div>{{ form_row(serviceForm.startDate) }}</div>
-                <div>{{ form_row(serviceForm.endDate) }}</div>
-                <div>{{ form_row(serviceForm.registrationLimitDate) }}</div>
-                <div>{{ form_row(serviceForm.maxAttendees) }}</div>
-                <div>{{ form_row(serviceForm.timeAtBase) }}</div>
-                <div>{{ form_row(serviceForm.departureTime) }}</div>
                 <div>
-                    {{ form_row(serviceForm.type) }}
+                    {{ form_label(serviceForm.numeration, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.numeration) }}
+                    {{ form_errors(serviceForm.numeration) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.title, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.title) }}
+                    {{ form_errors(serviceForm.title) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.startDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.startDate) }}
+                    {{ form_errors(serviceForm.startDate) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.endDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.endDate) }}
+                    {{ form_errors(serviceForm.endDate) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.registrationLimitDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.registrationLimitDate) }}
+                    {{ form_errors(serviceForm.registrationLimitDate) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.maxAttendees, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.maxAttendees) }}
+                    {{ form_errors(serviceForm.maxAttendees) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.timeAtBase, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.timeAtBase) }}
+                    {{ form_errors(serviceForm.timeAtBase) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.departureTime, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.departureTime) }}
+                    {{ form_errors(serviceForm.departureTime) }}
+                </div>
+                <div>
+                    {{ form_label(serviceForm.type, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.type) }}
+                    {{ form_errors(serviceForm.type) }}
                     <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
                         <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
                         Añadir nuevo tipo
                     </a>
                 </div>
                 <div>
-                    {{ form_row(serviceForm.category) }}
+                    {{ form_label(serviceForm.category, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                    {{ form_widget(serviceForm.category) }}
+                    {{ form_errors(serviceForm.category) }}
                     <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
                         <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
                         Añadir nueva categoría
                     </a>
                 </div>
                 <div class="md:col-span-2">
-                    {{ form_label(serviceForm.description) }}
+                    {{ form_label(serviceForm.description, null, {'label_attr': {'class': 'block mb-2'}}) }}
                     {{ form_widget(serviceForm.description, {'id': 'description_editor'}) }}
                     {{ form_errors(serviceForm.description) }}
                 </div>
@@ -77,7 +113,7 @@
         </div>
     </div>
 
-    <script src="https://cdn.ckeditor.com/4.25.1-lts/standard/ckeditor.js"></script>
+    <script src="https://cdn.ckeditor.com/4.25.1-lts/full/ckeditor.js"></script>
     <script>
         function initializeCKEditor() {
             const editorId = 'description_editor';
