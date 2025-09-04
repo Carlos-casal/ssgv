@@ -4,6 +4,7 @@
 
 {% block stylesheets %}
     {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <style>
         .p-6.mb-8 label {
             color: black;
@@ -12,37 +13,58 @@
             content: " *";
             color: red;
         }
+        #quill-editor {
+            height: 300px;
+        }
     </style>
 {% endblock %}
 
 {% block javascripts %}
     {{ parent() }}
-    {{ encore_entry_script_tags('tinymce') }}
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
-        function initializeTinyMCE() {
-            const editorId = 'description_editor';
+        let quillInstance = null;
 
-            // Remove previous instance if it exists to avoid issues with Turbo
-            if (tinymce.get(editorId)) {
-                tinymce.remove('#' + editorId);
+        function initializeQuillEditor() {
+            const editorContainer = document.querySelector('#quill-editor');
+            const hiddenTextarea = document.querySelector('#description_editor');
+
+            if (!editorContainer || !hiddenTextarea || quillInstance) {
+                return;
             }
 
-            tinymce.init({
-                selector: '#' + editorId,
-                plugins: 'code link lists hr',
-                toolbar: 'undo redo | styles | bold italic strikethrough | superscript subscript | alignleft aligncenter alignright | bullist numlist | link unlink | hr | removeformat | code',
-                menubar: false,
-                height: 300,
-                skin_url: '{{ asset('build/tinymce/skins/ui/oxide') }}',
-                content_css: '{{ asset('build/tinymce/skins/content/default/content.css') }}'
+            const toolbarOptions = [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'strike', 'underline'],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link'],
+                ['clean']
+            ];
+
+            quillInstance = new Quill(editorContainer, {
+                modules: {
+                    toolbar: toolbarOptions,
+                },
+                theme: 'snow'
             });
+
+            // Sync Quill content to hidden textarea when text changes
+            quillInstance.on('text-change', function() {
+                hiddenTextarea.value = quillInstance.root.innerHTML;
+            });
+
+            // Handle Turbo Drive navigation
+            document.addEventListener('turbo:before-cache', function() {
+                if (quillInstance) {
+                    quillInstance = null;
+                }
+            }, { once: true });
         }
 
-        // Using a timeout to ensure the element is available after a Turbo visit
-        document.addEventListener('turbo:load', () => {
-            setTimeout(initializeTinyMCE, 100);
-        });
-        document.addEventListener('DOMContentLoaded', initializeTinyMCE);
+        document.addEventListener('turbo:load', initializeQuillEditor);
+        document.addEventListener('DOMContentLoaded', initializeQuillEditor);
     </script>
 {% endblock %}
 
@@ -124,7 +146,8 @@
                 </div>
                 <div class="md:col-span-2">
                     {{ form_label(serviceForm.description, null, {'label_attr': {'class': 'block mb-2'}}) }}
-                    {{ form_widget(serviceForm.description, {'id': 'description_editor'}) }}
+                    <div id="quill-editor"></div>
+                    {{ form_widget(serviceForm.description, {'id': 'description_editor', 'attr': {'style': 'display:none;'}}) }}
                     {{ form_errors(serviceForm.description) }}
                 </div>
             </div>
