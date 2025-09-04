@@ -1,4 +1,4 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout/app.html.twig' %}
 
 {% block title %}Crear Nuevo Servicio{% endblock %}
 
@@ -15,7 +15,36 @@
     </style>
 {% endblock %}
 
-{% block body %}
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    <script>
+        function initializeTinyMCE() {
+            const editorId = 'description_editor';
+
+            // Remove previous instance if it exists to avoid issues with Turbo
+            if (tinymce.get(editorId)) {
+                tinymce.remove('#' + editorId);
+            }
+
+            tinymce.init({
+                selector: '#' + editorId,
+                plugins: 'code link lists hr',
+                toolbar: 'undo redo | styles | bold italic strikethrough | superscript subscript | alignleft aligncenter alignright | bullist numlist | link unlink | hr | removeformat | code',
+                menubar: false,
+                height: 300
+            });
+        }
+
+        // Using a timeout to ensure the element is available after a Turbo visit
+        document.addEventListener('turbo:load', () => {
+            setTimeout(initializeTinyMCE, 100);
+        });
+        document.addEventListener('DOMContentLoaded', initializeTinyMCE);
+    </script>
+{% endblock %}
+
+{% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6 text-gray-800">Crear Nuevo Servicio</h1>
 
@@ -77,7 +106,7 @@
                     {{ form_label(serviceForm.type, null, {'label_attr': {'class': 'block mb-2'}}) }}
                     {{ form_widget(serviceForm.type) }}
                     {{ form_errors(serviceForm.type) }}
-                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 block">
                         <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
                         Añadir nuevo tipo
                     </a>
@@ -86,7 +115,7 @@
                     {{ form_label(serviceForm.category, null, {'label_attr': {'class': 'block mb-2'}}) }}
                     {{ form_widget(serviceForm.category) }}
                     {{ form_errors(serviceForm.category) }}
-                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                    <a href="#" class="text-sm text-blue-600 hover:underline mt-2 block">
                         <i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1" style="vertical-align: -2px;"></i>
                         Añadir nueva categoría
                     </a>
@@ -113,31 +142,4 @@
         </div>
     </div>
 
-    <script src="https://cdn.ckeditor.com/4.22.1/full/ckeditor.js"></script>
-    <script>
-        function initializeCKEditor() {
-            const editorId = 'description_editor';
-
-            if (CKEDITOR.instances[editorId]) {
-                CKEDITOR.instances[editorId].destroy(true);
-            }
-
-            if (document.getElementById(editorId)) {
-                CKEDITOR.replace(editorId, {
-                    toolbar: [
-                        { name: 'document', items: [ 'Source' ] },
-                        { name: 'clipboard', items: [ 'Undo', 'Redo' ] },
-                        { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', 'Superscript', 'Subscript', '-', 'RemoveFormat' ] },
-                        { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
-                        { name: 'links', items: [ 'Link', 'Unlink' ] },
-                        { name: 'insert', items: [ 'HorizontalRule' ] },
-                        { name: 'styles', items: [ 'Format' ] }
-                    ]
-                });
-            }
-        }
-
-        document.addEventListener('turbo:load', initializeCKEditor);
-        document.addEventListener('DOMContentLoaded', initializeCKEditor);
-    </script>
 {% endblock %}
