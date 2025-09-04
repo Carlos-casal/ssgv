@@ -90,62 +90,6 @@ class ServiceType extends AbstractType
                 'label' => 'Descripción',
                 'required' => false,
                 'attr' => ['rows' => 5, 'placeholder' => 'Detalles del servicio...'],
-            ])
-            ->add('recipients', ChoiceType::class, [
-                'label' => 'Destinatarios del Servicio',
-                'choices' => [
-                    'Niños y adolescentes' => 'ninos_adolescentes',
-                    'Personas mayores' => 'personas_mayores',
-                    'Población en general' => 'poblacion_general',
-                    'Personas con discapacidad' => 'personas_discapacidad',
-                    'Animales' => 'animales',
-                    'Medio ambiente' => 'medio_ambiente',
-                ],
-                'multiple' => true,
-                'expanded' => true, // Render as checkboxes
-                'required' => false,
-            ])
-            ->add('locality', TextType::class, [
-                'label' => 'Lugar',
-                'required' => false,
-            ])
-            ->add('afluencia', ChoiceType::class, [
-                'label' => 'Afluencia',
-                'choices' => [
-                    'Baja' => 'baja',
-                    'Media' => 'media',
-                    'Alta' => 'alta',
-                ],
-                'placeholder' => 'Selecciona un nivel',
-                'required' => false,
-            ])
-            ->add('numSvb', IntegerType::class, [
-                'label' => 'Ambulancias SVB',
-                'required' => false,
-            ])
-            ->add('numSva', IntegerType::class, [
-                'label' => 'Ambulancias SVA',
-                'required' => false,
-            ])
-            ->add('numSvae', IntegerType::class, [
-                'label' => 'Ambulancias SVAE',
-                'required' => false,
-            ])
-            ->add('numMedical', IntegerType::class, [
-                'label' => 'Médico y/o Enfermería',
-                'required' => false,
-            ])
-            ->add('hasFieldHospital', CheckboxType::class, [
-                'label' => 'Hospital de Campaña',
-                'required' => false,
-            ])
-            ->add('tasks', TextareaType::class, [
-                'label' => 'Tareas',
-                'required' => false,
-            ])
-            ->add('hasProvisions', CheckboxType::class, [
-                'label' => 'Avituallamiento',
-                'required' => false,
             ]);
     }
 
