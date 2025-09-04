@@ -13,7 +13,7 @@
             content: " *";
             color: red;
         }
-        #quill-editor {
+        #quill-editor, #tasks-editor {
             height: 300px;
         }
     </style>
@@ -37,13 +37,13 @@
         Quill.register(CustomLink, true);
         // --- End Custom Link Sanitizer ---
 
-        let quillInstance = null;
+        const quillInstances = {};
 
-        function initializeQuillEditor() {
-            const editorContainer = document.querySelector('#quill-editor');
-            const hiddenTextarea = document.querySelector('#description_editor');
+        function setupQuill(containerId, textareaId) {
+            const editorContainer = document.querySelector(containerId);
+            const hiddenTextarea = document.querySelector(textareaId);
 
-            if (!editorContainer || !hiddenTextarea || quillInstance) {
+            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
                 return;
             }
 
@@ -57,28 +57,33 @@
                 ['clean']
             ];
 
-            quillInstance = new Quill(editorContainer, {
-                modules: {
-                    toolbar: toolbarOptions,
-                },
+            const quill = new Quill(editorContainer, {
+                modules: { toolbar: toolbarOptions },
                 theme: 'snow'
             });
 
-            // Sync Quill content to hidden textarea when text changes
-            quillInstance.on('text-change', function() {
-                hiddenTextarea.value = quillInstance.root.innerHTML;
+            quill.on('text-change', function() {
+                hiddenTextarea.value = quill.root.innerHTML;
             });
 
-            // Handle Turbo Drive navigation
-            document.addEventListener('turbo:before-cache', function() {
-                if (quillInstance) {
-                    quillInstance = null;
-                }
-            }, { once: true });
+            quillInstances[containerId] = quill;
         }
 
-        document.addEventListener('turbo:load', initializeQuillEditor);
-        document.addEventListener('DOMContentLoaded', initializeQuillEditor);
+        function initializeAllQuillEditors() {
+            setupQuill('#quill-editor', '#description_editor');
+            setupQuill('#tasks-editor', '#tasks_textarea');
+        }
+
+        document.addEventListener('turbo:before-cache', function() {
+            for (const key in quillInstances) {
+                if (quillInstances.hasOwnProperty(key)) {
+                    quillInstances[key] = null;
+                }
+            }
+        });
+
+        document.addEventListener('turbo:load', initializeAllQuillEditors);
+        document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
     </script>
 {% endblock %}
 
@@ -99,68 +104,53 @@
         <div class="bg-white shadow-md rounded-lg p-6 mb-8">
             {{ form_start(serviceForm) }}
 
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {# Columna 1 #}
-                <div>
+            <div class="space-y-8">
+                {# Row 1 #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
                         {{ form_label(serviceForm.numeration, null, {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.numeration) }}
                         {{ form_errors(serviceForm.numeration) }}
                     </div>
-                    <div class="mt-4">
+                    <div>
                         {{ form_label(serviceForm.title, null, {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.title) }}
                         {{ form_errors(serviceForm.title) }}
                     </div>
-                    <div class="mt-4">
+                    <div>
                         {{ form_label(serviceForm.locality, 'Lugar 📍', {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.locality) }}
                         {{ form_errors(serviceForm.locality) }}
                     </div>
-                    <div class="mt-4">
-                        {{ form_label(serviceForm.afluencia, 'Afluencia 📈', {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.afluencia) }}
-                        {{ form_errors(serviceForm.afluencia) }}
-                    </div>
                 </div>
 
-                {# Columna 2 #}
-                <div>
+                {# Row 2 #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                     <div>
-                        {{ form_label(serviceForm.startDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                        {{ form_label(serviceForm.startDate, 'Hora Inicio', {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.startDate) }}
                         {{ form_errors(serviceForm.startDate) }}
                     </div>
-                    <div class="mt-4">
-                        {{ form_label(serviceForm.endDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.endDate) }}
-                        {{ form_errors(serviceForm.endDate) }}
-                    </div>
-                    <div class="mt-4">
-                        {{ form_label(serviceForm.registrationLimitDate, null, {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.registrationLimitDate) }}
-                        {{ form_errors(serviceForm.registrationLimitDate) }}
-                    </div>
-                    <div class="mt-4">
-                        {{ form_label(serviceForm.maxAttendees, null, {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.maxAttendees) }}
-                        {{ form_errors(serviceForm.maxAttendees) }}
-                    </div>
-                </div>
-
-                {# Columna 3 #}
-                <div>
                     <div>
-                        {{ form_label(serviceForm.timeAtBase, null, {'label_attr': {'class': 'block mb-2'}}) }}
+                        {{ form_label(serviceForm.timeAtBase, 'Hora Base', {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.timeAtBase) }}
                         {{ form_errors(serviceForm.timeAtBase) }}
                     </div>
-                    <div class="mt-4">
-                        {{ form_label(serviceForm.departureTime, null, {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.departureTime) }}
-                        {{ form_errors(serviceForm.departureTime) }}
+                    <div>
+                        {{ form_label(serviceForm.endDate, 'Hora Fin', {'label_attr': {'class': 'block mb-2'}}) }}
+                        {{ form_widget(serviceForm.endDate) }}
+                        {{ form_errors(serviceForm.endDate) }}
                     </div>
-                    <div class="mt-4">
+                </div>
+
+                {# Row 3 #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        {{ form_label(serviceForm.registrationLimitDate, 'Fecha Límite', {'label_attr': {'class': 'block mb-2'}}) }}
+                        {{ form_widget(serviceForm.registrationLimitDate) }}
+                        {{ form_errors(serviceForm.registrationLimitDate) }}
+                    </div>
+                    <div>
                         {{ form_label(serviceForm.type, null, {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.type) }}
                         {{ form_errors(serviceForm.type) }}
@@ -169,7 +159,7 @@
                             Añadir nuevo tipo
                         </a>
                     </div>
-                    <div class="mt-4">
+                    <div>
                         {{ form_label(serviceForm.category, null, {'label_attr': {'class': 'block mb-2'}}) }}
                         {{ form_widget(serviceForm.category) }}
                         {{ form_errors(serviceForm.category) }}
@@ -180,10 +170,15 @@
                     </div>
                 </div>
 
-                {# Fila de Recursos #}
-                <div class="lg:col-span-3">
-                    <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos y Tareas</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {# Row 4 - Recursos #}
+                <div>
+                    <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                        <div>
+                            {{ form_label(serviceForm.afluencia, 'Afluencia 📈', {'label_attr': {'class': 'block mb-2'}}) }}
+                            {{ form_widget(serviceForm.afluencia) }}
+                            {{ form_errors(serviceForm.afluencia) }}
+                        </div>
                         <div>
                             {{ form_label(serviceForm.numSvb, 'Ambulancias SVB 🚑', {'label_attr': {'class': 'block mb-2'}}) }}
                             {{ form_widget(serviceForm.numSvb) }}
@@ -217,11 +212,12 @@
                     </div>
                 </div>
 
-                {# Fila de Tareas y Descripción #}
-                <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
+                {# Row 5 - Tareas y Descripción #}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         {{ form_label(serviceForm.tasks, 'Tareas 📝', {'label_attr': {'class': 'block mb-2'}}) }}
-                        {{ form_widget(serviceForm.tasks, {'attr': {'rows': '10'}}) }}
+                        <div id="tasks-editor"></div>
+                        {{ form_widget(serviceForm.tasks, {'id': 'tasks_textarea', 'attr': {'style': 'display:none;'}}) }}
                         {{ form_errors(serviceForm.tasks) }}
                     </div>
                     <div>
@@ -231,6 +227,10 @@
                         {{ form_errors(serviceForm.description) }}
                     </div>
                 </div>
+            </div>
+
+            <div style="display:none;">
+                {{ form_row(serviceForm.recipients) }}
             </div>
 
             {{ form_rest(serviceForm) }}
