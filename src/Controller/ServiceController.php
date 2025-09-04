@@ -299,7 +299,7 @@ class ServiceController extends AbstractController
     public function view(Service $service): Response
     {
         // --- Generate WhatsApp Message ---
-        $formatter = new \IntlDateFormatter('es_ES', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, null, 'EEEE d ''de'' MMMM');
+        $formatter = new \IntlDateFormatter('es_ES', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, null, 'EEEE d \'de\' MMMM');
         $dateString = ucfirst($formatter->format($service->getStartDate()));
 
         $message = "*{$dateString}*\n";
