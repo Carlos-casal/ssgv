@@ -17,7 +17,7 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/7/tinymce.min.js" referrerpolicy="origin"></script>
+    {{ encore_entry_script_tags('tinymce') }}
     <script>
         function initializeTinyMCE() {
             const editorId = 'description_editor';
@@ -32,7 +32,9 @@
                 plugins: 'code link lists hr',
                 toolbar: 'undo redo | styles | bold italic strikethrough | superscript subscript | alignleft aligncenter alignright | bullist numlist | link unlink | hr | removeformat | code',
                 menubar: false,
-                height: 300
+                height: 300,
+                skin_url: '{{ asset('build/tinymce/skins/ui/oxide') }}',
+                content_css: '{{ asset('build/tinymce/skins/content/default/content.css') }}'
             });
         }
 
