@@ -33,69 +33,43 @@
         </ul>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="datos_basicos" role="tabpanel" aria-labelledby="datos_basicos-tab">
-                {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}}) }}
+                {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
 
-                <div class="space-y-8">
-                    {# Row 1 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.numeration) }}</div>
-                        <div>{{ form_row(form.title) }}</div>
-                        <div>{{ form_row(form.locality) }}</div>
-                    </div>
-
-                    {# Row 2 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.startDate) }}</div>
-                        <div>{{ form_row(form.timeAtBase) }}</div>
-                        <div>{{ form_row(form.endDate) }}</div>
-                    </div>
-
-                    {# Row 3 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.registrationLimitDate) }}</div>
-                        <div>{{ form_row(form.type) }}</div>
-                        <div>{{ form_row(form.category) }}</div>
-                    </div>
-
-                    {# Row 4 - Recursos #}
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                            <div>{{ form_row(form.afluencia) }}</div>
-                            <div>{{ form_row(form.numSvb) }}</div>
-                            <div>{{ form_row(form.numSva) }}</div>
-                            <div>{{ form_row(form.numSvae) }}</div>
-                            <div>{{ form_row(form.numMedical) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasFieldHospital) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasProvisions) }}</div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="col-span-1">
+                        <h3 class="text-lg font-medium text-gray-900 mb-4 border-b pb-2">Datos del Servicio</h3>
+                        <div class="mb-4">
+                            {{ form_row(form.title, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                         </div>
-                    </div>
-
-                    {# Row 5 - Tareas y Descripción #}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            {{ form_label(form.tasks) }}
-                            <div id="tasks-editor-edit"></div>
-                            {{ form_widget(form.tasks, {'id': 'tasks_textarea_edit', 'attr': {'style': 'display:none;'}}) }}
-                            {{ form_errors(form.tasks) }}
+                        <div class="mb-4">
+                            {{ form_row(form.numeration, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                         </div>
-                        <div>
-                            {{ form_label(form.description) }}
-                            <div id="quill-editor-edit"></div>
-                            {{ form_widget(form.description, {'id': 'description_textarea_edit', 'attr': {'style': 'display:none;'}}) }}
-                            {{ form_errors(form.description) }}
+                        <div class="mb-4">
+                            {{ form_row(form.startDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
                         </div>
-                    </div>
-
-                    {# Row 6 - Recipients #}
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 border-b pb-1">Destinatarios</h3>
-                        {{ form_row(form.recipients) }}
+                        <div class="mb-4">
+                            {{ form_row(form.endDate, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.maxAttendees, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.type, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.category, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.description, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
+                        <div class="mb-4">
+                            {{ form_row(form.recipients, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
+                        </div>
                     </div>
                 </div>
 
-                <div class="mt-8 text-center">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+                <div class="mt-6 text-center">
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 ease-in-out">
                         Guardar Cambios
                     </button>
                 </div>
@@ -140,74 +114,10 @@
 {% endblock %}
 
 {% block javascripts %}
-    {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    {{ parent() }} {# Mantiene cualquier JS que venga del layout padre #}
+
     <script>
-        // --- Custom Link Sanitizer for Quill ---
-        const Link = Quill.import('formats/link');
-        class CustomLink extends Link {
-            static sanitize(url) {
-                const sanitizedUrl = super.sanitize(url);
-                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
-                    return 'https://' + sanitizedUrl;
-                }
-                return sanitizedUrl;
-            }
-        }
-        Quill.register(CustomLink, true);
-        // --- End Custom Link Sanitizer ---
-
-        const quillInstances = {};
-
-        function setupQuill(containerId, textareaId) {
-            const editorContainer = document.querySelector(containerId);
-            const hiddenTextarea = document.querySelector(textareaId);
-
-            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
-                return;
-            }
-
-            const toolbarOptions = [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'strike', 'underline'],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'align': [] }],
-                ['link'],
-                ['clean']
-            ];
-
-            const quill = new Quill(editorContainer, {
-                modules: { toolbar: toolbarOptions },
-                theme: 'snow'
-            });
-
-            // Pre-fill editor with existing content
-            quill.root.innerHTML = hiddenTextarea.value;
-
-            quill.on('text-change', function() {
-                hiddenTextarea.value = quill.root.innerHTML;
-            });
-
-            quillInstances[containerId] = quill;
-        }
-
-        function initializeAllQuillEditors() {
-            setupQuill('#quill-editor-edit', '#description_textarea_edit');
-            setupQuill('#tasks-editor-edit', '#tasks_textarea_edit');
-        }
-
-        document.addEventListener('turbo:before-cache', function() {
-            for (const key in quillInstances) {
-                if (quillInstances.hasOwnProperty(key)) {
-                    quillInstances[key] = null;
-                }
-            }
-        });
-
-        document.addEventListener('turbo:load', initializeAllQuillEditors);
         document.addEventListener('DOMContentLoaded', function() {
-            initializeAllQuillEditors();
             const tabsContainer = document.getElementById('myTab');
             const tabContents = document.getElementById('myTabContent');
 
