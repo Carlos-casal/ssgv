@@ -104,6 +104,48 @@ class ServiceType extends AbstractType
                 'multiple' => true,
                 'expanded' => true, // Render as checkboxes
                 'required' => false,
+            ])
+            ->add('locality', TextType::class, [
+                'label' => 'Lugar',
+                'required' => false,
+            ])
+            ->add('afluencia', ChoiceType::class, [
+                'label' => 'Afluencia',
+                'choices' => [
+                    'Baja' => 'baja',
+                    'Media' => 'media',
+                    'Alta' => 'alta',
+                ],
+                'placeholder' => 'Selecciona un nivel',
+                'required' => false,
+            ])
+            ->add('numSvb', IntegerType::class, [
+                'label' => 'Ambulancias SVB',
+                'required' => false,
+            ])
+            ->add('numSva', IntegerType::class, [
+                'label' => 'Ambulancias SVA',
+                'required' => false,
+            ])
+            ->add('numSvae', IntegerType::class, [
+                'label' => 'Ambulancias SVAE',
+                'required' => false,
+            ])
+            ->add('numMedical', IntegerType::class, [
+                'label' => 'Médico y/o Enfermería',
+                'required' => false,
+            ])
+            ->add('hasFieldHospital', CheckboxType::class, [
+                'label' => 'Hospital de Campaña',
+                'required' => false,
+            ])
+            ->add('tasks', TextareaType::class, [
+                'label' => 'Tareas',
+                'required' => false,
+            ])
+            ->add('hasProvisions', CheckboxType::class, [
+                'label' => 'Avituallamiento',
+                'required' => false,
             ]);
     }
 
