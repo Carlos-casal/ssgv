@@ -23,6 +23,20 @@
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
+        // --- Custom Link Sanitizer for Quill ---
+        const Link = Quill.import('formats/link');
+        class CustomLink extends Link {
+            static sanitize(url) {
+                const sanitizedUrl = super.sanitize(url);
+                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
+                    return 'https://' + sanitizedUrl;
+                }
+                return sanitizedUrl;
+            }
+        }
+        Quill.register(CustomLink, true);
+        // --- End Custom Link Sanitizer ---
+
         let quillInstance = null;
 
         function initializeQuillEditor() {
