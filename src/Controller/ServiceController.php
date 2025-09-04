@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Service\WhatsAppMessageGenerator;
 use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
 
 class ServiceController extends AbstractController
@@ -87,10 +88,11 @@ class ServiceController extends AbstractController
 
             // Opcional: Añadir un mensaje flash para confirmar la creación
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
+            $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
 
             // 6. Redirigir a la lista de servicios después de crear uno nuevo
             // Usamos 'list_service' que es el nombre de la nueva ruta
-            return $this->redirectToRoute('app_services_list');
+            return $this->redirectToRoute('app_service_view', ['id' => $service->getId()]);
         }
 
         // 7. Renderizar la plantilla Twig, pasando el formulario
@@ -296,53 +298,14 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/service/{id}/view', name: 'app_service_view', methods: ['GET'])]
-    public function view(Service $service): Response
+    public function view(Service $service, WhatsAppMessageGenerator $messageGenerator): Response
     {
-        // --- Generate WhatsApp Message ---
-        $formatter = new \IntlDateFormatter('es_ES', \IntlDateFormatter::FULL, \IntlDateFormatter::NONE, null, null, 'EEEE d \'de\' MMMM');
-        $dateString = ucfirst($formatter->format($service->getStartDate()));
-
-        $message = "*{$dateString}*\n";
-        $message .= "*{$service->getTitle()}*\n\n";
-
-        $message .= "H. Base: " . ($service->getTimeAtBase() ? $service->getTimeAtBase()->format('H:i') : 'N/A') . "\n";
-        $message .= "H. Salida: " . ($service->getDepartureTime() ? $service->getDepartureTime()->format('H:i') : 'N/A') . "\n";
-        $message .= "Fin: " . ($service->getEndDate() ? $service->getEndDate()->format('H:i') : 'N/A') . " aprox\n\n";
-
-        $description = strip_tags($service->getDescription() ?? '');
-        $message .= "Descripción:\n{$description}\n\n";
-
-        if ($service->isHasProvisions()) {
-            $message .= "Avituallamiento: Sí\n";
-        }
-
-        if ($service->getAfluencia()) {
-            $afluenciaText = ucfirst($service->getAfluencia());
-            $message .= "Afluencia: {$afluenciaText}" . ($service->getAfluencia() == 'alta' ? ' 🔴' : '') . "\n";
-        }
-
-        $resources = [];
-        if ($service->getNumSvb() > 0) $resources[] = "> {$service->getNumSvb()} SVB 🚑";
-        if ($service->getNumSva() > 0) $resources[] = "> {$service->getNumSva()} SVA 🚑";
-        if ($service->getNumSvae() > 0) $resources[] = "> {$service->getNumSvae()} SVAE 🚑";
-        if (!empty($resources)) {
-            $message .= "\nAmbulancias:\n" . implode("\n", $resources) . "\n";
-        }
-
-        if ($service->getNumMedical() > 0) {
-            $message .= "\nMédico y enfermería: {$service->getNumMedical()} 🥼🩺\n";
-        }
-
-        if ($service->isHasFieldHospital()) {
-            $message .= "\nHospital de campaña: Sí 🏥\n";
-        }
-
-        $whatsappUrl = 'https://api.whatsapp.com/send?text=' . urlencode($message);
-        // --- End Generate WhatsApp Message ---
+        $message = $messageGenerator->createMessage($service);
+        $whatsappLink = 'https://wa.me/?text=' . urlencode($message);
 
         return $this->render('service/view.html.twig', [
             'service' => $service,
-            'whatsapp_url' => $whatsappUrl,
+            'whatsappLink' => $whatsappLink,
         ]);
     }
 }
