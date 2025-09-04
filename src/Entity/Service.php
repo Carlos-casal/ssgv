@@ -91,7 +91,10 @@ class Service
     private ?int $numSvae = null;
 
     #[ORM\Column(nullable: true)]
-    private ?int $numMedical = null;
+    private ?int $numDoctors = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numNurses = null;
 
     #[ORM\Column(nullable: true)]
     private ?bool $hasFieldHospital = null;
@@ -389,14 +392,26 @@ class Service
         return $this;
     }
 
-    public function getNumMedical(): ?int
+    public function getNumDoctors(): ?int
     {
-        return $this->numMedical;
+        return $this->numDoctors;
     }
 
-    public function setNumMedical(?int $numMedical): static
+    public function setNumDoctors(?int $numDoctors): static
     {
-        $this->numMedical = $numMedical;
+        $this->numDoctors = $numDoctors;
+
+        return $this;
+    }
+
+    public function getNumNurses(): ?int
+    {
+        return $this->numNurses;
+    }
+
+    public function setNumNurses(?int $numNurses): static
+    {
+        $this->numNurses = $numNurses;
 
         return $this;
     }

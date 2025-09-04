@@ -87,7 +87,7 @@ class ServiceType extends AbstractType
                 'required' => true,
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Descripción',
+                'label' => 'Decisión',
                 'required' => false,
             ])
             ->add('recipients', ChoiceType::class, [
@@ -130,8 +130,12 @@ class ServiceType extends AbstractType
                 'label' => 'Ambulancias SVAE',
                 'required' => false,
             ])
-            ->add('numMedical', IntegerType::class, [
-                'label' => 'Médico y/o Enfermería',
+            ->add('numDoctors', IntegerType::class, [
+                'label' => 'Médicos',
+                'required' => false,
+            ])
+            ->add('numNurses', IntegerType::class, [
+                'label' => 'Enfermeros',
                 'required' => false,
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
