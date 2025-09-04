@@ -309,7 +309,6 @@ class ServiceController extends AbstractController
         $message .= "H. Salida: " . ($service->getDepartureTime() ? $service->getDepartureTime()->format('H:i') : 'N/A') . "\n";
         $message .= "Fin: " . ($service->getEndDate() ? $service->getEndDate()->format('H:i') : 'N/A') . " aprox\n\n";
 
-        // Strip HTML tags for WhatsApp message
         $description = strip_tags($service->getDescription() ?? '');
         $message .= "Descripción:\n{$description}\n\n";
 

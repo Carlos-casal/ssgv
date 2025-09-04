@@ -78,6 +78,30 @@ class Service
     #[ORM\OneToMany(mappedBy: 'service', targetEntity: AssistanceConfirmation::class, orphanRemoval: true)]
     private Collection $assistanceConfirmations;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $afluencia = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numSvb = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numSva = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numSvae = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numMedical = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $hasFieldHospital = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $tasks = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $hasProvisions = null;
+
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
@@ -313,6 +337,102 @@ class Service
                 $assistanceConfirmation->setService(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getAfluencia(): ?string
+    {
+        return $this->afluencia;
+    }
+
+    public function setAfluencia(?string $afluencia): static
+    {
+        $this->afluencia = $afluencia;
+
+        return $this;
+    }
+
+    public function getNumSvb(): ?int
+    {
+        return $this->numSvb;
+    }
+
+    public function setNumSvb(?int $numSvb): static
+    {
+        $this->numSvb = $numSvb;
+
+        return $this;
+    }
+
+    public function getNumSva(): ?int
+    {
+        return $this->numSva;
+    }
+
+    public function setNumSva(?int $numSva): static
+    {
+        $this->numSva = $numSva;
+
+        return $this;
+    }
+
+    public function getNumSvae(): ?int
+    {
+        return $this->numSvae;
+    }
+
+    public function setNumSvae(?int $numSvae): static
+    {
+        $this->numSvae = $numSvae;
+
+        return $this;
+    }
+
+    public function getNumMedical(): ?int
+    {
+        return $this->numMedical;
+    }
+
+    public function setNumMedical(?int $numMedical): static
+    {
+        $this->numMedical = $numMedical;
+
+        return $this;
+    }
+
+    public function isHasFieldHospital(): ?bool
+    {
+        return $this->hasFieldHospital;
+    }
+
+    public function setHasFieldHospital(?bool $hasFieldHospital): static
+    {
+        $this->hasFieldHospital = $hasFieldHospital;
+
+        return $this;
+    }
+
+    public function getTasks(): ?string
+    {
+        return $this->tasks;
+    }
+
+    public function setTasks(?string $tasks): static
+    {
+        $this->tasks = $tasks;
+
+        return $this;
+    }
+
+    public function isHasProvisions(): ?bool
+    {
+        return $this->hasProvisions;
+    }
+
+    public function setHasProvisions(?bool $hasProvisions): static
+    {
+        $this->hasProvisions = $hasProvisions;
 
         return $this;
     }
