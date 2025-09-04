@@ -7,7 +7,6 @@
     <div class="bg-white p-6 rounded-lg shadow-md">
         <h2 class="text-xl font-bold mb-4 border-b pb-2">Resumen del Servicio para WhatsApp</h2>
 
-        {# Using pre-wrap to respect newlines and spaces from the formatted text #}
         <div class="whitespace-pre-wrap font-mono text-sm bg-gray-50 p-4 rounded-md">
             <strong>{{ service.startDate|format_datetime(locale='es', pattern='EEEE d ''de'' MMMM')|capitalize }}</strong>
             <strong>{{ service.title }}</strong>
