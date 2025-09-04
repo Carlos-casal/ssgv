@@ -5,11 +5,12 @@
 {% block stylesheets %}
     {{ parent() }}
     <style>
-        label.required {
-            color: red;
+        label {
+            color: black;
         }
         label.required:after {
             content: " *";
+            color: red;
         }
     </style>
 {% endblock %}
@@ -89,6 +90,7 @@
                 CKEDITOR.replace(editorId, {
                     toolbar: [
                         { name: 'document', items: [ 'Source' ] },
+                        { name: 'clipboard', items: [ 'Undo', 'Redo' ] },
                         { name: 'basicstyles', items: [ 'Bold', 'Italic', 'Strike', 'Superscript', 'Subscript', '-', 'RemoveFormat' ] },
                         { name: 'paragraph', items: [ 'NumberedList', 'BulletedList', '-', 'JustifyLeft', 'JustifyCenter', 'JustifyRight' ] },
                         { name: 'links', items: [ 'Link', 'Unlink' ] },
