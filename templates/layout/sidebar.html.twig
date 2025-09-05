@@ -24,7 +24,7 @@
                 {% if is_granted('ROLE_ADMIN') %}
                 <!-- GESTIÓN -->
                 <li class="has-submenu">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="folder-kanban" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">GESTIÓN</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -32,7 +32,7 @@
                     <ul class="pl-4 space-y-1">
                         <!-- PERSONAL -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="users" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">PERSONAL</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -44,7 +44,7 @@
                         </li>
                         <!-- SERVICIOS -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">SERVICIOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -58,7 +58,7 @@
                         <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
                         <!-- RECURSOS -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="archive" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm font-medium">RECURSOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -67,7 +67,7 @@
                                 <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm">VEHICULO</span></a></li>
                                 <!-- INVENTARIO -->
                                 <li class="has-submenu">
-                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">INVENTARIO</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -83,7 +83,7 @@
                                 </li>
                                 <!-- ARCE -->
                                 <li class="has-submenu">
-                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="puzzle" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">ARCE</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -106,7 +106,7 @@
 
                 <!-- CONFIGURACION -->
                 <li class="has-submenu">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">CONFIGURACION</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -171,20 +171,51 @@
 <script>
     function setupSidebar() {
         const submenuItems = document.querySelectorAll('.has-submenu');
-        submenuItems.forEach(item => {
-            // Remove existing listeners to avoid duplicates
-            item.replaceWith(item.cloneNode(true));
-        });
 
-        // Re-query the items after cloning
-        const newSubmenuItems = document.querySelectorAll('.has-submenu');
-        newSubmenuItems.forEach(item => {
-            item.addEventListener('mouseenter', function () {
-                this.classList.add('submenu-open');
-            });
+        submenuItems.forEach((item, index) => {
+            if (item.dataset.sidebarListenersAttached) {
+                return;
+            }
+            item.dataset.sidebarListenersAttached = 'true';
 
-            item.addEventListener('mouseleave', function () {
-                this.classList.remove('submenu-open');
+            const link = item.querySelector('a');
+            const submenu = item.querySelector('ul');
+            if (!link || !submenu) return;
+
+            // Generate unique IDs for ARIA
+            const submenuId = `submenu-${index}`;
+            submenu.setAttribute('id', submenuId);
+            link.setAttribute('aria-controls', submenuId);
+
+            link.addEventListener('click', function(event) {
+                if (this.getAttribute('href') === '#') {
+                    event.preventDefault();
+                }
+
+                const parentLi = this.parentElement;
+                const isExpanded = parentLi.classList.toggle('submenu-open');
+                this.setAttribute('aria-expanded', isExpanded);
+
+                // Close sibling submenus
+                const parentUl = parentLi.parentElement;
+                parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
+                    if (sibling !== parentLi) {
+                        sibling.classList.remove('submenu-open');
+                        const siblingLink = sibling.querySelector('a');
+                        if (siblingLink) {
+                            siblingLink.setAttribute('aria-expanded', 'false');
+                        }
+                        // Recursively close any open submenus within the sibling
+                        sibling.querySelectorAll('.submenu-open').forEach(sub => {
+                            sub.classList.remove('submenu-open');
+                            const subLink = sub.querySelector('a');
+                            // Ensure the link exists before setting the attribute
+                            if (subLink && subLink.hasAttribute('aria-expanded')) {
+                                subLink.setAttribute('aria-expanded', 'false');
+                            }
+                        });
+                    }
+                });
             });
         });
     }
