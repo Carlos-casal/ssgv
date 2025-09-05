@@ -14,6 +14,9 @@ use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
 
 class ServiceType extends AbstractType
 {
@@ -26,47 +29,47 @@ class ServiceType extends AbstractType
                 'attr' => ['placeholder' => 'Ej: S-2025-001'],
             ])
             ->add('title', TextType::class, [
-                'label' => 'Título del Servicio',
+                'label' => 'Título',
                 'required' => true,
                 'attr' => ['placeholder' => 'Ej: Recogida de Alimentos'],
             ])
             ->add('startDate', DateTimeType::class, [
-                'label' => 'Fecha y Hora de Inicio',
+                'label' => 'Inicio',
                 'widget' => 'single_text',
                 'required' => true,
                 'html5' => true,
             ])
             ->add('endDate', DateTimeType::class, [
-                'label' => 'Fecha y Hora de Fin',
+                'label' => 'Fin',
                 'widget' => 'single_text',
                 'required' => true,
                 'html5' => true,
             ])
             ->add('registrationLimitDate', DateType::class, [
-                'label' => 'Fecha Límite de Inscripción',
+                'label' => 'Límite',
                 'widget' => 'single_text',
                 'required' => true,
                 'html5' => true,
             ])
             ->add('timeAtBase', TimeType::class, [
-                'label' => 'Hora en Base',
+                'label' => 'Base',
                 'widget' => 'single_text',
                 'required' => true,
                 'html5' => true,
             ])
             ->add('departureTime', TimeType::class, [
-                'label' => 'Hora de Salida',
+                'label' => 'Salida',
                 'widget' => 'single_text',
                 'required' => true,
                 'html5' => true,
             ])
             ->add('maxAttendees', IntegerType::class, [
-                'label' => 'Máximo Asistentes',
+                'label' => 'Asistentes',
                 'required' => false,
                 'attr' => ['min' => 1, 'placeholder' => 'Ej: 50'],
             ])
             ->add('type', ChoiceType::class, [
-                'label' => 'Tipo de Servicio',
+                'label' => 'Tipo',
                 'choices' => [
                     'Evento' => 'evento',
                     'Formación' => 'formacion',
@@ -76,7 +79,7 @@ class ServiceType extends AbstractType
                 'required' => true,
             ])
             ->add('category', ChoiceType::class, [
-                'label' => 'Categoría del Servicio',
+                'label' => 'Categoría',
                 'choices' => [
                     'Asistencia Social' => 'asistencia_social',
                     'Medio Ambiente' => 'medio_ambiente',
@@ -87,7 +90,7 @@ class ServiceType extends AbstractType
                 'required' => true,
             ])
             ->add('description', TextareaType::class, [
-                'label' => 'Decisión',
+                'label' => 'Descripción',
                 'required' => false,
             ])
             ->add('recipients', ChoiceType::class, [
@@ -119,24 +122,33 @@ class ServiceType extends AbstractType
                 'required' => false,
             ])
             ->add('numSvb', IntegerType::class, [
-                'label' => 'Ambulancias SVB',
+                'label' => 'SVB',
                 'required' => false,
             ])
             ->add('numSva', IntegerType::class, [
-                'label' => 'Ambulancias SVA',
+                'label' => 'SVA',
                 'required' => false,
             ])
             ->add('numSvae', IntegerType::class, [
-                'label' => 'Ambulancias SVAE',
+                'label' => 'SVAE',
                 'required' => false,
             ])
             ->add('numDoctors', IntegerType::class, [
-                'label' => 'Médicos',
+                'label' => 'Medico',
                 'required' => false,
             ])
-            ->add('numNurses', IntegerType::class, [
-                'label' => 'Enfermeros',
+            ->add('numNurses', HiddenType::class, [
                 'required' => false,
+            ])
+            ->add('numDues', IntegerType::class, [
+                'label' => 'Enfermeros/as (DUE)',
+                'required' => false,
+                'mapped' => false,
+            ])
+            ->add('numTecnicos', IntegerType::class, [
+                'label' => 'Técnicos (TTS)',
+                'required' => false,
+                'mapped' => false,
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
@@ -150,6 +162,18 @@ class ServiceType extends AbstractType
                 'label' => 'Avituallamiento',
                 'required' => false,
             ]);
+
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            $form = $event->getForm();
+
+            $numDues = $data['numDues'] ?? 0;
+            $numTecnicos = $data['numTecnicos'] ?? 0;
+
+            $data['numNurses'] = $numDues + $numTecnicos;
+
+            $event->setData($data);
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void
