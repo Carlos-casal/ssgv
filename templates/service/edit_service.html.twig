@@ -7,7 +7,7 @@
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <style>
         #quill-editor-edit, #tasks-editor-edit {
-            height: 300px;
+            height: 250px;
         }
     </style>
 {% endblock %}
@@ -16,7 +16,6 @@
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
-        // --- Custom Link Sanitizer for Quill ---
         const Link = Quill.import('formats/link');
         class CustomLink extends Link {
             static sanitize(url) {
@@ -28,17 +27,12 @@
             }
         }
         Quill.register(CustomLink, true);
-        // --- End Custom Link Sanitizer ---
 
         const quillInstances = {};
-
         function setupQuill(containerId, textareaId) {
             const editorContainer = document.querySelector(containerId);
             const hiddenTextarea = document.querySelector(textareaId);
-
-            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
-                return;
-            }
+            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) return;
 
             const toolbarOptions = [
                 [{ 'header': [1, 2, 3, false] }],
@@ -49,18 +43,14 @@
                 ['link'],
                 ['clean']
             ];
-
             const quill = new Quill(editorContainer, {
                 modules: { toolbar: toolbarOptions },
                 theme: 'snow'
             });
-
             quill.root.innerHTML = hiddenTextarea.value;
-
-            quill.on('text-change', function() {
+            quill.on('text-change', () => {
                 hiddenTextarea.value = quill.root.innerHTML;
             });
-
             quillInstances[containerId] = quill;
         }
 
@@ -69,14 +59,13 @@
             setupQuill('#tasks-editor-edit', '#tasks_textarea_edit');
         }
 
-        document.addEventListener('turbo:before-cache', function() {
+        document.addEventListener('turbo:before-cache', () => {
             for (const key in quillInstances) {
-                if (quillInstances.hasOwnProperty(key)) {
+                if (quillInstances.hasOwnProperty(key) && quillInstances[key]) {
                     quillInstances[key] = null;
                 }
             }
-        }, { once: true });
-
+        });
         document.addEventListener('turbo:load', initializeAllQuillEditors);
         document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
     </script>
@@ -85,59 +74,64 @@
 {% block content %}
     <div class="container mx-auto p-6">
         <h1 class="text-2xl font-bold mb-6 text-gray-900">Editar Servicio</h1>
-
-        {# ... (flash messages can stay here) ... #}
-
+        {# ... flash messages ... #}
         <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="datos_basicos-tab" data-toggle="tab" href="#datos_basicos" role="tab">Datos básicos</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="asistencias-tab" data-toggle="tab" href="#asistencias" role="tab">Confirmaciones</a>
-            </li>
+            <li class="nav-item"><a class="nav-link active" id="datos_basicos-tab" data-toggle="tab" href="#datos_basicos" role="tab">Datos básicos</a></li>
+            <li class="nav-item"><a class="nav-link" id="asistencias-tab" data-toggle="tab" href="#asistencias" role="tab">Confirmaciones</a></li>
         </ul>
         <div class="tab-content" id="myTabContent">
             <div class="tab-pane fade show active" id="datos_basicos" role="tabpanel">
                 {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}}) }}
+                <div class="space-y-6">
 
-                <div class="space-y-8">
-                    {# Row 1 #}
+                    {# Fila 1 #}
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>{{ form_row(form.numeration) }}</div>
                         <div>{{ form_row(form.title) }}</div>
-                        <div>{{ form_row(form.locality) }}</div>
+                        <div>{{ form_row(form.locality, {'label': 'Lugar 📍'}) }}</div>
                     </div>
 
-                    {# Row 2 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {# Fila 2 #}
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div>{{ form_row(form.startDate) }}</div>
                         <div>{{ form_row(form.timeAtBase) }}</div>
+                        <div>{{ form_row(form.departureTime) }}</div>
                         <div>{{ form_row(form.endDate) }}</div>
                     </div>
 
-                    {# Row 3 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {# Fila 3 #}
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div>{{ form_row(form.registrationLimitDate) }}</div>
+                        <div>{{ form_row(form.maxAttendees) }}</div>
                         <div>{{ form_row(form.type) }}</div>
                         <div>{{ form_row(form.category) }}</div>
                     </div>
 
-                    {# Row 4 - Recursos #}
+                    {# Fila 4 - Recursos #}
                     <div>
-                        <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
-                            <div>{{ form_row(form.afluencia) }}</div>
-                            <div>{{ form_row(form.numSvb) }}</div>
-                            <div>{{ form_row(form.numSva) }}</div>
-                            <div>{{ form_row(form.numSvae) }}</div>
-                            <div>{{ form_row(form.numMedical) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasFieldHospital) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasProvisions) }}</div>
+                        <h3 class="text-lg font-semibold mb-4 border-b pb-2">Recursos</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="space-y-4">
+                                <label class="block font-medium">Ambulancias</label>
+                                <div>{{ form_row(form.numSvb, {'label': 'SVB 🚑'}) }}</div>
+                                <div>{{ form_row(form.numSva, {'label': 'SVA 🚑'}) }}</div>
+                                <div>{{ form_row(form.numSvae, {'label': 'SVAE 🚑'}) }}</div>
+                            </div>
+                            <div class="space-y-4">
+                                <label class="block font-medium">Personal Sanitario</label>
+                                <div>{{ form_row(form.numMedico, {'label': 'Médico 🥼'}) }}</div>
+                                <div>{{ form_row(form.numEnfermero, {'label': 'Enfermería 🩺'}) }}</div>
+                            </div>
+                            <div class="space-y-4 pt-8">
+                               <div>{{ form_row(form.afluencia, {'label': 'Afluencia 📈'}) }}</div>
+                               <div class="pt-4">{{ form_row(form.hasFieldHospital, {'label': 'Hospital de Campaña 🏥'}) }}</div>
+                               <div class="pt-2">{{ form_row(form.hasProvisions, {'label': 'Avituallamiento 🥪'}) }}</div>
+                            </div>
                         </div>
                     </div>
 
-                    {# Row 5 - Tareas y Descripción #}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {# Fila 5 - Tareas y Descripción #}
+                    <div class="space-y-6">
                         <div>
                             {{ form_label(form.tasks) }}
                             <div id="tasks-editor-edit"></div>
@@ -152,7 +146,7 @@
                         </div>
                     </div>
 
-                    {# Row 6 - Recipients #}
+                     {# Fila 6 - Recipients #}
                     <div>
                         <h3 class="text-lg font-semibold mb-2 border-b pb-1">Destinatarios</h3>
                         {{ form_row(form.recipients) }}
@@ -160,45 +154,12 @@
                 </div>
 
                 <div class="mt-8 text-center">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
-                        Guardar Cambios
-                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">Guardar Cambios</button>
                 </div>
-
                 {{ form_end(form) }}
             </div>
             <div class="tab-pane fade" id="asistencias" role="tabpanel">
-                {# ... Asistencias content is loaded via JS, so it can be left as is ... #}
-                 <div class="row">
-                    <div class="col-lg-12" style="padding-left:2em;">
-                        <button type="button" class="pcam-btn-gris" id="servicios_btn_add_respuesta_voluntario" onclick="servicios_asistentes_add_open_modal()"><i class="fas fa-plus-square"></i> Añadir usuarios</button>
-                        <button type="button" class="pcam-btn-gris" id="servicios_btn_fichar_todos" onclick="servicios_fichar_todos_open_modal()"><i class="fas fa-clock"></i> Fichar a todos</button>
-                    </div>
-                </div>
-
-                <div class="row" style="padding: 0em 1em 0em 1em !important;">
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">Asisten <span class="badge badge-light" id="n_asistentes"></span></button>
-                        <ul class="list-group" id="servicio-listado-asistentes">
-
-                        </ul>
-                    </div>
-
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">Reserva <span class="badge badge-light" id="n_reserva"></span></button>
-                    <ul class="list-group" id="servicio-listado-reserva">
-
-                    </ul>
-                    </div>
-
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">No asisten <span class="badge badge-light" id="n_no_asistentes"></span></button>
-                    <ul class="list-group" id="servicio-listado-no-asistentes">
-
-                    </ul>
-                    </div>
-
-                </div>
+                {# Asistencias content #}
             </div>
         </div>
     </div>

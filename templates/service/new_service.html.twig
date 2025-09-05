@@ -14,7 +14,7 @@
             color: red;
         }
         #quill-editor, #tasks-editor {
-            height: 300px;
+            height: 250px;
         }
     </style>
 {% endblock %}
@@ -23,7 +23,6 @@
     {{ parent() }}
     <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
     <script>
-        // --- Custom Link Sanitizer for Quill ---
         const Link = Quill.import('formats/link');
         class CustomLink extends Link {
             static sanitize(url) {
@@ -35,17 +34,12 @@
             }
         }
         Quill.register(CustomLink, true);
-        // --- End Custom Link Sanitizer ---
 
         const quillInstances = {};
-
         function setupQuill(containerId, textareaId) {
             const editorContainer = document.querySelector(containerId);
             const hiddenTextarea = document.querySelector(textareaId);
-
-            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
-                return;
-            }
+            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) return;
 
             const toolbarOptions = [
                 [{ 'header': [1, 2, 3, false] }],
@@ -56,16 +50,13 @@
                 ['link'],
                 ['clean']
             ];
-
             const quill = new Quill(editorContainer, {
                 modules: { toolbar: toolbarOptions },
                 theme: 'snow'
             });
-
-            quill.on('text-change', function() {
+            quill.on('text-change', () => {
                 hiddenTextarea.value = quill.root.innerHTML;
             });
-
             quillInstances[containerId] = quill;
         }
 
@@ -74,14 +65,13 @@
             setupQuill('#tasks-editor', '#tasks_textarea');
         }
 
-        document.addEventListener('turbo:before-cache', function() {
+        document.addEventListener('turbo:before-cache', () => {
             for (const key in quillInstances) {
-                if (quillInstances.hasOwnProperty(key)) {
+                if (quillInstances.hasOwnProperty(key) && quillInstances[key]) {
                     quillInstances[key] = null;
                 }
             }
-        }, { once: true });
-
+        });
         document.addEventListener('turbo:load', initializeAllQuillEditors);
         document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
     </script>
@@ -90,96 +80,64 @@
 {% block content %}
     <div class="container mx-auto px-4 py-8">
         <h1 class="text-3xl font-bold mb-6 text-gray-800">Crear Nuevo Servicio</h1>
-
         <div class="bg-white shadow-md rounded-lg p-6 mb-8">
             {{ form_start(serviceForm) }}
+            <div class="space-y-6">
 
-            <div class="space-y-8">
-                {# Row 1 #}
+                {# Fila 1 #}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        {{ form_row(serviceForm.numeration) }}
-                    </div>
-                    <div>
-                        {{ form_row(serviceForm.title) }}
-                    </div>
-                    <div>
-                        {{ form_label(serviceForm.locality, 'Lugar 📍') }}
-                        {{ form_widget(serviceForm.locality) }}
-                        {{ form_errors(serviceForm.locality) }}
-                    </div>
+                    <div>{{ form_row(serviceForm.numeration) }}</div>
+                    <div>{{ form_row(serviceForm.title) }}</div>
+                    <div>{{ form_row(serviceForm.locality, {'label': 'Lugar 📍'}) }}</div>
                 </div>
 
-                {# Row 2 #}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        {{ form_row(serviceForm.startDate) }}
-                    </div>
-                    <div>
-                        {{ form_row(serviceForm.timeAtBase) }}
-                    </div>
-                    <div>
-                        {{ form_row(serviceForm.endDate) }}
-                    </div>
+                {# Fila 2 #}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>{{ form_row(serviceForm.startDate) }}</div>
+                    <div>{{ form_row(serviceForm.timeAtBase) }}</div>
+                    <div>{{ form_row(serviceForm.departureTime) }}</div>
+                    <div>{{ form_row(serviceForm.endDate) }}</div>
                 </div>
 
-                {# Row 3 #}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        {{ form_row(serviceForm.registrationLimitDate) }}
-                    </div>
+                {# Fila 3 #}
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div>{{ form_row(serviceForm.registrationLimitDate) }}</div>
+                    <div>{{ form_row(serviceForm.maxAttendees) }}</div>
                     <div>
                         {{ form_row(serviceForm.type) }}
+                        <a href="#" class="text-sm text-blue-600 hover:underline mt-2 block"><i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1"></i>Añadir nuevo tipo</a>
                     </div>
                     <div>
                         {{ form_row(serviceForm.category) }}
+                        <a href="#" class="text-sm text-blue-600 hover:underline mt-2 block"><i data-lucide="plus-circle" class="inline-block w-4 h-4 mr-1"></i>Añadir nueva categoría</a>
                     </div>
                 </div>
 
-                {# Row 4 - Recursos #}
+                {# Fila 4 - Recursos #}
                 <div>
-                    <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
-                        <div>
-                            {{ form_label(serviceForm.afluencia, 'Afluencia 📈') }}
-                            {{ form_widget(serviceForm.afluencia) }}
-                            {{ form_errors(serviceForm.afluencia) }}
+                    <h3 class="text-lg font-semibold mb-4 border-b pb-2">Recursos</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="space-y-4">
+                            <label class="block font-medium">Ambulancias</label>
+                            <div>{{ form_row(serviceForm.numSvb, {'label': 'SVB 🚑'}) }}</div>
+                            <div>{{ form_row(serviceForm.numSva, {'label': 'SVA 🚑'}) }}</div>
+                            <div>{{ form_row(serviceForm.numSvae, {'label': 'SVAE 🚑'}) }}</div>
                         </div>
-                        <div>
-                            {{ form_label(serviceForm.numSvb, 'Ambulancias SVB 🚑') }}
-                            {{ form_widget(serviceForm.numSvb) }}
-                            {{ form_errors(serviceForm.numSvb) }}
+                        <div class="space-y-4">
+                             <label class="block font-medium">Personal Sanitario</label>
+                            <div>{{ form_row(serviceForm.numMedico, {'label': 'Médico 🥼'}) }}</div>
+                            <div>{{ form_row(serviceForm.numEnfermero, {'label': 'Enfermería 🩺'}) }}</div>
                         </div>
-                        <div>
-                            {{ form_label(serviceForm.numSva, 'Ambulancias SVA 🚑') }}
-                            {{ form_widget(serviceForm.numSva) }}
-                            {{ form_errors(serviceForm.numSva) }}
-                        </div>
-                        <div>
-                            {{ form_label(serviceForm.numSvae, 'Ambulancias SVAE 🚑') }}
-                            {{ form_widget(serviceForm.numSvae) }}
-                            {{ form_errors(serviceForm.numSvae) }}
-                        </div>
-                        <div>
-                            {{ form_label(serviceForm.numMedical, 'Médico/Enfermería 🥼🩺') }}
-                            {{ form_widget(serviceForm.numMedical) }}
-                            {{ form_errors(serviceForm.numMedical) }}
-                        </div>
-                        <div class="flex items-center pt-6">
-                            {{ form_widget(serviceForm.hasFieldHospital) }}
-                            {{ form_label(serviceForm.hasFieldHospital, 'Hospital de Campaña 🏥', {'label_attr': {'class': 'ml-2'}}) }}
-                            {{ form_errors(serviceForm.hasFieldHospital) }}
-                        </div>
-                        <div class="flex items-center pt-6">
-                            {{ form_widget(serviceForm.hasProvisions) }}
-                            {{ form_label(serviceForm.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-2'}}) }}
-                            {{ form_errors(serviceForm.hasProvisions) }}
+                        <div class="space-y-4 pt-8">
+                           <div>{{ form_row(serviceForm.afluencia, {'label': 'Afluencia 📈'}) }}</div>
+                           <div class="pt-4">{{ form_row(serviceForm.hasFieldHospital, {'label': 'Hospital de Campaña 🏥'}) }}</div>
+                           <div class="pt-2">{{ form_row(serviceForm.hasProvisions, {'label': 'Avituallamiento 🥪'}) }}</div>
                         </div>
                     </div>
                 </div>
 
-                {# Row 5 - Tareas y Descripción #}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {# Fila 5 - Tareas y Descripción #}
+                <div class="space-y-6">
                     <div>
                         {{ form_label(serviceForm.tasks, 'Tareas 📝') }}
                         <div id="tasks-editor"></div>
@@ -195,21 +153,13 @@
                 </div>
             </div>
 
-            <div style="display:none;">
-                {{ form_row(serviceForm.recipients) }}
-            </div>
-
+            <div style="display:none;">{{ form_row(serviceForm.recipients) }}</div>
             {{ form_rest(serviceForm) }}
 
             <div class="flex items-center justify-end mt-6">
-                <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">
-                    Volver a la Lista
-                </a>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
-                    Guardar Servicio
-                </button>
+                <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">Volver</a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg ml-3">Guardar Servicio</button>
             </div>
-
             {{ form_end(serviceForm) }}
         </div>
     </div>

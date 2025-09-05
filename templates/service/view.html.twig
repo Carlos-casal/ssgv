@@ -33,8 +33,19 @@
                 {% if service.numSvae > 0 %}> {{ service.numSvae }} SVAE 🚑{% endif %}
             {% endif %}
 
-            {% if service.numMedical > 0 %}
-            Médico y enfermería: {{ service.numMedical }} 🥼🩺
+            {% set medicos = service.numMedico|default(0) %}
+            {% set enfermeros = service.numEnfermero|default(0) %}
+
+            {% if medicos > 0 or enfermeros > 0 %}
+
+            Personal Sanitario:
+                {% if medicos > 0 and enfermeros > 0 %}
+                    > {{ medicos }} Médico(s) 🥼 y {{ enfermeros }} Enfermero(s) 🩺
+                {% elseif medicos > 0 %}
+                    > {{ medicos }} Médico(s) 🥼
+                {% elseif enfermeros > 0 %}
+                    > {{ enfermeros }} Enfermero(s) 🩺
+                {% endif %}
             {% endif %}
 
             {% if service.hasFieldHospital %}

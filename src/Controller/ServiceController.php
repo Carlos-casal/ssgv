@@ -329,8 +329,15 @@ class ServiceController extends AbstractController
             $message .= "\nAmbulancias:\n" . implode("\n", $resources) . "\n";
         }
 
-        if ($service->getNumMedical() > 0) {
-            $message .= "\nMédico y enfermería: {$service->getNumMedical()} 🥼🩺\n";
+        $medicos = $service->getNumMedico() ?? 0;
+        $enfermeros = $service->getNumEnfermero() ?? 0;
+
+        if ($medicos > 0 && $enfermeros > 0) {
+            $message .= "\nPersonal Sanitario: {$medicos} Médico(s) 🥼 y {$enfermeros} Enfermero(s) 🩺\n";
+        } elseif ($medicos > 0) {
+            $message .= "\nPersonal Sanitario: {$medicos} Médico(s) 🥼\n";
+        } elseif ($enfermeros > 0) {
+            $message .= "\nPersonal Sanitario: {$enfermeros} Enfermero(s) 🩺\n";
         }
 
         if ($service->isHasFieldHospital()) {

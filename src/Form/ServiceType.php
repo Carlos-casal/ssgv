@@ -130,8 +130,12 @@ class ServiceType extends AbstractType
                 'label' => 'Ambulancias SVAE',
                 'required' => false,
             ])
-            ->add('numMedical', IntegerType::class, [
-                'label' => 'Médico y/o Enfermería',
+            ->add('numMedico', IntegerType::class, [
+                'label' => 'Médico',
+                'required' => false,
+            ])
+            ->add('numEnfermero', IntegerType::class, [
+                'label' => 'Enfermería',
                 'required' => false,
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
