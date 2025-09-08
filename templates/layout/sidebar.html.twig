@@ -10,6 +10,30 @@
         </div>
     </div>
 
+    <!-- Controles del Encabezado Movidos -->
+    <div class="p-4 border-b border-gray-200 space-y-4">
+        <!-- Fecha -->
+        <p class="text-sm text-gray-600 text-center">
+            {{ "now"|date("l, d \\d\\e F \\d\\e Y") }}
+        </p>
+
+        <!-- Barra de Búsqueda -->
+        <div class="relative">
+            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
+            <input
+                type="text"
+                placeholder="Buscar..."
+                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
+            />
+        </div>
+
+        <!-- Notificaciones -->
+        <button class="w-full flex items-center justify-center gap-2 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
+            <i data-lucide="bell" class="w-5 h-5"></i>
+            <span class="text-sm font-medium">Notificaciones</span>
+            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+        </button>
+    </div>
     <!-- Navegación Principal -->
     <div class="flex-1 p-2 overflow-y-auto">
         <nav class="space-y-1" id="main-nav">
