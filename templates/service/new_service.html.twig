@@ -75,7 +75,7 @@
         Quill.register(CustomLink, true);
         // --- End Custom Link Sanitizer ---
 
-        const quillInstances = {};
+        let quillInstances = {};
 
         function setupQuill(containerId, textareaId) {
             const editorContainer = document.querySelector(containerId);
@@ -83,18 +83,10 @@
 
             if (!editorContainer || !hiddenTextarea) return;
 
-            // If an instance already exists, destroy it before creating a new one
-            if (quillInstances[containerId]) {
-                 // It's often better to let turbo:before-cache handle cleanup,
-                 // but this is an extra safeguard.
-                delete quillInstances[containerId];
-            }
-             if (editorContainer.querySelector('.ql-editor')) {
-                // Already initialized, perhaps by a previous script run that wasn't cleaned up.
-                // It's better to avoid re-initializing.
+            // If the editor has already been initialized on this element, do nothing.
+            if (editorContainer.quill) {
                 return;
             }
-
 
             const toolbarOptions = [
                 [{ 'header': [1, 2, 3, false] }],
@@ -111,6 +103,10 @@
                 theme: 'snow'
             });
 
+            // Store the instance on the element itself
+            editorContainer.quill = quill;
+            quillInstances[containerId] = quill;
+
             quill.on('text-change', function() {
                 hiddenTextarea.value = quill.root.innerHTML;
                 updateWhatsAppPreview(); // Update preview on text change
@@ -120,8 +116,6 @@
             if (hiddenTextarea.value) {
                 quill.root.innerHTML = hiddenTextarea.value;
             }
-
-            quillInstances[containerId] = quill;
         }
 
         function initializeAllQuillEditors() {
@@ -132,17 +126,15 @@
 
         function cleanupQuillInstances() {
             for (const key in quillInstances) {
-                if (quillInstances.hasOwnProperty(key)) {
-                    const container = document.querySelector(key);
-                    if (container) {
-                        const editor = container.querySelector('.ql-editor');
-                        if (editor) {
-                           // container.innerHTML = ''; // Clear the container
-                        }
-                    }
-                    delete quillInstances[key];
+                const container = document.querySelector(key);
+                if (container && container.quill) {
+                    // Remove the instance from the element
+                    delete container.quill;
+                    // Clear the editor's HTML to prevent Turbo from caching it
+                    container.innerHTML = '';
                 }
             }
+            quillInstances = {};
         }
 
         async function updateWhatsAppPreview() {
@@ -150,11 +142,48 @@
             if (!form) return;
 
             const formData = new FormData(form);
-            const data = Object.fromEntries(formData.entries());
 
-            // Manually get content from Quill editors
-            data.description = quillInstances['#quill-editor'] ? quillInstances['#quill-editor'].root.innerHTML : '';
-            data.tasks = quillInstances['#tasks-editor'] ? quillInstances['#tasks-editor'].root.innerHTML : '';
+            // Create a plain object from FormData
+            const data = {};
+            for (let [key, value] of formData.entries()) {
+                // Handle fields that can have multiple values (like checkboxes)
+                if (key.endsWith('[]')) {
+                    const cleanKey = key.slice(0, -2);
+                    if (!data[cleanKey]) {
+                        data[cleanKey] = [];
+                    }
+                    data[cleanKey].push(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+
+
+            // Manually get content from Quill editors because their content is not in the form data
+            const descriptionEditor = document.querySelector('#quill-editor');
+            if (descriptionEditor && descriptionEditor.quill) {
+                data['service[description]'] = descriptionEditor.quill.root.innerHTML;
+            }
+
+            const tasksEditor = document.querySelector('#tasks-editor');
+            if (tasksEditor && tasksEditor.quill) {
+                data['service[tasks]'] = tasksEditor.quill.root.innerHTML;
+            }
+
+            // Convert the plain object to a structure that mimics the form submission
+            const serviceData = {};
+            for(const key in data) {
+                const match = key.match(/^service\[([^\]]+)\]/);
+                if (match) {
+                    serviceData[match[1]] = data[key];
+                }
+            }
+
+            const finalData = {
+                service: serviceData,
+                description: data['service[description]'],
+                tasks: data['service[tasks]']
+            };
 
             try {
                 const response = await fetch('{{ path('app_service_preview') }}', {
@@ -163,7 +192,7 @@
                         'Content-Type': 'application/json',
                         'X-Requested-With': 'XMLHttpRequest'
                     },
-                    body: JSON.stringify(data)
+                    body: JSON.stringify(finalData)
                 });
                 const result = await response.json();
                 const previewElement = document.getElementById('whatsapp-message-content');
@@ -189,15 +218,45 @@
             document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
         }
 
+        function showEditablePreview() {
+            const previewContent = document.getElementById('whatsapp-message-content').textContent;
+            const editorTextarea = document.getElementById('whatsapp-message-editor');
+            // The form field should be created by Symfony form builder, let's target it.
+            const whatsappMessageInput = document.getElementById('service_whatsappMessage');
+
+            if (editorTextarea) {
+                editorTextarea.value = previewContent;
+            }
+            if (whatsappMessageInput) {
+                whatsappMessageInput.value = previewContent;
+            }
+
+            const container = document.getElementById('editable-preview-container');
+            if (container) {
+                container.style.display = 'block';
+            }
+        }
+
         // Add event listeners to form inputs to update preview
         document.addEventListener('turbo:load', () => {
              const form = document.querySelector('form[name="service"]');
              if(form) {
                 form.addEventListener('input', updateWhatsAppPreview);
              }
+
+             const previewButton = document.getElementById('preview-button');
+             if (previewButton) {
+                 previewButton.addEventListener('click', showEditablePreview);
+             }
+
+             const editorTextarea = document.getElementById('whatsapp-message-editor');
+             const whatsappMessageInput = document.getElementById('service_whatsappMessage');
+             if (editorTextarea && whatsappMessageInput) {
+                 editorTextarea.addEventListener('input', (e) => {
+                     whatsappMessageInput.value = e.target.value;
+                 });
+             }
         });
-
-
     </script>
 {% endblock %}
 
@@ -376,12 +435,19 @@
                     {{ form_rest(serviceForm) }}
 
 
+                    <div style="display:none;">
+                        {{ form_row(serviceForm.whatsappMessage) }}
+                    </div>
+
                     <div class="flex items-center justify-end mt-6">
                         <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">
                             Volver a la Lista
                         </a>
+                         <button type="button" id="preview-button" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
+                            Previsualizar Mensaje
+                        </button>
                         <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
-                            Guardar y Continuar
+                            Guardar Servicio
                         </button>
                     </div>
 
@@ -394,9 +460,14 @@
                 <div class="sticky top-8">
                     <div class="whatsapp-preview">
                         <h3>Vista Previa de WhatsApp</h3>
-                        <div class="whatsapp-message" id="whatsapp-message-content">
+                        <div class="whatsapp-message" id="whatsapp-message-content" style="white-space: pre-wrap; word-wrap: break-word;">
                             Rellena el formulario para ver el mensaje...
                         </div>
+                    </div>
+                    <div id="editable-preview-container" class="mt-4" style="display: none;">
+                        <h3 class="text-lg font-semibold mb-2 text-gray-800">Editar Mensaje</h3>
+                        <textarea id="whatsapp-message-editor" class="w-full h-64 p-2 border rounded-md shadow-sm"></textarea>
+                        <p class="text-sm text-gray-500 mt-1">Puedes editar el mensaje aquí antes de guardarlo.</p>
                     </div>
                 </div>
             </div>
