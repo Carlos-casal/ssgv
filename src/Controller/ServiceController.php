@@ -68,38 +68,32 @@ class ServiceController extends AbstractController
      * Acción para crear un nuevo servicio.
      * Esta es tu acción 'new' existente.
      */
-    #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])] // Añadí 'methods' para mayor claridad
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])]
+    public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator): Response
     {
-        // 1. Crear una nueva instancia de la entidad Service
         $service = new Service();
-
-        // 2. Crear una instancia del formulario, vinculándola a la entidad $service
         $form = $this->createForm(ServiceType::class, $service);
-
-        // 3. Manejar la petición (leer los datos enviados por el formulario)
         $form->handleRequest($request);
 
-        // 4. Comprobar si el formulario ha sido enviado y es válido
         if ($form->isSubmitted() && $form->isValid()) {
-            // Los datos del formulario ya están en la entidad $service gracias a handleRequest()
-
-            // 5. Persistir la entidad en la base de datos
             $entityManager->persist($service);
-            $entityManager->flush();
+            $entityManager->flush(); // Flush once to get the ID for URL generation
 
-            // Opcional: Añadir un mensaje flash para confirmar la creación
+            // If the custom WhatsApp message is empty, generate the default one.
+            if (!$service->getWhatsappMessage()) {
+                $message = $messageGenerator->createMessage($service);
+                $service->setWhatsappMessage($message);
+                $entityManager->flush(); // Flush again to save the message
+            }
+
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
             $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
 
-            // 6. Redirigir a la lista de servicios después de crear uno nuevo
-            // Usamos 'list_service' que es el nombre de la nueva ruta
             return $this->redirectToRoute('app_service_view', ['id' => $service->getId()]);
         }
 
-        // 7. Renderizar la plantilla Twig, pasando el formulario
         return $this->render('service/new_service.html.twig', [
-            'serviceForm' => $form->createView(), // Usa createView() para pasar el formulario a Twig
+            'serviceForm' => $form->createView(),
         ]);
     }
 

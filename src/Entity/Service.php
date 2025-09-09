@@ -451,4 +451,19 @@ class Service
 
         return $this;
     }
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $whatsappMessage = null;
+
+    public function getWhatsappMessage(): ?string
+    {
+        return $this->whatsappMessage;
+    }
+
+    public function setWhatsappMessage(?string $whatsappMessage): static
+    {
+        $this->whatsappMessage = $whatsappMessage;
+
+        return $this;
+    }
 }

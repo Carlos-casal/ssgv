@@ -161,6 +161,11 @@ class ServiceType extends AbstractType
             ->add('hasProvisions', CheckboxType::class, [
                 'label' => 'Avituallamiento',
                 'required' => false,
+            ])
+            ->add('whatsappMessage', TextareaType::class, [
+                'label' => 'Mensaje de WhatsApp',
+                'required' => false,
+                'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
             ]);
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {

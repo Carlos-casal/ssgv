@@ -115,21 +115,18 @@ class WhatsAppMessageGenerator
         }
 
         // Attendance links
-        // A service ID is required to generate links.
-        // If it's a new service (preview), we can't generate real links.
-        // For the purpose of the preview, we can show how it would look.
         if ($service->getId()) {
             $attendUrl = $this->urlGenerator->generate('app_service_attend', ['id' => $service->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
             $unattendUrl = $this->urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
-            $message[] = "Por favor, confirma tu asistencia:";
-            $message[] = "✅ [Asisto](" . $attendUrl . ")";
-            $message[] = "❌ [No Asisto](" . $unattendUrl . ")";
+            $message[] = "Por favor, confirma tu asistencia pulsando en uno de los siguientes enlaces:";
+            $message[] = "✅ *Asisto*: " . $attendUrl;
+            $message[] = "❌ *No Asisto*: " . $unattendUrl;
         } else {
             // Placeholder for the preview on the new service page
-            $message[] = "Por favor, confirma tu asistencia:";
-            $message[] = "✅ Asisto (enlace se generará al guardar)";
-            $message[] = "❌ No Asisto (enlace se generará al guardar)";
+            $message[] = "Por favor, confirma tu asistencia (los enlaces se generarán al guardar):";
+            $message[] = "✅ *Asisto*";
+            $message[] = "❌ *No Asisto*";
         }
 
 
