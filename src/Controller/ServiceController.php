@@ -10,6 +10,8 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Service\WhatsAppMessageGenerator;
 use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
+use Symfony\Component\HttpFoundation\JsonResponse;
+use DateTime;
 
 class ServiceController extends AbstractController
 {
@@ -307,5 +309,48 @@ class ServiceController extends AbstractController
             'service' => $service,
             'whatsappLink' => $whatsappLink,
         ]);
+    }
+
+    #[Route('/service/preview', name: 'app_service_preview', methods: ['POST'])]
+    public function preview(Request $request, WhatsAppMessageGenerator $messageGenerator): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $service = new Service();
+
+        // Populate service with data from the form
+        $service->setTitle($data['service']['title'] ?? 'Título de ejemplo');
+        $service->setLocality($data['service']['locality'] ?? '');
+        $service->setTasks($data['tasks'] ?? '');
+        $service->setDescription($data['description'] ?? '');
+
+        if (!empty($data['service']['startDate'])) {
+            $service->setStartDate(new DateTime($data['service']['startDate']));
+        }
+        if (!empty($data['service']['endDate'])) {
+            $service->setEndDate(new DateTime($data['service']['endDate']));
+        }
+        if (!empty($data['service']['timeAtBase'])) {
+            $service->setTimeAtBase(new DateTime($data['service']['timeAtBase']));
+        }
+        if (!empty($data['service']['departureTime'])) {
+            $service->setDepartureTime(new DateTime($data['service']['departureTime']));
+        }
+
+        $service->setNumSvb((int)($data['service']['numSvb'] ?? 0));
+        $service->setNumSva((int)($data['service']['numSva'] ?? 0));
+        $service->setNumSvae((int)($data['service']['numSvae'] ?? 0));
+        $service->setNumDoctors((int)($data['service']['numDoctors'] ?? 0));
+
+        $numDues = (int)($data['service']['numDues'] ?? 0);
+        $numTecnicos = (int)($data['service']['numTecnicos'] ?? 0);
+        $service->setNumNurses($numDues + $numTecnicos);
+
+        $service->setAfluencia($data['service']['afluencia'] ?? null);
+        $service->setHasFieldHospital(isset($data['service']['hasFieldHospital']));
+        $service->setHasProvisions(isset($data['service']['hasProvisions']));
+
+        $message = $messageGenerator->createMessage($service);
+
+        return new JsonResponse(['message' => $message]);
     }
 }

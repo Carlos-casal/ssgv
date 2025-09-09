@@ -4,14 +4,17 @@ namespace App\Service;
 
 use App\Entity\Service;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class WhatsAppMessageGenerator
 {
     private TranslatorInterface $translator;
+    private UrlGeneratorInterface $urlGenerator;
 
-    public function __construct(TranslatorInterface $translator)
+    public function __construct(TranslatorInterface $translator, UrlGeneratorInterface $urlGenerator)
     {
         $this->translator = $translator;
+        $this->urlGenerator = $urlGenerator;
     }
 
     public function createMessage(Service $service): string
@@ -29,7 +32,9 @@ class WhatsAppMessageGenerator
         );
 
         // Header
-        $message[] = "*" . $dateFormatter->format($service->getStartDate()) . "*";
+        if ($service->getStartDate()) {
+            $message[] = "*" . $dateFormatter->format($service->getStartDate()) . "*";
+        }
         $message[] = "*" . $service->getTitle() . "*";
         $message[] = ""; // Newline
 
@@ -102,11 +107,31 @@ class WhatsAppMessageGenerator
             $message[] = ""; // Newline
         }
 
-        // Decision
+        // Description is now used for the 'Decision' part
         if ($service->getDescription()) {
             $message[] = "*Decisión:*";
             $message[] = strip_tags($service->getDescription());
+            $message[] = ""; // Newline
         }
+
+        // Attendance links
+        // A service ID is required to generate links.
+        // If it's a new service (preview), we can't generate real links.
+        // For the purpose of the preview, we can show how it would look.
+        if ($service->getId()) {
+            $attendUrl = $this->urlGenerator->generate('app_service_attend', ['id' => $service->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+            $unattendUrl = $this->urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $message[] = "Por favor, confirma tu asistencia:";
+            $message[] = "✅ [Asisto](" . $attendUrl . ")";
+            $message[] = "❌ [No Asisto](" . $unattendUrl . ")";
+        } else {
+            // Placeholder for the preview on the new service page
+            $message[] = "Por favor, confirma tu asistencia:";
+            $message[] = "✅ Asisto (enlace se generará al guardar)";
+            $message[] = "❌ No Asisto (enlace se generará al guardar)";
+        }
+
 
         return implode("\n", $message);
     }
