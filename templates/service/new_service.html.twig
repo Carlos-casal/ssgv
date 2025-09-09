@@ -43,7 +43,9 @@
             const editorContainer = document.querySelector(containerId);
             const hiddenTextarea = document.querySelector(textareaId);
 
-            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
+            if (!editorContainer || !hiddenTextarea) return;
+
+            if (editorContainer.querySelector('.ql-editor')) {
                 return;
             }
 
@@ -66,24 +68,34 @@
                 hiddenTextarea.value = quill.root.innerHTML;
             });
 
+            if (hiddenTextarea.value) {
+                quill.root.innerHTML = hiddenTextarea.value;
+            }
+
             quillInstances[containerId] = quill;
         }
 
         function initializeAllQuillEditors() {
-            setupQuill('#quill-editor', '#description_editor');
-            setupQuill('#tasks-editor', '#tasks_textarea');
+            setupQuill('#quill-editor', '#service_description');
+            setupQuill('#tasks-editor', '#service_tasks');
         }
 
-        document.addEventListener('turbo:before-cache', function() {
+        function cleanupQuillInstances() {
             for (const key in quillInstances) {
                 if (quillInstances.hasOwnProperty(key)) {
-                    quillInstances[key] = null;
+                    delete quillInstances[key];
                 }
             }
-        }, { once: true });
+        }
 
+        // Turbo event listeners
+        document.addEventListener('turbo:before-cache', cleanupQuillInstances);
         document.addEventListener('turbo:load', initializeAllQuillEditors);
-        document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
+
+        // Fallback for non-turbo visits
+        if (typeof Turbo === 'undefined') {
+            document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
+        }
     </script>
 {% endblock %}
 
@@ -241,13 +253,13 @@
                 <div>
                     {{ form_label(serviceForm.tasks, 'Tareas 📝') }}
                     <div id="tasks-editor" class="mt-1"></div>
-                    {{ form_widget(serviceForm.tasks, {'id': 'tasks_textarea', 'attr': {'style': 'display:none;'}}) }}
+                    {{ form_widget(serviceForm.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
                     {{ form_errors(serviceForm.tasks) }}
                 </div>
                 <div>
                     {{ form_label(serviceForm.description, 'Descripción ℹ️') }}
                     <div id="quill-editor" class="mt-1"></div>
-                    {{ form_widget(serviceForm.description, {'id': 'description_editor', 'attr': {'style': 'display:none;'}}) }}
+                    {{ form_widget(serviceForm.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
                     {{ form_errors(serviceForm.description) }}
                 </div>
             </div>
@@ -265,7 +277,7 @@
                     Volver a la Lista
                 </a>
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
-                    Guardar Servicio
+                    Guardar y Previsualizar
                 </button>
             </div>
 

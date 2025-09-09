@@ -1,0 +1,93 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Vista Previa del Servicio: {{ service.title }}{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        /* WhatsApp Preview Styles */
+        .whatsapp-preview {
+            background-color: #e5ddd5; /* WhatsApp background color */
+            border-radius: 10px;
+            padding: 20px;
+            font-family: 'Helvetica', sans-serif;
+            border: 1px solid #ccc;
+            width: 100%;
+            max-width: 450px; /* Typical phone width */
+            margin: 2rem auto; /* Center the preview */
+        }
+        .whatsapp-message {
+            background-color: #dcf8c6; /* Sent message bubble color */
+            border-radius: 8px;
+            padding: 10px 15px;
+            position: relative;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            white-space: pre-wrap; /* Preserve whitespace and newlines */
+            word-wrap: break-word;
+            font-size: 0.95em;
+            line-height: 1.4;
+        }
+        .whatsapp-message::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            right: -10px;
+            width: 0;
+            height: 0;
+            border: 10px solid transparent;
+            border-left-color: #dcf8c6;
+            border-right: 0;
+            border-top: 0;
+        }
+        .whatsapp-preview h3 {
+            text-align: center;
+            color: #075e54; /* WhatsApp dark green */
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .whatsapp-message a {
+            color: #0000EE;
+            text-decoration: underline;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    {# Flash Messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="bg-{{ label == 'success' ? 'green' : 'blue' }}-100 border-l-4 border-{{ label == 'success' ? 'green' : 'blue' }}-500 text-{{ label == 'success' ? 'green' : 'blue' }}-700 p-4 mb-6 max-w-4xl mx-auto" role="alert">
+                <p class="font-bold">{{ label == 'success' ? 'Éxito' : 'Información' }}</p>
+                <p>{{ message }}</p>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="bg-white shadow-md rounded-lg p-8 max-w-4xl mx-auto">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-800">Previsualización del Mensaje</h1>
+            <p class="text-gray-600 mt-2">Así es como se verá el mensaje cuando lo compartas en WhatsApp.</p>
+        </div>
+
+        {# WhatsApp Preview Pane #}
+        <div class="whatsapp-preview">
+            <h3>Mensaje de WhatsApp</h3>
+            <div class="whatsapp-message">
+                {{ message|replace({'*': ''})|nl2br }}
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t text-center">
+            <a href="{{ whatsappLink }}" target="_blank" class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105">
+                <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.873 6.223l.225.341-1.251 4.605 4.753-1.241.332.194z"/></svg>
+                Compartir en WhatsApp
+            </a>
+            <a href="{{ path('app_services_list') }}" class="mt-4 inline-block text-gray-600 hover:text-gray-800">
+                &larr; O volver a la lista de servicios
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

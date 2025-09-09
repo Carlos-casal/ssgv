@@ -88,11 +88,10 @@ class ServiceController extends AbstractController
 
             // Opcional: Añadir un mensaje flash para confirmar la creación
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
-            $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
+            $this->addFlash('info', 'Ahora puedes previsualizar el mensaje y compartir el servicio por WhatsApp.');
 
-            // 6. Redirigir a la lista de servicios después de crear uno nuevo
-            // Usamos 'list_service' que es el nombre de la nueva ruta
-            return $this->redirectToRoute('app_service_view', ['id' => $service->getId()]);
+            // 6. Redirigir a la página de previsualización
+            return $this->redirectToRoute('app_service_preview', ['id' => $service->getId()]);
         }
 
         // 7. Renderizar la plantilla Twig, pasando el formulario
@@ -101,7 +100,19 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    
+    #[Route('/service/{id}/preview', name: 'app_service_preview', methods: ['GET'])]
+    public function previewService(Service $service, WhatsAppMessageGenerator $messageGenerator): Response
+    {
+        $message = $messageGenerator->createMessage($service);
+        $whatsappLink = 'https://wa.me/?text=' . urlencode($message);
+
+        return $this->render('service/preview.html.twig', [
+            'service' => $service,
+            'whatsappLink' => $whatsappLink,
+            'message' => $message,
+        ]);
+    }
+
     #[Route('/servicios/calendario/{year}/{month}', name: 'app_service_calendar', methods: ['GET'], defaults: ['year' => null, 'month' => null])]
     public function calendar(Request $request, ServiceRepository $serviceRepository, $year, $month): Response
     {
