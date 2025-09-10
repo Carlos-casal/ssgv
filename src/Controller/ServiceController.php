@@ -1,273 +1,372 @@
-<?php
-namespace App\Controller;
+{% extends 'layout/app.html.twig' %}
 
-use App\Entity\Service;
-use App\Form\ServiceType;
-use App\Repository\ServiceRepository;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use App\Service\WhatsAppMessageGenerator;
-use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
-use DateTime;
+{% block title %}Crear Nuevo Servicio{% endblock %}
 
-class ServiceController extends AbstractController
-{
-    #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
-    public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
-    {
-        $user = $security->getUser();
-        $services = $serviceRepository->findAll();
-
-        if (empty($services)) {
-            return $this->render('service/list_service.html.twig', [
-                'services' => [],
-                'attendeesByService' => [],
-                'assistanceByService' => [],
-            ]);
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    <style>
+        .form-group {
+            margin-bottom: 1.5rem;
         }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+        .form-group .form-error {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        #quill-editor, #tasks-editor {
+            height: 300px;
+        }
+    </style>
+{% endblock %}
 
-        $attendeesByService = [];
-        foreach ($services as $service) {
-            $attendees = 0;
-            foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                if ($confirmation->isHasAttended()) {
-                    $attendees++;
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    <script>
+        // --- Custom Link Sanitizer for Quill ---
+        const Link = Quill.import('formats/link');
+        class CustomLink extends Link {
+            static sanitize(url) {
+                const sanitizedUrl = super.sanitize(url);
+                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
+                    return 'https://' + sanitizedUrl;
                 }
-            }
-            $attendeesByService[$service->getId()] = $attendees;
-        }
-
-        $assistanceByService = [];
-        if ($this->isGranted('ROLE_VOLUNTEER')) {
-            foreach ($services as $service) {
-                $assistanceByService[$service->getId()] = false;
-                foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                    if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->isHasAttended()) {
-                        $assistanceByService[$service->getId()] = true;
-                    }
-                }
+                return sanitizedUrl;
             }
         }
+        Quill.register(CustomLink, true);
+        // --- End Custom Link Sanitizer ---
 
-        return $this->render('service/list_service.html.twig', [
-            'services' => $services,
-            'attendeesByService' => $attendeesByService,
-            'assistanceByService' => $assistanceByService,
-        ]);
-    }
+        let quillInstances = {};
 
-    #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator): Response
-    {
-        $service = new Service();
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
+        function setupQuill(containerId, textareaId) {
+            const editorContainer = document.querySelector(containerId);
+            const hiddenTextarea = document.querySelector(textareaId);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($service);
-            $entityManager->flush(); // Flush once to get the ID for URL generation
+            if (!editorContainer || !hiddenTextarea) return;
 
-            $message = $messageGenerator->createMessage($service);
-            if (!$service->getWhatsappMessage()) {
-                $service->setWhatsappMessage($message);
-                $entityManager->flush();
+            if (editorContainer.quill) {
+                return;
             }
 
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse([
-                    'success' => true,
-                    'serviceId' => $service->getId(),
-                    'whatsappMessage' => $message,
-                ]);
-            }
-
-            $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
-            $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
-
-            return $this->redirectToRoute('app_service_view', ['id' => $service->getId()]);
-        }
-
-        if ($form->isSubmitted() && !$form->isValid() && $request->isXmlHttpRequest()) {
-            $errors = [];
-            foreach ($form->getErrors(true, true) as $error) {
-                $errors[] = $error->getMessage();
-            }
-            return new JsonResponse(['success' => false, 'errors' => $errors], Response::HTTP_BAD_REQUEST);
-        }
-
-        return $this->render('service/new_service.html.twig', [
-            'serviceForm' => $form->createView(),
-        ]);
-    }
-
-    #[Route('/servicios/calendario/{year}/{month}', name: 'app_service_calendar', methods: ['GET'], defaults: ['year' => null, 'month' => null])]
-    public function calendar(Request $request, ServiceRepository $serviceRepository, $year, $month): Response
-    {
-        $now = new \DateTime();
-        $year = $year ?? $now->format('Y');
-        $month = $month ?? $now->format('m');
-        $services = $serviceRepository->findAll();
-        return $this->render('service/calendar.html.twig', [
-            'year' => $year,
-            'month' => $month,
-            'services' => $services,
-        ]);
-    }
-
-    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
-    public function show(?Service $service): Response
-    {
-        if (!$service) {
-            throw $this->createNotFoundException('El servicio solicitado no existe.');
-        }
-        $form = $this->createForm(ServiceType::class, $service);
-        return $this->render('service/show_service.html.twig', [
-            'service' => $service,
-            'serviceForm' => $form->createView(),
-        ]);
-    }
-
-    #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
-    {
-        $service->setRecipients([]);
-        $form = $this->createForm(ServiceType::class, $service);
-        $form->handleRequest($request);
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-            $this->addFlash('success', 'Servicio actualizado correctamente.');
-            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
-        }
-        return $this->render('service/edit_service.html.twig', [
-            'service' => $service,
-            'form' => $form->createView(),
-            'services_attendance' => $service->getAssistanceConfirmations(),
-        ]);
-    }
-
-    #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
-    public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
-    {
-        if (!$service) {
-            throw $this->createNotFoundException('El servicio solicitado no existe.');
-        }
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
-        $user = $security->getUser();
-        $volunteer = $user->getVolunteer();
-        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
-        if (!$assistanceConfirmation) {
-            $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
-            $assistanceConfirmation->setVolunteer($volunteer);
-            $assistanceConfirmation->setService($service);
-            $entityManager->persist($assistanceConfirmation);
-        }
-        $assistanceConfirmation->setHasAttended(true);
-        $entityManager->flush();
-        $this->addFlash('success', 'Has confirmado tu asistencia.');
-        return $this->redirectToRoute('app_dashboard');
-    }
-
-    #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
-    public function unattend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
-    {
-        if (!$service) {
-            throw $this->createNotFoundException('El servicio solicitado no existe.');
-        }
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
-        $user = $security->getUser();
-        $volunteer = $user->getVolunteer();
-        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
-        if (!$assistanceConfirmation) {
-            $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
-            $assistanceConfirmation->setVolunteer($volunteer);
-            $assistanceConfirmation->setService($service);
-            $entityManager->persist($assistanceConfirmation);
-        }
-        $assistanceConfirmation->setHasAttended(false);
-        $entityManager->flush();
-        $this->addFlash('success', 'Has confirmado tu no asistencia.');
-        return $this->redirectToRoute('app_dashboard');
-    }
-
-    #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
-    public function attendance(Service $service): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_ADMIN');
-        return $this->render('service/attendance.html.twig', [
-            'service' => $service,
-        ]);
-    }
-
-    #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
-    public function myServices(\App\Repository\VolunteerServiceRepository $volunteerServiceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
-    {
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
-        $user = $security->getUser();
-        $volunteerServices = $volunteerServiceRepository->findBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
-        $servicesByYear = [];
-        foreach ($volunteerServices as $volunteerService) {
-            if ($volunteerService->getDuration()) {
-                $year = $volunteerService->getService()->getStartDate()->format('Y');
-                if (!isset($servicesByYear[$year])) {
-                    $servicesByYear[$year] = [];
-                }
-                $servicesByYear[$year][] = $volunteerService;
-            }
-        }
-        $totalDurationCurrentYear = 0;
-        $currentYear = date('Y');
-        if (isset($servicesByYear[$currentYear])) {
-            foreach ($servicesByYear[$currentYear] as $volunteerService) {
-                $totalDurationCurrentYear += $volunteerService->getDuration();
-            }
-        }
-        $lastService = $volunteerServiceRepository->findOneBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
-        return $this->render('service/my_services.html.twig', [
-            'servicesByYear' => $servicesByYear,
-            'totalDurationCurrentYear' => $totalDurationCurrentYear,
-            'lastService' => $lastService,
-        ]);
-    }
-
-    #[Route('/services/{year}/{month}/{day}', name: 'app_services_by_day', methods: ['GET'])]
-    public function servicesByDay(ServiceRepository $serviceRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, \Symfony\Bundle\SecurityBundle\Security $security, $year, $month, $day): Response
-    {
-        $date = new \DateTime("$year-$month-$day");
-        $services = $serviceRepository->findByDate($date);
-        $user = $security->getUser();
-        $data = [];
-        foreach ($services as $service) {
-            $assistance = null;
-            if ($user && $this->isGranted('ROLE_VOLUNTEER')) {
-                $volunteer = $user->getVolunteer();
-                $confirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
-                if ($confirmation) {
-                    $assistance = $confirmation->isHasAttended();
-                }
-            }
-            $data[] = [
-                'id' => $service->getId(),
-                'title' => $service->getTitle(),
-                'startDate' => $service->getStartDate() ? $service->getStartDate()->format('Y-m-d H:i:s') : null,
-                'endDate' => $service->getEndDate() ? $service->getEndDate()->format('Y-m-d H:i:s') : null,
-                'registrationLimitDate' => $service->getRegistrationLimitDate() ? $service->getRegistrationLimitDate()->format('Y-m-d H:i:s') : null,
-                'assistance' => $assistance,
+            const toolbarOptions = [
+                [{ 'header': [1, 2, 3, false] }],
+                ['bold', 'italic', 'strike', 'underline'],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'align': [] }],
+                ['link'],
+                ['clean']
             ];
-        }
-        return $this->json($data);
-    }
 
-    #[Route('/service/{id}/view', name: 'app_service_view', methods: ['GET'])]
-    public function view(Service $service, WhatsAppMessageGenerator $messageGenerator): Response
-    {
-        $message = $messageGenerator->createMessage($service);
-        $whatsappLink = 'https://wa.me/?text=' . urlencode($message);
-        return $this->render('service/view.html.twig', [
-            'service' => $service,
-            'whatsappLink' => $whatsappLink,
-        ]);
-    }
-}
+            const quill = new Quill(editorContainer, {
+                modules: { toolbar: toolbarOptions },
+                theme: 'snow'
+            });
+
+            editorContainer.quill = quill;
+            quillInstances[containerId] = quill;
+
+            quill.on('text-change', function() {
+                hiddenTextarea.value = quill.root.innerHTML;
+            });
+
+            if (hiddenTextarea.value) {
+                quill.root.innerHTML = hiddenTextarea.value;
+            }
+        }
+
+        function initializeAllQuillEditors() {
+            setupQuill('#quill-editor', '#service_description');
+            setupQuill('#tasks-editor', '#service_tasks');
+        }
+
+        function cleanupQuillInstances() {
+            for (const key in quillInstances) {
+                const container = document.querySelector(key);
+                if (container && container.quill) {
+                    delete container.quill;
+                    container.innerHTML = '';
+                }
+            }
+            quillInstances = {};
+        }
+
+        document.addEventListener('turbo:before-cache', cleanupQuillInstances);
+        document.addEventListener('turbo:load', initializeAllQuillEditors);
+
+        if (typeof Turbo === 'undefined') {
+            document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
+        }
+
+        document.addEventListener('turbo:load', () => {
+            const form = document.querySelector('form[name="service"]');
+            if (!form) return;
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                for (const key in quillInstances) {
+                    const quill = quillInstances[key];
+                    const hiddenTextareaId = quill.container.nextElementSibling.id;
+                    document.getElementById(hiddenTextareaId).value = quill.root.innerHTML;
+                }
+
+                const formData = new FormData(form);
+                const button = form.querySelector('button[type="submit"]');
+                button.disabled = true;
+                button.textContent = 'Guardando...';
+
+                try {
+                    const response = await fetch('{{ path('app_service_new') }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        const modal = document.getElementById('whatsapp-modal');
+                        const textarea = document.getElementById('whatsapp-message-textarea');
+                        textarea.value = result.whatsappMessage;
+                        modal.classList.remove('hidden');
+
+                        const shareButton = document.getElementById('share-whatsapp-button');
+                        shareButton.onclick = () => {
+                            const message = encodeURIComponent(textarea.value);
+                            window.open(`https://wa.me/?text=${message}`, '_blank');
+                        };
+
+                        const closeModalButton = document.getElementById('close-modal-button');
+                        closeModalButton.onclick = () => {
+                            modal.classList.add('hidden');
+                             window.location.href = '{{ path('app_services_list') }}';
+                        };
+                    } else {
+                        let errorMessages = 'Se ha producido un error al guardar el servicio.';
+                        if (result.errors && result.errors.length > 0) {
+                            errorMessages = result.errors.join('\\n');
+                        }
+                        alert(errorMessages);
+                    }
+                } catch (error) {
+                    console.error('Error submitting form:', error);
+                    alert('Se ha producido un error de red. Por favor, inténtalo de nuevo.');
+                } finally {
+                    button.disabled = false;
+                    button.textContent = 'Guardar Servicio';
+                }
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
+    <div class="bg-white shadow-xl rounded-2xl p-8">
+        {{ form_start(serviceForm, {'attr': {'class': 'space-y-10', 'name': 'service', 'id': 'service-form'}}) }}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(serviceForm.numeration, 'Numeración') }}
+                {{ form_widget(serviceForm.numeration) }}
+                <div class="form-error">{{ form_errors(serviceForm.numeration) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.title, 'Título') }}
+                {{ form_widget(serviceForm.title) }}
+                <div class="form-error">{{ form_errors(serviceForm.title) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.locality, 'Lugar') }}
+                {{ form_widget(serviceForm.locality) }}
+                <div class="form-error">{{ form_errors(serviceForm.locality) }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(serviceForm.startDate, 'Inicio') }}
+                {{ form_widget(serviceForm.startDate) }}
+                <div class="form-error">{{ form_errors(serviceForm.startDate) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.timeAtBase, 'Base') }}
+                {{ form_widget(serviceForm.timeAtBase) }}
+                <div class="form-error">{{ form_errors(serviceForm.timeAtBase) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.departureTime, 'Salida') }}
+                {{ form_widget(serviceForm.departureTime) }}
+                <div class="form-error">{{ form_errors(serviceForm.departureTime) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.endDate, 'Fin') }}
+                {{ form_widget(serviceForm.endDate) }}
+                <div class="form-error">{{ form_errors(serviceForm.endDate) }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(serviceForm.registrationLimitDate, 'Límite') }}
+                {{ form_widget(serviceForm.registrationLimitDate) }}
+                <div class="form-error">{{ form_errors(serviceForm.registrationLimitDate) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.maxAttendees, 'Asistentes') }}
+                {{ form_widget(serviceForm.maxAttendees) }}
+                <div class="form-error">{{ form_errors(serviceForm.maxAttendees) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.type, 'Tipo') }}
+                {{ form_widget(serviceForm.type) }}
+                <div class="form-error">{{ form_errors(serviceForm.type) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.category, 'Categoría') }}
+                {{ form_widget(serviceForm.category) }}
+                <div class="form-error">{{ form_errors(serviceForm.category) }}</div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Recursos</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Ambulancia 🚑</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            {{ form_label(serviceForm.numSvb, 'SVB') }}
+                            {{ form_widget(serviceForm.numSvb) }}
+                            <div class="form-error">{{ form_errors(serviceForm.numSvb) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(serviceForm.numSva, 'SVA') }}
+                            {{ form_widget(serviceForm.numSva) }}
+                            <div class="form-error">{{ form_errors(serviceForm.numSva) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(serviceForm.numSvae, 'SVAE') }}
+                            {{ form_widget(serviceForm.numSvae) }}
+                            <div class="form-error">{{ form_errors(serviceForm.numSvae) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Personal Sanitario 🥼🩺</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+.
+                            {{ form_label(serviceForm.numDoctors, 'Medico') }}
+                            {{ form_widget(serviceForm.numDoctors) }}
+                            <div class="form-error">{{ form_errors(serviceForm.numDoctors) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(serviceForm.numDues, 'Enfermeria') }}
+                            <div class="grid grid-cols-2 gap-4">
+                                {{ form_widget(serviceForm.numDues, {'attr': {'placeholder': 'DUE'}}) }}
+                                {{ form_widget(serviceForm.numTecnicos, {'attr': {'placeholder': 'Técnicos'}}) }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-error">{{ form_errors(serviceForm.numDues) }}</div>
+                                <div class="form-error">{{ form_errors(serviceForm.numTecnicos) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Otros</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            {{ form_label(serviceForm.afluencia, 'Afluencia 📈') }}
+                            {{ form_widget(serviceForm.afluencia) }}
+                            <div class="form-error">{{ form_errors(serviceForm.afluencia) }}</div>
+                        </div>
+                        <div class="flex items-center pt-3">
+                            {{ form_widget(serviceForm.hasFieldHospital) }}
+                            {{ form_label(serviceForm.hasFieldHospital, 'Hospital de Campaña 🏥', {'label_attr': {'class': 'ml-3'}}) }}
+                            <div class="form-error">{{ form_errors(serviceForm.hasFieldHospital) }}</div>
+                        </div>
+                        <div class="flex items-center">
+                            {{ form_widget(serviceForm.hasProvisions) }}
+                            {{ form_label(serviceForm.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-3'}}) }}
+                            <div class="form-error">{{ form_errors(serviceForm.hasProvisions) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-10">
+            <div class="form-group">
+                {{ form_label(serviceForm.tasks, 'Tareas 📝') }}
+                <div id="tasks-editor"></div>
+                {{ form_widget(serviceForm.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
+                <div class="form-error">{{ form_errors(serviceForm.tasks) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(serviceForm.description, 'Descripción ℹ️') }}
+                <div id="quill-editor"></div>
+                {{ form_widget(serviceForm.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
+                <div class="form-error">{{ form_errors(serviceForm.description) }}</div>
+            </div>
+        </div>
+
+        <div style="display:none;">
+            {{ form_row(serviceForm.recipients) }}
+            {{ form_row(serviceForm.numNurses) }}
+            {{ form_row(serviceForm.whatsappMessage) }}
+        </div>
+
+        {{ form_rest(serviceForm) }}
+
+        <div class="flex items-center justify-end mt-10 pt-6 border-t border-gray-200">
+            <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
+                Volver a la Lista
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 ml-4">
+                Guardar Servicio
+            </button>
+        </div>
+
+        {{ form_end(serviceForm) }}
+    </div>
+</div>
+<!-- WhatsApp Share Modal -->
+<div id="whatsapp-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <h3 class="text-3xl font-bold text-gray-900 text-center mb-4">Servicio Guardado con Éxito</h3>
+        <p class="text-gray-600 text-center mb-6">
+            Revisa y edita el mensaje antes de compartirlo en WhatsApp.
+        </p>
+        <textarea id="whatsapp-message-textarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        <div class="flex justify-center items-center mt-6 space-x-4">
+            <button id="share-whatsapp-button" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+                Compartir en WhatsApp
+            </button>
+            <button id="close-modal-button" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
