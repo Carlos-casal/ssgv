@@ -1,9 +1,9 @@
 <?php
 namespace App\Controller;
 
-use App\Entity\Service; // Asegúrate de que esta línea exista para la entidad Service
-use App\Form\ServiceType; // Asegúrate de que esta línea exista para el formulario ServiceType
-use App\Repository\ServiceRepository; // ¡Importante! Necesitamos el repositorio para listar servicios
+use App\Entity\Service;
+use App\Form\ServiceType;
+use App\Repository\ServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -11,21 +11,16 @@ use Symfony\Component\HttpFoundation\Response;
 use App\Service\WhatsAppMessageGenerator;
 use App\Repository\VolunteerRepository;
 use App\Repository\AssistanceConfirmationRepository;
-use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use DateTime;
 
 class ServiceController extends AbstractController
 {
-    /**
-     * Acción para listar todos los servicios.
-     * Esta es la nueva acción que acabamos de crear.
-     */
     #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
     public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $user = $security->getUser();
-
         $services = $serviceRepository->findAll();
 
         if (empty($services)) {
@@ -59,17 +54,13 @@ class ServiceController extends AbstractController
             }
         }
 
-        // Renderiza la plantilla Twig y le pasa los servicios
         return $this->render('service/list_service.html.twig', [
             'services' => $services,
             'attendeesByService' => $attendeesByService,
             'assistanceByService' => $assistanceByService,
         ]);
     }
-    /**
-     * Acción para crear un nuevo servicio.
-     * Esta es tu acción 'new' existente.
-     */
+
     #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator): Response
     {
@@ -81,11 +72,10 @@ class ServiceController extends AbstractController
             $entityManager->persist($service);
             $entityManager->flush(); // Flush once to get the ID for URL generation
 
-            // Generate the WhatsApp message.
             $message = $messageGenerator->createMessage($service);
             if (!$service->getWhatsappMessage()) {
                 $service->setWhatsappMessage($message);
-                $entityManager->flush(); // Flush again to save the message
+                $entityManager->flush();
             }
 
             if ($request->isXmlHttpRequest()) {
@@ -115,16 +105,13 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    
     #[Route('/servicios/calendario/{year}/{month}', name: 'app_service_calendar', methods: ['GET'], defaults: ['year' => null, 'month' => null])]
     public function calendar(Request $request, ServiceRepository $serviceRepository, $year, $month): Response
     {
         $now = new \DateTime();
         $year = $year ?? $now->format('Y');
         $month = $month ?? $now->format('m');
-
         $services = $serviceRepository->findAll();
-
         return $this->render('service/calendar.html.twig', [
             'year' => $year,
             'month' => $month,
@@ -138,9 +125,7 @@ class ServiceController extends AbstractController
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
-
         $form = $this->createForm(ServiceType::class, $service);
-
         return $this->render('service/show_service.html.twig', [
             'service' => $service,
             'serviceForm' => $form->createView(),
@@ -153,15 +138,11 @@ class ServiceController extends AbstractController
         $service->setRecipients([]);
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
-
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
-
             $this->addFlash('success', 'Servicio actualizado correctamente.');
-
             return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
         }
-
         return $this->render('service/edit_service.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
@@ -176,28 +157,23 @@ class ServiceController extends AbstractController
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+        if (!$this->isGranted('ROLE_VOLUNTEER')) {
+            $this->addFlash('warning', 'Necesitas ser voluntario para inscribirte a un servicio.');
+            return $this->redirectToRoute('app_access_denied');
+        }
 
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
-
-        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy([
-            'volunteer' => $volunteer,
-            'service' => $service,
-        ]);
-
+        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
         if (!$assistanceConfirmation) {
             $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
             $assistanceConfirmation->setVolunteer($volunteer);
             $assistanceConfirmation->setService($service);
             $entityManager->persist($assistanceConfirmation);
         }
-
         $assistanceConfirmation->setHasAttended(true);
         $entityManager->flush();
-
         $this->addFlash('success', 'Has confirmado tu asistencia.');
-
         return $this->redirectToRoute('app_dashboard');
     }
 
@@ -208,28 +184,23 @@ class ServiceController extends AbstractController
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
 
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+        if (!$this->isGranted('ROLE_VOLUNTEER')) {
+            $this->addFlash('warning', 'Necesitas ser voluntario para anular tu asistencia a un servicio.');
+            return $this->redirectToRoute('app_access_denied');
+        }
 
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
-
-        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy([
-            'volunteer' => $volunteer,
-            'service' => $service,
-        ]);
-
+        $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
         if (!$assistanceConfirmation) {
             $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
             $assistanceConfirmation->setVolunteer($volunteer);
             $assistanceConfirmation->setService($service);
             $entityManager->persist($assistanceConfirmation);
         }
-
         $assistanceConfirmation->setHasAttended(false);
         $entityManager->flush();
-
         $this->addFlash('success', 'Has confirmado tu no asistencia.');
-
         return $this->redirectToRoute('app_dashboard');
     }
 
@@ -237,7 +208,6 @@ class ServiceController extends AbstractController
     public function attendance(Service $service): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
-
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
         ]);
@@ -247,11 +217,8 @@ class ServiceController extends AbstractController
     public function myServices(\App\Repository\VolunteerServiceRepository $volunteerServiceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
-
         $user = $security->getUser();
-
         $volunteerServices = $volunteerServiceRepository->findBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
-
         $servicesByYear = [];
         foreach ($volunteerServices as $volunteerService) {
             if ($volunteerService->getDuration()) {
@@ -262,7 +229,6 @@ class ServiceController extends AbstractController
                 $servicesByYear[$year][] = $volunteerService;
             }
         }
-
         $totalDurationCurrentYear = 0;
         $currentYear = date('Y');
         if (isset($servicesByYear[$currentYear])) {
@@ -270,9 +236,7 @@ class ServiceController extends AbstractController
                 $totalDurationCurrentYear += $volunteerService->getDuration();
             }
         }
-
         $lastService = $volunteerServiceRepository->findOneBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
-
         return $this->render('service/my_services.html.twig', [
             'servicesByYear' => $servicesByYear,
             'totalDurationCurrentYear' => $totalDurationCurrentYear,
@@ -286,7 +250,6 @@ class ServiceController extends AbstractController
         $date = new \DateTime("$year-$month-$day");
         $services = $serviceRepository->findByDate($date);
         $user = $security->getUser();
-
         $data = [];
         foreach ($services as $service) {
             $assistance = null;
@@ -297,7 +260,6 @@ class ServiceController extends AbstractController
                     $assistance = $confirmation->isHasAttended();
                 }
             }
-
             $data[] = [
                 'id' => $service->getId(),
                 'title' => $service->getTitle(),
@@ -307,7 +269,6 @@ class ServiceController extends AbstractController
                 'assistance' => $assistance,
             ];
         }
-
         return $this->json($data);
     }
 
@@ -316,7 +277,6 @@ class ServiceController extends AbstractController
     {
         $message = $messageGenerator->createMessage($service);
         $whatsappLink = 'https://wa.me/?text=' . urlencode($message);
-
         return $this->render('service/view.html.twig', [
             'service' => $service,
             'whatsappLink' => $whatsappLink,
