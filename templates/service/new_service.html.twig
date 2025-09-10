@@ -104,10 +104,6 @@
             quillInstances = {};
         }
 
-<<<<<<< HEAD
-        // Turbo event listeners
-=======
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
         document.addEventListener('turbo:before-cache', cleanupQuillInstances);
         document.addEventListener('turbo:load', initializeAllQuillEditors);
 
@@ -115,10 +111,6 @@
             document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
         }
 
-<<<<<<< HEAD
-        // New AJAX form submission logic
-=======
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
         document.addEventListener('turbo:load', () => {
             const form = document.querySelector('form[name="service"]');
             if (!form) return;
@@ -126,10 +118,6 @@
             form.addEventListener('submit', async (event) => {
                 event.preventDefault();
 
-<<<<<<< HEAD
-                // Manually update hidden textareas from Quill editors
-=======
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                 for (const key in quillInstances) {
                     const quill = quillInstances[key];
                     const hiddenTextareaId = quill.container.nextElementSibling.id;
@@ -142,70 +130,37 @@
                 button.textContent = 'Guardando...';
 
                 try {
-<<<<<<< HEAD
-                    const response = await fetch(form.action, {
-                        method: 'POST',
-                        body: new URLSearchParams(formData),
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/x-www-form-urlencoded'
-=======
                     const response = await fetch('{{ path('app_service_new') }}', {
                         method: 'POST',
                         body: formData,
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest'
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                         }
                     });
 
                     const result = await response.json();
 
                     if (response.ok && result.success) {
-<<<<<<< HEAD
-                        const modal = document.getElementById('share-modal');
-                        const previewContent = document.getElementById('modal-whatsapp-preview');
-                        const editTextarea = document.getElementById('modal-whatsapp-editor');
-
-                        previewContent.textContent = result.whatsappMessage;
-                        editTextarea.value = result.whatsappMessage;
-
-=======
                         const modal = document.getElementById('whatsapp-modal');
                         const textarea = document.getElementById('whatsapp-message-textarea');
                         textarea.value = result.whatsappMessage;
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                         modal.classList.remove('hidden');
 
                         const shareButton = document.getElementById('share-whatsapp-button');
                         shareButton.onclick = () => {
-<<<<<<< HEAD
-                            const message = encodeURIComponent(editTextarea.value);
-=======
                             const message = encodeURIComponent(textarea.value);
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                             window.open(`https://wa.me/?text=${message}`, '_blank');
                         };
 
                         const closeModalButton = document.getElementById('close-modal-button');
                         closeModalButton.onclick = () => {
                             modal.classList.add('hidden');
-<<<<<<< HEAD
-                            window.location.href = '{{ path('app_services_list') }}';
-                        };
-
-                        editTextarea.addEventListener('input', () => {
-                            previewContent.textContent = editTextarea.value;
-                        });
-
-=======
                              window.location.href = '{{ path('app_services_list') }}';
                         };
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                     } else {
                         let errorMessages = 'Se ha producido un error al guardar el servicio.';
                         if (result.errors && result.errors.length > 0) {
-                            errorMessages = result.errors.join('\\n');
+                            errorMessages = result.errors.join('\n');
                         }
                         alert(errorMessages);
                     }
@@ -222,31 +177,6 @@
 {% endblock %}
 
 {% block content %}
-<<<<<<< HEAD
-    <div class="container mx-auto px-4 py-8">
-        {# Main Form #}
-        <div class="bg-white shadow-md rounded-lg p-6">
-            <h1 class="text-3xl font-bold mb-6 text-gray-800">Crear Nuevo Servicio</h1>
-            {{ form_start(serviceForm, {'attr': {'class': 'space-y-8', 'name': 'service'}}) }}
-
-            {# Row 1: Numeración, Título, Lugar (3 columnas) #}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    {{ form_label(serviceForm.numeration, 'Numeración') }}
-                    {{ form_widget(serviceForm.numeration, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.numeration) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.title, 'Título') }}
-                    {{ form_widget(serviceForm.title, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.title) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.locality, 'Lugar') }}
-                    {{ form_widget(serviceForm.locality, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.locality) }}
-                </div>
-=======
 <div class="container mx-auto px-4 py-8">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
     <div class="bg-white shadow-xl rounded-2xl p-8">
@@ -257,7 +187,6 @@
                 {{ form_label(serviceForm.numeration, 'Numeración') }}
                 {{ form_widget(serviceForm.numeration) }}
                 <div class="form-error">{{ form_errors(serviceForm.numeration) }}</div>
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
             </div>
             <div class="form-group">
                 {{ form_label(serviceForm.title, 'Título') }}
@@ -271,126 +200,6 @@
             </div>
         </div>
 
-<<<<<<< HEAD
-            {# Row 2: Inicio, Base, Salida, Fin (4 columnas) #}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div>
-                    {{ form_label(serviceForm.startDate, 'Inicio') }}
-                    {{ form_widget(serviceForm.startDate, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.startDate) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.timeAtBase, 'Base') }}
-                    {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.timeAtBase) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.departureTime, 'Salida') }}
-                    {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.departureTime) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.endDate, 'Fin') }}
-                    {{ form_widget(serviceForm.endDate, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.endDate) }}
-                </div>
-            </div>
-
-            {# Row 3: Límite, Asistentes, Tipo, Categoría (4 columnas) #}
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div>
-                    {{ form_label(serviceForm.registrationLimitDate, 'Límite') }}
-                    {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.registrationLimitDate) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.maxAttendees, 'Asistentes') }}
-                    {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.maxAttendees) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.type, 'Tipo') }}
-                    {{ form_widget(serviceForm.type, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.type) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.category, 'Categoría') }}
-                    {{ form_widget(serviceForm.category, {'attr': {'class': 'mt-1'}}) }}
-                    {{ form_errors(serviceForm.category) }}
-                </div>
-            </div>
-
-            {# Recursos #}
-            <div>
-                <h3 class="text-lg font-semibold mb-4 border-b pb-2">Recursos</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {# Columna Ambulancia #}
-                    <div>
-                        <h4 class="text-md font-semibold mb-2">Ambulancia 🚑</h4>
-                        <div class="space-y-2">
-                            <div>
-                                {{ form_label(serviceForm.numSvb, 'SVB') }}
-                                {{ form_widget(serviceForm.numSvb, {'attr': {'class': 'mt-1'}}) }}
-                                {{ form_errors(serviceForm.numSvb) }}
-                            </div>
-                            <div>
-                                {{ form_label(serviceForm.numSva, 'SVA') }}
-                                {{ form_widget(serviceForm.numSva, {'attr': {'class': 'mt-1'}}) }}
-                                {{ form_errors(serviceForm.numSva) }}
-                            </div>
-                            <div>
-                                {{ form_label(serviceForm.numSvae, 'SVAE') }}
-                                {{ form_widget(serviceForm.numSvae, {'attr': {'class': 'mt-1'}}) }}
-                                {{ form_errors(serviceForm.numSvae) }}
-                            </div>
-                        </div>
-                    </div>
-
-                    {# Columna Personal Sanitario #}
-                    <div>
-                        <h4 class="text-md font-semibold mb-2">Personal Sanitario 🥼🩺</h4>
-                        <div class="space-y-2">
-                            <div>
-                                {{ form_label(serviceForm.numDoctors, 'Medico') }}
-                                {{ form_widget(serviceForm.numDoctors, {'attr': {'class': 'mt-1'}}) }}
-                                {{ form_errors(serviceForm.numDoctors) }}
-                            </div>
-                            <div>
-                                {{ form_label(serviceForm.numDues, 'Enfermeria') }}
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        {{ form_widget(serviceForm.numDues, {'attr': {'placeholder': 'DUE'}}) }}
-                                        {{ form_errors(serviceForm.numDues) }}
-                                    </div>
-                                    <div>
-                                        {{ form_widget(serviceForm.numTecnicos, {'attr': {'placeholder': 'Técnicos'}}) }}
-                                        {{ form_errors(serviceForm.numTecnicos) }}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {# Columna Otros #}
-                    <div>
-                        <h4 class="text-md font-semibold mb-2">Otros</h4>
-                        <div class="space-y-2">
-                            <div>
-                                {{ form_label(serviceForm.afluencia, 'Afluencia 📈') }}
-                                {{ form_widget(serviceForm.afluencia, {'attr': {'class': 'mt-1'}}) }}
-                                {{ form_errors(serviceForm.afluencia) }}
-                            </div>
-                            <div class="flex items-center pt-2">
-                                {{ form_widget(serviceForm.hasFieldHospital) }}
-                                {{ form_label(serviceForm.hasFieldHospital, 'Hospital de Campaña 🏥', {'label_attr': {'class': 'ml-2'}}) }}
-                                {{ form_errors(serviceForm.hasFieldHospital) }}
-                            </div>
-                            <div class="flex items-center pt-2">
-                                {{ form_widget(serviceForm.hasProvisions) }}
-                                {{ form_label(serviceForm.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-2'}}) }}
-                                {{ form_errors(serviceForm.hasProvisions) }}
-                            </div>
-=======
         <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
             <div class="form-group">
                 {{ form_label(serviceForm.startDate, 'Inicio') }}
@@ -500,80 +309,9 @@
                             {{ form_widget(serviceForm.hasProvisions) }}
                             {{ form_label(serviceForm.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-3'}}) }}
                             <div class="form-error">{{ form_errors(serviceForm.hasProvisions) }}</div>
->>>>>>> 4fe3cc7ded642fef59e21e32154f387a3f1814a1
                         </div>
                     </div>
                 </div>
-            </div>
-
-            {# Tareas y Descripción #}
-            <div class="space-y-8">
-                <div>
-                    {{ form_label(serviceForm.tasks, 'Tareas 📝') }}
-                    <div id="tasks-editor" class="mt-1"></div>
-                    {{ form_widget(serviceForm.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
-                    {{ form_errors(serviceForm.tasks) }}
-                </div>
-                <div>
-                    {{ form_label(serviceForm.description, 'Descripción ℹ️') }}
-                    <div id="quill-editor" class="mt-1"></div>
-                    {{ form_widget(serviceForm.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
-                    {{ form_errors(serviceForm.description) }}
-                </div>
-            </div>
-
-            <div style="display:none;">
-                {{ form_row(serviceForm.recipients) }}
-                {{ form_row(serviceForm.numNurses) }}
-                {{ form_row(serviceForm.whatsappMessage) }}
-            </div>
-
-            {{ form_rest(serviceForm) }}
-
-            <div class="flex items-center justify-end mt-6">
-                <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">
-                    Volver a la Lista
-                </a>
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors ml-3">
-                    Guardar Servicio
-                </button>
-            </div>
-
-            {{ form_end(serviceForm) }}
-        </div>
-    </div>
-
-    <!-- Share Modal -->
-    <div id="share-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50">
-        <div class="relative top-10 mx-auto p-5 border w-full max-w-3xl shadow-lg rounded-md bg-white">
-            <h3 class="text-2xl leading-6 font-bold text-gray-900 text-center mb-4">Servicio Guardado con Éxito</h3>
-            <p class="text-md text-gray-600 mb-6 text-center">
-                Revisa y edita el mensaje a continuación. La vista previa se actualizará en tiempo real.
-            </p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {# Edit Column #}
-                <div>
-                    <label for="modal-whatsapp-editor" class="block text-lg font-medium text-gray-700 mb-2">Editar Mensaje:</label>
-                    <textarea id="modal-whatsapp-editor" class="w-full h-80 p-3 border rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                </div>
-                {# Preview Column #}
-                <div>
-                    <label class="block text-lg font-medium text-gray-700 mb-2">Vista Previa:</label>
-                    <div class="whatsapp-preview">
-                        <div class="whatsapp-message" id="modal-whatsapp-preview" style="white-space: pre-wrap; word-wrap: break-word;">
-                            <!-- Content will be injected by JS -->
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center justify-center mt-6">
-                <button id="share-whatsapp-button" class="px-6 py-2 bg-green-500 text-white text-lg font-medium rounded-md shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-300">
-                    <svg class="w-6 h-6 inline-block mr-2" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.447-4.435-9.884-9.888-9.884-5.448 0-9.886 4.434-9.889 9.884-.001 2.225.651 4.315 1.88 6.069l.164.251-1.004 3.657 3.742-1.001.265.166zm9.33-9.527c-.197-.341-1.176-1.666-1.353-1.844-.176-.179-.353-.179-.533-.179-.179 0-.353 0-.532.179-.179.179-.699.699-.854.854-.156.155-.312.179-.467 0s-.699-.812-.974-1.087c-.276-.276-.552-.467-.657-.522-.105-.056-.21.056-.314.179s-.467.562-.562.657c-.094.094-.179.125-.264.094-.085-.031-.353-.155-.667-.331-.313-.177-.521-.353-.615-.467-.094-.115-.021-.179.035-.234.056-.056.112-.135.156-.179.044-.045.063-.094.094-.156.031-.062.016-.111-.005-.135-.021-.024-.532-1.275-.73-1.734-.197-.459-.394-.394-.532-.394-.139 0-.277.005-.415.005-.138 0-.353.056-.532.277-.179.222-.699.854-.699 2.08 0 1.225.715 2.421.81 2.576.094.156 1.412 2.176 3.428 3.025.467.202.83.321 1.12.417.467.156.894.125 1.224.078.375-.056 1.176-.479 1.353-.942.179-.463.179-.854.125-.942-.056-.087-.179-.125-.353-.222z"/></svg>
-                    Compartir en WhatsApp
-                </button>
-                <button id="close-modal-button" class="ml-4 px-6 py-2 bg-gray-300 text-gray-800 text-lg font-medium rounded-md shadow-sm hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-200">
-                    Cerrar
-                </button>
             </div>
         </div>
 
@@ -611,9 +349,6 @@
 
         {{ form_end(serviceForm) }}
     </div>
-<<<<<<< HEAD
-{% endblock %}
-=======
 </div>
 <!-- WhatsApp Share Modal -->
 <div id="whatsapp-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
@@ -634,4 +369,3 @@
     </div>
 </div>
 {% endblock %}
- 
