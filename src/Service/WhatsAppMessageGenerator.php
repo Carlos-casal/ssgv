@@ -120,8 +120,8 @@ class WhatsAppMessageGenerator
             $unattendUrl = $this->urlGenerator->generate('app_service_unattend', ['id' => $service->getId()], UrlGeneratorInterface::ABSOLUTE_URL);
 
             $message[] = "Por favor, confirma tu asistencia pulsando en uno de los siguientes enlaces:";
-            $message[] = "✅ *Asisto*: " . $attendUrl;
-            $message[] = "❌ *No Asisto*: " . $unattendUrl;
+            $message[] = "✅ *Asisto* " . $attendUrl;
+            $message[] = "❌ *No Asisto* " . $unattendUrl;
         } else {
             // Placeholder for the preview on the new service page
             $message[] = "Por favor, confirma tu asistencia (los enlaces se generarán al guardar):";
