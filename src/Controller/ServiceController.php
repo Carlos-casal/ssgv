@@ -79,17 +79,33 @@ class ServiceController extends AbstractController
             $entityManager->persist($service);
             $entityManager->flush(); // Flush once to get the ID for URL generation
 
-            // If the custom WhatsApp message is empty, generate the default one.
+            // Generate the WhatsApp message.
+            $message = $messageGenerator->createMessage($service);
             if (!$service->getWhatsappMessage()) {
-                $message = $messageGenerator->createMessage($service);
                 $service->setWhatsappMessage($message);
                 $entityManager->flush(); // Flush again to save the message
+            }
+
+            if ($request->isXmlHttpRequest()) {
+                return new JsonResponse([
+                    'success' => true,
+                    'serviceId' => $service->getId(),
+                    'whatsappMessage' => $message,
+                ]);
             }
 
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
             $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
 
             return $this->redirectToRoute('app_service_view', ['id' => $service->getId()]);
+        }
+
+        if ($form->isSubmitted() && !$form->isValid() && $request->isXmlHttpRequest()) {
+            $errors = [];
+            foreach ($form->getErrors(true, true) as $error) {
+                $errors[] = $error->getMessage();
+            }
+            return new JsonResponse(['success' => false, 'errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
         return $this->render('service/new_service.html.twig', [
