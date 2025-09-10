@@ -163,7 +163,12 @@ class ServiceController extends AbstractController
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+
+        if (!$this->isGranted('ROLE_VOLUNTEER')) {
+            $this->addFlash('warning', 'Necesitas ser voluntario para inscribirte a un servicio.');
+            return $this->redirectToRoute('app_access_denied');
+        }
+
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
         $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
@@ -185,7 +190,12 @@ class ServiceController extends AbstractController
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
-        $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
+
+        if (!$this->isGranted('ROLE_VOLUNTEER')) {
+            $this->addFlash('warning', 'Necesitas ser voluntario para anular tu asistencia a un servicio.');
+            return $this->redirectToRoute('app_access_denied');
+        }
+
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
         $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
