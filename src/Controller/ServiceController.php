@@ -9,6 +9,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use App\Service\WhatsAppMessageGenerator;
+use App\Repository\VolunteerRepository;
+use App\Repository\AssistanceConfirmationRepository;
 use Symfony\Component\Routing\Annotation\Route; // Usamos Annotation\Route como en tu archivo existente
 use Symfony\Component\HttpFoundation\JsonResponse;
 use DateTime;
@@ -362,5 +364,66 @@ class ServiceController extends AbstractController
         $message = $messageGenerator->createMessage($service);
 
         return new JsonResponse(['message' => $message]);
+    }
+
+    #[Route('/volunteers/json', name: 'app_volunteers_json', methods: ['GET'])]
+    public function getVolunteersJson(VolunteerRepository $volunteerRepository): JsonResponse
+    {
+        $volunteers = $volunteerRepository->findAll();
+        $data = [];
+
+        foreach ($volunteers as $volunteer) {
+            $user = $volunteer->getUser();
+            if ($user) {
+                $data[] = [
+                    'id' => $volunteer->getId(),
+                    'name' => $user->getName(),
+                    'surname' => $user->getSurname(),
+                ];
+            }
+        }
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/service/{id}/update-attendance', name: 'app_service_update_attendance', methods: ['POST'])]
+    public function updateAttendance(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $volunteerIds = $data['volunteerIds'] ?? [];
+        $status = $data['status'] ?? null;
+
+        if (empty($volunteerIds) || !$status) {
+            return new JsonResponse(['success' => false, 'message' => 'Missing data'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if (!in_array($status, ['asiste', 'no_asiste'])) {
+            return new JsonResponse(['success' => false, 'message' => 'Invalid status'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $hasAttended = ($status === 'asiste');
+
+        foreach ($volunteerIds as $volunteerId) {
+            $volunteer = $volunteerRepository->find($volunteerId);
+            if ($volunteer) {
+                $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy([
+                    'service' => $service,
+                    'volunteer' => $volunteer,
+                ]);
+
+                if (!$assistanceConfirmation) {
+                    $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
+                    $assistanceConfirmation->setService($service);
+                    $assistanceConfirmation->setVolunteer($volunteer);
+                    $entityManager->persist($assistanceConfirmation);
+                }
+
+                $assistanceConfirmation->setHasAttended($hasAttended);
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
     }
 }
