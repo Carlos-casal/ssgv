@@ -19,4 +19,19 @@
     array (
     ),
   ),
+  'quill' => 
+  array (
+    'version' => '2.0.2',
+    'dependencies' => 
+    array (
+      0 => 'lodash-es',
+      1 => 'parchment',
+      2 => 'parchment',
+      3 => 'quill-delta',
+      4 => 'eventemitter3',
+    ),
+    'extraFiles' => 
+    array (
+    ),
+  ),
 );
