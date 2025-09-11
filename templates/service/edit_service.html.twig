@@ -240,7 +240,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg flex justify-between items-center">
                         <span>Asisten</span>
-                        <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getAttendingVolunteers|length }}</span>
+                        <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'attends')|length }}</span>
                     </h4>
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attends') %}
@@ -254,7 +254,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg flex justify-between items-center">
                         <span>En Reserva</span>
-                        <span class="bg-yellow-200 text-yellow-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getReserveVolunteers|length }}</span>
+                        <span class="bg-yellow-200 text-yellow-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'reserve')|length }}</span>
                     </h4>
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserve') %}
@@ -268,7 +268,7 @@
                 <div>
                     <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg flex justify-between items-center">
                         <span>No Asisten</span>
-                        <span class="bg-red-200 text-red-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getNotAttendingVolunteers|length }}</span>
+                        <span class="bg-red-200 text-red-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attends')|length }}</span>
                     </h4>
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attends') %}
