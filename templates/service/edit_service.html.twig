@@ -6,8 +6,31 @@
     {{ parent() }}
     <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <style>
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+        .form-group .form-error {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
         #quill-editor-edit, #tasks-editor-edit {
             height: 300px;
+        }
+        .tab-link.active {
+            border-bottom-color: #3B82F6;
+            color: #3B82F6;
         }
     </style>
 {% endblock %}
@@ -30,15 +53,14 @@
         Quill.register(CustomLink, true);
         // --- End Custom Link Sanitizer ---
 
-        const quillInstances = {};
+        let quillInstances = {};
 
         function setupQuill(containerId, textareaId) {
             const editorContainer = document.querySelector(containerId);
             const hiddenTextarea = document.querySelector(textareaId);
 
-            if (!editorContainer || !hiddenTextarea || quillInstances[containerId]) {
-                return;
-            }
+            if (!editorContainer || !hiddenTextarea) return;
+            if (editorContainer.quill) return;
 
             const toolbarOptions = [
                 [{ 'header': [1, 2, 3, false] }],
@@ -56,150 +78,490 @@
             });
 
             quill.root.innerHTML = hiddenTextarea.value;
+            editorContainer.quill = quill;
+            quillInstances[containerId] = quill;
 
             quill.on('text-change', function() {
                 hiddenTextarea.value = quill.root.innerHTML;
             });
-
-            quillInstances[containerId] = quill;
         }
 
         function initializeAllQuillEditors() {
-            setupQuill('#quill-editor-edit', '#description_textarea_edit');
-            setupQuill('#tasks-editor-edit', '#tasks_textarea_edit');
+            setupQuill('#quill-editor-edit', '#service_description');
+            setupQuill('#tasks-editor-edit', '#service_tasks');
         }
 
-        document.addEventListener('turbo:before-cache', function() {
+        function cleanupQuillInstances() {
             for (const key in quillInstances) {
-                if (quillInstances.hasOwnProperty(key)) {
-                    quillInstances[key] = null;
+                const container = document.querySelector(key);
+                if (container && container.quill) {
+                    delete container.quill;
+                    container.innerHTML = '';
                 }
             }
-        }, { once: true });
+            quillInstances = {};
+        }
 
-        document.addEventListener('turbo:load', initializeAllQuillEditors);
-        document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
+        function setupTabs() {
+            const tabLinks = document.querySelectorAll('.tab-link');
+            const tabContents = document.querySelectorAll('.tab-content-panel');
+
+            tabLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+
+                    tabLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+
+                    const target = link.getAttribute('data-target');
+                    tabContents.forEach(content => {
+                        if (content.id === target) {
+                            content.classList.remove('hidden');
+                        } else {
+                            content.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+        }
+
+        let allVolunteers = [];
+
+        function renderVolunteerList() {
+            const searchTerm = document.getElementById('modal-search').value.toLowerCase();
+            const showCount = document.getElementById('modal-mostrar').value;
+
+            const filteredVolunteers = allVolunteers.filter(v =>
+                v.name.toLowerCase().includes(searchTerm) ||
+                v.surname.toLowerCase().includes(searchTerm) ||
+                v.id.toString().includes(searchTerm)
+            );
+
+            let volunteersToDisplay = filteredVolunteers;
+            if (showCount !== 'all') {
+                volunteersToDisplay = filteredVolunteers.slice(0, parseInt(showCount));
+            }
+
+            const volunteerListContainer = document.getElementById('modal-volunteer-list');
+            volunteerListContainer.innerHTML = '';
+
+            volunteersToDisplay.forEach(volunteer => {
+                const volunteerItem = document.createElement('div');
+                volunteerItem.classList.add('flex', 'items-center', 'justify-between', 'p-2', 'hover:bg-gray-100');
+
+                const label = document.createElement('label');
+                label.classList.add('flex', 'items-center', 'space-x-3');
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = volunteer.id;
+                checkbox.classList.add('h-4', 'w-4', 'text-indigo-600', 'border-gray-300', 'rounded');
+
+                const idSpan = document.createElement('span');
+                idSpan.classList.add('text-sm', 'font-mono', 'text-gray-500');
+                idSpan.textContent = `(#${volunteer.id})`;
+
+                const nameSpan = document.createElement('span');
+                nameSpan.classList.add('text-sm', 'text-gray-900');
+                nameSpan.textContent = `${volunteer.name} ${volunteer.surname}`;
+
+                label.appendChild(checkbox);
+                label.appendChild(idSpan);
+                label.appendChild(nameSpan);
+                volunteerItem.appendChild(label);
+                volunteerListContainer.appendChild(volunteerItem);
+            });
+        }
+
+        async function fetchAndDisplayVolunteers() {
+            try {
+                const response = await fetch('{{ path('app_volunteers_json') }}');
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                allVolunteers = await response.json();
+                renderVolunteerList();
+
+            } catch (error) {
+                console.error('Error fetching volunteers:', error);
+                const volunteerListContainer = document.getElementById('modal-volunteer-list');
+                volunteerListContainer.innerHTML = '<p class="text-red-500">Error al cargar los voluntarios.</p>';
+            }
+        }
+
+        function setupModal() {
+            const openModalButton = document.getElementById('servicios_btn_add_respuesta_voluntario');
+            const closeModalButton = document.getElementById('modal-close-button');
+            const modal = document.getElementById('add-user-modal');
+            const searchInput = document.getElementById('modal-search');
+            const showDropdown = document.getElementById('modal-mostrar');
+            const clearSearchButton = document.getElementById('modal-clear-search');
+
+            if (openModalButton && modal) {
+                openModalButton.addEventListener('click', () => {
+                    modal.classList.remove('hidden');
+                    fetchAndDisplayVolunteers();
+                });
+            }
+
+            if (closeModalButton && modal) {
+                closeModalButton.addEventListener('click', () => {
+                    modal.classList.add('hidden');
+                });
+            }
+
+            if (modal) {
+                searchInput.addEventListener('input', renderVolunteerList);
+                showDropdown.addEventListener('change', renderVolunteerList);
+                clearSearchButton.addEventListener('click', () => {
+                    searchInput.value = '';
+                    renderVolunteerList();
+                });
+
+                const saveButton = document.getElementById('modal-save-button');
+                saveButton.addEventListener('click', async () => {
+                    const selectedCheckboxes = document.querySelectorAll('#modal-volunteer-list input[type="checkbox"]:checked');
+                    const volunteerIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                    const status = document.getElementById('modal-respuesta').value;
+                    const serviceId = '{{ service.id }}';
+
+                    if (volunteerIds.length === 0) {
+                        alert('Por favor, selecciona al menos un voluntario.');
+                        return;
+                    }
+
+                    try {
+                        const response = await fetch(`/service/${serviceId}/update-attendance`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            body: JSON.stringify({
+                                volunteerIds: volunteerIds,
+                                status: status
+                            })
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Error al guardar los cambios.');
+                        }
+
+                        const result = await response.json();
+
+                        if (result.success) {
+                            modal.classList.add('hidden');
+                            location.reload(); // Reload the page to see the changes
+                        } else {
+                            alert(result.message || 'Se ha producido un error.');
+                        }
+                    } catch (error) {
+                        console.error('Error:', error);
+                        alert('Se ha producido un error de red.');
+                    }
+                });
+
+                modal.addEventListener('click', (event) => {
+                    if (event.target === modal) {
+                        modal.classList.add('hidden');
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('turbo:before-cache', cleanupQuillInstances);
+        document.addEventListener('turbo:load', () => {
+            initializeAllQuillEditors();
+            setupTabs();
+            setupModal();
+        });
+
+        if (typeof Turbo === 'undefined') {
+            document.addEventListener('DOMContentLoaded', () => {
+                initializeAllQuillEditors();
+                setupTabs();
+                setupModal();
+            });
+        }
     </script>
 {% endblock %}
 
 {% block content %}
-    <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-6 text-gray-900">Editar Servicio</h1>
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-4xl font-bold mb-8 text-gray-900">Editar Servicio</h1>
 
-        {# ... (flash messages can stay here) ... #}
+    <div class="mb-8 border-b border-gray-200">
+        <nav class="flex space-x-8" aria-label="Tabs">
+            <a href="#" class="tab-link active font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-target="datos-basicos">
+                <span class="mr-2">📝</span> Datos Básicos
+            </a>
+            <a href="#" class="tab-link font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-target="asistencias">
+                <span class="mr-2">👥</span> Confirmación de Asistencia
+            </a>
+        </nav>
+    </div>
 
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="datos_basicos-tab" data-toggle="tab" href="#datos_basicos" role="tab">Datos básicos</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="asistencias-tab" data-toggle="tab" href="#asistencias" role="tab">Confirmaciones</a>
-            </li>
-        </ul>
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active" id="datos_basicos" role="tabpanel">
-                {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}}) }}
+    <div id="datos-basicos" class="tab-content-panel">
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+            {{ form_start(form, {'attr': {'class': 'space-y-10'}}) }}
 
-                <div class="space-y-8">
-                    {# Row 1 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.numeration) }}</div>
-                        <div>{{ form_row(form.title) }}</div>
-                        <div>{{ form_row(form.locality) }}</div>
-                    </div>
-
-                    {# Row 2 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.startDate) }}</div>
-                        <div>{{ form_row(form.timeAtBase) }}</div>
-                        <div>{{ form_row(form.endDate) }}</div>
-                    </div>
-
-                    {# Row 3 #}
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div>{{ form_row(form.registrationLimitDate) }}</div>
-                        <div>{{ form_row(form.type) }}</div>
-                        <div>{{ form_row(form.category) }}</div>
-                    </div>
-
-                    {# Row 4 - Recursos #}
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 border-b pb-1">Recursos</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6 items-center">
-                            <div>{{ form_row(form.afluencia) }}</div>
-                            <div>{{ form_row(form.numSvb) }}</div>
-                            <div>{{ form_row(form.numSva) }}</div>
-                            <div>{{ form_row(form.numSvae) }}</div>
-                            <div>{{ form_row(form.numMedical) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasFieldHospital) }}</div>
-                            <div class="flex items-center pt-6">{{ form_row(form.hasProvisions) }}</div>
-                        </div>
-                    </div>
-
-                    {# Row 5 - Tareas y Descripción #}
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            {{ form_label(form.tasks) }}
-                            <div id="tasks-editor-edit"></div>
-                            {{ form_widget(form.tasks, {'id': 'tasks_textarea_edit', 'attr': {'style': 'display:none;'}}) }}
-                            {{ form_errors(form.tasks) }}
-                        </div>
-                        <div>
-                            {{ form_label(form.description) }}
-                            <div id="quill-editor-edit"></div>
-                            {{ form_widget(form.description, {'id': 'description_textarea_edit', 'attr': {'style': 'display:none;'}}) }}
-                            {{ form_errors(form.description) }}
-                        </div>
-                    </div>
-
-                    {# Row 6 - Recipients #}
-                    <div>
-                        <h3 class="text-lg font-semibold mb-2 border-b pb-1">Destinatarios</h3>
-                        {{ form_row(form.recipients) }}
-                    </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                <div class="form-group">
+                    {{ form_label(form.numeration, 'Numeración') }}
+                    {{ form_widget(form.numeration) }}
+                    <div class="form-error">{{ form_errors(form.numeration) }}</div>
                 </div>
-
-                <div class="mt-8 text-center">
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
-                        Guardar Cambios
-                    </button>
+                <div class="form-group">
+                    {{ form_label(form.title, 'Título') }}
+                    {{ form_widget(form.title) }}
+                    <div class="form-error">{{ form_errors(form.title) }}</div>
                 </div>
-
-                {{ form_end(form) }}
+                <div class="form-group">
+                    {{ form_label(form.locality, 'Lugar') }}
+                    {{ form_widget(form.locality) }}
+                    <div class="form-error">{{ form_errors(form.locality) }}</div>
+                </div>
             </div>
-            <div class="tab-pane fade" id="asistencias" role="tabpanel">
-                {# ... Asistencias content is loaded via JS, so it can be left as is ... #}
-                 <div class="row">
-                    <div class="col-lg-12" style="padding-left:2em;">
-                        <button type="button" class="pcam-btn-gris" id="servicios_btn_add_respuesta_voluntario" onclick="servicios_asistentes_add_open_modal()"><i class="fas fa-plus-square"></i> Añadir usuarios</button>
-                        <button type="button" class="pcam-btn-gris" id="servicios_btn_fichar_todos" onclick="servicios_fichar_todos_open_modal()"><i class="fas fa-clock"></i> Fichar a todos</button>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+                <div class="form-group">
+                    {{ form_label(form.startDate, 'Inicio') }}
+                    {{ form_widget(form.startDate) }}
+                    <div class="form-error">{{ form_errors(form.startDate) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.timeAtBase, 'Base') }}
+                    {{ form_widget(form.timeAtBase) }}
+                    <div class="form-error">{{ form_errors(form.timeAtBase) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.departureTime, 'Salida') }}
+                    {{ form_widget(form.departureTime) }}
+                    <div class="form-error">{{ form_errors(form.departureTime) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.endDate, 'Fin') }}
+                    {{ form_widget(form.endDate) }}
+                    <div class="form-error">{{ form_errors(form.endDate) }}</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+                <div class="form-group">
+                    {{ form_label(form.registrationLimitDate, 'Límite') }}
+                    {{ form_widget(form.registrationLimitDate) }}
+                    <div class="form-error">{{ form_errors(form.registrationLimitDate) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.maxAttendees, 'Asistentes') }}
+                    {{ form_widget(form.maxAttendees) }}
+                    <div class="form-error">{{ form_errors(form.maxAttendees) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.type, 'Tipo') }}
+                    {{ form_widget(form.type) }}
+                    <div class="form-error">{{ form_errors(form.type) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.category, 'Categoría') }}
+                    {{ form_widget(form.category) }}
+                    <div class="form-error">{{ form_errors(form.category) }}</div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Recursos</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Ambulancia 🚑</h4>
+                        <div class="space-y-4">
+                            <div class="form-group">
+                                {{ form_label(form.numSvb, 'SVB') }}
+                                {{ form_widget(form.numSvb) }}
+                                <div class="form-error">{{ form_errors(form.numSvb) }}</div>
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.numSva, 'SVA') }}
+                                {{ form_widget(form.numSva) }}
+                                <div class="form-error">{{ form_errors(form.numSva) }}</div>
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.numSvae, 'SVAE') }}
+                                {{ form_widget(form.numSvae) }}
+                                <div class="form-error">{{ form_errors(form.numSvae) }}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Personal Sanitario 🥼🩺</h4>
+                        <div class="space-y-4">
+                            <div class="form-group">
+                                {{ form_label(form.numDoctors, 'Medico') }}
+                                {{ form_widget(form.numDoctors) }}
+                                <div class="form-error">{{ form_errors(form.numDoctors) }}</div>
+                            </div>
+                            <div class="form-group">
+                                {{ form_label(form.numDues, 'Enfermeria') }}
+                                <div class="grid grid-cols-2 gap-4">
+                                    {{ form_widget(form.numDues, {'attr': {'placeholder': 'DUE'}}) }}
+                                    {{ form_widget(form.numTecnicos, {'attr': {'placeholder': 'Técnicos'}}) }}
+                                </div>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="form-error">{{ form_errors(form.numDues) }}</div>
+                                    <div class="form-error">{{ form_errors(form.numTecnicos) }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-lg font-semibold mb-4">Otros</h4>
+                        <div class="space-y-4">
+                            <div class="form-group">
+                                {{ form_label(form.afluencia, 'Afluencia 📈') }}
+                                {{ form_widget(form.afluencia) }}
+                                <div class="form-error">{{ form_errors(form.afluencia) }}</div>
+                            </div>
+                            <div class="flex items-center pt-3">
+                                {{ form_widget(form.hasFieldHospital) }}
+                                {{ form_label(form.hasFieldHospital, 'Hospital de Campaña 🏥', {'label_attr': {'class': 'ml-3'}}) }}
+                                <div class="form-error">{{ form_errors(form.hasFieldHospital) }}</div>
+                            </div>
+                            <div class="flex items-center">
+                                {{ form_widget(form.hasProvisions) }}
+                                {{ form_label(form.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-3'}}) }}
+                                <div class="form-error">{{ form_errors(form.hasProvisions) }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <div class="row" style="padding: 0em 1em 0em 1em !important;">
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">Asisten <span class="badge badge-light" id="n_asistentes"></span></button>
-                        <ul class="list-group" id="servicio-listado-asistentes">
+            <div class="space-y-10">
+                <div class="form-group">
+                    {{ form_label(form.tasks, 'Tareas 📝') }}
+                    <div id="tasks-editor-edit"></div>
+                    {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
+                    <div class="form-error">{{ form_errors(form.tasks) }}</div>
+                </div>
+                <div class="form-group">
+                    {{ form_label(form.description, 'Descripción ℹ️') }}
+                    <div id="quill-editor-edit"></div>
+                    {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
+                    <div class="form-error">{{ form_errors(form.description) }}</div>
+                </div>
+            </div>
 
-                        </ul>
-                    </div>
+            <div style="display:none;">
+                {{ form_row(form.recipients) }}
+                {{ form_row(form.numNurses) }}
+                {{ form_row(form.whatsappMessage) }}
+            </div>
 
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">Reserva <span class="badge badge-light" id="n_reserva"></span></button>
+            {{ form_rest(form) }}
+
+            <div class="flex items-center justify-end mt-10 pt-6 border-t border-gray-200">
+                <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 ml-4">
+                    Guardar Cambios
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+
+    <div id="asistencias" class="tab-content-panel hidden">
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+            <div class="row">
+                <div class="col-lg-12 mb-4">
+                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" id="servicios_btn_add_respuesta_voluntario" onclick="servicios_asistentes_add_open_modal()"><i class="fas fa-plus-square"></i> Añadir usuarios</button>
+                    <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg" id="servicios_btn_fichar_todos" onclick="servicios_fichar_todos_open_modal()"><i class="fas fa-clock"></i> Fichar a todos</button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg">Asisten <span class="badge badge-light" id="n_asistentes"></span></h4>
+                    <ul class="list-group" id="servicio-listado-asistentes">
+                        {# Content will be loaded via JS #}
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg">Reserva <span class="badge badge-light" id="n_reserva"></span></h4>
                     <ul class="list-group" id="servicio-listado-reserva">
-
+                        {# Content will be loaded via JS #}
                     </ul>
-                    </div>
+                </div>
 
-                    <div class="col-lg-4" style="margin-top:1em;">
-                    <button type="button" class="list-group-item list-group-item-action active">No asisten <span class="badge badge-light" id="n_no_asistentes"></span></button>
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg">No asisten <span class="badge badge-light" id="n_no_asistentes"></span></h4>
                     <ul class="list-group" id="servicio-listado-no-asistentes">
-
+                        {# Content will be loaded via JS #}
                     </ul>
-                    </div>
-
                 </div>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-4xl w-full mx-4">
+        <h3 class="text-3xl font-bold text-gray-900 text-center mb-6">Añadir Voluntarios al Servicio</h3>
+
+        <div class="form-group">
+            <label for="modal-respuesta" class="font-bold text-lg">Respuesta *</label>
+            <select id="modal-respuesta" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                <option value="asiste">Asiste</option>
+                <option value="no_asiste">No asiste</option>
+                <option value="reserva">En reserva</option>
+            </select>
+        </div>
+
+        <div class="mt-6">
+            <h4 class="font-bold text-lg mb-2">Personal</h4>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <label for="modal-mostrar">Mostrar</label>
+                    <select id="modal-mostrar" class="block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                        <option value="all">Todos</option>
+                    </select>
+                </div>
+                <div class="relative flex-grow">
+                    <input type="text" id="modal-search" placeholder="Buscar por ID o nombre..." class="w-full py-2 pl-10 pr-4 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd"></path></svg>
+                    </div>
+                    <button id="modal-clear-search" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-gray-700">
+                        <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-6">
+            <h4 class="font-bold text-lg mb-2">Voluntarios</h4>
+            <div id="modal-volunteer-list" class="h-64 overflow-y-auto border border-gray-200 rounded-md p-2">
+                <!-- Volunteer list will be populated by JavaScript -->
+            </div>
+        </div>
+
+        <div class="flex justify-end items-center mt-6 space-x-4">
+            <button id="modal-close-button" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
+                Cerrar
+            </button>
+            <button id="modal-save-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                Guardar Cambios
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock %}
