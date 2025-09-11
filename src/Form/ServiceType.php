@@ -93,6 +93,10 @@ class ServiceType extends AbstractType
                 'label' => 'Descripción',
                 'required' => false,
             ])
+            ->add('tasks', TextareaType::class, [
+                'label' => 'Tareas',
+                'required' => false,
+            ])
             ->add('recipients', ChoiceType::class, [
                 'label' => 'Destinatarios del Servicio',
                 'choices' => [
@@ -152,10 +156,6 @@ class ServiceType extends AbstractType
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
-                'required' => false,
-            ])
-            ->add('tasks', TextareaType::class, [
-                'label' => 'Tareas',
                 'required' => false,
             ])
             ->add('hasProvisions', CheckboxType::class, [
