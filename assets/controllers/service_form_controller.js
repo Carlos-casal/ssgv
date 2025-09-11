@@ -1,5 +1,4 @@
 import { Controller } from '@hotwired/stimulus';
-import Quill from 'quill';
 
 export default class extends Controller {
     static targets = [
@@ -54,7 +53,7 @@ export default class extends Controller {
             ['clean']
         ];
 
-        const Link = Quill.import('formats/link');
+        const Link = window.Quill.import('formats/link');
         class CustomLink extends Link {
             static sanitize(url) {
                 const sanitizedUrl = super.sanitize(url);
@@ -64,9 +63,9 @@ export default class extends Controller {
                 return sanitizedUrl;
             }
         }
-        Quill.register(CustomLink, true);
+        window.Quill.register(CustomLink, true);
 
-        const quill = new Quill(container, {
+        const quill = new window.Quill(container, {
             modules: { toolbar: toolbarOptions },
             theme: 'snow'
         });
