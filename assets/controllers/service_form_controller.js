@@ -18,8 +18,12 @@ export default class extends Controller {
 
     connect() {
         this.initializeQuill();
-        this.setupTabs();
-        this.setupAttendanceModal();
+        if (this.hasTabLinkTarget) {
+            this.setupTabs();
+        }
+        if (this.hasModalTarget) {
+            this.setupAttendanceModal();
+        }
     }
 
     disconnect() {

@@ -35,7 +35,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8" data-controller="new-service-form">
+<div class="container mx-auto px-4 py-8" data-controller="service-form">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
     <div class="bg-white shadow-xl rounded-2xl p-8">
         {{ form_start(form, {
@@ -43,7 +43,7 @@
                 'class': 'space-y-10',
                 'name': 'service',
                 'id': 'service-form',
-                'data-new-service-form-target': 'form',
+                'data-service-form-target': 'form',
                 'data-redirect-url': path('app_services_list')
             }
         }) }}
@@ -184,14 +184,14 @@
         <div class="space-y-10">
             <div class="form-group">
                 {{ form_label(form.tasks, 'Tareas 📝') }}
-                <div data-new-service-form-target="quillTasks" style="height: 300px;"></div>
-                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-new-service-form-target': 'tasks'}}) }}
+                <div data-service-form-target="quillTasks" style="height: 300px;"></div>
+                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-service-form-target': 'tasks'}}) }}
                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
             </div>
             <div class="form-group">
                 {{ form_label(form.description, 'Descripción ℹ️') }}
-                <div data-new-service-form-target="quillDescription" style="height: 300px;"></div>
-                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-new-service-form-target': 'description'}}) }}
+                <div data-service-form-target="quillDescription" style="height: 300px;"></div>
+                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-service-form-target': 'description'}}) }}
                 <div class="form-error">{{ form_errors(form.description) }}</div>
             </div>
         </div>
@@ -217,18 +217,18 @@
     </div>
 </div>
 <!-- WhatsApp Share Modal -->
-<div data-new-service-form-target="whatsappModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+<div data-service-form-target="whatsappModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
         <h3 class="text-3xl font-bold text-gray-900 text-center mb-4">Servicio Guardado con Éxito</h3>
         <p class="text-gray-600 text-center mb-6">
             Revisa y edita el mensaje antes de compartirlo en WhatsApp.
         </p>
-        <textarea data-new-service-form-target="whatsappMessageTextarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        <textarea data-service-form-target="whatsappMessageTextarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
         <div class="flex justify-center items-center mt-6 space-x-4">
-            <button data-new-service-form-target="shareWhatsappButton" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+            <button data-service-form-target="shareWhatsappButton" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
                 Compartir en WhatsApp
             </button>
-            <button data-new-service-form-target="closeModalButton" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
+            <button data-service-form-target="closeModalButton" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
                 Cerrar
             </button>
         </div>

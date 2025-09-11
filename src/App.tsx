@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './components/Login';
 import Sidebar from './components/Layout/Sidebar';
-import Header from './components/Layout/Header';
 import Dashboard from './components/Dashboard/Dashboard';
 import PersonalListado from './components/Personal/PersonalListado';
 import ComingSoon from './components/Common/ComingSoon';
@@ -64,7 +63,6 @@ const AppContent: React.FC = () => {
     <div className="flex h-screen bg-gray-50">
       <Sidebar activeSection={activeSection} onSectionChange={setActiveSection} />
       <div className="flex-1 flex flex-col overflow-hidden">
-        <Header title={getSectionTitle(activeSection)} />
         <main className="flex-1 overflow-y-auto">
           {renderContent()}
         </main>
