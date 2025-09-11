@@ -231,7 +231,8 @@ class ServiceController extends AbstractController
                     $confirmation->setVolunteer($volunteer);
                     $entityManager->persist($confirmation);
                 }
-                $confirmation->setStatus($status);
+                $attends = ($status === 'attends');
+                $confirmation->setHasAttended($attends);
             }
         }
 
