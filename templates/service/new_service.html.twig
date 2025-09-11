@@ -4,7 +4,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <style>
         .form-group {
             margin-bottom: 1.5rem;
@@ -33,154 +32,21 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-    <script>
-        // --- Custom Link Sanitizer for Quill ---
-        const Link = Quill.import('formats/link');
-        class CustomLink extends Link {
-            static sanitize(url) {
-                const sanitizedUrl = super.sanitize(url);
-                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
-                    return 'https://' + sanitizedUrl;
-                }
-                return sanitizedUrl;
-            }
-        }
-        Quill.register(CustomLink, true);
-        // --- End Custom Link Sanitizer ---
-
-        let quillInstances = {};
-
-        function setupQuill(containerId, textareaId) {
-            const editorContainer = document.querySelector(containerId);
-            const hiddenTextarea = document.querySelector(textareaId);
-
-            if (!editorContainer || !hiddenTextarea) return;
-
-            if (editorContainer.quill) {
-                return;
-            }
-
-            const toolbarOptions = [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'strike', 'underline'],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'align': [] }],
-                ['link'],
-                ['clean']
-            ];
-
-            const quill = new Quill(editorContainer, {
-                modules: { toolbar: toolbarOptions },
-                theme: 'snow'
-            });
-
-            editorContainer.quill = quill;
-            quillInstances[containerId] = quill;
-
-            quill.on('text-change', function() {
-                hiddenTextarea.value = quill.root.innerHTML;
-            });
-
-            if (hiddenTextarea.value) {
-                quill.root.innerHTML = hiddenTextarea.value;
-            }
-        }
-
-        function initializeAllQuillEditors() {
-            setupQuill('#quill-editor', '#service_description');
-            setupQuill('#tasks-editor', '#service_tasks');
-        }
-
-        function cleanupQuillInstances() {
-            for (const key in quillInstances) {
-                const container = document.querySelector(key);
-                if (container && container.quill) {
-                    delete container.quill;
-                    container.innerHTML = '';
-                }
-            }
-            quillInstances = {};
-        }
-
-        document.addEventListener('turbo:before-cache', cleanupQuillInstances);
-        document.addEventListener('turbo:load', initializeAllQuillEditors);
-
-        if (typeof Turbo === 'undefined') {
-            document.addEventListener('DOMContentLoaded', initializeAllQuillEditors);
-        }
-
-        document.addEventListener('turbo:load', () => {
-            const form = document.querySelector('form[name="service"]');
-            if (!form) return;
-
-            form.addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                for (const key in quillInstances) {
-                    const quill = quillInstances[key];
-                    const hiddenTextareaId = quill.container.nextElementSibling.id;
-                    document.getElementById(hiddenTextareaId).value = quill.root.innerHTML;
-                }
-
-                const formData = new FormData(form);
-                const button = form.querySelector('button[type="submit"]');
-                button.disabled = true;
-                button.textContent = 'Guardando...';
-
-                try {
-                    const response = await fetch('{{ path('app_service_new') }}', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest'
-                        }
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        const modal = document.getElementById('whatsapp-modal');
-                        const textarea = document.getElementById('whatsapp-message-textarea');
-                        textarea.value = result.whatsappMessage;
-                        modal.classList.remove('hidden');
-
-                        const shareButton = document.getElementById('share-whatsapp-button');
-                        shareButton.onclick = () => {
-                            const message = encodeURIComponent(textarea.value);
-                            window.open(`https://wa.me/?text=${message}`, '_blank');
-                        };
-
-                        const closeModalButton = document.getElementById('close-modal-button');
-                        closeModalButton.onclick = () => {
-                            modal.classList.add('hidden');
-                             window.location.href = '{{ path('app_services_list') }}';
-                        };
-                    } else {
-                        let errorMessages = 'Se ha producido un error al guardar el servicio.';
-                        if (result.errors && result.errors.length > 0) {
-                            errorMessages = result.errors.join('\n');
-                        }
-                        alert(errorMessages);
-                    }
-                } catch (error) {
-                    console.error('Error submitting form:', error);
-                    alert('Se ha producido un error de red. Por favor, inténtalo de nuevo.');
-                } finally {
-                    button.disabled = false;
-                    button.textContent = 'Guardar Servicio';
-                }
-            });
-        });
-    </script>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8" data-controller="new-service-form">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
     <div class="bg-white shadow-xl rounded-2xl p-8">
-        {{ form_start(form, {'attr': {'class': 'space-y-10', 'name': 'service', 'id': 'service-form'}}) }}
+        {{ form_start(form, {
+            'attr': {
+                'class': 'space-y-10',
+                'name': 'service',
+                'id': 'service-form',
+                'data-new-service-form-target': 'form',
+                'data-redirect-url': path('app_services_list')
+            }
+        }) }}
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             <div class="form-group">
@@ -318,14 +184,14 @@
         <div class="space-y-10">
             <div class="form-group">
                 {{ form_label(form.tasks, 'Tareas 📝') }}
-                <div id="tasks-editor"></div>
-                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
+                <div data-new-service-form-target="quillTasks" style="height: 300px;"></div>
+                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-new-service-form-target': 'tasks'}}) }}
                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
             </div>
             <div class="form-group">
                 {{ form_label(form.description, 'Descripción ℹ️') }}
-                <div id="quill-editor"></div>
-                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
+                <div data-new-service-form-target="quillDescription" style="height: 300px;"></div>
+                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-new-service-form-target': 'description'}}) }}
                 <div class="form-error">{{ form_errors(form.description) }}</div>
             </div>
         </div>
@@ -351,18 +217,18 @@
     </div>
 </div>
 <!-- WhatsApp Share Modal -->
-<div id="whatsapp-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+<div data-new-service-form-target="whatsappModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
     <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
         <h3 class="text-3xl font-bold text-gray-900 text-center mb-4">Servicio Guardado con Éxito</h3>
         <p class="text-gray-600 text-center mb-6">
             Revisa y edita el mensaje antes de compartirlo en WhatsApp.
         </p>
-        <textarea id="whatsapp-message-textarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        <textarea data-new-service-form-target="whatsappMessageTextarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
         <div class="flex justify-center items-center mt-6 space-x-4">
-            <button id="share-whatsapp-button" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+            <button data-new-service-form-target="shareWhatsappButton" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
                 Compartir en WhatsApp
             </button>
-            <button id="close-modal-button" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
+            <button data-new-service-form-target="closeModalButton" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
                 Cerrar
             </button>
         </div>

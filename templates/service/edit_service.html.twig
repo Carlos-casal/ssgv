@@ -4,7 +4,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
     <style>
         .form-group {
             margin-bottom: 1.5rem;
@@ -25,9 +24,6 @@
             font-size: 0.875rem;
             margin-top: 0.25rem;
         }
-        #quill-editor-edit, #tasks-editor-edit {
-            height: 300px;
-        }
         .tab-link.active {
             border-bottom-color: #3B82F6;
             color: #3B82F6;
@@ -41,273 +37,24 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-    <script>
-        // --- Custom Link Sanitizer for Quill ---
-        const Link = Quill.import('formats/link');
-        class CustomLink extends Link {
-            static sanitize(url) {
-                const sanitizedUrl = super.sanitize(url);
-                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
-                    return 'https://' + sanitizedUrl;
-                }
-                return sanitizedUrl;
-            }
-        }
-        Quill.register(CustomLink, true);
-        // --- End Custom Link Sanitizer ---
-
-        let quillInstances = {};
-
-        function setupQuill(containerId, textareaId) {
-            const editorContainer = document.querySelector(containerId);
-            const hiddenTextarea = document.querySelector(textareaId);
-
-            if (!editorContainer || !hiddenTextarea) return;
-            if (editorContainer.quill) return;
-
-            const toolbarOptions = [
-                [{ 'header': [1, 2, 3, false] }],
-                ['bold', 'italic', 'strike', 'underline'],
-                [{ 'script': 'sub'}, { 'script': 'super' }],
-                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-                [{ 'align': [] }],
-                ['link'],
-                ['clean']
-            ];
-
-            const quill = new Quill(editorContainer, {
-                modules: { toolbar: toolbarOptions },
-                theme: 'snow'
-            });
-
-            quill.root.innerHTML = hiddenTextarea.value;
-            editorContainer.quill = quill;
-            quillInstances[containerId] = quill;
-
-            quill.on('text-change', function() {
-                hiddenTextarea.value = quill.root.innerHTML;
-            });
-        }
-
-        function initializeAllQuillEditors() {
-            setupQuill('#quill-editor-edit', '#service_description');
-            setupQuill('#tasks-editor-edit', '#service_tasks');
-        }
-
-        function cleanupQuillInstances() {
-            for (const key in quillInstances) {
-                const container = document.querySelector(key);
-                if (container && container.quill) {
-                    delete container.quill;
-                    container.innerHTML = '';
-                }
-            }
-            quillInstances = {};
-        }
-
-        function setupTabs() {
-            const tabLinks = document.querySelectorAll('.tab-link');
-            const tabContents = document.querySelectorAll('.tab-content-panel');
-
-            tabLinks.forEach(link => {
-                link.addEventListener('click', (event) => {
-                    event.preventDefault();
-
-                    tabLinks.forEach(l => l.classList.remove('active'));
-                    link.classList.add('active');
-
-                    const target = link.getAttribute('data-target');
-                    tabContents.forEach(content => {
-                        if (content.id === target) {
-                            content.classList.remove('hidden');
-                        } else {
-                            content.classList.add('hidden');
-                        }
-                    });
-                });
-            });
-        }
-
-        function setupAttendanceModal() {
-            const openModalButton = document.getElementById('add-user-button');
-            const closeModalButton = document.getElementById('close-modal-button');
-            const modal = document.getElementById('add-user-modal');
-            const searchInput = document.getElementById('user-search-input');
-            const userList = document.getElementById('user-list');
-            const paginationContainer = document.getElementById('pagination-container');
-            const saveButton = document.getElementById('save-attendance-button');
-            const serviceId = '{{ service.id }}';
-            let selectedVolunteers = [];
-            let currentPage = 1;
-            let searchTimeout;
-
-            async function fetchVolunteers(page = 1, search = '') {
-                const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}`;
-                try {
-                    const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
-                    if (!response.ok) throw new Error('Network response was not ok');
-                    const data = await response.json();
-                    renderVolunteers(data.items);
-                    renderPagination(data.pagination);
-                } catch (error) {
-                    console.error('Error fetching volunteers:', error);
-                    userList.innerHTML = '<p class="text-red-500">Error al cargar voluntarios.</p>';
-                }
-            }
-
-            function renderVolunteers(volunteers) {
-                userList.innerHTML = '';
-                if (volunteers.length === 0) {
-                    userList.innerHTML = '<p class="text-gray-500">No se encontraron voluntarios.</p>';
-                    return;
-                }
-                volunteers.forEach(volunteer => {
-                    const isSelected = selectedVolunteers.includes(volunteer.id);
-                    const row = document.createElement('div');
-                    row.className = `flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
-                    row.dataset.volunteerId = volunteer.id;
-                    row.innerHTML = `
-                        <span class="font-medium">${volunteer.name}</span>
-                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded" ${isSelected ? 'checked' : ''}>
-                    `;
-                    row.addEventListener('click', () => toggleSelection(volunteer.id, row));
-                    userList.appendChild(row);
-                });
-            }
-
-            function toggleSelection(volunteerId, rowElement) {
-                const checkbox = rowElement.querySelector('input[type="checkbox"]');
-                const index = selectedVolunteers.indexOf(volunteerId);
-
-                if (index > -1) {
-                    selectedVolunteers.splice(index, 1);
-                    checkbox.checked = false;
-                    rowElement.classList.remove('bg-blue-100');
-                } else {
-                    selectedVolunteers.push(volunteerId);
-                    checkbox.checked = true;
-                    rowElement.classList.add('bg-blue-100');
-                }
-            }
-
-            function renderPagination(pagination) {
-                paginationContainer.innerHTML = '';
-                if (pagination.totalPages <= 1) return;
-
-                const prevButton = document.createElement('button');
-                prevButton.innerHTML = '&laquo;';
-                prevButton.disabled = pagination.currentPage === 1;
-                prevButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
-                prevButton.addEventListener('click', () => fetchVolunteers(pagination.currentPage - 1, searchInput.value));
-                paginationContainer.appendChild(prevButton);
-
-                for (let i = 1; i <= pagination.totalPages; i++) {
-                    const pageButton = document.createElement('button');
-                    pageButton.innerText = i;
-                    pageButton.className = `px-4 py-2 mx-1 rounded-lg ${i === pagination.currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
-                    pageButton.addEventListener('click', () => fetchVolunteers(i, searchInput.value));
-                    paginationContainer.appendChild(pageButton);
-                }
-
-                const nextButton = document.createElement('button');
-                nextButton.innerHTML = '&raquo;';
-                nextButton.disabled = pagination.currentPage === pagination.totalPages;
-                nextButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
-                nextButton.addEventListener('click', () => fetchVolunteers(pagination.currentPage + 1, searchInput.value));
-                paginationContainer.appendChild(nextButton);
-            }
-
-            async function saveAttendance() {
-                if (selectedVolunteers.length === 0) {
-                    alert('Por favor, selecciona al menos un voluntario.');
-                    return;
-                }
-
-                const status = document.getElementById('attendance-status-select').value;
-                const url = `/services/${serviceId}/update-attendance`;
-
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest'
-                        },
-                        body: JSON.stringify({ volunteerIds: selectedVolunteers, status: status })
-                    });
-
-                    const result = await response.json();
-
-                    if (response.ok && result.success) {
-                        alert('Asistencia actualizada correctamente.');
-                        modal.classList.add('hidden');
-                        location.reload(); // Or update the list dynamically
-                    } else {
-                        throw new Error(result.message || 'Error al guardar la asistencia.');
-                    }
-                } catch (error) {
-                    console.error('Error saving attendance:', error);
-                    alert(error.message);
-                }
-            }
-
-            openModalButton.addEventListener('click', () => {
-                modal.classList.remove('hidden');
-                fetchVolunteers();
-            });
-
-            closeModalButton.addEventListener('click', () => {
-                modal.classList.add('hidden');
-            });
-
-            searchInput.addEventListener('keyup', () => {
-                clearTimeout(searchTimeout);
-                searchTimeout = setTimeout(() => {
-                    fetchVolunteers(1, searchInput.value);
-                }, 300);
-            });
-
-            saveButton.addEventListener('click', saveAttendance);
-        }
-
-        document.addEventListener('turbo:before-cache', cleanupQuillInstances);
-        document.addEventListener('turbo:load', () => {
-            initializeAllQuillEditors();
-            setupTabs();
-            if (document.getElementById('add-user-modal')) {
-                setupAttendanceModal();
-            }
-        });
-
-        if (typeof Turbo === 'undefined') {
-            document.addEventListener('DOMContentLoaded', () => {
-                initializeAllQuillEditors();
-                setupTabs();
-                if (document.getElementById('add-user-modal')) {
-                    setupAttendanceModal();
-                }
-            });
-        }
-    </script>
 {% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-8">
+<div class="container mx-auto px-4 py-8" data-controller="service-form" data-service-id="{{ service.id }}">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Editar Servicio</h1>
 
     <div class="mb-8 border-b border-gray-200">
         <nav class="flex space-x-8" aria-label="Tabs">
-            <a href="#" class="tab-link active font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-target="datos-basicos">
+            <a href="#" class="tab-link active font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="datos-basicos">
                 <span class="mr-2">📝</span> Datos Básicos
             </a>
-            <a href="#" class="tab-link font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-target="asistencias">
+            <a href="#" class="tab-link font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="asistencias">
                 <span class="mr-2">👥</span> Confirmación de Asistencia
             </a>
         </nav>
     </div>
 
-    <div id="datos-basicos" class="tab-content-panel">
+    <div id="datos-basicos" class="tab-content-panel" data-service-form-target="tabContent">
         <div class="bg-white shadow-xl rounded-2xl p-8">
             {{ form_start(form, {'attr': {'class': 'space-y-10'}}) }}
 
@@ -447,14 +194,14 @@
             <div class="space-y-10">
                 <div class="form-group">
                     {{ form_label(form.tasks, 'Tareas 📝') }}
-                    <div id="tasks-editor-edit"></div>
-                    {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;'}}) }}
+                    <div data-service-form-target="quillTasks" style="height: 300px;"></div>
+                    {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-service-form-target': 'tasks'}}) }}
                     <div class="form-error">{{ form_errors(form.tasks) }}</div>
                 </div>
                 <div class="form-group">
                     {{ form_label(form.description, 'Descripción ℹ️') }}
-                    <div id="quill-editor-edit"></div>
-                    {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;'}}) }}
+                    <div data-service-form-target="quillDescription" style="height: 300px;"></div>
+                    {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-service-form-target': 'description'}}) }}
                     <div class="form-error">{{ form_errors(form.description) }}</div>
                 </div>
             </div>
@@ -480,11 +227,11 @@
         </div>
     </div>
 
-    <div id="asistencias" class="tab-content-panel hidden">
+    <div id="asistencias" class="tab-content-panel hidden" data-service-form-target="tabContent">
         <div class="bg-white shadow-xl rounded-2xl p-8">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-gray-800">Gestión de Asistencia</h2>
-                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" id="add-user-button">
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" data-action="click->service-form#openModal">
                     <i class="fas fa-plus mr-2"></i> Añadir Voluntario
                 </button>
             </div>
@@ -537,25 +284,25 @@
 </div>
 
 <!-- Add User Modal -->
-<div id="add-user-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50">
+<div class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50" data-service-form-target="modal">
     <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
         <h3 class="text-2xl font-bold text-gray-900 mb-6">Añadir Voluntarios al Servicio</h3>
 
         <div class="mb-4">
-            <input type="text" id="user-search-input" placeholder="Buscar por nombre, apellido o ID..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+            <input type="text" data-service-form-target="userSearchInput" data-action="keyup->service-form#search" placeholder="Buscar por nombre, apellido o ID..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
         </div>
 
-        <div id="user-list" class="space-y-2 mb-4" style="min-height: 200px;">
+        <div data-service-form-target="userList" class="space-y-2 mb-4" style="min-height: 200px;">
             <!-- Volunteer list will be populated here -->
         </div>
 
-        <div id="pagination-container" class="flex justify-center items-center mb-6">
+        <div data-service-form-target="paginationContainer" class="flex justify-center items-center mb-6">
             <!-- Pagination controls will be populated here -->
         </div>
 
         <div class="mb-6">
             <label for="attendance-status-select" class="block text-sm font-medium text-gray-700 mb-2">Marcar como:</label>
-            <select id="attendance-status-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+            <select data-service-form-target="attendanceStatusSelect" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
                 <option value="attends">Asiste</option>
                 <option value="reserve">En Reserva</option>
                 <option value="not_attends">No Asiste</option>
@@ -563,8 +310,8 @@
         </div>
 
         <div class="flex justify-end space-x-4">
-            <button id="close-modal-button" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400">Cancelar</button>
-            <button id="save-attendance-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Guardar Cambios</button>
+            <button type="button" data-action="click->service-form#closeModal" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400">Cancelar</button>
+            <button type="button" data-action="click->service-form#saveAttendance" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Guardar Cambios</button>
         </div>
     </div>
 </div>
