@@ -33,3 +33,6 @@ yarn-error.log
 tailwindcss.exe
 /var/cache/
 
+###> symfony/asset-mapper ###
+/assets/vendor/
+###< symfony/asset-mapper ###

@@ -12,3 +12,22 @@
 /* body {
     background-color: lightblue;
 } */
+
+/* Quill editor toolbar fix for Tailwind CSS conflict */
+.ql-toolbar {
+    display: block !important;
+    visibility: visible !important;
+    position: relative !important;
+}
+
+.ql-toolbar .ql-formats {
+    display: inline-block !important;
+    margin-right: 15px;
+}
+
+.ql-toolbar button {
+    display: inline-block !important;
+    width: 28px;
+    height: 24px;
+    padding: 3px 5px;
+}
