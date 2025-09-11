@@ -1,16 +1,20 @@
 <?php
 namespace App\Controller;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
 use App\Form\ServiceType;
+use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
+use App\Repository\VolunteerRepository;
+use App\Service\WhatsAppMessageGenerator;
 use Doctrine\ORM\EntityManagerInterface;
+use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Service\WhatsAppMessageGenerator;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use DateTime;
 
 class ServiceController extends AbstractController
@@ -108,7 +112,7 @@ class ServiceController extends AbstractController
         }
 
         return $this->render('service/new_service.html.twig', [
-            'serviceForm' => $form->createView(),
+            'form' => $form->createView(),
         ]);
     }
 
@@ -142,19 +146,98 @@ class ServiceController extends AbstractController
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
-        $service->setRecipients([]);
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
+
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
             $this->addFlash('success', 'Servicio actualizado correctamente.');
-            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
+
         return $this->render('service/edit_service.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
-            'services_attendance' => $service->getAssistanceConfirmations(),
         ]);
+    }
+
+    #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
+    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
+            ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
+            ->addSelect('ac')
+            ->where('v.status = :status')
+            ->setParameter('status', 'active')
+            ->setParameter('service', $service);
+
+        if ($request->query->has('search')) {
+            $search = $request->query->get('search');
+            if (!empty($search)) {
+                $queryBuilder->andWhere('LOWER(v.name) LIKE LOWER(:search) OR LOWER(v.lastname) LIKE LOWER(:search) OR v.id LIKE :search')
+                    ->setParameter('search', '%' . $search . '%');
+            }
+        }
+
+        $query = $queryBuilder->getQuery();
+
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10
+        );
+
+        $data = [
+            'items' => [],
+            'pagination' => [
+                'currentPage' => $pagination->getCurrentPageNumber(),
+                'totalPages' => $pagination->getPageCount(),
+                'totalCount' => $pagination->getTotalItemCount(),
+            ]
+        ];
+
+        foreach ($pagination as $volunteer) {
+            $data['items'][] = [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/services/{id}/update-attendance', name: 'app_service_update_attendance', methods: ['POST'])]
+    public function updateAttendance(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        $data = json_decode($request->getContent(), true);
+        $volunteerIds = $data['volunteerIds'] ?? [];
+        $status = $data['status'] ?? 'attends';
+
+        if (empty($volunteerIds)) {
+            return new JsonResponse(['success' => false, 'message' => 'No se han seleccionado voluntarios.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        foreach ($volunteerIds as $volunteerId) {
+            $volunteer = $volunteerRepository->find($volunteerId);
+            if ($volunteer) {
+                $confirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+                if (!$confirmation) {
+                    $confirmation = new AssistanceConfirmation();
+                    $confirmation->setService($service);
+                    $confirmation->setVolunteer($volunteer);
+                    $entityManager->persist($confirmation);
+                }
+                $confirmation->setStatus($status);
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Asistencia actualizada correctamente.']);
     }
 
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]

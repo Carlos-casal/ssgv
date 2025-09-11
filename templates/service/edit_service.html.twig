@@ -32,6 +32,10 @@
             border-bottom-color: #3B82F6;
             color: #3B82F6;
         }
+        #add-user-modal .modal-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
     </style>
 {% endblock %}
 
@@ -125,16 +129,164 @@
             });
         }
 
+        function setupAttendanceModal() {
+            const openModalButton = document.getElementById('add-user-button');
+            const closeModalButton = document.getElementById('close-modal-button');
+            const modal = document.getElementById('add-user-modal');
+            const searchInput = document.getElementById('user-search-input');
+            const userList = document.getElementById('user-list');
+            const paginationContainer = document.getElementById('pagination-container');
+            const saveButton = document.getElementById('save-attendance-button');
+            const serviceId = '{{ service.id }}';
+            let selectedVolunteers = [];
+            let currentPage = 1;
+            let searchTimeout;
+
+            async function fetchVolunteers(page = 1, search = '') {
+                const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}`;
+                try {
+                    const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+                    if (!response.ok) throw new Error('Network response was not ok');
+                    const data = await response.json();
+                    renderVolunteers(data.items);
+                    renderPagination(data.pagination);
+                } catch (error) {
+                    console.error('Error fetching volunteers:', error);
+                    userList.innerHTML = '<p class="text-red-500">Error al cargar voluntarios.</p>';
+                }
+            }
+
+            function renderVolunteers(volunteers) {
+                userList.innerHTML = '';
+                if (volunteers.length === 0) {
+                    userList.innerHTML = '<p class="text-gray-500">No se encontraron voluntarios.</p>';
+                    return;
+                }
+                volunteers.forEach(volunteer => {
+                    const isSelected = selectedVolunteers.includes(volunteer.id);
+                    const row = document.createElement('div');
+                    row.className = `flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
+                    row.dataset.volunteerId = volunteer.id;
+                    row.innerHTML = `
+                        <span class="font-medium">${volunteer.name}</span>
+                        <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded" ${isSelected ? 'checked' : ''}>
+                    `;
+                    row.addEventListener('click', () => toggleSelection(volunteer.id, row));
+                    userList.appendChild(row);
+                });
+            }
+
+            function toggleSelection(volunteerId, rowElement) {
+                const checkbox = rowElement.querySelector('input[type="checkbox"]');
+                const index = selectedVolunteers.indexOf(volunteerId);
+
+                if (index > -1) {
+                    selectedVolunteers.splice(index, 1);
+                    checkbox.checked = false;
+                    rowElement.classList.remove('bg-blue-100');
+                } else {
+                    selectedVolunteers.push(volunteerId);
+                    checkbox.checked = true;
+                    rowElement.classList.add('bg-blue-100');
+                }
+            }
+
+            function renderPagination(pagination) {
+                paginationContainer.innerHTML = '';
+                if (pagination.totalPages <= 1) return;
+
+                const prevButton = document.createElement('button');
+                prevButton.innerHTML = '&laquo;';
+                prevButton.disabled = pagination.currentPage === 1;
+                prevButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
+                prevButton.addEventListener('click', () => fetchVolunteers(pagination.currentPage - 1, searchInput.value));
+                paginationContainer.appendChild(prevButton);
+
+                for (let i = 1; i <= pagination.totalPages; i++) {
+                    const pageButton = document.createElement('button');
+                    pageButton.innerText = i;
+                    pageButton.className = `px-4 py-2 mx-1 rounded-lg ${i === pagination.currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
+                    pageButton.addEventListener('click', () => fetchVolunteers(i, searchInput.value));
+                    paginationContainer.appendChild(pageButton);
+                }
+
+                const nextButton = document.createElement('button');
+                nextButton.innerHTML = '&raquo;';
+                nextButton.disabled = pagination.currentPage === pagination.totalPages;
+                nextButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
+                nextButton.addEventListener('click', () => fetchVolunteers(pagination.currentPage + 1, searchInput.value));
+                paginationContainer.appendChild(nextButton);
+            }
+
+            async function saveAttendance() {
+                if (selectedVolunteers.length === 0) {
+                    alert('Por favor, selecciona al menos un voluntario.');
+                    return;
+                }
+
+                const status = document.getElementById('attendance-status-select').value;
+                const url = `/services/${serviceId}/update-attendance`;
+
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: JSON.stringify({ volunteerIds: selectedVolunteers, status: status })
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        alert('Asistencia actualizada correctamente.');
+                        modal.classList.add('hidden');
+                        location.reload(); // Or update the list dynamically
+                    } else {
+                        throw new Error(result.message || 'Error al guardar la asistencia.');
+                    }
+                } catch (error) {
+                    console.error('Error saving attendance:', error);
+                    alert(error.message);
+                }
+            }
+
+            openModalButton.addEventListener('click', () => {
+                modal.classList.remove('hidden');
+                fetchVolunteers();
+            });
+
+            closeModalButton.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+
+            searchInput.addEventListener('keyup', () => {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    fetchVolunteers(1, searchInput.value);
+                }, 300);
+            });
+
+            saveButton.addEventListener('click', saveAttendance);
+        }
+
         document.addEventListener('turbo:before-cache', cleanupQuillInstances);
         document.addEventListener('turbo:load', () => {
             initializeAllQuillEditors();
             setupTabs();
+            if (document.getElementById('add-user-modal')) {
+                setupAttendanceModal();
+            }
         });
 
         if (typeof Turbo === 'undefined') {
             document.addEventListener('DOMContentLoaded', () => {
                 initializeAllQuillEditors();
                 setupTabs();
+                if (document.getElementById('add-user-modal')) {
+                    setupAttendanceModal();
+                }
             });
         }
     </script>
@@ -317,7 +469,7 @@
 
             <div class="flex items-center justify-end mt-10 pt-6 border-t border-gray-200">
                 <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
-                    Cancelar
+                    Volver a la Lista
                 </a>
                 <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 ml-4">
                     Guardar Cambios
@@ -330,35 +482,89 @@
 
     <div id="asistencias" class="tab-content-panel hidden">
         <div class="bg-white shadow-xl rounded-2xl p-8">
-            <div class="row">
-                <div class="col-lg-12 mb-4">
-                    <button type="button" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg" id="servicios_btn_add_respuesta_voluntario" onclick="servicios_asistentes_add_open_modal()"><i class="fas fa-plus-square"></i> Añadir usuarios</button>
-                    <button type="button" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg" id="servicios_btn_fichar_todos" onclick="servicios_fichar_todos_open_modal()"><i class="fas fa-clock"></i> Fichar a todos</button>
-                </div>
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Gestión de Asistencia</h2>
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" id="add-user-button">
+                    <i class="fas fa-plus mr-2"></i> Añadir Voluntario
+                </button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
-                    <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg">Asisten <span class="badge badge-light" id="n_asistentes"></span></h4>
-                    <ul class="list-group" id="servicio-listado-asistentes">
-                        {# Content will be loaded via JS #}
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg flex justify-between items-center">
+                        <span>Asisten</span>
+                        <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getAttendingVolunteers|length }}</span>
+                    </h4>
+                    <ul class="list-group space-y-2">
+                        {% for confirmation in service.assistanceConfirmations if confirmation.status == 'attends' %}
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</li>
+                        {% else %}
+                            <li class="list-group-item text-gray-500 italic">Nadie asiste todavía.</li>
+                        {% endfor %}
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-semibold mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg">Reserva <span class="badge badge-light" id="n_reserva"></span></h4>
-                    <ul class="list-group" id="servicio-listado-reserva">
-                        {# Content will be loaded via JS #}
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg flex justify-between items-center">
+                        <span>En Reserva</span>
+                        <span class="bg-yellow-200 text-yellow-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getReserveVolunteers|length }}</span>
+                    </h4>
+                    <ul class="list-group space-y-2">
+                        {% for confirmation in service.assistanceConfirmations if confirmation.status == 'reserve' %}
+                           <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</li>
+                        {% else %}
+                            <li class="list-group-item text-gray-500 italic">No hay nadie en reserva.</li>
+                        {% endfor %}
                     </ul>
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg">No asisten <span class="badge badge-light" id="n_no_asistentes"></span></h4>
-                    <ul class="list-group" id="servicio-listado-no-asistentes">
-                        {# Content will be loaded via JS #}
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg flex justify-between items-center">
+                        <span>No Asisten</span>
+                        <span class="bg-red-200 text-red-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.getNotAttendingVolunteers|length }}</span>
+                    </h4>
+                    <ul class="list-group space-y-2">
+                        {% for confirmation in service.assistanceConfirmations if confirmation.status == 'not_attends' %}
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</li>
+                        {% else %}
+                            <li class="list-group-item text-gray-500 italic">Nadie ha cancelado.</li>
+                        {% endfor %}
                     </ul>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add User Modal -->
+<div id="add-user-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50">
+    <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <h3 class="text-2xl font-bold text-gray-900 mb-6">Añadir Voluntarios al Servicio</h3>
+
+        <div class="mb-4">
+            <input type="text" id="user-search-input" placeholder="Buscar por nombre, apellido o ID..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div id="user-list" class="space-y-2 mb-4" style="min-height: 200px;">
+            <!-- Volunteer list will be populated here -->
+        </div>
+
+        <div id="pagination-container" class="flex justify-center items-center mb-6">
+            <!-- Pagination controls will be populated here -->
+        </div>
+
+        <div class="mb-6">
+            <label for="attendance-status-select" class="block text-sm font-medium text-gray-700 mb-2">Marcar como:</label>
+            <select id="attendance-status-select" class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+                <option value="attends">Asiste</option>
+                <option value="reserve">En Reserva</option>
+                <option value="not_attends">No Asiste</option>
+            </select>
+        </div>
+
+        <div class="flex justify-end space-x-4">
+            <button id="close-modal-button" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400">Cancelar</button>
+            <button id="save-attendance-button" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Guardar Cambios</button>
         </div>
     </div>
 </div>
