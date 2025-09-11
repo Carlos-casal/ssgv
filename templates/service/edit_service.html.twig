@@ -229,10 +229,12 @@
 
     <div id="asistencias" class="tab-content-panel hidden" data-service-form-target="tabContent">
         <div class="bg-white shadow-xl rounded-2xl p-8">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-800">Gestión de Asistencia</h2>
-                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105" data-action="click->service-form#openModal">
-                    <i class="fas fa-plus mr-2"></i> Añadir Voluntario
+            <div class="flex justify-end items-center mb-6 space-x-4">
+                <button type="button" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center" data-action="click->service-form#openModal">
+                    <i data-lucide="user-plus" class="mr-2 h-5 w-5"></i> Añadir usuarios
+                </button>
+                <button type="button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center" data-action="click->service-form#clockInAll">
+                    <i data-lucide="check-square" class="mr-2 h-5 w-5"></i> Fichar todos
                 </button>
             </div>
 
