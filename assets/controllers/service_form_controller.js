@@ -13,6 +13,7 @@ export default class extends Controller {
         "userList",
         "paginationContainer",
         "attendanceStatusSelect",
+        "itemsPerPageSelect",
     ];
 
     connect() {
@@ -119,7 +120,8 @@ export default class extends Controller {
 
     async fetchVolunteers(page = 1, search = '') {
         const serviceId = this.element.dataset.serviceId;
-        const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}`;
+        const limit = this.itemsPerPageSelectTarget.value;
+        const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}&limit=${limit}`;
         try {
             const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             if (!response.ok) throw new Error('Network response was not ok');
@@ -199,6 +201,11 @@ export default class extends Controller {
         this.searchTimeout = setTimeout(() => {
             this.fetchVolunteers(1, this.userSearchInputTarget.value);
         }, 300);
+    }
+
+    clearSearch() {
+        this.userSearchInputTarget.value = '';
+        this.search();
     }
 
     async saveAttendance() {
