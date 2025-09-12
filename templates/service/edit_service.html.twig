@@ -276,16 +276,29 @@
     <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
         <h3 class="text-2xl font-bold text-gray-900 mb-6">Añadir Voluntarios al Servicio</h3>
 
-        <div class="mb-4">
-            <input type="text" data-service-form-target="userSearchInput" data-action="keyup->service-form#search" placeholder="Buscar por nombre, apellido o ID..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+        <div class="relative mb-4">
+            <input type="text" data-service-form-target="userSearchInput" data-action="keyup->service-form#search" placeholder="Buscar por nombre, apellido o ID..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 pr-10">
+            <button type="button" class="absolute inset-y-0 right-0 flex items-center pr-3" data-action="click->service-form#clearSearch">
+                <i data-lucide="x-circle" class="h-5 w-5 text-gray-400 hover:text-gray-600"></i>
+            </button>
         </div>
 
         <div data-service-form-target="userList" class="space-y-2 mb-4" style="min-height: 200px;">
             <!-- Volunteer list will be populated here -->
         </div>
 
-        <div data-service-form-target="paginationContainer" class="flex justify-center items-center mb-6">
-            <!-- Pagination controls will be populated here -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <label for="items-per-page" class="text-sm font-medium text-gray-700 mr-2">Mostrar:</label>
+                <select id="items-per-page" data-service-form-target="itemsPerPageSelect" data-action="change->service-form#search" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option>25</option>
+                    <option>50</option>
+                    <option>100</option>
+                </select>
+            </div>
+            <div data-service-form-target="paginationContainer" class="flex justify-center items-center">
+                <!-- Pagination controls will be populated here -->
+            </div>
         </div>
 
         <div class="mb-6">
