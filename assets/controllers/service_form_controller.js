@@ -1,5 +1,4 @@
 import { Controller } from '@hotwired/stimulus';
-import Quill from 'quill';
 
 export default class extends Controller {
     static targets = [
@@ -14,6 +13,7 @@ export default class extends Controller {
         "userList",
         "paginationContainer",
         "attendanceStatusSelect",
+        "itemsPerPageSelect",
     ];
 
     connect() {
@@ -54,7 +54,7 @@ export default class extends Controller {
             ['clean']
         ];
 
-        const Link = Quill.import('formats/link');
+        const Link = window.Quill.import('formats/link');
         class CustomLink extends Link {
             static sanitize(url) {
                 const sanitizedUrl = super.sanitize(url);
@@ -64,9 +64,9 @@ export default class extends Controller {
                 return sanitizedUrl;
             }
         }
-        Quill.register(CustomLink, true);
+        window.Quill.register(CustomLink, true);
 
-        const quill = new Quill(container, {
+        const quill = new window.Quill(container, {
             modules: { toolbar: toolbarOptions },
             theme: 'snow'
         });
@@ -122,7 +122,8 @@ export default class extends Controller {
 
     async fetchVolunteers(page = 1, search = '') {
         const serviceId = this.element.dataset.serviceId;
-        const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}`;
+        const limit = this.itemsPerPageSelectTarget.value;
+        const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}&limit=${limit}`;
         try {
             const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
             if (!response.ok) throw new Error('Network response was not ok');
@@ -202,6 +203,11 @@ export default class extends Controller {
         this.searchTimeout = setTimeout(() => {
             this.fetchVolunteers(1, this.userSearchInputTarget.value);
         }, 300);
+    }
+
+    clearSearch() {
+        this.userSearchInputTarget.value = '';
+        this.search();
     }
 
     async saveAttendance() {
