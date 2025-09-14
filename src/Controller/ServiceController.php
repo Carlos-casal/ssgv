@@ -164,7 +164,7 @@ class ServiceController extends AbstractController
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
     public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
             ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
@@ -211,7 +211,7 @@ class ServiceController extends AbstractController
     #[Route('/services/{id}/update-attendance', name: 'app_service_update_attendance', methods: ['POST'])]
     public function updateAttendance(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+    $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $data = json_decode($request->getContent(), true);
         $volunteerIds = $data['volunteerIds'] ?? [];

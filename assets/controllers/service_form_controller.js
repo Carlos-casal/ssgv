@@ -200,16 +200,16 @@ renderPagination(pagination, items) {
         button.innerHTML = text;
         button.disabled = disabled;
         button.className = `px-3 py-1 mx-1 rounded-lg text-sm ${active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300 disabled:opacity-50'}`;
-        if (!active) {
-            button.addEventListener('click', () => this.fetchVolunteers(page, this.userSearchInputTarget.value));
-        }
+        button.addEventListener('click', () => this.fetchVolunteers(page, this.userSearchInputTarget.value));
         return button;
     };
 
     this.paginationContainerTarget.appendChild(createButton('Anterior', pagination.currentPage - 1, pagination.currentPage === 1));
 
-    // Simplified pagination links
-    this.paginationContainerTarget.appendChild(createButton(pagination.currentPage, pagination.currentPage, false, true));
+    for (let i = 1; i <= pagination.totalPages; i++) {
+        const pageButton = createButton(i, i, false, i === pagination.currentPage);
+        this.paginationContainerTarget.appendChild(pageButton);
+    }
 
     this.paginationContainerTarget.appendChild(createButton('Siguiente', pagination.currentPage + 1, pagination.currentPage === pagination.totalPages));
     }
