@@ -12,6 +12,7 @@ export default class extends Controller {
         "userSearchInput",
         "userList",
         "paginationContainer",
+    "paginationSummary",
         "attendanceStatusSelect",
         "itemsPerPageSelect",
     ];
@@ -112,6 +113,7 @@ export default class extends Controller {
     openModal() {
         this.modalTarget.classList.remove('hidden');
         this.modalTarget.classList.add('flex');
+    this.attendanceStatusSelectTarget.value = '';
         this.fetchVolunteers(1, '');
     }
 
@@ -129,7 +131,7 @@ export default class extends Controller {
             if (!response.ok) throw new Error('Network response was not ok');
             const data = await response.json();
             this.renderVolunteers(data.items);
-            this.renderPagination(data.pagination);
+        this.renderPagination(data.pagination, data.items);
         } catch (error) {
             console.error('Error fetching volunteers:', error);
             this.userListTarget.innerHTML = '<p class="text-red-500">Error al cargar voluntarios.</p>';
@@ -139,19 +141,37 @@ export default class extends Controller {
     renderVolunteers(volunteers) {
         this.userListTarget.innerHTML = '';
         if (volunteers.length === 0) {
-            this.userListTarget.innerHTML = '<p class="text-gray-500">No se encontraron voluntarios.</p>';
+        this.userListTarget.innerHTML = '<p class="text-gray-500 p-4">No se encontraron voluntarios.</p>';
             return;
         }
         volunteers.forEach(volunteer => {
             const isSelected = this.selectedVolunteers.includes(volunteer.id);
             const row = document.createElement('div');
-            row.className = `flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
+        row.className = `flex items-center p-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
             row.dataset.volunteerId = volunteer.id;
-            row.innerHTML = `
-                <span class="font-medium">${volunteer.name}</span>
-                <input type="checkbox" class="form-checkbox h-5 w-5 text-blue-600 rounded" ${isSelected ? 'checked' : ''}>
-            `;
-            row.addEventListener('click', () => this.toggleSelection(volunteer.id, row));
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300';
+        checkbox.checked = isSelected;
+        checkbox.addEventListener('change', (e) => {
+            e.stopPropagation();
+            this.toggleSelection(volunteer.id, row);
+        });
+
+        const nameSpan = document.createElement('span');
+        nameSpan.className = 'ml-3 font-medium text-gray-700';
+        nameSpan.textContent = volunteer.name;
+
+        row.appendChild(checkbox);
+        row.appendChild(nameSpan);
+
+        row.addEventListener('click', (e) => {
+            if (e.target.type !== 'checkbox') {
+                this.toggleSelection(volunteer.id, row);
+            }
+        });
+
             this.userListTarget.appendChild(row);
         });
     }
@@ -171,31 +191,37 @@ export default class extends Controller {
         }
     }
 
-    renderPagination(pagination) {
+renderPagination(pagination, items) {
+    if (this.hasPaginationSummaryTarget) {
+        if (pagination.totalCount > 0) {
+            const start = (pagination.currentPage - 1) * this.itemsPerPageSelectTarget.value + 1;
+            const end = start + items.length - 1;
+            this.paginationSummaryTarget.textContent = `Mostrando registros del ${start} al ${end} de un total de ${pagination.totalCount} registros`;
+        } else {
+            this.paginationSummaryTarget.textContent = '';
+        }
+    }
+
         this.paginationContainerTarget.innerHTML = '';
         if (pagination.totalPages <= 1) return;
 
-        const prevButton = document.createElement('button');
-        prevButton.innerHTML = '&laquo;';
-        prevButton.disabled = pagination.currentPage === 1;
-        prevButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
-        prevButton.addEventListener('click', () => this.fetchVolunteers(pagination.currentPage - 1, this.userSearchInputTarget.value));
-        this.paginationContainerTarget.appendChild(prevButton);
-
-        for (let i = 1; i <= pagination.totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.innerText = i;
-            pageButton.className = `px-4 py-2 mx-1 rounded-lg ${i === pagination.currentPage ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'}`;
-            pageButton.addEventListener('click', () => this.fetchVolunteers(i, this.userSearchInputTarget.value));
-            this.paginationContainerTarget.appendChild(pageButton);
+    const createButton = (text, page, disabled = false, active = false) => {
+        const button = document.createElement('button');
+        button.innerHTML = text;
+        button.disabled = disabled;
+        button.className = `px-3 py-1 mx-1 rounded-lg text-sm ${active ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300 disabled:opacity-50'}`;
+        if (!active) {
+            button.addEventListener('click', () => this.fetchVolunteers(page, this.userSearchInputTarget.value));
         }
+        return button;
+    };
 
-        const nextButton = document.createElement('button');
-        nextButton.innerHTML = '&raquo;';
-        nextButton.disabled = pagination.currentPage === pagination.totalPages;
-        nextButton.className = 'px-4 py-2 mx-1 rounded-lg bg-gray-200 hover:bg-gray-300 disabled:opacity-50';
-        nextButton.addEventListener('click', () => this.fetchVolunteers(pagination.currentPage + 1, this.userSearchInputTarget.value));
-        this.paginationContainerTarget.appendChild(nextButton);
+    this.paginationContainerTarget.appendChild(createButton('Anterior', pagination.currentPage - 1, pagination.currentPage === 1));
+
+    // Simplified pagination links
+    this.paginationContainerTarget.appendChild(createButton(pagination.currentPage, pagination.currentPage, false, true));
+
+    this.paginationContainerTarget.appendChild(createButton('Siguiente', pagination.currentPage + 1, pagination.currentPage === pagination.totalPages));
     }
 
     search() {
@@ -217,6 +243,11 @@ export default class extends Controller {
         }
 
         const status = this.attendanceStatusSelectTarget.value;
+    if (!status) {
+        alert('Por favor, selecciona una respuesta (Asiste / No asiste).');
+        return;
+    }
+
         const serviceId = this.element.dataset.serviceId;
         const url = `/services/${serviceId}/update-attendance`;
 
