@@ -19,9 +19,6 @@ export default class extends Controller {
 
     connect() {
         this.initializeQuill();
-        if (this.hasTabLinkTarget) {
-            this.setupTabs();
-        }
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
         }
@@ -82,16 +79,9 @@ export default class extends Controller {
         return quill;
     }
 
-    setupTabs() {
-        this.tabLinkTargets.forEach(link => {
-            link.addEventListener('click', (event) => {
-                event.preventDefault();
-                this.switchTab(event.currentTarget);
-            });
-        });
-    }
-
-    switchTab(clickedLink) {
+    switchTab(event) {
+        event.preventDefault();
+        const clickedLink = event.currentTarget;
         this.tabLinkTargets.forEach(link => link.classList.remove('active'));
         clickedLink.classList.add('active');
 
