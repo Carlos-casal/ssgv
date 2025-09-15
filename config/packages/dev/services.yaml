@@ -1,6 +1,0 @@
-services:
-    App\EventListener\DevEnvironmentAutoLoginListener:
-        arguments:
-            $environment: '%kernel.environment%'
-        tags:
-            - { name: 'kernel.event_subscriber' }
