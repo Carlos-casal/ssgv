@@ -14,7 +14,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 
 class DevAutoLoginSubscriber implements EventSubscriberInterface
 {
-    private const DEFAULT_ADMIN_USER_ID = 1;
+    private const DEFAULT_ADMIN_EMAIL = 'admin@voluntarios.org';
 
     public function __construct(
         private readonly KernelInterface $kernel,
@@ -34,7 +34,7 @@ class DevAutoLoginSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $user = $this->userRepository->find(self::DEFAULT_ADMIN_USER_ID);
+        $user = $this->userRepository->findOneBy(['email' => self::DEFAULT_ADMIN_EMAIL]);
 
         if (!$user) {
             return;
