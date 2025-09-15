@@ -164,11 +164,11 @@ class ServiceController extends AbstractController
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
     public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
     {
-    $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
+            ->distinct()
             ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
-            ->addSelect('ac')
             ->where('v.status = :status')
             ->setParameter('status', 'active')
             ->setParameter('service', $service);
@@ -182,28 +182,30 @@ class ServiceController extends AbstractController
         }
 
         $query = $queryBuilder->getQuery();
+        $limit = $request->query->getInt('limit', 10);
 
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            10
+            $limit
         );
 
+        $volunteers = [];
+        foreach ($pagination as $volunteer) {
+            $volunteers[] = [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
+            ];
+        }
+
         $data = [
-            'items' => [],
+            'items' => $volunteers,
             'pagination' => [
                 'currentPage' => $pagination->getCurrentPageNumber(),
                 'totalPages' => $pagination->getPageCount(),
                 'totalCount' => $pagination->getTotalItemCount(),
             ]
         ];
-
-        foreach ($pagination as $volunteer) {
-            $data['items'][] = [
-                'id' => $volunteer->getId(),
-                'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
-            ];
-        }
 
         return new JsonResponse($data);
     }
