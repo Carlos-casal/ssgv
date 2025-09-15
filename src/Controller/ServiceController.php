@@ -164,7 +164,9 @@ class ServiceController extends AbstractController
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
     public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
             ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
