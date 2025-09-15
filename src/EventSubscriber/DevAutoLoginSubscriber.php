@@ -3,11 +3,11 @@
 namespace App\EventSubscriber;
 
 use App\Repository\UserRepository;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
@@ -19,14 +19,14 @@ class DevAutoLoginSubscriber implements EventSubscriberInterface
     public function __construct(
         private readonly KernelInterface $kernel,
         private readonly UserRepository $userRepository,
-        private readonly Security $security,
+        private readonly TokenStorageInterface $tokenStorage,
         private readonly EventDispatcherInterface $eventDispatcher
     ) {
     }
 
     public function onKernelRequest(RequestEvent $event): void
     {
-        if ('dev' !== $this->kernel->getEnvironment() || !$event->isMainRequest() || $this->security->getUser()) {
+        if ('dev' !== $this->kernel->getEnvironment() || !$event->isMainRequest() || null !== $this->tokenStorage->getToken()) {
             return;
         }
 
@@ -41,7 +41,7 @@ class DevAutoLoginSubscriber implements EventSubscriberInterface
         }
 
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        $this->security->getTokenStorage()->setToken($token);
+        $this->tokenStorage->setToken($token);
 
         $loginEvent = new InteractiveLoginEvent($event->getRequest(), $token);
         $this->eventDispatcher->dispatch($loginEvent);
