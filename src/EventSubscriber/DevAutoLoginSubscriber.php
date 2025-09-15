@@ -37,7 +37,7 @@ class DevAutoLoginSubscriber implements EventSubscriberInterface
         $user = $this->userRepository->findOneBy(['email' => self::DEFAULT_ADMIN_EMAIL]);
 
         if (!$user) {
-            return;
+            throw new \LogicException("Auto-login failed: User 'admin@voluntarios.org' not found in the database. Please ensure this user exists.");
         }
 
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
