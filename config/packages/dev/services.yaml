@@ -1,5 +1,5 @@
 services:
-    App\EventListener\TestEnvironmentAutoLoginListener:
+    App\EventListener\DevEnvironmentAutoLoginListener:
         arguments:
             $environment: '%kernel.environment%'
         tags:

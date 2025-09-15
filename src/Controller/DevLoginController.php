@@ -12,18 +12,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 
-#[Route('/test')]
-class TestLoginController extends AbstractController
+#[Route('/dev')]
+class DevLoginController extends AbstractController
 {
-    #[Route('/login_admin', name: 'test_login_admin', methods: ['GET'])]
+    #[Route('/login_admin', name: 'dev_login_admin', methods: ['GET'])]
     public function loginAdmin(
         Request $request,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $passwordHasher,
         TokenStorageInterface $tokenStorage
     ): Response {
-        if ($this->getParameter('kernel.environment') !== 'test') {
-            throw $this->createNotFoundException('This route is only available in the test environment.');
+        if ($this->getParameter('kernel.environment') !== 'dev') {
+            throw $this->createNotFoundException('This route is only available in the dev environment.');
         }
 
         $email = 'admin@voluntarios.org';

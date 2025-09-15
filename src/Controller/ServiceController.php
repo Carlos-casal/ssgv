@@ -7,7 +7,6 @@ use App\Form\ServiceType;
 use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VolunteerRepository;
-use App\Entity\VolunteerService;
 use App\Service\WhatsAppMessageGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Knp\Component\Pager\PaginatorInterface;

@@ -9,7 +9,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
-class TestEnvironmentAutoLoginListener implements EventSubscriberInterface
+class DevEnvironmentAutoLoginListener implements EventSubscriberInterface
 {
     private $urlGenerator;
     private $environment;
@@ -36,8 +36,8 @@ class TestEnvironmentAutoLoginListener implements EventSubscriberInterface
         $request = $event->getRequest();
         $currentRoute = $request->attributes->get('_route');
 
-        if ($this->environment === 'test' && $currentRoute !== 'test_login_admin' && $currentRoute !== '_wdt') {
-            $url = $this->urlGenerator->generate('test_login_admin');
+        if ($this->environment === 'dev' && $currentRoute !== 'dev_login_admin' && $currentRoute !== '_wdt') {
+            $url = $this->urlGenerator->generate('dev_login_admin');
             $event->setResponse(new RedirectResponse($url));
         }
     }
