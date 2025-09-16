@@ -162,16 +162,21 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
-    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
+    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
         }
 
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
-            ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
-            ->addSelect('ac')
-            ->where('v.status = :status')
+        $qb = $entityManager->createQueryBuilder();
+        $subQuery = $qb->select('IDENTITY(ac.volunteer)')
+            ->from(AssistanceConfirmation::class, 'ac')
+            ->where('ac.service = :service')
+            ->getDQL();
+
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
+        $queryBuilder->where('v.status = :status')
+            ->andWhere($queryBuilder->expr()->notIn('v.id', $subQuery))
             ->setParameter('status', 'active')
             ->setParameter('service', $service);
 
@@ -188,7 +193,7 @@ class ServiceController extends AbstractController
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            10
+            $request->query->getInt('limit', 10)
         );
 
         $data = [
