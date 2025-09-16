@@ -168,15 +168,15 @@ class ServiceController extends AbstractController
             throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
         }
 
-        $qb = $entityManager->createQueryBuilder();
-        $subQuery = $qb->select('IDENTITY(ac.volunteer)')
-            ->from(AssistanceConfirmation::class, 'ac')
-            ->where('ac.service = :service')
-            ->getDQL();
-
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
-        $queryBuilder->where('v.status = :status')
-            ->andWhere($queryBuilder->expr()->notIn('v.id', $subQuery))
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
+            ->leftJoin(
+                AssistanceConfirmation::class,
+                'ac',
+                'WITH',
+                'ac.volunteer = v.id AND ac.service = :service'
+            )
+            ->where('v.status = :status')
+            ->andWhere('ac.id IS NULL')
             ->setParameter('status', 'active')
             ->setParameter('service', $service);
 
