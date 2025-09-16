@@ -209,6 +209,7 @@ class ServiceController extends AbstractController
             $data['items'][] = [
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
+                'specialization' => $volunteer->getSpecialization(),
             ];
         }
 

@@ -151,7 +151,11 @@ export default class extends Controller {
 
         const nameSpan = document.createElement('span');
         nameSpan.className = 'ml-3 font-medium text-gray-700';
-        nameSpan.textContent = volunteer.name;
+        let volunteerText = volunteer.name;
+        if (volunteer.specialization) {
+            volunteerText += ` - ${volunteer.specialization}:`;
+        }
+        nameSpan.textContent = volunteerText;
 
         row.appendChild(checkbox);
         row.appendChild(nameSpan);
