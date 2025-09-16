@@ -173,7 +173,7 @@ class ServiceController extends AbstractController
                 AssistanceConfirmation::class,
                 'ac',
                 'WITH',
-                'ac.volunteer = v.id AND ac.service = :service'
+                'ac.volunteer = v AND ac.service = :service'
             )
             ->where('v.status = :status')
             ->andWhere('ac.id IS NULL')
