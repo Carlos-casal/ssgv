@@ -180,7 +180,7 @@ class ServiceController extends AbstractController
                 'ac.id IS NULL',
                 'ac.hasAttended = :hasAttended'
             ))
-            ->setParameter('status', 'active')
+            ->setParameter('status', \App\Entity\Volunteer::STATUS_ACTIVE)
             ->setParameter('service', $service)
             ->setParameter('hasAttended', false);
 

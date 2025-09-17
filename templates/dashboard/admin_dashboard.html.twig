@@ -130,7 +130,7 @@
     <!-- Quick actions -->
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <a href="{{ path('app_volunteer_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
                 <span class="font-medium">Añadir Voluntario</span>
@@ -143,133 +143,7 @@
                 <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
                 <span class="font-medium">Ver Estadísticas</span>
             </button>
-            <button id="show-volunteers-btn" data-url="{{ path('app_volunteer_all') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="list" class="w-5 h-5 text-yellow-600"></i>
-                <span class="font-medium">Mostrar Voluntarios</span>
-            </button>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block javascripts %}
-{{ parent() }}
-<script>
-    document.addEventListener('DOMContentLoaded', () => {
-        const showModalBtn = document.getElementById('show-volunteers-btn');
-        let debounceTimer;
-
-        // Function to fetch and render volunteers
-        async function fetchAndRenderVolunteers(searchTerm = '', limit = 10) {
-            const baseUrl = showModalBtn.dataset.url;
-            const url = new URL(baseUrl, window.location.origin);
-            url.searchParams.append('search', searchTerm);
-            url.searchParams.append('limit', limit);
-
-            try {
-                const response = await fetch(url);
-                if (!response.ok) throw new Error('Network response was not ok');
-                const volunteers = await response.json();
-
-                const list = document.getElementById('volunteer-list-container');
-                if (!list) return;
-
-                list.innerHTML = ''; // Clear current list
-                if (volunteers.length > 0) {
-                    volunteers.forEach(v => {
-                        const listItem = document.createElement('li');
-                        listItem.className = 'p-2 border-b border-gray-200 flex items-center';
-
-                        const checkbox = document.createElement('input');
-                        checkbox.type = 'checkbox';
-                        checkbox.id = `volunteer-${v.id}`;
-                        checkbox.value = v.id;
-                        checkbox.className = 'mr-3 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500';
-
-                        const label = document.createElement('label');
-                        label.htmlFor = `volunteer-${v.id}`;
-                        label.textContent = `${v.name} ${v.lastName || ''}`;
-
-                        listItem.appendChild(checkbox);
-                        listItem.appendChild(label);
-                        list.appendChild(listItem);
-                    });
-                } else {
-                    list.innerHTML = '<p>No se encontraron voluntarios.</p>';
-                }
-            } catch (error) {
-                console.error('Error fetching volunteers:', error);
-                const list = document.getElementById('volunteer-list-container');
-                if(list) list.innerHTML = '<p>Error al cargar los voluntarios.</p>';
-            }
-        }
-
-        // Function to create the modal structure
-        function createModal() {
-            const existingModal = document.getElementById('volunteer-list-modal');
-            if (existingModal) existingModal.remove();
-
-            const modal = document.createElement('div');
-            modal.id = 'volunteer-list-modal';
-            modal.className = 'fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center';
-            modal.style.zIndex = '1050';
-
-            modal.innerHTML = `
-                <div class="relative mx-auto p-5 border w-full max-w-md shadow-lg rounded-md bg-white">
-                    <div class="flex justify-between items-center pb-3 border-b">
-                        <h3 class="text-lg font-medium text-gray-900">Lista de Voluntarios</h3>
-                        <button id="close-volunteer-modal-btn" type="button" class="text-black close-modal text-2xl leading-none hover:text-gray-700">&times;</button>
-                    </div>
-                    <div class="py-3 flex justify-between items-center">
-                        <input type="text" id="volunteer-search-input" placeholder="Buscar..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md">
-                        <select id="volunteer-limit-select" class="p-2 border border-gray-300 rounded-md">
-                            <option value="10" selected>10 por página</option>
-                            <option value="25">25 por página</option>
-                            <option value="50">50 por página</option>
-                            <option value="100">100 por página</option>
-                        </select>
-                    </div>
-                    <ul id="volunteer-list-container" class="space-y-2 max-h-80 overflow-y-auto py-3">
-                        <!-- Volunteer list will be rendered here -->
-                    </ul>
-                </div>
-            `;
-
-            document.body.appendChild(modal);
-
-            // Add event listeners for the new controls
-            const searchInput = document.getElementById('volunteer-search-input');
-            const limitSelect = document.getElementById('volunteer-limit-select');
-            const closeButton = document.getElementById('close-volunteer-modal-btn');
-
-            searchInput.addEventListener('input', () => {
-                clearTimeout(debounceTimer);
-                debounceTimer = setTimeout(() => {
-                    fetchAndRenderVolunteers(searchInput.value, limitSelect.value);
-                }, 300);
-            });
-
-            limitSelect.addEventListener('change', () => {
-                fetchAndRenderVolunteers(searchInput.value, limitSelect.value);
-            });
-
-            const closeModal = () => modal.remove();
-            closeButton.onclick = closeModal;
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeModal();
-            });
-        }
-
-        // Main event listener for the button
-        if (showModalBtn) {
-            showModalBtn.addEventListener('click', () => {
-                createModal();
-                // Initial fetch
-                const searchInput = document.getElementById('volunteer-search-input');
-                const limitSelect = document.getElementById('volunteer-limit-select');
-                fetchAndRenderVolunteers(searchInput.value, limitSelect.value);
-            });
-        }
-    });
-</script>
 {% endblock %}
