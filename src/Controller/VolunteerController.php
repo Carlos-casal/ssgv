@@ -11,7 +11,6 @@ use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -383,37 +382,5 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/hours_report.html.twig', [
             'volunteer' => $volunteer,
         ]);
-    }
-
-    #[Route('/all', name: 'app_volunteer_all', methods: ['GET'])]
-    #[Security("is_granted('ROLE_ADMIN')")]
-    public function allVolunteers(Request $request, VolunteerRepository $volunteerRepository): JsonResponse
-    {
-        $search = $request->query->get('search', '');
-        $limit = $request->query->getInt('limit', 100);
-
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
-
-        if (!empty($search)) {
-            $queryBuilder
-                ->where('v.name LIKE :search OR v.lastName LIKE :search')
-                ->setParameter('search', '%' . $search . '%');
-        }
-
-        $queryBuilder->setMaxResults($limit);
-
-        $volunteers = $queryBuilder->getQuery()->getResult();
-
-        $data = [];
-        foreach ($volunteers as $volunteer) {
-            $data[] = [
-                'id' => $volunteer->getId(),
-                'name' => $volunteer->getName(),
-                'lastName' => $volunteer->getLastName(),
-                'profilePicture' => $volunteer->getProfilePicture(),
-            ];
-        }
-
-        return $this->json($data);
     }
 }
