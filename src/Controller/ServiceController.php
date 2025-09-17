@@ -168,8 +168,8 @@ class ServiceController extends AbstractController
             throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
         }
 
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
-            ->leftJoin(
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
+        $queryBuilder->leftJoin(
                 AssistanceConfirmation::class,
                 'ac',
                 'WITH',
