@@ -212,7 +212,8 @@ class ServiceController extends AbstractController
         foreach ($pagination as $volunteer) {
             $data['items'][] = [
                 'id' => $volunteer->getId(),
-                'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
+                'name' => $volunteer->getName(),
+                'lastName' => $volunteer->getLastname(),
                 'specialization' => $volunteer->getSpecialization(),
             ];
         }
