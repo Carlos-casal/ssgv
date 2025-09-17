@@ -11,6 +11,7 @@ use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
@@ -382,5 +383,22 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/hours_report.html.twig', [
             'volunteer' => $volunteer,
         ]);
+    }
+
+    #[Route('/all', name: 'app_volunteer_all', methods: ['GET'])]
+    #[Security("is_granted('ROLE_ADMIN')")]
+    public function allVolunteers(VolunteerRepository $volunteerRepository): JsonResponse
+    {
+        $volunteers = $volunteerRepository->findAll();
+        $data = [];
+
+        foreach ($volunteers as $volunteer) {
+            $data[] = [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName(),
+            ];
+        }
+
+        return $this->json($data);
     }
 }
