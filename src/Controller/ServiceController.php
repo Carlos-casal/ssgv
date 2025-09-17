@@ -162,16 +162,27 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
-    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator): JsonResponse
+    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator, EntityManagerInterface $entityManager): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
-            ->leftJoin('v.assistanceConfirmations', 'ac', 'WITH', 'ac.service = :service')
-            ->addSelect('ac')
+            ->leftJoin(
+                AssistanceConfirmation::class,
+                'ac',
+                'WITH',
+                'ac.volunteer = v AND ac.service = :service'
+            )
             ->where('v.status = :status')
+            ->andWhere($queryBuilder->expr()->orX(
+                'ac.id IS NULL',
+                'ac.hasAttended = :hasAttended'
+            ))
             ->setParameter('status', 'active')
-            ->setParameter('service', $service);
+            ->setParameter('service', $service)
+            ->setParameter('hasAttended', false);
 
         if ($request->query->has('search')) {
             $search = $request->query->get('search');
@@ -186,7 +197,7 @@ class ServiceController extends AbstractController
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            10
+            $request->query->getInt('limit', 10)
         );
 
         $data = [
@@ -202,6 +213,7 @@ class ServiceController extends AbstractController
             $data['items'][] = [
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
+                'specialization' => $volunteer->getSpecialization(),
             ];
         }
 
