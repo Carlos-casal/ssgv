@@ -387,15 +387,29 @@ class VolunteerController extends AbstractController
 
     #[Route('/all', name: 'app_volunteer_all', methods: ['GET'])]
     #[Security("is_granted('ROLE_ADMIN')")]
-    public function allVolunteers(VolunteerRepository $volunteerRepository): JsonResponse
+    public function allVolunteers(Request $request, VolunteerRepository $volunteerRepository): JsonResponse
     {
-        $volunteers = $volunteerRepository->findAll();
-        $data = [];
+        $search = $request->query->get('search', '');
+        $limit = $request->query->getInt('limit', 100);
 
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
+
+        if (!empty($search)) {
+            $queryBuilder
+                ->where('v.name LIKE :search')
+                ->setParameter('search', '%' . $search . '%');
+        }
+
+        $queryBuilder->setMaxResults($limit);
+
+        $volunteers = $queryBuilder->getQuery()->getResult();
+
+        $data = [];
         foreach ($volunteers as $volunteer) {
             $data[] = [
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName(),
+                'profilePicture' => $volunteer->getProfilePicture(),
             ];
         }
 
