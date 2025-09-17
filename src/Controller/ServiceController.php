@@ -194,10 +194,11 @@ class ServiceController extends AbstractController
 
         $query = $queryBuilder->getQuery();
 
+        $limit = $request->query->getInt('limit', 10);
         $pagination = $paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            $request->query->getInt('limit', 10)
+            $limit
         );
 
         $data = [
