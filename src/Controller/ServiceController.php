@@ -162,63 +162,53 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
-    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository): JsonResponse
+    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator, EntityManagerInterface $entityManager): JsonResponse
     {
         if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
         }
 
-        $queryBuilder = $volunteerRepository->createQueryBuilder('v');
-        $queryBuilder->leftJoin(
+        $queryBuilder = $volunteerRepository->createQueryBuilder('v')
+            ->leftJoin(
                 AssistanceConfirmation::class,
                 'ac',
                 'WITH',
                 'ac.volunteer = v AND ac.service = :service'
             )
             ->where('v.status = :status')
-            ->andWhere($queryBuilder->expr()->orX(
-                'ac.id IS NULL',
-                'ac.hasAttended = :hasAttended'
-            ))
-            ->setParameter('status', \App\Entity\Volunteer::STATUS_ACTIVE)
-            ->setParameter('service', $service)
-            ->setParameter('hasAttended', false);
+            ->andWhere('ac.id IS NULL')
+            ->setParameter('status', 'active')
+            ->setParameter('service', $service);
 
         if ($request->query->has('search')) {
             $search = $request->query->get('search');
             if (!empty($search)) {
-                $queryBuilder->andWhere('LOWER(v.name) LIKE LOWER(:search) OR LOWER(v.lastName) LIKE LOWER(:search) OR v.id LIKE :search')
+                $queryBuilder->andWhere('LOWER(v.name) LIKE LOWER(:search) OR LOWER(v.lastname) LIKE LOWER(:search) OR v.id LIKE :search')
                     ->setParameter('search', '%' . $search . '%');
             }
         }
 
-        // Manual pagination
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
+        $query = $queryBuilder->getQuery();
 
-        // Clone the query builder to count total items without pagination
-        $countQueryBuilder = clone $queryBuilder;
-        $totalCount = $countQueryBuilder->select('count(v.id)')->getQuery()->getSingleScalarResult();
-
-        $queryBuilder->setFirstResult(($page - 1) * $limit)
-            ->setMaxResults($limit);
-
-        $volunteers = $queryBuilder->getQuery()->getResult();
+        $pagination = $paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            $request->query->getInt('limit', 10)
+        );
 
         $data = [
             'items' => [],
             'pagination' => [
-                'currentPage' => $page,
-                'totalPages' => ceil($totalCount / $limit),
-                'totalCount' => $totalCount,
+                'currentPage' => $pagination->getCurrentPageNumber(),
+                'totalPages' => $pagination->getPageCount(),
+                'totalCount' => $pagination->getTotalItemCount(),
             ]
         ];
 
-        foreach ($volunteers as $volunteer) {
+        foreach ($pagination as $volunteer) {
             $data['items'][] = [
                 'id' => $volunteer->getId(),
-                'name' => $volunteer->getName(),
-                'lastName' => $volunteer->getLastname(),
+                'name' => $volunteer->getName() . ' ' . $volunteer->getLastname(),
                 'specialization' => $volunteer->getSpecialization(),
             ];
         }
