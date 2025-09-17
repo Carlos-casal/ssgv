@@ -162,7 +162,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
-    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository, PaginatorInterface $paginator, EntityManagerInterface $entityManager): JsonResponse
+    public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository): JsonResponse
     {
         if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
             throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
@@ -187,30 +187,34 @@ class ServiceController extends AbstractController
         if ($request->query->has('search')) {
             $search = $request->query->get('search');
             if (!empty($search)) {
-                $queryBuilder->andWhere('LOWER(v.name) LIKE LOWER(:search) OR LOWER(v.lastname) LIKE LOWER(:search) OR v.id LIKE :search')
+                $queryBuilder->andWhere('LOWER(v.name) LIKE LOWER(:search) OR LOWER(v.lastName) LIKE LOWER(:search) OR v.id LIKE :search')
                     ->setParameter('search', '%' . $search . '%');
             }
         }
 
-        $query = $queryBuilder->getQuery();
-
+        // Manual pagination
+        $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 10);
-        $pagination = $paginator->paginate(
-            $query,
-            $request->query->getInt('page', 1),
-            $limit
-        );
+
+        // Clone the query builder to count total items without pagination
+        $countQueryBuilder = clone $queryBuilder;
+        $totalCount = $countQueryBuilder->select('count(v.id)')->getQuery()->getSingleScalarResult();
+
+        $queryBuilder->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        $volunteers = $queryBuilder->getQuery()->getResult();
 
         $data = [
             'items' => [],
             'pagination' => [
-                'currentPage' => $pagination->getCurrentPageNumber(),
-                'totalPages' => $pagination->getPageCount(),
-                'totalCount' => $pagination->getTotalItemCount(),
+                'currentPage' => $page,
+                'totalPages' => ceil($totalCount / $limit),
+                'totalCount' => $totalCount,
             ]
         ];
 
-        foreach ($pagination as $volunteer) {
+        foreach ($volunteers as $volunteer) {
             $data['items'][] = [
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName(),
