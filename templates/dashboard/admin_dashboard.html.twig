@@ -180,11 +180,6 @@
                         const listItem = document.createElement('li');
                         listItem.className = 'p-2 border-b border-gray-200 flex items-center';
 
-                        const img = document.createElement('img');
-                        img.src = v.profilePicture ? `/uploads/profile_pictures/${v.profilePicture}` : 'https://via.placeholder.com/40';
-                        img.alt = v.name;
-                        img.className = 'w-10 h-10 rounded-full mr-3 object-cover';
-
                         const checkbox = document.createElement('input');
                         checkbox.type = 'checkbox';
                         checkbox.id = `volunteer-${v.id}`;
@@ -193,9 +188,8 @@
 
                         const label = document.createElement('label');
                         label.htmlFor = `volunteer-${v.id}`;
-                        label.textContent = v.name;
+                        label.textContent = `${v.name} ${v.lastName || ''}`;
 
-                        listItem.appendChild(img);
                         listItem.appendChild(checkbox);
                         listItem.appendChild(label);
                         list.appendChild(listItem);
@@ -227,10 +221,10 @@
                         <button id="close-volunteer-modal-btn" type="button" class="text-black close-modal text-2xl leading-none hover:text-gray-700">&times;</button>
                     </div>
                     <div class="py-3 flex justify-between items-center">
-                        <input type="text" id="volunteer-search-input" placeholder="Buscar por nombre..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md">
+                        <input type="text" id="volunteer-search-input" placeholder="Buscar..." class="w-full md:w-1/2 p-2 border border-gray-300 rounded-md">
                         <select id="volunteer-limit-select" class="p-2 border border-gray-300 rounded-md">
-                            <option value="10">10 por página</option>
-                            <option value="25" selected>25 por página</option>
+                            <option value="10" selected>10 por página</option>
+                            <option value="25">25 por página</option>
                             <option value="50">50 por página</option>
                             <option value="100">100 por página</option>
                         </select>

@@ -396,7 +396,7 @@ class VolunteerController extends AbstractController
 
         if (!empty($search)) {
             $queryBuilder
-                ->where('v.name LIKE :search')
+                ->where('v.name LIKE :search OR v.lastName LIKE :search')
                 ->setParameter('search', '%' . $search . '%');
         }
 
@@ -409,6 +409,7 @@ class VolunteerController extends AbstractController
             $data[] = [
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName(),
+                'lastName' => $volunteer->getLastName(),
                 'profilePicture' => $volunteer->getProfilePicture(),
             ];
         }
