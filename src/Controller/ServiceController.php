@@ -195,11 +195,11 @@ class ServiceController extends AbstractController
         // Manual pagination
         $page = $request->query->getInt('page', 1);
         $limit = $request->query->getInt('limit', 10);
-
+        
         // Clone the query builder to count total items without pagination
         $countQueryBuilder = clone $queryBuilder;
         $totalCount = $countQueryBuilder->select('count(v.id)')->getQuery()->getSingleScalarResult();
-
+        
         $queryBuilder->setFirstResult(($page - 1) * $limit)
             ->setMaxResults($limit);
 
