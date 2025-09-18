@@ -13,6 +13,7 @@ Encore
 
     // añade un "entrypoint" de JavaScript
     .addEntry('app', './assets/app.js') // Este es tu punto de entrada principal para JS y CSS
+    .addEntry('asistencia', './assets/js/asistencia.js')
 
     // limpia el directorio 'build' antes de cada compilación
     .cleanupOutputBeforeBuild()
@@ -22,6 +23,14 @@ Encore
 
     // Habilita un único runtime chunk (¡NECESARIO AHORA!)
     .enableSingleRuntimeChunk()
+
+    // Enable React preset
+    .enableReactPreset()
+
+    .enableTypeScriptLoader((options) => {
+        options.transpileOnly = true;
+        options.configFile = 'tsconfig.app.json';
+    })
 
     // PostCSS es necesario para Tailwind CSS
     .enablePostCssLoader()

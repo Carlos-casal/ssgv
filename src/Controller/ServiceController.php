@@ -317,8 +317,26 @@ class ServiceController extends AbstractController
     public function attendance(Service $service): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $fichajesData = [];
+        foreach ($service->getVolunteerServices() as $volunteerService) {
+            $volunteer = $volunteerService->getVolunteer();
+            if ($volunteer) {
+                $fichajesData[] = [
+                    'volunteer' => [
+                        'name' => $volunteer->getName(),
+                        'lastName' => $volunteer->getLastName(),
+                    ],
+                    'startTime' => $volunteerService->getStartTime() ? $volunteerService->getStartTime()->format('c') : null,
+                    'endTime' => $volunteerService->getEndTime() ? $volunteerService->getEndTime()->format('c') : null,
+                    'serviceDate' => $service->getStartDate() ? $service->getStartDate()->format('c') : (new \DateTime())->format('c'),
+                ];
+            }
+        }
+
         return $this->render('service/attendance.html.twig', [
             'service' => $service,
+            'fichajesData' => $fichajesData,
         ]);
     }
 

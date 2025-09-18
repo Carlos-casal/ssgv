@@ -1,5 +1,5 @@
 import React from 'react';
-import { Construction, ArrowLeft } from 'lucide-react';
+import { Construction } from 'lucide-react';
 
 interface ComingSoonProps {
   title: string;

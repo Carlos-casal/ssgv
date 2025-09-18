@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Car, Package, Droplets, TrendingUp, Calendar, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Users, Car, TrendingUp, Calendar, AlertTriangle } from 'lucide-react';
 
 const Dashboard: React.FC = () => {
   const stats = [
