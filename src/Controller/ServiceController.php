@@ -259,6 +259,20 @@ class ServiceController extends AbstractController
         return new JsonResponse(['success' => true, 'message' => 'Asistencia actualizada correctamente.']);
     }
 
+    #[Route('/assistance-confirmation/{id}/remove', name: 'app_assistance_confirmation_remove', methods: ['POST'])]
+    public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        if ($this->isCsrfTokenValid('delete'.$confirmation->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($confirmation);
+            $entityManager->flush();
+            $this->addFlash('success', 'La confirmación de asistencia ha sido eliminada.');
+        }
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencias']);
+    }
+
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
     public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
