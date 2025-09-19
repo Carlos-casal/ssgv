@@ -248,7 +248,15 @@
                     </h4>
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.isHasAttended() == true) %}
-                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</li>
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm flex justify-between items-center">
+                                <span>{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a este voluntario de la lista de asistentes?');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                    <button type="submit" class="text-red-500 hover:text-red-700">
+                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                    </button>
+                                </form>
+                            </li>
                         {% else %}
                             <li class="list-group-item text-gray-500 italic">Nadie asiste todavía.</li>
                         {% endfor %}
