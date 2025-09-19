@@ -1,6 +1,6 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Editar Servicio{% endblock %}
+{% block title %}Confirmación de Asistencia{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -41,7 +41,7 @@
 
 {% block content %}
 <div class="container mx-auto px-4 py-8" data-controller="service-form" data-service-id="{{ service.id }}">
-    <h1 class="text-4xl font-bold mb-8 text-gray-900">Editar Servicio</h1>
+    <h1 class="text-4xl font-bold mb-8 text-gray-900">Confirmación de Asistencia</h1>
 
     <div class="mb-8 border-b border-gray-200">
         <nav class="flex space-x-8" aria-label="Tabs">
@@ -248,17 +248,50 @@
                     </h4>
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.isHasAttended() == true) %}
-                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm flex justify-between items-center">
-                                <span>
-                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
-                                    <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
-                                </span>
-                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
-                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                    <button type="submit" class="text-red-500 hover:text-red-700">
-                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
-                                    </button>
-                                </form>
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
+                                {% set fichaje = fichajes[confirmation.volunteer.id] ?? null %}
+                                <div class="flex items-center justify-between">
+                                    <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                    {% if fichaje %}
+                                        <span class="text-xs text-gray-500">{{ fichaje.startTime|date('d/m/Y H:i') }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-2">
+                                    {% if fichaje %}
+                                        {% if fichaje.endTime %}
+                                            <span class="text-green-600 flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                                Fichaje completado
+                                            </span>
+                                            <p class="text-sm text-gray-600 mt-1">
+                                                <strong>Entrada:</strong> {{ fichaje.startTime|date('d/m/Y H:i:s') }} -
+                                                <strong>Salida:</strong> {{ fichaje.endTime|date('d/m/Y H:i:s') }}
+                                            </p>
+                                        {% else %}
+                                            <span class="text-red-600 flex items-center">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                                Fichaje incompleto
+                                            </span>
+                                            <p class="text-sm text-gray-600 mt-1">
+                                                <strong>Entrada:</strong> {{ fichaje.startTime|date('d/m/Y H:i:s') }} -
+                                                <strong>Salida:</strong> No fichado.
+                                            </p>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-yellow-600 flex items-center">
+                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                            Pendiente de fichar
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                <div class="flex justify-end mt-2">
+                                    <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                        <button type="submit" class="text-red-500 hover:text-red-700">
+                                            <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </li>
                         {% else %}
                             <li class="list-group-item text-gray-500 italic">Nadie asiste todavía.</li>
