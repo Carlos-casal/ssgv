@@ -247,9 +247,9 @@ class ServiceController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
 
         if ($this->isCsrfTokenValid('delete'.$confirmation->getId(), $request->request->get('_token'))) {
-            $confirmation->setHasAttended(false);
+            $entityManager->remove($confirmation);
             $entityManager->flush();
-            $this->addFlash('success', 'Voluntario eliminado de la lista de asistentes.');
+            $this->addFlash('success', 'La confirmación de asistencia ha sido eliminada.');
         }
 
         return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencias']);
