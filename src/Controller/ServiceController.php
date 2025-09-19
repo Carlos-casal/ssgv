@@ -3,6 +3,7 @@ namespace App\Controller;
 
 use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
+use App\Entity\VolunteerService;
 use App\Form\ServiceType;
 use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
@@ -386,5 +387,66 @@ class ServiceController extends AbstractController
             'service' => $service,
             'whatsappLink' => $whatsappLink,
         ]);
+    }
+
+    #[Route('/services/{id}/attending-volunteers', name: 'app_service_attending_volunteers', methods: ['GET'])]
+    public function getAttendingVolunteers(Service $service): JsonResponse
+    {
+        $volunteers = $service->getAttendingVolunteers();
+
+        $data = array_map(function ($volunteer) {
+            return [
+                'id' => $volunteer->getId(),
+                'name' => $volunteer->getName(),
+                'lastname' => $volunteer->getLastname(),
+            ];
+        }, $volunteers);
+
+        return new JsonResponse($data);
+    }
+
+    #[Route('/services/{id}/clock-in-all', name: 'app_service_clock_in_all', methods: ['POST'])]
+    public function clockInAll(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, \App\Repository\VolunteerServiceRepository $volunteerServiceRepository): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $volunteerIds = $data['volunteerIds'] ?? [];
+        $startTimeStr = $data['startTime'] ?? null;
+        $endTimeStr = $data['endTime'] ?? null;
+
+        if (empty($volunteerIds) || !$startTimeStr || !$endTimeStr) {
+            return new JsonResponse(['success' => false, 'message' => 'Datos incompletos.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        try {
+            $startTime = new \DateTime($startTimeStr);
+            $endTime = new \DateTime($endTimeStr);
+        } catch (\Exception $e) {
+            return new JsonResponse(['success' => false, 'message' => 'Formato de fecha/hora inválido.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $duration = $endTime->getTimestamp() - $startTime->getTimestamp();
+        $durationInMinutes = round($duration / 60);
+
+        foreach ($volunteerIds as $volunteerId) {
+            $volunteer = $volunteerRepository->find($volunteerId);
+            if ($volunteer) {
+                // Check if a VolunteerService entry already exists
+                $volunteerService = $volunteerServiceRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+                if (!$volunteerService) {
+                    $volunteerService = new VolunteerService();
+                    $volunteerService->setVolunteer($volunteer);
+                    $volunteerService->setService($service);
+                    $entityManager->persist($volunteerService);
+                }
+
+                $volunteerService->setStartTime($startTime);
+                $volunteerService->setEndTime($endTime);
+                $volunteerService->setDuration($durationInMinutes);
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Fichaje guardado correctamente.']);
     }
 }

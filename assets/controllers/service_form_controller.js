@@ -12,9 +12,15 @@ export default class extends Controller {
         "userSearchInput",
         "userList",
         "paginationContainer",
-    "paginationSummary",
+        "paginationSummary",
         "attendanceStatusSelect",
         "itemsPerPageSelect",
+        "clockInModal",
+        "clockInStartDate",
+        "clockInStartTime",
+        "clockInEndDate",
+        "clockInEndTime",
+        "clockInVolunteerList",
     ];
 
     connect() {
@@ -266,8 +272,111 @@ renderPagination(pagination, items) {
         }
     }
 
-    clockInAll(event) {
-        event.preventDefault();
-        alert('Funcionalidad "Fichar todos" pendiente de implementar.');
+    openClockInModal() {
+        this.clockInModalTarget.classList.remove('hidden');
+        this.clockInModalTarget.classList.add('flex');
+        this.fetchAttendingVolunteers();
+    }
+
+    closeClockInModal() {
+        this.clockInModalTarget.classList.add('hidden');
+        this.clockInModalTarget.classList.remove('flex');
+    }
+
+    async fetchAttendingVolunteers() {
+        const serviceId = this.element.dataset.serviceId;
+        const url = `/services/${serviceId}/attending-volunteers`;
+        try {
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Network response was not ok');
+            const volunteers = await response.json();
+            this.renderClockInVolunteers(volunteers);
+        } catch (error) {
+            console.error('Error fetching attending volunteers:', error);
+            this.clockInVolunteerListTarget.innerHTML = '<p class="text-red-500">Error al cargar voluntarios.</p>';
+        }
+    }
+
+    renderClockInVolunteers(volunteers) {
+        this.clockInVolunteerListTarget.innerHTML = '';
+        if (volunteers.length === 0) {
+            this.clockInVolunteerListTarget.innerHTML = '<p class="text-gray-500 p-4">No hay voluntarios que asistan.</p>';
+            return;
+        }
+        volunteers.forEach(volunteer => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center p-2 rounded-lg';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300 clock-in-volunteer-checkbox';
+            checkbox.value = volunteer.id;
+            checkbox.checked = true;
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'ml-3 font-medium text-gray-700';
+            nameSpan.textContent = `${volunteer.name} ${volunteer.lastname}`;
+
+            row.appendChild(checkbox);
+            row.appendChild(nameSpan);
+            this.clockInVolunteerListTarget.appendChild(row);
+        });
+    }
+
+    toggleAllVolunteers(event) {
+        const isChecked = event.currentTarget.checked;
+        this.clockInVolunteerListTarget.querySelectorAll('.clock-in-volunteer-checkbox').forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+    }
+
+    async saveClockIn() {
+        const selectedVolunteers = Array.from(this.clockInVolunteerListTarget.querySelectorAll('.clock-in-volunteer-checkbox:checked')).map(cb => cb.value);
+
+        if (selectedVolunteers.length === 0) {
+            alert('Por favor, selecciona al menos un voluntario.');
+            return;
+        }
+
+        const startDate = this.clockInStartDateTarget.value;
+        const startTime = this.clockInStartTimeTarget.value;
+        const endDate = this.clockInEndDateTarget.value;
+        const endTime = this.clockInEndTimeTarget.value;
+
+        if (!startDate || !startTime || !endDate || !endTime) {
+            alert('Por favor, completa todos los campos de fecha y hora.');
+            return;
+        }
+
+        const serviceId = this.element.dataset.serviceId;
+        const url = `/services/${serviceId}/clock-in-all`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    volunteerIds: selectedVolunteers,
+                    startTime: `${startDate} ${startTime}`,
+                    endTime: `${endDate} ${endTime}`,
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert('Fichaje guardado correctamente.');
+                this.closeClockInModal();
+                location.reload();
+            } else {
+                throw new Error(result.message || 'Error al guardar el fichaje.');
+            }
+        } catch (error) {
+            console.error('Error saving clock-in:', error);
+            alert(error.message);
+        }
     }
 }

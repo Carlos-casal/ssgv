@@ -466,4 +466,15 @@ class Service
 
         return $this;
     }
+
+    /**
+     * @return Volunteer[]
+     */
+    public function getAttendingVolunteers(): array
+    {
+        return $this->assistanceConfirmations
+            ->filter(fn(AssistanceConfirmation $c) => $c->isHasAttended() === true)
+            ->map(fn(AssistanceConfirmation $c) => $c->getVolunteer())
+            ->getValues();
+    }
 }
