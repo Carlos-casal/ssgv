@@ -17,9 +17,23 @@ class FichajeController extends AbstractController
     public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository): Response
     {
         $data = $request->request->all();
-        $startTime = new \DateTime($data['start-time']);
-        $endTime = new \DateTime($data['end-time']);
+
+        $startTimeStr = ($data['start-date'] ?? '') . ' ' . ($data['start-time'] ?? '');
+        $endTimeStr = ($data['end-date'] ?? '') . ' ' . ($data['end-time'] ?? '');
+
+        if (trim($startTimeStr) === '' || trim($endTimeStr) === '') {
+            $this->addFlash('error', 'La fecha y hora de inicio y fin son obligatorias.');
+            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+        }
+
+        $startTime = new \DateTime($startTimeStr);
+        $endTime = new \DateTime($endTimeStr);
         $volunteerIds = $data['volunteers'] ?? [];
+
+        if ($endTime < $startTime) {
+            $this->addFlash('error', 'La hora de fin no puede ser anterior a la hora de inicio.');
+            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+        }
 
         $duration = $endTime->getTimestamp() - $startTime->getTimestamp();
         $durationInMinutes = round($duration / 60);
