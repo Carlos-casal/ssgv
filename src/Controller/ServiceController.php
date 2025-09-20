@@ -38,7 +38,7 @@ class ServiceController extends AbstractController
         foreach ($services as $service) {
             $attendees = 0;
             foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                if ($confirmation->isHasAttended()) {
+                if ($confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
                     $attendees++;
                 }
             }
@@ -50,7 +50,7 @@ class ServiceController extends AbstractController
             foreach ($services as $service) {
                 $assistanceByService[$service->getId()] = false;
                 foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                    if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->isHasAttended()) {
+                    if ($confirmation->getVolunteer()->getUser() === $user && $confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
                         $assistanceByService[$service->getId()] = true;
                     }
                 }
@@ -187,11 +187,11 @@ class ServiceController extends AbstractController
             ->where('v.status = :status')
             ->andWhere($queryBuilder->expr()->orX(
                 'ac.id IS NULL',
-                'ac.hasAttended = :hasAttended'
+                'ac.status != :attendingStatus'
             ))
             ->setParameter('status', \App\Entity\Volunteer::STATUS_ACTIVE)
             ->setParameter('service', $service)
-            ->setParameter('hasAttended', false);
+            ->setParameter('attendingStatus', AssistanceConfirmation::STATUS_ATTENDING);
 
         if ($request->query->has('search')) {
             $search = $request->query->get('search');
@@ -248,6 +248,10 @@ class ServiceController extends AbstractController
             return new JsonResponse(['success' => false, 'message' => 'No se han seleccionado voluntarios.'], Response::HTTP_BAD_REQUEST);
         }
 
+        $maxAttendees = $service->getMaxAttendees();
+        $currentAttendeesCount = $assistanceConfirmationRepository->count(['service' => $service, 'status' => AssistanceConfirmation::STATUS_ATTENDING]);
+        $availableSlots = ($maxAttendees === null) ? count($volunteerIds) : $maxAttendees - $currentAttendeesCount;
+
         foreach ($volunteerIds as $volunteerId) {
             $volunteer = $volunteerRepository->find($volunteerId);
             if ($volunteer) {
@@ -258,8 +262,17 @@ class ServiceController extends AbstractController
                     $confirmation->setVolunteer($volunteer);
                     $entityManager->persist($confirmation);
                 }
-                $attends = ($status === 'attends');
-                $confirmation->setHasAttended($attends);
+
+                if ($status === 'attends') {
+                    if ($availableSlots > 0) {
+                        $confirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                        $availableSlots--;
+                    } else {
+                        $confirmation->setStatus(AssistanceConfirmation::STATUS_RESERVED);
+                    }
+                } else {
+                    $confirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
+                }
             }
         }
 
@@ -303,9 +316,24 @@ class ServiceController extends AbstractController
             $assistanceConfirmation->setService($service);
             $entityManager->persist($assistanceConfirmation);
         }
-        $assistanceConfirmation->setHasAttended(true);
+
+        $maxAttendees = $service->getMaxAttendees();
+        if ($maxAttendees !== null) {
+            $currentAttendeesCount = $assistanceConfirmationRepository->count(['service' => $service, 'status' => AssistanceConfirmation::STATUS_ATTENDING]);
+            if ($currentAttendeesCount >= $maxAttendees) {
+                $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_RESERVED);
+                $reservedCount = $assistanceConfirmationRepository->count(['service' => $service, 'status' => AssistanceConfirmation::STATUS_RESERVED]);
+                $this->addFlash('info', 'El servicio está completo. Has sido añadido a la lista de reserva en la posición #' . ($reservedCount + 1) . '.');
+            } else {
+                $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                $this->addFlash('success', 'Has confirmado tu asistencia.');
+            }
+        } else {
+            $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+            $this->addFlash('success', 'Has confirmado tu asistencia.');
+        }
+
         $entityManager->flush();
-        $this->addFlash('success', 'Has confirmado tu asistencia.');
         return $this->redirectToRoute('app_dashboard');
     }
 
@@ -330,7 +358,7 @@ class ServiceController extends AbstractController
             $assistanceConfirmation->setService($service);
             $entityManager->persist($assistanceConfirmation);
         }
-        $assistanceConfirmation->setHasAttended(false);
+        $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
         $entityManager->flush();
         $this->addFlash('success', 'Has confirmado tu no asistencia.');
         return $this->redirectToRoute('app_dashboard');
@@ -389,7 +417,7 @@ class ServiceController extends AbstractController
                 $volunteer = $user->getVolunteer();
                 $confirmation = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
                 if ($confirmation) {
-                    $assistance = $confirmation->isHasAttended();
+                    $assistance = $confirmation->getStatus();
                 }
             }
             $data[] = [
