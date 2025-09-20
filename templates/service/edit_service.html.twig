@@ -240,14 +240,14 @@
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div>
                     <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg flex justify-between items-center">
                         <span>Asisten</span>
-                        <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.isHasAttended() == true)|length }}</span>
+                        <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
                     </h4>
                     <ul class="list-group space-y-2">
-                        {% for confirmation in service.assistanceConfirmations|filter(c => c.isHasAttended() == true) %}
+                        {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
                             <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
                                 {% set fichaje = fichajes[confirmation.volunteer.id] ?? null %}
                                 <div class="flex items-center justify-between">
@@ -302,15 +302,48 @@
                 </div>
 
                 <div>
-                    <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg flex justify-between items-center">
-                        <span>No Asisten</span>
-                        <span class="bg-red-200 text-red-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.isHasAttended() == false)|length }}</span>
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-yellow-100 text-yellow-800 rounded-lg flex justify-between items-center">
+                        <span>Reserva</span>
+                        <span class="bg-yellow-200 text-yellow-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
                     </h4>
                     <ul class="list-group space-y-2">
-                        {% for confirmation in service.assistanceConfirmations|filter(c => c.isHasAttended() == false) %}
-                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
-                                {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
-                                <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
+                        {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserved') %}
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm flex justify-between items-center">
+                                <span>
+                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
+                                    <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
+                                </span>
+                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                    <button type="submit" class="text-red-500 hover:text-red-700">
+                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                    </button>
+                                </form>
+                            </li>
+                        {% else %}
+                            <li class="list-group-item text-gray-500 italic">No hay nadie en reserva.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-3 p-3 bg-red-100 text-red-800 rounded-lg flex justify-between items-center">
+                        <span>No Asisten</span>
+                        <span class="bg-red-200 text-red-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
+                    </h4>
+                    <ul class="list-group space-y-2">
+                        {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}
+                            <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm flex justify-between items-center">
+                                <span>
+                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
+                                    <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
+                                </span>
+                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                    <button type="submit" class="text-red-500 hover:text-red-700">
+                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                    </button>
+                                </form>
                             </li>
                         {% else %}
                             <li class="list-group-item text-gray-500 italic">Nadie ha cancelado.</li>

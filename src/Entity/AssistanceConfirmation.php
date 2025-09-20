@@ -9,13 +9,17 @@ use Gedmo\Mapping\Annotation as Gedmo;
 #[ORM\Entity(repositoryClass: AssistanceConfirmationRepository::class)]
 class AssistanceConfirmation
 {
+    public const STATUS_ATTENDING = 'attending';
+    public const STATUS_NOT_ATTENDING = 'not_attending';
+    public const STATUS_RESERVED = 'reserved';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column]
-    private ?bool $hasAttended = null;
+    #[ORM\Column(length: 255, options: ['default' => self::STATUS_NOT_ATTENDING])]
+    private ?string $status = self::STATUS_NOT_ATTENDING;
 
     #[ORM\ManyToOne(inversedBy: 'assistanceConfirmations')]
     #[ORM\JoinColumn(nullable: false)]
@@ -38,14 +42,17 @@ class AssistanceConfirmation
         return $this->id;
     }
 
-    public function isHasAttended(): ?bool
+    public function getStatus(): ?string
     {
-        return $this->hasAttended;
+        return $this->status;
     }
 
-    public function setHasAttended(bool $hasAttended): static
+    public function setStatus(string $status): static
     {
-        $this->hasAttended = $hasAttended;
+        if (!in_array($status, [self::STATUS_ATTENDING, self::STATUS_NOT_ATTENDING, self::STATUS_RESERVED])) {
+            throw new \InvalidArgumentException("Invalid status");
+        }
+        $this->status = $status;
 
         return $this;
     }
