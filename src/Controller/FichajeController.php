@@ -23,7 +23,7 @@ class FichajeController extends AbstractController
 
         if (trim($startTimeStr) === '' || trim($endTimeStr) === '') {
             $this->addFlash('error', 'La fecha y hora de inicio y fin son obligatorias.');
-            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
         $startTime = new \DateTime($startTimeStr);
@@ -32,7 +32,7 @@ class FichajeController extends AbstractController
 
         if ($endTime < $startTime) {
             $this->addFlash('error', 'La hora de fin no puede ser anterior a la hora de inicio.');
-            return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
         $duration = $endTime->getTimestamp() - $startTime->getTimestamp();
@@ -55,6 +55,6 @@ class FichajeController extends AbstractController
 
         $this->addFlash('success', 'Fichaje guardado correctamente.');
 
-        return $this->redirectToRoute('app_service_attendance', ['id' => $service->getId()]);
+        return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
     }
 }
