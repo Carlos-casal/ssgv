@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Service;
 use App\Entity\VolunteerService;
 use App\Repository\VolunteerRepository;
+use App\Repository\VolunteerServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,7 +15,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class FichajeController extends AbstractController
 {
     #[Route('/service/{id}/fichaje', name: 'app_fichaje', methods: ['POST'])]
-    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository): Response
+    public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
         $data = $request->request->all();
 
@@ -41,13 +42,17 @@ class FichajeController extends AbstractController
         foreach ($volunteerIds as $volunteerId) {
             $volunteer = $volunteerRepository->find($volunteerId);
             if ($volunteer) {
-                $volunteerService = new VolunteerService();
-                $volunteerService->setVolunteer($volunteer);
-                $volunteerService->setService($service);
+                $volunteerService = $volunteerServiceRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+                if (!$volunteerService) {
+                    $volunteerService = new VolunteerService();
+                    $volunteerService->setVolunteer($volunteer);
+                    $volunteerService->setService($service);
+                    $entityManager->persist($volunteerService);
+                }
+
                 $volunteerService->setStartTime($startTime);
                 $volunteerService->setEndTime($endTime);
                 $volunteerService->setDuration($durationInMinutes);
-                $entityManager->persist($volunteerService);
             }
         }
 
