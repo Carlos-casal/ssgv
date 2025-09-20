@@ -282,13 +282,31 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/assistance-confirmation/{id}/remove', name: 'app_assistance_confirmation_remove', methods: ['POST'])]
-    public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager): Response
+    public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
 
         if ($this->isCsrfTokenValid('delete'.$confirmation->getId(), $request->request->get('_token'))) {
+            $service = $confirmation->getService();
+            $wasAttending = $confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING;
+
             $entityManager->remove($confirmation);
-            $entityManager->flush();
+            $entityManager->flush(); // Flush to remove the user and open a spot
+
+            if ($wasAttending && $service->getMaxAttendees() !== null) {
+                // Find the first person in the reserve list and promote them
+                $reservedConfirmation = $assistanceConfirmationRepository->findOneBy(
+                    ['service' => $service, 'status' => AssistanceConfirmation::STATUS_RESERVED],
+                    ['createdAt' => 'ASC']
+                );
+
+                if ($reservedConfirmation) {
+                    $reservedConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                    $entityManager->flush(); // Flush again to save the promoted user
+                    $this->addFlash('success', 'Un voluntario de la lista de reserva ha sido movido a la lista de asistentes.');
+                }
+            }
+
             $this->addFlash('success', 'La confirmación de asistencia ha sido eliminada.');
         }
 

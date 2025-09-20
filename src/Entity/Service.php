@@ -76,6 +76,7 @@ class Service
     private ?string $requester = null;
 
     #[ORM\OneToMany(mappedBy: 'service', targetEntity: AssistanceConfirmation::class, orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $assistanceConfirmations;
 
     #[ORM\Column(length: 255, nullable: true)]
