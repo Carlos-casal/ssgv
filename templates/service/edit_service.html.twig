@@ -35,10 +35,6 @@
     </style>
 {% endblock %}
 
-{% block javascripts %}
-    {{ parent() }}
-{% endblock %}
-
 {% block content %}
 <div class="container mx-auto px-4 py-8" data-controller="service-form" data-service-id="{{ service.id }}">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Confirmación de Asistencia</h1>
@@ -235,7 +231,7 @@
                         <i data-lucide="user-plus" class="mr-2 h-5 w-5"></i> Añadir voluntarios
                     </button>
                 </div>
-                <button type="button" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center" data-action="click->service-form#clockInAll">
+                <button type="button" id="fichar-todos-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
                     <i data-lucide="check-square" class="mr-2 h-5 w-5"></i> Fichar todos
                 </button>
             </div>
@@ -411,4 +407,23 @@
         </div>
     </div>
 </div>
+
+{{ include('service/_fichar_modal.html.twig') }}
+
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('turbo:load', () => {
+            const ficharTodosBtn = document.getElementById('fichar-todos-btn');
+            const ficharModal = document.getElementById('fichar-modal');
+
+            if (ficharTodosBtn) {
+                ficharTodosBtn.addEventListener('click', () => {
+                    ficharModal.classList.remove('hidden');
+                });
+            }
+        });
+    </script>
 {% endblock %}
