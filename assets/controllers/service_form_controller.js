@@ -12,9 +12,12 @@ export default class extends Controller {
         "userSearchInput",
         "userList",
         "paginationContainer",
-    "paginationSummary",
+        "paginationSummary",
         "attendanceStatusSelect",
         "itemsPerPageSelect",
+        "ficharIndividualModal",
+        "ficharIndividualVolunteerName",
+        "ficharIndividualVolunteerId",
     ];
 
     connect() {
@@ -297,5 +300,49 @@ renderPagination(pagination, items) {
     clockInAll(event) {
         event.preventDefault();
         alert('Funcionalidad "Fichar todos" pendiente de implementar.');
+    }
+
+    openFicharIndividualModal(event) {
+        const volunteerId = event.currentTarget.dataset.volunteerId;
+        const volunteerName = event.currentTarget.dataset.volunteerName;
+
+        this.ficharIndividualVolunteerNameTarget.textContent = volunteerName;
+        this.ficharIndividualVolunteerIdTarget.value = volunteerId;
+
+        this.ficharIndividualModalTarget.classList.remove('hidden');
+    }
+
+    closeFicharIndividualModal() {
+        this.ficharIndividualModalTarget.classList.add('hidden');
+    }
+
+    async saveFicharIndividual(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const serviceId = this.element.dataset.serviceId;
+        const volunteerId = this.ficharIndividualVolunteerIdTarget.value;
+
+        const url = `/fichaje/${serviceId}/${volunteerId}`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert('Fichaje guardado correctamente.');
+                this.closeFicharIndividualModal();
+                location.reload();
+            } else {
+                throw new Error(result.message || 'Error al guardar el fichaje.');
+            }
+        } catch (error) {
+            console.error('Error saving fichaje:', error);
+            alert(error.message);
+        }
     }
 }

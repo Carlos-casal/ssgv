@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\AssistanceConfirmationRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
 
@@ -36,6 +38,14 @@ class AssistanceConfirmation
     #[Gedmo\Timestampable(on: 'update')]
     #[ORM\Column(type: 'datetime')]
     private $updatedAt;
+
+    #[ORM\OneToMany(mappedBy: 'assistanceConfirmation', targetEntity: Fichaje::class, orphanRemoval: true)]
+    private Collection $fichajes;
+
+    public function __construct()
+    {
+        $this->fichajes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -89,5 +99,35 @@ class AssistanceConfirmation
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    /**
+     * @return Collection<int, Fichaje>
+     */
+    public function getFichajes(): Collection
+    {
+        return $this->fichajes;
+    }
+
+    public function addFichaje(Fichaje $fichaje): static
+    {
+        if (!$this->fichajes->contains($fichaje)) {
+            $this->fichajes->add($fichaje);
+            $fichaje->setAssistanceConfirmation($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichaje(Fichaje $fichaje): static
+    {
+        if ($this->fichajes->removeElement($fichaje)) {
+            // set the owning side to null (unless already changed)
+            if ($fichaje->getAssistanceConfirmation() === $this) {
+                $fichaje->setAssistanceConfirmation(null);
+            }
+        }
+
+        return $this;
     }
 }

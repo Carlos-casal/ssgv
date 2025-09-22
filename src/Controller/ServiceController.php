@@ -145,7 +145,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $volunteerServiceRepository): Response
+    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
@@ -156,17 +156,9 @@ class ServiceController extends AbstractController
             return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
-        $volunteerServices = $volunteerServiceRepository->findBy(['service' => $service]);
-
-        $fichajesByVolunteer = [];
-        foreach ($volunteerServices as $vs) {
-            $fichajesByVolunteer[$vs->getVolunteer()->getId()] = $vs;
-        }
-
         return $this->render('service/edit_service.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
-            'fichajes' => $fichajesByVolunteer,
         ]);
     }
 
@@ -263,20 +255,45 @@ class ServiceController extends AbstractController
                     $entityManager->persist($confirmation);
                 }
 
+                $wasAttending = $confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING;
+
                 if ($status === 'attends') {
                     if ($availableSlots > 0) {
                         $confirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
-                        $availableSlots--;
+                        if (!$wasAttending) {
+                            $availableSlots--;
+                        }
                     } else {
                         $confirmation->setStatus(AssistanceConfirmation::STATUS_RESERVED);
                     }
-                } else {
+                } else { // 'not_attends'
                     $confirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
+                    if ($wasAttending) {
+                        $availableSlots++;
+                    }
                 }
             }
         }
 
         $entityManager->flush();
+
+        // Promote users from reserve list if there are now available slots
+        if ($maxAttendees !== null) {
+            $currentAttendeesCount = $assistanceConfirmationRepository->count(['service' => $service, 'status' => AssistanceConfirmation::STATUS_ATTENDING]);
+            $availableSlots = $maxAttendees - $currentAttendeesCount;
+            if ($availableSlots > 0) {
+                $reservedConfirmations = $assistanceConfirmationRepository->findBy(
+                    ['service' => $service, 'status' => AssistanceConfirmation::STATUS_RESERVED],
+                    ['createdAt' => 'ASC'],
+                    $availableSlots
+                );
+
+                foreach ($reservedConfirmations as $reservedConfirmation) {
+                    $reservedConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                }
+                $entityManager->flush();
+            }
+        }
 
         return new JsonResponse(['success' => true, 'message' => 'Asistencia actualizada correctamente.']);
     }
@@ -370,13 +387,33 @@ class ServiceController extends AbstractController
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
         $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
-        if (!$assistanceConfirmation) {
+
+        if ($assistanceConfirmation) {
+            $wasAttending = $assistanceConfirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING;
+            $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
+
+            if ($wasAttending && $service->getMaxAttendees() !== null) {
+                $entityManager->flush(); // Flush the status change first
+
+                // Find the first person in the reserve list and promote them
+                $reservedConfirmation = $assistanceConfirmationRepository->findOneBy(
+                    ['service' => $service, 'status' => AssistanceConfirmation::STATUS_RESERVED],
+                    ['createdAt' => 'ASC']
+                );
+
+                if ($reservedConfirmation) {
+                    $reservedConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                    $this->addFlash('success', 'Un voluntario de la lista de reserva ha sido movido a la lista de asistentes.');
+                }
+            }
+        } else {
             $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();
             $assistanceConfirmation->setVolunteer($volunteer);
             $assistanceConfirmation->setService($service);
+            $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
             $entityManager->persist($assistanceConfirmation);
         }
-        $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_NOT_ATTENDING);
+
         $entityManager->flush();
         $this->addFlash('success', 'Has confirmado tu no asistencia.');
         return $this->redirectToRoute('app_dashboard');

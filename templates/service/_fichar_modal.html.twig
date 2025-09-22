@@ -5,28 +5,20 @@
             <h3 class="text-xl font-bold">Fichar a todos</h3>
             <button id="cancel-fichar-btn" class="text-gray-500 hover:text-gray-700">&times;</button>
         </div>
-        <form id="fichar-form" action="{{ path('app_fichaje', {'id': service.id}) }}" method="post">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+        <form id="fichar-form" action="{{ path('app_fichaje_todos', {'id': service.id}) }}" method="post">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
-                    <label for="start-date" class="block text-sm font-medium text-gray-700">Fecha Entrada <span class="text-red-500">*</span></label>
-                    <input type="date" id="start-date" name="start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="start-date">Limpiar campo</a>
+                    <label for="fichar-todos-date" class="block text-sm font-medium text-gray-700">Fecha <span class="text-red-500">*</span></label>
+                    <input type="date" id="fichar-todos-date" name="date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                 </div>
                 <div>
-                    <label for="start-time" class="block text-sm font-medium text-gray-700">Hora Entrada <span class="text-red-500">*</span></label>
-                    <input type="time" id="start-time" name="start-time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="start-time">Limpiar campo</a>
+                    <label for="fichar-todos-time" class="block text-sm font-medium text-gray-700">Hora <span class="text-red-500">*</span></label>
+                    <input type="time" id="fichar-todos-time" name="time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
                 </div>
-                <div>
-                    <label for="end-date" class="block text-sm font-medium text-gray-700">Fecha salida <span class="text-red-500">*</span></label>
-                    <input type="date" id="end-date" name="end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="end-date">Limpiar campo</a>
-                </div>
-                <div>
-                    <label for="end-time" class="block text-sm font-medium text-gray-700">Hora salida <span class="text-red-500">*</span></label>
-                    <input type="time" id="end-time" name="end-time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
-                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="end-time">Limpiar campo</a>
-                </div>
+            </div>
+            <div class="mb-4">
+                <label for="fichar-todos-note" class="block text-sm font-medium text-gray-700">Nota</label>
+                <textarea id="fichar-todos-note" name="note" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
             </div>
             <div class="mb-4">
                 <h4 class="text-lg font-medium mb-2">Personal</h4>
