@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Fichaje;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -45,4 +46,37 @@ class FichajeRepository extends ServiceEntityRepository
 //            ->getOneOrNullResult()
 //        ;
 //    }
+
+    public function calculateTotalDurationInMinutes(AssistanceConfirmation $assistanceConfirmation): int
+    {
+        $fichajes = $this->findBy(
+            ['assistanceConfirmation' => $assistanceConfirmation],
+            ['timestamp' => 'ASC']
+        );
+
+        $totalDuration = 0;
+        $lastIn = null;
+
+        foreach ($fichajes as $fichaje) {
+            if ($fichaje->getType() === 'in') {
+                $lastIn = $fichaje->getTimestamp();
+            } elseif ($fichaje->getType() === 'out' && $lastIn) {
+                $duration = $fichaje->getTimestamp()->getTimestamp() - $lastIn->getTimestamp();
+                $totalDuration += $duration;
+                $lastIn = null;
+            }
+        }
+
+        if ($lastIn) {
+            $service = $assistanceConfirmation->getService();
+            if ($service && $service->getEndDate()) {
+                $duration = $service->getEndDate()->getTimestamp() - $lastIn->getTimestamp();
+                if ($duration > 0) {
+                    $totalDuration += $duration;
+                }
+            }
+        }
+
+        return round($totalDuration / 60);
+    }
 }

@@ -5,6 +5,7 @@ use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
 use App\Form\ServiceType;
 use App\Repository\AssistanceConfirmationRepository;
+use App\Repository\FichajeRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VolunteerServiceRepository;
 use App\Repository\VolunteerRepository;
@@ -145,7 +146,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
@@ -156,9 +157,17 @@ class ServiceController extends AbstractController
             return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
+        $durationsByConfirmation = [];
+        foreach ($service->getAssistanceConfirmations() as $confirmation) {
+            if ($confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
+                $durationsByConfirmation[$confirmation->getId()] = $fichajeRepository->calculateTotalDurationInMinutes($confirmation);
+            }
+        }
+
         return $this->render('service/edit_service.html.twig', [
             'service' => $service,
             'form' => $form->createView(),
+            'durations' => $durationsByConfirmation,
         ]);
     }
 

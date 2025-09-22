@@ -245,7 +245,6 @@
                     <ul class="list-group space-y-2">
                         {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
                             <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
-                                {% set fichaje = fichajes[confirmation.volunteer.id] ?? null %}
                                 <div class="flex items-center justify-between">
                                     <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
                                     <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
@@ -269,6 +268,17 @@
                                             Pendiente de fichar
                                         </span>
                                     {% endif %}
+                                    <div class="mt-2 pt-2 border-t border-gray-200">
+                                        {% set duration = durations[confirmation.id] ?? 0 %}
+                                        <p class="text-sm text-gray-800">
+                                            <strong>Duración Total:</strong>
+                                            {% if duration > 0 %}
+                                                {{ (duration / 60)|round(0, 'floor') }} horas y {{ duration % 60 }} minutos
+                                            {% else %}
+                                                0 minutos
+                                            {% endif %}
+                                        </p>
+                                    </div>
                                 </div>
                                 <div class="flex justify-end mt-2 space-x-2">
                                     <button type="button" class="text-blue-500 hover:text-blue-700" data-action="click->service-form#openFicharIndividualModal" data-volunteer-id="{{ confirmation.volunteer.id }}" data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}">
