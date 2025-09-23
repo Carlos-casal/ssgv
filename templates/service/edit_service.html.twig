@@ -247,9 +247,14 @@
                             <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
                                 {% set fichaje = fichajes[confirmation.volunteer.id] ?? null %}
                                 <div class="flex items-center justify-between">
-                                    <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                    <div class="flex items-center space-x-2">
+                                    <div>
+                                        <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
                                         {% set vs = confirmation.volunteer.getVolunteerServiceForService(service) %}
+                                        {% if vs and vs.fichajes|length > 0 %}
+                                            <span class="ml-2 text-sm font-semibold text-gray-600">({{ vs.getFormattedTotalDuration() }})</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="flex items-center space-x-2">
                                         {% if vs %}
                                             <button type="button" class="text-blue-500 hover:text-blue-700 open-individual-fichaje-modal-btn" data-volunteerservice-id="{{ vs.id }}" data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}">
                                                 <i data-lucide="clock" class="h-5 w-5"></i>

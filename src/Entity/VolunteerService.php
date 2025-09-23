@@ -137,4 +137,34 @@ class VolunteerService
 
         return round($totalDuration / 60);
     }
+
+    public function getFormattedTotalDuration(): string
+    {
+        $totalSeconds = 0;
+        foreach ($this->fichajes as $fichaje) {
+            if ($fichaje->getStartTime() && $fichaje->getEndTime()) {
+                $duration = $fichaje->getEndTime()->getTimestamp() - $fichaje->getStartTime()->getTimestamp();
+                if ($duration > 0) {
+                    $totalSeconds += $duration;
+                }
+            }
+        }
+
+        if ($totalSeconds == 0) {
+            return '0m';
+        }
+
+        $hours = floor($totalSeconds / 3600);
+        $minutes = floor(($totalSeconds % 3600) / 60);
+
+        $formatted = '';
+        if ($hours > 0) {
+            $formatted .= $hours . 'h ';
+        }
+        if ($minutes > 0 || $hours == 0) {
+            $formatted .= $minutes . 'm';
+        }
+
+        return trim($formatted);
+    }
 }
