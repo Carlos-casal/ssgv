@@ -569,4 +569,14 @@ class Volunteer
 
         return $this;
     }
+
+    public function getVolunteerServiceForService(Service $service): ?VolunteerService
+    {
+        foreach ($this->volunteerServices as $vs) {
+            if ($vs->getService() === $service) {
+                return $vs;
+            }
+        }
+        return null;
+    }
 }

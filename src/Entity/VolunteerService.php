@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\VolunteerServiceRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\DBAL\Types\Types; // Necesario para Types::DATETIME_MUTABLE y Types::FLOAT, Types::TEXT
 
@@ -25,18 +27,13 @@ class VolunteerService
     #[ORM\JoinColumn(nullable: false)]
     private ?Service $service = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $startTime = null;
+    #[ORM\OneToMany(mappedBy: 'volunteerService', targetEntity: Fichaje::class, cascade: ['persist', 'remove'])]
+    private Collection $fichajes;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $endTime = null;
-
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $notes = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?int $duration = null;
+    public function __construct()
+    {
+        $this->fichajes = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -67,52 +64,77 @@ class VolunteerService
         return $this;
     }
 
-
-    public function getNotes(): ?string
+    /**
+     * @return Collection<int, Fichaje>
+     */
+    public function getFichajes(): Collection
     {
-        return $this->notes;
+        return $this->fichajes;
     }
 
-    public function setNotes(?string $notes): static
+    public function addFichaje(Fichaje $fichaje): static
     {
-        $this->notes = $notes;
+        if (!$this->fichajes->contains($fichaje)) {
+            $this->fichajes->add($fichaje);
+            $fichaje->setVolunteerService($this);
+        }
 
         return $this;
     }
 
-    public function getStartTime(): ?\DateTimeInterface
+    public function removeFichaje(Fichaje $fichaje): static
     {
-        return $this->startTime;
-    }
-
-    public function setStartTime(?\DateTimeInterface $startTime): static
-    {
-        $this->startTime = $startTime;
+        if ($this->fichajes->removeElement($fichaje)) {
+            // set the owning side to null (unless already changed)
+            if ($fichaje->getVolunteerService() === $this) {
+                $fichaje->setVolunteerService(null);
+            }
+        }
 
         return $this;
     }
 
-    public function getEndTime(): ?\DateTimeInterface
+    public function getOpenFichaje(): ?Fichaje
     {
-        return $this->endTime;
+        foreach ($this->fichajes as $fichaje) {
+            if ($fichaje->getEndTime() === null) {
+                return $fichaje;
+            }
+        }
+
+        return null;
     }
 
-    public function setEndTime(?\DateTimeInterface $endTime): static
+    public function calculateTotalDuration(): int
     {
-        $this->endTime = $endTime;
+        if ($this->fichajes->isEmpty()) {
+            return 0;
+        }
 
-        return $this;
-    }
+        $totalDuration = 0;
+        $serviceEndTime = $this->getService()->getEndDate();
 
-    public function getDuration(): ?int
-    {
-        return $this->duration;
-    }
+        foreach ($this->fichajes as $fichaje) {
+            $startTime = $fichaje->getStartTime();
+            $endTime = $fichaje->getEndTime();
 
-    public function setDuration(?int $duration): static
-    {
-        $this->duration = $duration;
+            if ($startTime === null) {
+                continue;
+            }
 
-        return $this;
+            $effectiveEndTime = $endTime;
+            if ($effectiveEndTime === null) {
+                $effectiveEndTime = $serviceEndTime;
+            }
+
+            if ($effectiveEndTime < $startTime) {
+                continue;
+            }
+
+            $durationInSeconds = $effectiveEndTime->getTimestamp() - $startTime->getTimestamp();
+            $totalDuration += $durationInSeconds;
+        }
+
+        return round($totalDuration / 60);
     }
 }

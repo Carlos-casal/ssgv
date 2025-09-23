@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\AssistanceConfirmation;
+use App\Entity\Service;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -14,6 +15,14 @@ class AssistanceConfirmationRepository extends ServiceEntityRepository
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, AssistanceConfirmation::class);
+    }
+
+    public function countAttendingByService(Service $service): int
+    {
+        return $this->count([
+            'service' => $service,
+            'status' => 'attending',
+        ]);
     }
 
     //    /**
