@@ -253,18 +253,20 @@
                                         {% if vs %}
                                             {% set openFichaje = vs.getOpenFichaje() %}
                                             {% if openFichaje %}
-                                                <form action="{{ path('app_fichaje_clockout', {'id': vs.id}) }}" method="post" class="d-inline">
-                                                    <button type="submit" class="btn btn-warning btn-sm" title="Registrar Salida" onclick="return handleFichaje(this);">
-                                                        <i class="fas fa-clock"></i> Salida
-                                                    </button>
-                                                </form>
+                                                {% set form_action = path('app_fichaje_clockout', {'id': vs.id}) %}
+                                                {% set button_text = 'Salida' %}
+                                                {% set button_class = 'btn-warning' %}
                                             {% else %}
-                                                <form action="{{ path('app_fichaje_clockin', {'id': vs.id}) }}" method="post" class="d-inline">
-                                                    <button type="submit" class="btn btn-success btn-sm" title="Registrar Entrada" onclick="return handleFichaje(this);">
-                                                        <i class="fas fa-clock"></i> Entrada
-                                                    </button>
-                                                </form>
+                                                {% set form_action = path('app_fichaje_clockin', {'id': vs.id}) %}
+                                                {% set button_text = 'Entrada' %}
+                                                {% set button_class = 'btn-success' %}
                                             {% endif %}
+
+                                            <form action="{{ form_action }}" method="post" class="d-inline">
+                                                <button type="submit" class="btn {{ button_class }} btn-sm" title="Registrar {{ button_text }}" onclick="return handleFichaje(this);">
+                                                    <i class="fas fa-clock"></i> {{ button_text }}
+                                                </button>
+                                            </form>
                                         {% endif %}
                                         <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
