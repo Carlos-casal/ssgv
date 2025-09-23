@@ -24,12 +24,15 @@ class ReportController extends AbstractController
         $data = [];
 
         foreach ($volunteerServices as $volunteerService) {
+            $firstFichaje = $volunteerService->getFichajes()->first();
+            $lastFichaje = $volunteerService->getFichajes()->last();
+
             $data[] = [
                 'service' => $volunteerService->getService()->getTitle(),
                 'date' => $volunteerService->getService()->getDate()->format('d/m/Y'),
-                'startTime' => $volunteerService->getStartTime()->format('H:i'),
-                'endTime' => $volunteerService->getEndTime()->format('H:i'),
-                'duration' => $volunteerService->getDuration(),
+                'startTime' => $firstFichaje ? $firstFichaje->getStartTime()->format('H:i') : 'N/A',
+                'endTime' => $lastFichaje && $lastFichaje->getEndTime() ? $lastFichaje->getEndTime()->format('H:i') : 'N/A',
+                'duration' => $volunteerService->calculateTotalDuration(),
             ];
         }
 

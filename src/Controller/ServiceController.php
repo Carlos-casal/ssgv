@@ -266,6 +266,16 @@ class ServiceController extends AbstractController
                 if ($status === 'attends') {
                     if ($availableSlots > 0) {
                         $confirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+
+                        // Also create the VolunteerService record if it doesn't exist
+                        $volunteerService = $entityManager->getRepository(\App\Entity\VolunteerService::class)->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+                        if (!$volunteerService) {
+                            $volunteerService = new \App\Entity\VolunteerService();
+                            $volunteerService->setVolunteer($volunteer);
+                            $volunteerService->setService($service);
+                            $entityManager->persist($volunteerService);
+                        }
+
                         $availableSlots--;
                     } else {
                         $confirmation->setStatus(AssistanceConfirmation::STATUS_RESERVED);
@@ -282,13 +292,20 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/assistance-confirmation/{id}/remove', name: 'app_assistance_confirmation_remove', methods: ['POST'])]
-    public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
         $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
 
         if ($this->isCsrfTokenValid('delete'.$confirmation->getId(), $request->request->get('_token'))) {
             $service = $confirmation->getService();
+            $volunteer = $confirmation->getVolunteer();
             $wasAttending = $confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING;
+
+            // Find and remove the corresponding VolunteerService record
+            $volunteerService = $volunteerServiceRepo->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+            if ($volunteerService) {
+                $entityManager->remove($volunteerService);
+            }
 
             $entityManager->remove($confirmation);
             $entityManager->flush(); // Flush to remove the user and open a spot
@@ -302,6 +319,17 @@ class ServiceController extends AbstractController
 
                 if ($reservedConfirmation) {
                     $reservedConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+
+                    // Create a VolunteerService record for the promoted volunteer
+                    $promotedVolunteer = $reservedConfirmation->getVolunteer();
+                    $promotedVs = $volunteerServiceRepo->findOneBy(['volunteer' => $promotedVolunteer, 'service' => $service]);
+                    if (!$promotedVs) {
+                        $promotedVs = new \App\Entity\VolunteerService();
+                        $promotedVs->setVolunteer($promotedVolunteer);
+                        $promotedVs->setService($service);
+                        $entityManager->persist($promotedVs);
+                    }
+
                     $entityManager->flush(); // Flush again to save the promoted user
                     $this->addFlash('success', 'Un voluntario de la lista de reserva ha sido movido a la lista de asistentes.');
                 }
@@ -314,7 +342,7 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
-    public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
@@ -351,12 +379,22 @@ class ServiceController extends AbstractController
             $this->addFlash('success', 'Has confirmado tu asistencia.');
         }
 
+        if ($assistanceConfirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
+            $volunteerService = $volunteerServiceRepo->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+            if (!$volunteerService) {
+                $volunteerService = new \App\Entity\VolunteerService();
+                $volunteerService->setVolunteer($volunteer);
+                $volunteerService->setService($service);
+                $entityManager->persist($volunteerService);
+            }
+        }
+
         $entityManager->flush();
         return $this->redirectToRoute('app_dashboard');
     }
 
     #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
-    public function unattend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    public function unattend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
@@ -369,6 +407,13 @@ class ServiceController extends AbstractController
 
         $user = $security->getUser();
         $volunteer = $user->getVolunteer();
+
+        // Remove the VolunteerService record if it exists
+        $volunteerService = $volunteerServiceRepo->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+        if ($volunteerService) {
+            $entityManager->remove($volunteerService);
+        }
+
         $assistanceConfirmation = $assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
         if (!$assistanceConfirmation) {
             $assistanceConfirmation = new \App\Entity\AssistanceConfirmation();

@@ -248,48 +248,57 @@
                                 {% set fichaje = fichajes[confirmation.volunteer.id] ?? null %}
                                 <div class="flex items-center justify-between">
                                     <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                    <small class="text-gray-500">({{ confirmation.updatedAt|date('d/m/Y H:i') }})</small>
-                                </div>
-                                <div class="mt-2">
-                                    {% if fichaje %}
-                                        {% if fichaje.endTime %}
-                                            <span class="text-green-600 flex items-center">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                                Fichaje completado
-                                            </span>
-                                            <p class="text-sm text-gray-600 mt-1">
-                                                <strong>Entrada:</strong> {{ fichaje.startTime|date('d/m/Y H:i:s') }} -
-                                                <strong>Salida:</strong> {{ fichaje.endTime|date('d/m/Y H:i:s') }}
-                                            </p>
-                                        {% else %}
-                                            <span class="text-red-600 flex items-center">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                                Fichaje incompleto
-                                            </span>
-                                            <p class="text-sm text-gray-600 mt-1">
-                                                <strong>Entrada:</strong> {{ fichaje.startTime|date('d/m/Y H:i:s') }} -
-                                                <strong>Salida:</strong> No fichado.
-                                            </p>
+                                    <div class="flex items-center space-x-2">
+                                        {% set vs = confirmation.volunteer.getVolunteerServiceForService(service) %}
+                                        {% if vs %}
+                                            {% set openFichaje = vs.getOpenFichaje() %}
+                                            {% if openFichaje %}
+                                                <form action="{{ path('app_fichaje_clockout', {'id': vs.id}) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-warning btn-sm" title="Registrar Salida" onclick="return handleFichaje(this);">
+                                                        <i class="fas fa-clock"></i> Salida
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <form action="{{ path('app_fichaje_clockin', {'id': vs.id}) }}" method="post" class="d-inline">
+                                                    <button type="submit" class="btn btn-success btn-sm" title="Registrar Entrada" onclick="return handleFichaje(this);">
+                                                        <i class="fas fa-clock"></i> Entrada
+                                                    </button>
+                                                </form>
+                                            {% endif %}
                                         {% endif %}
-                                    {% else %}
-                                        <span class="text-yellow-600 flex items-center">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
-                                            Pendiente de fichar
-                                        </span>
-                                        <p class="text-sm text-gray-600 mt-1">
-                                            <strong>Entrada:</strong> No fichado. -
-                                            <strong>Salida:</strong> No fichado.
-                                        </p>
-                                    {% endif %}
+                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                            <button type="submit" class="text-red-500 hover:text-red-700">
+                                                <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                            </button>
+                                        </form>
+                                    </div>
                                 </div>
-                                <div class="flex justify-end mt-2">
-                                    <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                        <button type="submit" class="text-red-500 hover:text-red-700">
-                                            <i data-lucide="trash-2" class="h-5 w-5"></i>
-                                        </button>
-                                    </form>
-                                </div>
+
+                                {% if vs and vs.fichajes|length > 0 %}
+                                    <div class="mt-2 text-sm">
+                                        <strong>Historial:</strong>
+                                        <ul class="list-disc pl-5 mt-1">
+                                            {% for fichaje in vs.fichajes|sort((a, b) => a.startTime <=> b.startTime) %}
+                                                <li>
+                                                    {{ fichaje.startTime|date('d/m H:i') }} -
+                                                    {% if fichaje.endTime %}
+                                                        {{ fichaje.endTime|date('H:i') }}
+                                                    {% else %}
+                                                        <span class="badge bg-info text-dark">Abierto</span>
+                                                    {% endif %}
+                                                    {% if fichaje.notes %}
+                                                        <em class="text-gray-500 ml-2">"{{ fichaje.notes }}"</em>
+                                                    {% endif %}
+                                                </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                {% else %}
+                                    <div class="mt-2 text-sm text-gray-500 italic">
+                                        Aún no hay registros de fichaje.
+                                    </div>
+                                {% endif %}
                             </li>
                         {% else %}
                             <li class="list-group-item text-gray-500 italic">Nadie asiste todavía.</li>
@@ -425,5 +434,29 @@
                 });
             }
         });
+
+        function handleFichaje(button) {
+            const notes = prompt("Añadir una nota (opcional):");
+            if (notes !== null) { // prompt returns null if user clicks Cancel
+                const form = button.closest('form');
+
+                // Remove existing notes input if it exists
+                const existingInput = form.querySelector('input[name="notes"]');
+                if (existingInput) {
+                    existingInput.remove();
+                }
+
+                if (notes) { // Only add input if notes were provided
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'notes';
+                    hiddenInput.value = notes;
+                    form.appendChild(hiddenInput);
+                }
+
+                return true; // Allow form to submit
+            }
+            return false; // Prevent form submission if user cancels
+        }
     </script>
 {% endblock %}
