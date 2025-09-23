@@ -128,4 +128,46 @@ class FichajeController extends AbstractController
 
         return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
     }
+
+    #[Route('/volunteer_service/{id}/fichajes', name: 'app_fichaje_get_for_volunteer', methods: ['GET'])]
+    public function getFichajesForVolunteer(VolunteerService $volunteerService): Response
+    {
+        $fichajes = $volunteerService->getFichajes();
+        $data = [];
+        foreach ($fichajes as $fichaje) {
+            $data[] = [
+                'id' => $fichaje->getId(),
+                'startTime' => $fichaje->getStartTime()->format('Y-m-d H:i:s'),
+                'endTime' => $fichaje->getEndTime() ? $fichaje->getEndTime()->format('Y-m-d H:i:s') : null,
+                'notes' => $fichaje->getNotes(),
+            ];
+        }
+
+        return $this->json($data);
+    }
+
+    #[Route('/volunteer_service/{id}/fichaje/add', name: 'app_fichaje_add_individual', methods: ['POST'])]
+    public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager): Response
+    {
+        $data = json_decode($request->getContent(), true);
+
+        $startTime = new \DateTime($data['startTime']);
+        $endTime = isset($data['endTime']) && $data['endTime'] ? new \DateTime($data['endTime']) : null;
+        $notes = $data['notes'] ?? null;
+
+        if ($endTime && $endTime < $startTime) {
+            return $this->json(['success' => false, 'message' => 'La hora de fin no puede ser anterior a la hora de inicio.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $fichaje = new Fichaje();
+        $fichaje->setVolunteerService($volunteerService);
+        $fichaje->setStartTime($startTime);
+        $fichaje->setEndTime($endTime);
+        $fichaje->setNotes($notes);
+
+        $entityManager->persist($fichaje);
+        $entityManager->flush();
+
+        return $this->json(['success' => true, 'message' => 'Fichaje individual guardado correctamente.']);
+    }
 }
