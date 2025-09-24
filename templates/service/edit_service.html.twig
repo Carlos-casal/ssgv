@@ -266,7 +266,7 @@
                                                     data-action="click->service-form#openIndividualFichajeModal"
                                                     data-volunteer-service-id="{{ vs.id }}"
                                                     data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}">
-                                                <i data-lucide="plus-circle" class="h-5 w-5"></i>
+                                                <i data-lucide="clock" class="h-5 w-5"></i>
                                             </button>
                                         {% endif %}
                                         <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
@@ -438,10 +438,10 @@
             </div>
         </div>
     </div>
-</div>
 
-{{ include('service/_fichar_modal.html.twig') }}
-{{ include('service/_individual_fichaje_modal.html.twig') }}
+    {{ include('service/_fichar_modal.html.twig') }}
+    {{ include('service/_individual_fichaje_modal.html.twig') }}
+</div>
 
 {% endblock %}
 
