@@ -79,6 +79,9 @@ class Service
     #[ORM\OrderBy(['createdAt' => 'ASC'])]
     private Collection $assistanceConfirmations;
 
+    #[ORM\OneToMany(mappedBy: 'service', targetEntity: VolunteerService::class, orphanRemoval: true)]
+    private Collection $volunteerServices;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $afluencia = null;
 
@@ -109,6 +112,7 @@ class Service
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
+        $this->volunteerServices = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -124,6 +128,36 @@ class Service
     public function setNumeration(?string $numeration): static
     {
         $this->numeration = $numeration;
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, VolunteerService>
+     */
+    public function getVolunteerServices(): Collection
+    {
+        return $this->volunteerServices;
+    }
+
+    public function addVolunteerService(VolunteerService $volunteerService): static
+    {
+        if (!$this->volunteerServices->contains($volunteerService)) {
+            $this->volunteerServices->add($volunteerService);
+            $volunteerService->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeVolunteerService(VolunteerService $volunteerService): static
+    {
+        if ($this->volunteerServices->removeElement($volunteerService)) {
+            // set the owning side to null (unless already changed)
+            if ($volunteerService->getService() === $this) {
+                $volunteerService->setService(null);
+            }
+        }
+
         return $this;
     }
 
