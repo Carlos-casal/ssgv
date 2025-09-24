@@ -441,25 +441,29 @@ class ServiceController extends AbstractController
     {
         $this->denyAccessUnlessGranted('ROLE_VOLUNTEER');
         $user = $security->getUser();
-        $volunteerServices = $volunteerServiceRepository->findBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
+        $volunteerServices = $volunteerServiceRepository->findForVolunteerOrderedByServiceDate($user->getVolunteer());
+
         $servicesByYear = [];
+        $totalDurationByYear = [];
+
         foreach ($volunteerServices as $volunteerService) {
-            if ($volunteerService->getDuration()) {
+            $duration = $volunteerService->calculateTotalDuration();
+            if ($duration > 0) {
                 $year = $volunteerService->getService()->getStartDate()->format('Y');
                 if (!isset($servicesByYear[$year])) {
                     $servicesByYear[$year] = [];
+                    $totalDurationByYear[$year] = 0;
                 }
                 $servicesByYear[$year][] = $volunteerService;
+                $totalDurationByYear[$year] += $duration;
             }
         }
-        $totalDurationCurrentYear = 0;
+
         $currentYear = date('Y');
-        if (isset($servicesByYear[$currentYear])) {
-            foreach ($servicesByYear[$currentYear] as $volunteerService) {
-                $totalDurationCurrentYear += $volunteerService->getDuration();
-            }
-        }
-        $lastService = $volunteerServiceRepository->findOneBy(['volunteer' => $user->getVolunteer()], ['startTime' => 'DESC']);
+        $totalDurationCurrentYear = $totalDurationByYear[$currentYear] ?? 0;
+
+        $lastService = $volunteerServices[0] ?? null;
+
         return $this->render('service/my_services.html.twig', [
             'servicesByYear' => $servicesByYear,
             'totalDurationCurrentYear' => $totalDurationCurrentYear,

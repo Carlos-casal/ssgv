@@ -16,6 +16,21 @@ class VolunteerServiceRepository extends ServiceEntityRepository
         parent::__construct($registry, VolunteerService::class);
     }
 
+    /**
+     * @return VolunteerService[]
+     */
+    public function findForVolunteerOrderedByServiceDate(\App\Entity\Volunteer $volunteer): array
+    {
+        return $this->createQueryBuilder('vs')
+            ->innerJoin('vs.service', 's')
+            ->andWhere('vs.volunteer = :volunteer')
+            ->setParameter('volunteer', $volunteer)
+            ->orderBy('s.startDate', 'DESC')
+            ->getQuery()
+            ->getResult()
+        ;
+    }
+
     //    /**
     //     * @return VolunteerService[] Returns an array of VolunteerService objects
     //     */
