@@ -16,7 +16,7 @@
             {% endif %}
             {% if lastService is defined and lastService is not null %}
                 {% set now = "now"|date("U") %}
-                {% set lastServiceTime = lastService.startTime|date("U") %}
+                {% set lastServiceTime = lastService.service.startDate|date("U") %}
                 {% set diff = (now - lastServiceTime) / (24 * 3600) %}
                 <p class="text-gray-600">
                     Último servicio: 
@@ -29,7 +29,7 @@
                             text-green-500
                         {% endif %}
                     ">
-                        {{ lastService.service.title }} ({{ lastService.startTime|date('d/m/Y') }})
+                        {{ lastService.service.title }} ({{ lastService.service.startDate|date('d/m/Y') }})
                     </span>
                     {% if diff > 90 %}
                         <span class="text-red-500">- Ha superado el tiempo mínimo de servicios.</span>
@@ -61,7 +61,7 @@
                         {% for volunteerService in volunteerServices %}
                             <tr class="border-b border-gray-200">
                                 <td class="p-2 text-sm">{{ volunteerService.service.title }}</td>
-                                <td class="p-2 text-sm">{{ volunteerService.startTime ? volunteerService.startTime|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">
                                     {% if volunteerService.duration %}
                                         {% set hours = (volunteerService.duration / 60)|round(0, 'floor') %}
