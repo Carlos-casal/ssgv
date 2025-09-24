@@ -90,4 +90,9 @@ class AssistanceConfirmation
     {
         return $this->updatedAt;
     }
+
+    public function isHasAttended(): bool
+    {
+        return $this->status === self::STATUS_ATTENDING;
+    }
 }
