@@ -63,9 +63,10 @@
                                 <td class="p-2 text-sm">{{ volunteerService.service.title }}</td>
                                 <td class="p-2 text-sm">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">
-                                    {% if volunteerService.duration %}
-                                        {% set hours = (volunteerService.duration / 60)|round(0, 'floor') %}
-                                        {% set minutes = volunteerService.duration % 60 %}
+                                    {% set duration = volunteerService.calculateTotalDuration() %}
+                                    {% if duration %}
+                                        {% set hours = (duration / 60)|round(0, 'floor') %}
+                                        {% set minutes = duration % 60 %}
                                         {{ hours ~ 'h ' ~ minutes ~ 'm' }}
                                     {% else %}
                                         N/A
