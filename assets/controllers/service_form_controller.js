@@ -15,6 +15,8 @@ export default class extends Controller {
     "paginationSummary",
         "attendanceStatusSelect",
         "itemsPerPageSelect",
+    "individualFichajeModal",
+    "individualFichajeModalTitle",
     ];
 
     connect() {
@@ -297,5 +299,50 @@ renderPagination(pagination, items) {
     clockInAll(event) {
         event.preventDefault();
         alert('Funcionalidad "Fichar todos" pendiente de implementar.');
+    }
+
+    openIndividualFichajeModal(event) {
+        const button = event.currentTarget;
+        const volunteerServiceId = button.dataset.volunteerServiceId;
+        const volunteerName = button.dataset.volunteerName;
+
+        this.individualFichajeModalTarget.classList.remove('hidden');
+        this.individualFichajeModalTitleTarget.textContent = `Añadir Fichaje para ${volunteerName}`;
+
+        const form = this.individualFichajeModalTarget.querySelector('form');
+        form.action = `/volunteer_service/${volunteerServiceId}/add_fichaje`;
+    }
+
+    closeIndividualFichajeModal() {
+        this.individualFichajeModalTarget.classList.add('hidden');
+    }
+
+    openEditFichajeModal(event) {
+        const button = event.currentTarget;
+        const fichajeId = button.dataset.fichajeId;
+        const startTime = button.dataset.startTime;
+        const endTime = button.dataset.endTime;
+        const notes = button.dataset.notes;
+
+        // The modal is the same as the "add" modal, we just change its title and form action
+        this.individualFichajeModalTarget.classList.remove('hidden');
+        this.individualFichajeModalTitleTarget.textContent = `Editar Fichaje`;
+
+        const form = this.individualFichajeModalTarget.querySelector('form');
+        form.action = `/fichaje/${fichajeId}/edit`;
+
+        // Pre-fill the form
+        if (startTime) {
+            document.getElementById('individual-start-date').value = startTime.split('T')[0];
+            document.getElementById('individual-start-time').value = startTime.split('T')[1];
+        }
+        if (endTime) {
+            document.getElementById('individual-end-date').value = endTime.split('T')[0];
+            document.getElementById('individual-end-time').value = endTime.split('T')[1];
+        } else {
+            document.getElementById('individual-end-date').value = '';
+            document.getElementById('individual-end-time').value = '';
+        }
+        document.getElementById('individual-notes').value = notes;
     }
 }
