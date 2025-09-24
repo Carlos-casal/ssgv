@@ -81,6 +81,47 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
     }
 
+    #[Route('/volunteer_service/{id}/add_fichaje', name: 'app_fichaje_add_individual', methods: ['POST'])]
+    public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        $startDateStr = $request->request->get('start_date');
+        $startTimeStr = $request->request->get('start_time');
+        $endDateStr = $request->request->get('end_date');
+        $endTimeStr = $request->request->get('end_time');
+        $notes = $request->request->get('notes');
+
+        if (empty($startDateStr) || empty($startTimeStr)) {
+            $this->addFlash('error', 'La fecha y hora de inicio son obligatorias.');
+            return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+        }
+
+        $startTime = new \DateTime("$startDateStr $startTimeStr");
+        $endTime = null;
+        if (!empty($endDateStr) && !empty($endTimeStr)) {
+            $endTime = new \DateTime("$endDateStr $endTimeStr");
+
+            if ($endTime < $startTime) {
+                $this->addFlash('error', 'La hora de fin no puede ser anterior a la hora de inicio.');
+                return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+            }
+        }
+
+        $fichaje = new Fichaje();
+        $fichaje->setVolunteerService($volunteerService);
+        $fichaje->setStartTime($startTime);
+        $fichaje->setEndTime($endTime);
+        $fichaje->setNotes($notes);
+
+        $entityManager->persist($fichaje);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Fichaje añadido correctamente.');
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+    }
+
     #[Route('/volunteer_service/{id}/clockin', name: 'app_fichaje_clockin', methods: ['POST'])]
     public function clockIn(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
@@ -139,4 +180,61 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    #[Route('/fichaje/{id}/delete', name: 'app_fichaje_delete', methods: ['POST'])]
+    public function deleteFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        $serviceId = $fichaje->getVolunteerService()->getService()->getId();
+
+        if ($this->isCsrfTokenValid('delete'.$fichaje->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($fichaje);
+            $entityManager->flush();
+            $this->addFlash('success', 'El registro de fichaje ha sido eliminado.');
+        } else {
+            $this->addFlash('error', 'Token CSRF inválido.');
+        }
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $serviceId, '_fragment' => 'asistencias']);
+    }
+
+    #[Route('/fichaje/{id}/edit', name: 'app_fichaje_edit', methods: ['POST'])]
+    public function editFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+
+        $serviceId = $fichaje->getVolunteerService()->getService()->getId();
+
+        $startDateStr = $request->request->get('start_date');
+        $startTimeStr = $request->request->get('start_time');
+        $endDateStr = $request->request->get('end_date');
+        $endTimeStr = $request->request->get('end_time');
+        $notes = $request->request->get('notes');
+
+        if (empty($startDateStr) || empty($startTimeStr)) {
+            $this->addFlash('error', 'La fecha y hora de inicio son obligatorias.');
+            return $this->redirectToRoute('app_service_edit', ['id' => $serviceId, '_fragment' => 'asistencias']);
+        }
+
+        $startTime = new \DateTime("$startDateStr $startTimeStr");
+        $endTime = null;
+        if (!empty($endDateStr) && !empty($endTimeStr)) {
+            $endTime = new \DateTime("$endDateStr $endTimeStr");
+
+            if ($endTime < $startTime) {
+                $this->addFlash('error', 'La hora de fin no puede ser anterior a la hora de inicio.');
+                return $this->redirectToRoute('app_service_edit', ['id' => $serviceId, '_fragment' => 'asistencias']);
+            }
+        }
+
+        $fichaje->setStartTime($startTime);
+        $fichaje->setEndTime($endTime);
+        $fichaje->setNotes($notes);
+
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Fichaje actualizado correctamente.');
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $serviceId, '_fragment' => 'asistencias']);
+    }
 }

@@ -1,0 +1,37 @@
+<!-- Individual Fichaje Modal -->
+<div id="individual-fichaje-modal" class="hidden fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50" data-service-form-target="individualFichajeModal">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-4 border-b pb-3">
+            <h3 class="text-xl font-bold" data-service-form-target="individualFichajeModalTitle">Añadir Fichaje</h3>
+            <button type="button" data-action="click->service-form#closeIndividualFichajeModal" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        <form id="individual-fichaje-form" method="post">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="individual-start-date" class="block text-sm font-medium text-gray-700">Fecha Entrada <span class="text-red-500">*</span></label>
+                    <input type="date" id="individual-start-date" name="start_date" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <div>
+                    <label for="individual-start-time" class="block text-sm font-medium text-gray-700">Hora Entrada <span class="text-red-500">*</span></label>
+                    <input type="time" id="individual-start-time" name="start_time" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <div>
+                    <label for="individual-end-date" class="block text-sm font-medium text-gray-700">Fecha Salida</label>
+                    <input type="date" id="individual-end-date" name="end_date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+                <div>
+                    <label for="individual-end-time" class="block text-sm font-medium text-gray-700">Hora Salida</label>
+                    <input type="time" id="individual-end-time" name="end_time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                </div>
+            </div>
+            <div class="mb-4">
+                <label for="individual-notes" class="block text-sm font-medium text-gray-700">Notas</label>
+                <textarea id="individual-notes" name="notes" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+            </div>
+            <div class="flex justify-end gap-4 border-t pt-4">
+                <button type="button" data-action="click->service-form#closeIndividualFichajeModal" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Guardar Fichaje</button>
+            </div>
+        </form>
+    </div>
+</div>
