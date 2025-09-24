@@ -185,9 +185,13 @@ class ServiceController extends AbstractController
                 'ac.volunteer = v AND ac.service = :service'
             )
             ->where('v.status = :status')
-            ->andWhere('ac.id IS NULL')
+            ->andWhere($queryBuilder->expr()->orX(
+                'ac.id IS NULL',
+                'ac.status != :attendingStatus'
+            ))
             ->setParameter('status', \App\Entity\Volunteer::STATUS_ACTIVE)
-            ->setParameter('service', $service);
+            ->setParameter('service', $service)
+            ->setParameter('attendingStatus', AssistanceConfirmation::STATUS_ATTENDING);
 
         if ($request->query->has('search')) {
             $search = $request->query->get('search');
