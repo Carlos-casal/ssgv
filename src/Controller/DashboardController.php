@@ -29,7 +29,7 @@ class DashboardController extends AbstractController
 
             $assistanceByService = [];
             foreach ($assistanceConfirmations as $confirmation) {
-                $assistanceByService[$confirmation->getService()->getId()] = $confirmation->isHasAttended();
+                $assistanceByService[$confirmation->getService()->getId()] = $confirmation->hasAttended();
             }
 
             return $this->render('dashboard/volunteer_dashboard.html.twig', [
