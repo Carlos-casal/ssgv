@@ -82,7 +82,7 @@ class FichajeController extends AbstractController
     }
 
     #[Route('/volunteer_service/{id}/add_fichaje', name: 'app_fichaje_add_individual', methods: ['POST'])]
-    public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager): Response
+    public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
 
@@ -98,6 +98,16 @@ class FichajeController extends AbstractController
         }
 
         $startTime = new \DateTime("$startDateStr $startTimeStr");
+
+        // --- VALIDATION: Check against last clock-out ---
+        $lastFichaje = $fichajeRepository->findOneBy(['volunteerService' => $volunteerService], ['endTime' => 'DESC']);
+
+        if ($lastFichaje && $lastFichaje->getEndTime() && $startTime < $lastFichaje->getEndTime()) {
+            $this->addFlash('error', 'La nueva hora de entrada no puede ser anterior a la última hora de salida registrada: ' . $lastFichaje->getEndTime()->format('d/m/Y H:i'));
+            return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+        }
+        // --- END VALIDATION ---
+
         $endTime = null;
         if (!empty($endDateStr) && !empty($endTimeStr)) {
             $endTime = new \DateTime("$endDateStr $endTimeStr");

@@ -17,6 +17,7 @@ export default class extends Controller {
         "itemsPerPageSelect",
     "individualFichajeModal",
     "individualFichajeModalTitle",
+    "lastClockOutTime",
     ];
 
     connect() {
@@ -305,12 +306,35 @@ renderPagination(pagination, items) {
         const button = event.currentTarget;
         const volunteerServiceId = button.dataset.volunteerServiceId;
         const volunteerName = button.dataset.volunteerName;
+        const lastClockOut = button.dataset.lastClockOut;
 
-        this.individualFichajeModalTarget.classList.remove('hidden');
         this.individualFichajeModalTitleTarget.textContent = `Añadir Fichaje para ${volunteerName}`;
+
+        if (this.hasLastClockOutTimeTarget) {
+            if (lastClockOut) {
+                const date = new Date(lastClockOut);
+                this.lastClockOutTimeTarget.textContent = date.toLocaleString('es-ES', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            } else {
+                this.lastClockOutTimeTarget.textContent = 'No hay registros previos.';
+            }
+        }
 
         const form = this.individualFichajeModalTarget.querySelector('form');
         form.action = `/volunteer_service/${volunteerServiceId}/add_fichaje`;
+
+        // Reset form fields
+        form.reset();
+        document.getElementById('individual-start-date').value = '';
+        document.getElementById('individual-start-time').value = '';
+        document.getElementById('individual-end-date').value = '';
+        document.getElementById('individual-end-time').value = '';
+        document.getElementById('individual-notes').value = '';
+
+
+        this.individualFichajeModalTarget.classList.remove('hidden');
     }
 
     closeIndividualFichajeModal() {
