@@ -369,4 +369,63 @@ renderPagination(pagination, items) {
         }
         document.getElementById('individual-notes').value = notes;
     }
+
+    async saveAndAddAnother(event) {
+        event.preventDefault();
+        const form = this.individualFichajeModalTarget.querySelector('form');
+        const formData = new FormData(form);
+        const url = form.action;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: new URLSearchParams(formData)
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Ocurrió un error.');
+            }
+
+            this.showToast(result.message);
+
+            // Clear the form for the next entry
+            document.getElementById('individual-start-date').value = '';
+            document.getElementById('individual-start-time').value = '';
+            document.getElementById('individual-end-date').value = '';
+            document.getElementById('individual-end-time').value = '';
+            document.getElementById('individual-notes').value = '';
+
+            // Update the last clock-out time display
+            if (this.hasLastClockOutTimeTarget && result.lastClockOut) {
+                const date = new Date(result.lastClockOut);
+                this.lastClockOutTimeTarget.textContent = date.toLocaleString('es-ES', {
+                    year: 'numeric', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit'
+                });
+            }
+
+            // Optionally, focus the first input for quick entry
+            document.getElementById('individual-start-date').focus();
+
+        } catch (error) {
+            this.showToast(error.message, 'error');
+        }
+    }
+
+    showToast(message, type = 'success') {
+        const toast = document.createElement('div');
+        toast.className = `fixed bottom-5 right-5 p-4 rounded-lg shadow-lg text-white ${type === 'success' ? 'bg-green-500' : 'bg-red-500'}`;
+        toast.textContent = message;
+
+        document.body.appendChild(toast);
+
+        setTimeout(() => {
+            toast.remove();
+        }, 3000);
+    }
 }

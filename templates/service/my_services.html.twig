@@ -59,17 +59,42 @@
                     </thead>
                     <tbody>
                         {% for volunteerService in volunteerServices %}
-                            <tr class="border-b border-gray-200">
+                            <tr class="border-b border-gray-200" data-controller="service-details">
                                 <td class="p-2 text-sm">{{ volunteerService.service.title }}</td>
-                                <td class="p-2 text-sm">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">
-                                    {% set duration = volunteerService.calculateTotalDuration() %}
-                                    {% if duration %}
-                                        {% set hours = (duration / 60)|round(0, 'floor') %}
-                                        {% set minutes = duration % 60 %}
-                                        {{ hours ~ 'h ' ~ minutes ~ 'm' }}
-                                    {% else %}
-                                        N/A
+                                    <div class="flex items-center justify-between">
+                                        <span>
+                                            {% set duration = volunteerService.calculateTotalDuration() %}
+                                            {% if duration %}
+                                                {% set hours = (duration / 60)|round(0, 'floor') %}
+                                                {% set minutes = duration % 60 %}
+                                                {{ hours ~ 'h ' ~ minutes ~ 'm' }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </span>
+                                        {% if volunteerService.fichajes|length > 0 %}
+                                            <button data-action="click->service-details#toggle" class="p-1 text-gray-500 hover:text-gray-700">
+                                                <i data-lucide="chevron-down" class="h-5 w-5 transition-transform" data-service-details-target="icon"></i>
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                    {% if volunteerService.fichajes|length > 0 %}
+                                        <div class="hidden mt-2 p-2 bg-gray-50 rounded-md" data-service-details-target="details">
+                                            <h4 class="font-semibold text-xs mb-1">Desglose de Fichajes:</h4>
+                                            <ul class="list-disc pl-5 text-xs space-y-1">
+                                                {% for fichaje in volunteerService.fichajes|sort((a, b) => a.startTime <=> b.startTime) %}
+                                                    <li>
+                                                        {{ fichaje.startTime|date('H:i') }} -
+                                                        {{ fichaje.endTime ? fichaje.endTime|date('H:i') : 'Abierto' }}
+                                                        {% if fichaje.notes %}
+                                                            <em class="text-gray-500">({{ fichaje.notes }})</em>
+                                                        {% endif %}
+                                                    </li>
+                                                {% endfor %}
+                                            </ul>
+                                        </div>
                                     {% endif %}
                                 </td>
                             </tr>

@@ -92,44 +92,73 @@ class FichajeController extends AbstractController
         $endTimeStr = $request->request->get('end_time');
         $notes = $request->request->get('notes');
 
+        $isAjax = $request->headers->get('X-Requested-With') === 'XMLHttpRequest';
+
         if (empty($startDateStr) || empty($startTimeStr)) {
+            if ($isAjax) {
+                return $this->json(['success' => false, 'message' => 'La fecha y hora de inicio son obligatorias.'], Response::HTTP_BAD_REQUEST);
+            }
             $this->addFlash('error', 'La fecha y hora de inicio son obligatorias.');
             return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
         }
 
-        $startTime = new \DateTime("$startDateStr $startTimeStr");
+        try {
+            $startTime = new \DateTime("$startDateStr $startTimeStr");
 
-        // --- VALIDATION: Check against last clock-out ---
-        $lastFichaje = $fichajeRepository->findOneBy(['volunteerService' => $volunteerService], ['endTime' => 'DESC']);
-
-        if ($lastFichaje && $lastFichaje->getEndTime() && $startTime < $lastFichaje->getEndTime()) {
-            $this->addFlash('error', 'La nueva hora de entrada no puede ser anterior a la última hora de salida registrada: ' . $lastFichaje->getEndTime()->format('d/m/Y H:i'));
-            return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
-        }
-        // --- END VALIDATION ---
-
-        $endTime = null;
-        if (!empty($endDateStr) && !empty($endTimeStr)) {
-            $endTime = new \DateTime("$endDateStr $endTimeStr");
-
-            if ($endTime < $startTime) {
-                $this->addFlash('error', 'La hora de fin no puede ser anterior a la hora de inicio.');
+            $lastFichaje = $fichajeRepository->findOneBy(['volunteerService' => $volunteerService], ['endTime' => 'DESC']);
+            if ($lastFichaje && $lastFichaje->getEndTime() && $startTime < $lastFichaje->getEndTime()) {
+                $errorMessage = 'La nueva hora de entrada no puede ser anterior a la última hora de salida registrada: ' . $lastFichaje->getEndTime()->format('d/m/Y H:i');
+                if ($isAjax) {
+                    return $this->json(['success' => false, 'message' => $errorMessage], Response::HTTP_UNPROCESSABLE_ENTITY);
+                }
+                $this->addFlash('error', $errorMessage);
                 return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
             }
+
+            $endTime = null;
+            if (!empty($endDateStr) && !empty($endTimeStr)) {
+                $endTime = new \DateTime("$endDateStr $endTimeStr");
+                if ($endTime < $startTime) {
+                    $errorMessage = 'La hora de fin no puede ser anterior a la hora de inicio.';
+                    if ($isAjax) {
+                        return $this->json(['success' => false, 'message' => $errorMessage], Response::HTTP_UNPROCESSABLE_ENTITY);
+                    }
+                    $this->addFlash('error', $errorMessage);
+                    return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+                }
+            }
+
+            $fichaje = new Fichaje();
+            $fichaje->setVolunteerService($volunteerService);
+            $fichaje->setStartTime($startTime);
+            $fichaje->setEndTime($endTime);
+            $fichaje->setNotes($notes);
+
+            $entityManager->persist($fichaje);
+            $entityManager->flush();
+
+            if ($isAjax) {
+                // After saving, find the most recent clock-out time again to return it
+                $newLastFichaje = $fichajeRepository->findOneBy(['volunteerService' => $volunteerService], ['endTime' => 'DESC']);
+                $lastClockOut = $newLastFichaje ? $newLastFichaje->getEndTime() : null;
+
+                return $this->json([
+                    'success' => true,
+                    'message' => 'Fichaje añadido correctamente.',
+                    'lastClockOut' => $lastClockOut ? $lastClockOut->format('Y-m-d H:i:s') : null
+                ]);
+            }
+
+            $this->addFlash('success', 'Fichaje añadido correctamente.');
+            return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
+
+        } catch (\Exception $e) {
+            if ($isAjax) {
+                return $this->json(['success' => false, 'message' => 'Error en el formato de fecha/hora.'], Response::HTTP_BAD_REQUEST);
+            }
+            $this->addFlash('error', 'Error en el formato de fecha/hora.');
+            return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
         }
-
-        $fichaje = new Fichaje();
-        $fichaje->setVolunteerService($volunteerService);
-        $fichaje->setStartTime($startTime);
-        $fichaje->setEndTime($endTime);
-        $fichaje->setNotes($notes);
-
-        $entityManager->persist($fichaje);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Fichaje añadido correctamente.');
-
-        return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
     #[Route('/volunteer_service/{id}/clockin', name: 'app_fichaje_clockin', methods: ['POST'])]
