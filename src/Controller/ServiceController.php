@@ -156,7 +156,7 @@ class ServiceController extends AbstractController
             return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
-        $volunteerServices = $volunteerServiceRepository->findBy(['service' => $service]);
+        $volunteerServices = $volunteerServiceRepository->findByServiceWithOrderedFichajes($service);
 
         $fichajesByVolunteer = [];
         foreach ($volunteerServices as $vs) {

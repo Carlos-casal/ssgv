@@ -4,11 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Volunteer;
 use App\Entity\User;
+use App\Entity\Fichaje;
 // Importa la entidad VolunteerService si ya la creaste.
 // Si aún no la has creado, recuerda el paso 1 de mi respuesta anterior sobre cómo crearla
 // use App\Entity\VolunteerService; // <--- Descomenta si ya tienes esta entidad
 use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
+use App\Repository\FichajeRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -377,10 +379,72 @@ class VolunteerController extends AbstractController
     }
 
     #[Route('/{id}/informe-horas', name: 'app_volunteer_hours_report', methods: ['GET'])]
-    public function hoursReport(Volunteer $volunteer): Response
+    public function hoursReport(Request $request, Volunteer $volunteer, FichajeRepository $fichajeRepository): Response
     {
+        $search = $request->query->get('search');
+        $startDate = $request->query->get('start_date');
+        $endDate = $request->query->get('end_date');
+
+        $qb = $fichajeRepository->createQueryBuilder('f')
+            ->innerJoin('f.volunteerService', 'vs')
+            ->innerJoin('vs.service', 's')
+            ->where('vs.volunteer = :volunteer')
+            ->setParameter('volunteer', $volunteer)
+            ->orderBy('f.startTime', 'DESC');
+
+        if ($search) {
+            $qb->andWhere('s.title LIKE :search')
+               ->setParameter('search', '%'.$search.'%');
+        }
+
+        if ($startDate) {
+            $qb->andWhere('f.startTime >= :start_date')
+               ->setParameter('start_date', new \DateTime($startDate));
+        }
+
+        if ($endDate) {
+            $qb->andWhere('f.startTime <= :end_date')
+               ->setParameter('end_date', new \DateTime($endDate . ' 23:59:59'));
+        }
+
+        $fichajes = $qb->getQuery()->getResult();
+
+        $servicesData = [];
+        $totalHours = 0;
+
+        foreach ($fichajes as $fichaje) {
+            $service = $fichaje->getVolunteerService()->getService();
+            $serviceId = $service->getId();
+
+            if (!isset($servicesData[$serviceId])) {
+                $servicesData[$serviceId] = [
+                    'service' => $service,
+                    'totalHours' => 0,
+                    'fichajes' => [],
+                ];
+            }
+
+            $duration = 0;
+            if ($fichaje->getEndTime()) {
+                $duration = $fichaje->getEndTime()->getTimestamp() - $fichaje->getStartTime()->getTimestamp();
+            }
+
+            $hours = $duration / 3600;
+            $servicesData[$serviceId]['totalHours'] += $hours;
+            $servicesData[$serviceId]['fichajes'][] = [
+                'date' => $fichaje->getStartTime(),
+                'hours' => $hours,
+            ];
+            $totalHours += $hours;
+        }
+
         return $this->render('volunteer/hours_report.html.twig', [
             'volunteer' => $volunteer,
+            'servicesData' => $servicesData,
+            'totalHours' => $totalHours,
+            'search' => $search,
+            'start_date' => $startDate,
+            'end_date' => $endDate,
         ]);
     }
 }
