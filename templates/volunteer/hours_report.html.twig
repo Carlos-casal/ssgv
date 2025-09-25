@@ -3,11 +3,35 @@
 {% block page_title %}Informe de Horas de {{ volunteer.name }} {{ volunteer.lastName }}{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6">
+<div class="p-6 space-y-6" x-data="{ openDetails: {} }">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Informe de Horas de {{ volunteer.name }} {{ volunteer.lastName }}</h2>
         </div>
+    </div>
+
+    <!-- Search and Filter Form -->
+    <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
+        <form method="get" action="{{ path('app_volunteer_hours_report', {'id': volunteer.id}) }}">
+            <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <div class="md:col-span-2 lg:col-span-2">
+                    <label for="search" class="block text-sm font-medium text-gray-700">Buscar por Servicio</label>
+                    <input type="text" name="search" id="search" value="{{ search }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" placeholder="Nombre del servicio...">
+                </div>
+                <div>
+                    <label for="start_date" class="block text-sm font-medium text-gray-700">Fecha Inicio</label>
+                    <input type="date" name="start_date" id="start_date" value="{{ start_date }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </div>
+                <div>
+                    <label for="end_date" class="block text-sm font-medium text-gray-700">Fecha Fin</label>
+                    <input type="date" name="end_date" id="end_date" value="{{ end_date }}" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                </div>
+            </div>
+            <div class="mt-4 flex justify-end gap-2">
+                <a href="{{ path('app_volunteer_hours_report', {'id': volunteer.id}) }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300">Limpiar</a>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Filtrar</button>
+            </div>
+        </form>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -15,31 +39,69 @@
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
+                        <th class="w-12"></th>
                         <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Servicio</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Fecha</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Horas</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Horas Totales</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% set totalHours = 0 %}
-                    {% for volunteerService in volunteer.volunteerServices %}
-                        {% set hours = volunteerService.hours %}
-                        {% set totalHours = totalHours + hours %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4">{{ volunteerService.service.title }}</td>
-                            <td class="px-6 py-4">{{ volunteerService.startTime|date('d/m/Y') }}</td>
-                            <td class="px-6 py-4">{{ hours|number_format(2, '.', ',') }}</td>
+                <tbody>
+                    {% for serviceId, data in servicesData %}
+                        <tr class="hover:bg-gray-50 border-t">
+                            <td class="text-center px-4 py-4">
+                                <button @click="openDetails[{{ serviceId }}] = !openDetails[{{ serviceId }}]">
+                                    <svg class="w-5 h-5 text-gray-500 transition-transform" :class="{'rotate-90': openDetails[{{ serviceId }}]}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+                                    </svg>
+                                </button>
+                            </td>
+                            <td class="px-6 py-4 font-medium">{{ data.service.title }}</td>
+                            <td class="px-6 py-4">{{ data.totalHours|number_format(2, '.', ',') }}</td>
+                        </tr>
+                        <tr x-show="openDetails[{{ serviceId }}]" x-cloak>
+                            <td colspan="3" class="p-0">
+                                <div class="bg-gray-100 p-4">
+                                    <h4 class="text-md font-semibold mb-2">Desglose de Fichajes</h4>
+                                    <table class="w-full bg-white rounded-md">
+                                        <thead class="bg-gray-200">
+                                            <tr>
+                                                <th class="text-left px-4 py-2 text-sm font-medium text-gray-700">Fecha</th>
+                                                <th class="text-left px-4 py-2 text-sm font-medium text-gray-700">Horas</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for fichaje in data.fichajes %}
+                                                <tr class="border-t">
+                                                    <td class="px-4 py-2">{{ fichaje.date|date('d/m/Y') }}</td>
+                                                    <td class="px-4 py-2">{{ fichaje.hours|number_format(2, '.', ',') }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="3" class="text-center py-10 text-gray-500">
+                                No se encontraron registros de horas para los filtros seleccionados.
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>
-                <tfoot class="bg-gray-50">
+                <tfoot class="bg-gray-100 border-t-2 border-gray-300">
                     <tr>
-                        <td colspan="2" class="text-right px-6 py-3 font-bold">Total de Horas</td>
-                        <td class="px-6 py-3 font-bold">{{ totalHours|number_format(2, '.', ',') }}</td>
+                        <td colspan="2" class="text-right px-6 py-3 font-bold text-lg">Total General de Horas</td>
+                        <td class="px-6 py-3 font-bold text-lg">{{ totalHours|number_format(2, '.', ',') }}</td>
                     </tr>
                 </tfoot>
             </table>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {# AlpineJS para la funcionalidad de desplegar/colapsar. Asumiendo que ya está en tu layout. #}
+    {# Si no, puedes añadir el script aquí: <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script> #}
 {% endblock %}

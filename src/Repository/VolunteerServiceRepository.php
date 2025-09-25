@@ -46,13 +46,18 @@ class VolunteerServiceRepository extends ServiceEntityRepository
     //        ;
     //    }
 
-    //    public function findOneBySomeField($value): ?VolunteerService
-    //    {
-    //        return $this->createQueryBuilder('v')
-    //            ->andWhere('v.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
+    /**
+     * @return VolunteerService[]
+     */
+    public function findByServiceWithOrderedFichajes(\App\Entity\Service $service): array
+    {
+        return $this->createQueryBuilder('vs')
+            ->leftJoin('vs.fichajes', 'f')
+            ->addSelect('f')
+            ->andWhere('vs.service = :service')
+            ->setParameter('service', $service)
+            ->orderBy('f.startTime', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
