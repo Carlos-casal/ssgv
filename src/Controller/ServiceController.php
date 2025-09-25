@@ -238,7 +238,9 @@ class ServiceController extends AbstractController
     #[Route('/services/{id}/update-attendance', name: 'app_service_update_attendance', methods: ['POST'])]
     public function updateAttendance(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_COORDINATOR')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
 
         $data = json_decode($request->getContent(), true);
         $volunteerIds = $data['volunteerIds'] ?? [];
@@ -294,7 +296,9 @@ class ServiceController extends AbstractController
     #[Route('/assistance-confirmation/{id}/remove', name: 'app_assistance_confirmation_remove', methods: ['POST'])]
     public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_COORDINATOR')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
 
         if ($this->isCsrfTokenValid('delete'.$confirmation->getId(), $request->request->get('_token'))) {
             $service = $confirmation->getService();
