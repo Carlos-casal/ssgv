@@ -262,12 +262,21 @@
                                     </div>
                                     <div class="flex items-center space-x-2">
                                         {% if vs %}
+                                            {% set last_end_time = null %}
+                                            {% for fichaje_item in vs.fichajes %}
+                                                {% if fichaje_item.endTime is not null %}
+                                                    {% if last_end_time is null or fichaje_item.endTime > last_end_time %}
+                                                        {% set last_end_time = fichaje_item.endTime %}
+                                                    {% endif %}
+                                                {% endif %}
+                                            {% endfor %}
                                             <button type="button"
                                                     class="text-blue-600 hover:text-blue-800 p-1"
                                                     title="Añadir fichaje manual"
                                                     data-action="click->service-form#openIndividualFichajeModal"
                                                     data-volunteer-service-id="{{ vs.id }}"
-                                                    data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}">
+                                                    data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}"
+                                                    data-last-clock-out="{{ last_end_time ? last_end_time|date('Y-m-d H:i:s') : '' }}">
                                                 <i data-lucide="clock" class="h-5 w-5"></i>
                                             </button>
                                         {% endif %}
