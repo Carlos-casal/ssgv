@@ -28,6 +28,7 @@ class VolunteerService
     private ?Service $service = null;
 
     #[ORM\OneToMany(mappedBy: 'volunteerService', targetEntity: Fichaje::class, cascade: ['persist', 'remove'])]
+    #[ORM\OrderBy(['startTime' => 'ASC'])]
     private Collection $fichajes;
 
     public function __construct()
