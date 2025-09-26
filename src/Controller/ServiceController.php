@@ -4,6 +4,7 @@ namespace App\Controller;
 use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
 use App\Form\ServiceType;
+use App\Security\Voter\FichajeVoter;
 use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VolunteerServiceRepository;
@@ -147,6 +148,7 @@ class ServiceController extends AbstractController
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
 
