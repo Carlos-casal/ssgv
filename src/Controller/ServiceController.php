@@ -345,6 +345,41 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    #[Route('/assistance-confirmation/{id}/toggle-responsible', name: 'app_assistance_confirmation_toggle_responsible', methods: ['POST'])]
+    public function toggleFichajeResponsible(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    {
+        $service = $confirmation->getService();
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
+
+        if (!$this->isCsrfTokenValid('toggle-responsible'.$confirmation->getId(), $request->request->get('_token'))) {
+            $this->addFlash('error', 'Token CSRF inválido.');
+            return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
+        }
+
+        $isCurrentlyResponsible = $confirmation->isFichajeResponsible();
+
+        // If we are about to make this user responsible, we must first ensure no one else is.
+        if (!$isCurrentlyResponsible) {
+            $currentResponsible = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'isFichajeResponsible' => true]);
+            if ($currentResponsible && $currentResponsible !== $confirmation) {
+                $currentResponsible->setFichajeResponsible(false);
+            }
+        }
+
+        // Toggle the state for the selected user
+        $confirmation->setFichajeResponsible(!$isCurrentlyResponsible);
+
+        if ($isCurrentlyResponsible) {
+            $this->addFlash('success', 'Se ha quitado la responsabilidad de fichaje al voluntario.');
+        } else {
+            $this->addFlash('success', 'Se ha asignado la responsabilidad de fichaje al voluntario.');
+        }
+
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
+    }
+
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
     public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
