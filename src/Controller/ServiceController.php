@@ -132,7 +132,7 @@ class ServiceController extends AbstractController
         ]);
     }
 
-    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'])]
+    #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(?Service $service): Response
     {
         if (!$service) {
