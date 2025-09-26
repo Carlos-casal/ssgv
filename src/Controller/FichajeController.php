@@ -8,6 +8,7 @@ use App\Repository\VolunteerRepository;
 use App\Entity\Fichaje;
 use App\Repository\FichajeRepository;
 use App\Repository\VolunteerServiceRepository;
+use App\Security\Voter\FichajeVoter;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,6 +20,7 @@ class FichajeController extends AbstractController
     #[Route('/service/{id}/fichaje', name: 'app_fichaje', methods: ['POST'])]
     public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
         $data = $request->request->all();
 
         $startTimeStr = ($data['start-date'] ?? '') . ' ' . ($data['start-time'] ?? '');
@@ -84,7 +86,7 @@ class FichajeController extends AbstractController
     #[Route('/volunteer_service/{id}/add_fichaje', name: 'app_fichaje_add_individual', methods: ['POST'])]
     public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $volunteerService->getService());
 
         $startDateStr = $request->request->get('start_date');
         $startTimeStr = $request->request->get('start_time');
@@ -164,6 +166,7 @@ class FichajeController extends AbstractController
     #[Route('/volunteer_service/{id}/clockin', name: 'app_fichaje_clockin', methods: ['POST'])]
     public function clockIn(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $volunteerService->getService());
         // 1. Check if there is already an open clock-in
         $openFichaje = $fichajeRepository->findOpenFichaje($volunteerService);
         if ($openFichaje) {
@@ -197,6 +200,7 @@ class FichajeController extends AbstractController
     #[Route('/volunteer_service/{id}/clockout', name: 'app_fichaje_clockout', methods: ['POST'])]
     public function clockOut(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $volunteerService->getService());
         $openFichaje = $fichajeRepository->findOpenFichaje($volunteerService);
 
         if (!$openFichaje) {
@@ -222,9 +226,10 @@ class FichajeController extends AbstractController
     #[Route('/fichaje/{id}/delete', name: 'app_fichaje_delete', methods: ['POST'])]
     public function deleteFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        $service = $fichaje->getVolunteerService()->getService();
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
 
-        $serviceId = $fichaje->getVolunteerService()->getService()->getId();
+        $serviceId = $service->getId();
 
         if ($this->isCsrfTokenValid('delete'.$fichaje->getId(), $request->request->get('_token'))) {
             $entityManager->remove($fichaje);
@@ -240,9 +245,10 @@ class FichajeController extends AbstractController
     #[Route('/fichaje/{id}/edit', name: 'app_fichaje_edit', methods: ['POST'])]
     public function editFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
     {
-        $this->denyAccessUnlessGranted('ROLE_COORDINATOR');
+        $service = $fichaje->getVolunteerService()->getService();
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
 
-        $serviceId = $fichaje->getVolunteerService()->getService()->getId();
+        $serviceId = $service->getId();
 
         $startDateStr = $request->request->get('start_date');
         $startTimeStr = $request->request->get('start_time');

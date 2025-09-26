@@ -250,7 +250,12 @@
                                 {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
                                 <div class="flex items-center justify-between">
                                     <div>
-                                        <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                        <span class="font-bold {% if confirmation.isFichajeResponsible %}text-blue-600{% endif %}">
+                                            {% if confirmation.isFichajeResponsible %}
+                                                <i data-lucide="star" class="h-5 w-5 inline-block text-yellow-500 fill-current" title="Responsable de Fichaje"></i>
+                                            {% endif %}
+                                            {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
+                                        </span>
                                         {% if vs %}
                                             {% set totalMinutes = vs.calculateTotalDuration() %}
                                             {% if totalMinutes > 0 %}
@@ -280,6 +285,14 @@
                                                 <i data-lucide="clock" class="h-5 w-5"></i>
                                             </button>
                                         {% endif %}
+                                        <form method="post" action="{{ path('app_assistance_confirmation_toggle_responsible', {'id': confirmation.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('toggle-responsible' ~ confirmation.id) }}">
+                                            <button type="submit"
+                                                    class="p-1 {% if confirmation.isFichajeResponsible %}text-yellow-500 hover:text-yellow-600{% else %}text-gray-400 hover:text-blue-600{% endif %}"
+                                                    title="{% if confirmation.isFichajeResponsible %}Quitar como responsable de fichaje{% else %}Asignar como responsable de fichaje{% endif %}">
+                                                <i data-lucide="shield" class="h-5 w-5"></i>
+                                            </button>
+                                        </form>
                                         <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
                                             <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
                                             <button type="submit" class="text-red-500 hover:text-red-700 p-1">
