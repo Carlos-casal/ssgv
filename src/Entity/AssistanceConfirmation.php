@@ -37,6 +37,9 @@ class AssistanceConfirmation
     #[ORM\Column(type: 'datetime')]
     private $updatedAt;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isFichajeResponsible = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -89,6 +92,18 @@ class AssistanceConfirmation
     public function getUpdatedAt()
     {
         return $this->updatedAt;
+    }
+
+    public function isFichajeResponsible(): bool
+    {
+        return $this->isFichajeResponsible;
+    }
+
+    public function setFichajeResponsible(bool $isFichajeResponsible): static
+    {
+        $this->isFichajeResponsible = $isFichajeResponsible;
+
+        return $this;
     }
 
     public function hasAttended(): bool

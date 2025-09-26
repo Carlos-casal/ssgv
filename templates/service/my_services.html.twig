@@ -2,15 +2,62 @@
 
 {% block title %}Mis Servicios{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        @media (max-width: 767px) {
+            .responsive-table thead {
+                display: none;
+            }
+            .responsive-table tbody,
+            .responsive-table tr,
+            .responsive-table td {
+                display: block;
+                width: 100%;
+            }
+            .responsive-table tr {
+                margin-bottom: 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 0.5rem;
+                overflow: hidden;
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            }
+            .responsive-table td {
+                padding-left: 50%;
+                position: relative;
+                text-align: right;
+                border-bottom: 1px solid #f3f4f6;
+            }
+            .responsive-table td:last-child {
+                border-bottom: none;
+            }
+            .responsive-table td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 0;
+                width: 45%;
+                padding-left: 1rem;
+                font-weight: 600;
+                text-align: left;
+                color: #4b5563;
+            }
+            .responsive-table td .justify-between {
+                justify-content: flex-end;
+            }
+        }
+    </style>
+{% endblock %}
+
+
 {% block content %}
-<div class="p-6 space-y-6">
+<div class="p-4 md:p-6 space-y-6">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Mis Servicios Realizados</h2>
             {% if totalDurationCurrentYear is defined %}
                 {% set hours = (totalDurationCurrentYear / 60)|round(0, 'floor') %}
                 {% set minutes = totalDurationCurrentYear % 60 %}
-                <p class="text-gray-600">Total de horas realizadas este año: {{ hours ~ 'h ' ~ minutes ~ 'm' }}</p>
+                <p class="text-gray-600">Total de horas realizadas este año: <span class="font-semibold text-blue-600">{{ hours ~ 'h ' ~ minutes ~ 'm' }}</span></p>
             {% else %}
                 <p class="text-gray-600">Aquí puedes ver todos los servicios en los que has participado.</p>
             {% endif %}
@@ -18,51 +65,39 @@
                 {% set now = "now"|date("U") %}
                 {% set lastServiceTime = lastService.service.startDate|date("U") %}
                 {% set diff = (now - lastServiceTime) / (24 * 3600) %}
-                <p class="text-gray-600">
-                    Último servicio: 
-                    <span class="
-                        {% if diff > 90 %}
-                            text-red-500
-                        {% elseif diff > 60 %}
-                            text-yellow-500
-                        {% else %}
-                            text-green-500
-                        {% endif %}
-                    ">
+                <p class="text-gray-600 mt-2">
+                    Último servicio:
+                    <span class="font-semibold
+                        {% if diff > 90 %} text-red-500
+                        {% elseif diff > 60 %} text-yellow-500
+                        {% else %} text-green-500 {% endif %}">
                         {{ lastService.service.title }} ({{ lastService.service.startDate|date('d/m/Y') }})
                     </span>
-                    {% if diff > 90 %}
-                        <span class="text-red-500">- Ha superado el tiempo mínimo de servicios.</span>
-                    {% elseif diff > 60 %}
-                        <span class="text-yellow-500">- Le falta un mes para cumplir los tres meses.</span>
-                    {% else %}
-                        <span class="text-green-500">- ¡Gracias por su colaboración!</span>
-                    {% endif %}
                 </p>
             {% endif %}
         </div>
     </div>
 
-    {% for year, volunteerServices in servicesByYear %}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+    {% for year, services in servicesByYear %}
+        <div class="bg-white rounded-xl shadow-md border border-gray-200">
             <div class="p-4 border-b border-gray-200">
-                <h3 class="text-lg font-semibold text-gray-900">{{ year }}</h3>
+                <h3 class="text-xl font-semibold text-gray-800">{{ year }}</h3>
             </div>
-            <div class="p-4">
-                <table class="w-full">
-                    <thead>
+            <div class="overflow-x-auto">
+                <table class="w-full responsive-table">
+                    <thead class="bg-gray-50">
                         <tr class="border-b border-gray-200">
-                            <th class="p-2 text-left text-sm font-semibold text-gray-600">Nombre del Servicio</th>
-                            <th class="p-2 text-left text-sm font-semibold text-gray-600">Día y Hora</th>
-                            <th class="p-2 text-left text-sm font-semibold text-gray-600">Duración Total</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Nombre del Servicio</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Día y Hora</th>
+                            <th class="p-3 text-left text-sm font-semibold text-gray-600 uppercase tracking-wider">Duración Total</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {% for volunteerService in volunteerServices %}
-                            <tr class="border-b border-gray-200" data-controller="service-details">
-                                <td class="p-2 text-sm">{{ volunteerService.service.title }}</td>
-                                <td class="p-2 text-sm">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y') : 'N/A' }}</td>
-                                <td class="p-2 text-sm">
+                    <tbody class="bg-white divide-y divide-gray-200 md:divide-y-0">
+                        {% for volunteerService in services %}
+                            <tr data-controller="service-details" class="hover:bg-gray-50">
+                                <td class="p-3 text-sm" data-label="Servicio">{{ volunteerService.service.title }}</td>
+                                <td class="p-3 text-sm" data-label="Fecha">{{ volunteerService.service.startDate ? volunteerService.service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-3 text-sm" data-label="Duración">
                                     <div class="flex items-center justify-between">
                                         <span>
                                             {% set duration = volunteerService.calculateTotalDuration() %}
@@ -71,25 +106,25 @@
                                                 {% set minutes = duration % 60 %}
                                                 {{ hours ~ 'h ' ~ minutes ~ 'm' }}
                                             {% else %}
-                                                N/A
+                                                <span class="text-gray-500">N/A</span>
                                             {% endif %}
                                         </span>
                                         {% if volunteerService.fichajes|length > 0 %}
-                                            <button data-action="click->service-details#toggle" class="p-1 text-gray-500 hover:text-gray-700">
+                                            <button data-action="click->service-details#toggle" class="p-1 text-gray-500 hover:text-blue-600 rounded-full hover:bg-gray-100">
                                                 <i data-lucide="chevron-down" class="h-5 w-5 transition-transform" data-service-details-target="icon"></i>
                                             </button>
                                         {% endif %}
                                     </div>
                                     {% if volunteerService.fichajes|length > 0 %}
-                                        <div class="hidden mt-2 p-2 bg-gray-50 rounded-md" data-service-details-target="details">
-                                            <h4 class="font-semibold text-xs mb-1">Desglose de Fichajes:</h4>
-                                            <ul class="list-disc pl-5 text-xs space-y-1">
+                                        <div class="hidden mt-2 p-3 bg-gray-50 rounded-lg border" data-service-details-target="details">
+                                            <h4 class="font-semibold text-xs mb-2 text-gray-700">Desglose de Fichajes:</h4>
+                                            <ul class="list-disc pl-5 text-xs space-y-1 text-gray-600">
                                                 {% for fichaje in volunteerService.fichajes|sort((a, b) => a.startTime <=> b.startTime) %}
                                                     <li>
-                                                        {{ fichaje.startTime|date('H:i') }} -
-                                                        {{ fichaje.endTime ? fichaje.endTime|date('H:i') : 'Abierto' }}
+                                                        <span class="font-mono">{{ fichaje.startTime|date('d/m H:i') }}</span> -
+                                                        <span class="font-mono">{{ fichaje.endTime ? fichaje.endTime|date('H:i') : 'Abierto' }}</span>
                                                         {% if fichaje.notes %}
-                                                            <em class="text-gray-500">({{ fichaje.notes }})</em>
+                                                            <em class="text-gray-500 ml-1">({{ fichaje.notes }})</em>
                                                         {% endif %}
                                                     </li>
                                                 {% endfor %}
@@ -104,10 +139,10 @@
             </div>
         </div>
     {% else %}
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4">
-            <p class="text-center text-gray-500">No has participado en ningún servicio todavía.</p>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 text-center">
+            <i data-lucide="info" class="h-10 w-10 mx-auto text-gray-400 mb-2"></i>
+            <p class="text-gray-500">No has participado en ningún servicio todavía.</p>
         </div>
     {% endfor %}
-    </div>
 </div>
 {% endblock %}
