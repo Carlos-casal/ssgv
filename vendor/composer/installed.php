@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-master',
-        'version' => 'dev-master',
-        'reference' => '31ce34b3103ece136bde60a3c718e917519ab148',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'd6359e1d150361ab325a617bcd213d79f02274a0',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,9 +11,9 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-master',
-            'version' => 'dev-master',
-            'reference' => '31ce34b3103ece136bde60a3c718e917519ab148',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'd6359e1d150361ab325a617bcd213d79f02274a0',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
@@ -1137,9 +1137,9 @@
             'dev_requirement' => false,
         ),
         'symfony/security-bundle' => array(
-            'pretty_version' => 'v7.3.1',
-            'version' => '7.3.1.0',
-            'reference' => '428a281fd66c8358adc2259c8578e6d81fbb7079',
+            'pretty_version' => 'v7.3.3',
+            'version' => '7.3.3.0',
+            'reference' => 'fbecca9a10af8d886e116f74e860e19b7583689c',
             'type' => 'symfony-bundle',
             'install_path' => __DIR__ . '/../symfony/security-bundle',
             'aliases' => array(),
