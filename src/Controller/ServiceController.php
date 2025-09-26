@@ -550,4 +550,45 @@ class ServiceController extends AbstractController
             'whatsappLink' => $whatsappLink,
         ]);
     }
+
+    #[Route('/servicios/responsable', name: 'app_responsible_services_list', methods: ['GET'])]
+    public function responsibleServicesList(AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_USER');
+        $user = $this->getUser();
+        if (!$user?->getVolunteer()) {
+            // If the user is not a volunteer, they can't be responsible for anything.
+            return $this->render('service/responsible_list.html.twig', ['services' => []]);
+        }
+
+        $responsibleConfirmations = $assistanceConfirmationRepository->findBy([
+            'volunteer' => $user->getVolunteer(),
+            'isFichajeResponsible' => true,
+        ]);
+
+        $services = array_map(fn($confirmation) => $confirmation->getService(), $responsibleConfirmations);
+
+        return $this->render('service/responsible_list.html.twig', [
+            'services' => $services,
+        ]);
+    }
+
+    #[Route('/responsible/service/{id}', name: 'app_responsible_service_manage', methods: ['GET'])]
+    public function manageResponsibleService(Service $service, VolunteerServiceRepository $volunteerServiceRepository): Response
+    {
+        // Use the voter to ensure the user is the designated responsible person, an admin, or a coordinator.
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
+
+        $volunteerServices = $volunteerServiceRepository->findByServiceWithOrderedFichajes($service);
+
+        $fichajesByVolunteer = [];
+        foreach ($volunteerServices as $vs) {
+            $fichajesByVolunteer[$vs->getVolunteer()->getId()] = $vs;
+        }
+
+        return $this->render('service/responsible_manage.html.twig', [
+            'service' => $service,
+            'fichajes' => $fichajesByVolunteer,
+        ]);
+    }
 }
