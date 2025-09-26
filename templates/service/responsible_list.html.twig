@@ -1,0 +1,40 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Servicios a mi cargo{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+    <h1 class="text-3xl font-bold mb-6 text-gray-800">Servicios a mi cargo</h1>
+
+    <div class="bg-white shadow-xl rounded-2xl p-6">
+        {% if services is not empty %}
+            <p class="mb-6 text-gray-600">
+                A continuación se muestran los servicios para los que has sido designado/a como responsable de fichaje.
+            </p>
+            <ul class="divide-y divide-gray-200">
+                {% for service in services %}
+                    <li class="py-4 flex justify-between items-center">
+                        <div>
+                            <h2 class="text-lg font-semibold text-blue-700">{{ service.title }}</h2>
+                            <p class="text-sm text-gray-500">
+                                Fecha de inicio: {{ service.startDate|date('d/m/Y H:i') }}
+                            </p>
+                        </div>
+                        <a href="{{ path('app_responsible_service_manage', {'id': service.id}) }}" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                            <i data-lucide="edit" class="mr-2 h-5 w-5"></i> Gestionar Fichajes
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="text-center py-12">
+                <i data-lucide="inbox" class="h-12 w-12 mx-auto text-gray-400"></i>
+                <h3 class="mt-2 text-lg font-medium text-gray-900">No tienes servicios a tu cargo</h3>
+                <p class="mt-1 text-sm text-gray-500">
+                    No has sido asignado/a como responsable de fichaje para ningún servicio.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
