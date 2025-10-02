@@ -5,10 +5,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Puedes añadir tu propio CSS personalizado aquí si es necesario,
-   pero la mayoría de los estilos deberían venir de las clases de Tailwind en tu Twig. */
+@layer components {
+    .form-input {
+        @apply w-full px-4 py-2 border border-primary-200 rounded-lg bg-white shadow-sm;
+        @apply focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent;
+        @apply transition duration-150 ease-in-out;
+    }
 
-/* Ejemplo del fondo azul claro que tenías, si quieres eliminarlo: */
-/* body {
-    background-color: lightblue;
-} */
+    .form-select {
+        @apply form-input;
+    }
+
+    input[type='text'],
+    input[type='date'],
+    input[type='email'],
+    input[type='password'],
+    input[type='number'],
+    textarea,
+    select {
+        @apply form-input;
+    }
+
+    .form-label {
+        @apply block mb-1 text-sm font-medium text-primary-800;
+    }
+}

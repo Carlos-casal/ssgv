@@ -6,7 +6,8 @@
 
 {% block content %}
     <div class="flex justify-end mb-4">
-        <a href="{{ path('app_admin_fuel_type_new') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <a href="{{ path('app_admin_fuel_type_new') }}" class="bg-primary-500 hover:bg-primary-600 text-white font-bold py-2 px-4 rounded-lg shadow-md hover:shadow-lg transition-all">
+            <i data-lucide="plus" class="inline-block w-4 h-4 mr-1"></i>
             Crear Nuevo
         </a>
     </div>
@@ -15,10 +16,10 @@
         <table class="min-w-full leading-normal">
             <thead>
                 <tr>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th class="px-5 py-3 border-b-2 border-primary-200 bg-primary-100 text-left text-xs font-semibold text-primary-800 uppercase tracking-wider">
                         Nombre
                     </th>
-                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                    <th class="px-5 py-3 border-b-2 border-primary-200 bg-primary-100 text-left text-xs font-semibold text-primary-800 uppercase tracking-wider">
                         Acciones
                     </th>
                 </tr>
@@ -26,16 +27,28 @@
             <tbody>
                 {% for fuel_type in fuel_types %}
                     <tr>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            {{ fuel_type.name }}
+                            <td class="px-5 py-5 border-b border-primary-200 bg-white text-sm">
+                                <a href="{{ path('app_admin_fuel_type_edit', {'id': fuel_type.id}) }}" class="text-gray-900 hover:text-primary-600 font-medium">
+                                    {{ fuel_type.name }}
+                                </a>
                         </td>
-                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                            <a href="{{ path('app_admin_fuel_type_edit', {'id': fuel_type.id}) }}" class="text-yellow-500 hover:text-yellow-800">Editar</a>
+                            <td class="px-5 py-5 border-b border-primary-200 bg-white text-sm">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ path('app_admin_fuel_type_edit', {'id': fuel_type.id}) }}" class="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100" title="Editar">
+                                        <i data-lucide="pencil" class="w-4 h-4"></i>
+                                    </a>
+                                    <form method="post" action="{{ path('app_admin_fuel_type_delete', {'id': fuel_type.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este tipo de combustible?');" class="inline">
+                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fuel_type.id) }}">
+                                        <button type="submit" class="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50" title="Eliminar">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                </div>
                         </td>
                     </tr>
                 {% else %}
                     <tr>
-                        <td colspan="2" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                            <td colspan="2" class="px-5 py-5 border-b border-primary-200 bg-white text-sm text-center">
                             No se encontraron tipos de combustible.
                         </td>
                     </tr>

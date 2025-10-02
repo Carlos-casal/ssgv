@@ -1,7 +1,7 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="flex h-screen bg-gray-50">
+<div class="flex h-screen bg-primary-50">
     <!-- Sidebar -->
     {% include 'layout/sidebar.html.twig' %}
     
@@ -9,21 +9,22 @@
     <div class="flex-1 flex flex-col overflow-hidden">
         <!-- Main content area -->
         <main class="flex-1 overflow-y-auto p-6">
-            <h1 class="text-2xl font-bold text-gray-900">{% block page_title %}{% endblock %}</h1>
+            <h1 class="text-3xl font-bold text-primary-900">{% block page_title %}{% endblock %}</h1>
+
             {% for message in app.flashes('success') %}
-                <div class="mx-6 mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                <div class="mx-6 mt-4 p-4 bg-primary-100 border border-primary-200 text-primary-800 rounded-lg">
                     <div class="flex items-center">
-                        <i data-lucide="check-circle" class="w-5 h-5 text-green-500 mr-2"></i>
-                        <span class="text-green-800">{{ message }}</span>
+                        <i data-lucide="check-circle" class="w-5 h-5 text-primary-600 mr-2"></i>
+                        <span>{{ message }}</span>
                     </div>
                 </div>
             {% endfor %}
             
             {% for message in app.flashes('error') %}
-                <div class="mx-6 mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <div class="mx-6 mt-4 p-4 bg-red-100 border border-red-200 text-red-800 rounded-lg">
                     <div class="flex items-center">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 mr-2"></i>
-                        <span class="text-red-800">{{ message }}</span>
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 mr-2"></i>
+                        <span>{{ message }}</span>
                     </div>
                 </div>
             {% endfor %}

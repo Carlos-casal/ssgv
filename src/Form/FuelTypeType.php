@@ -16,6 +16,7 @@ class FuelTypeType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nombre del Tipo de Combustible',
                 'required' => true,
+                'label_attr' => ['class' => 'form-label'],
             ]);
     }
 
