@@ -1,25 +1,122 @@
-{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
-    <div>
-        {{ form_label(form.make, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-        {{ form_widget(form.make, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}}) }}
-        {{ form_errors(form.make) }}
+{{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    {# Columna Izquierda #}
+    <div class="space-y-4">
+        <div>
+            {{ form_label(form.make) }}
+            {{ form_widget(form.make) }}
+            {{ form_errors(form.make) }}
+        </div>
+        <div>
+            {{ form_label(form.model) }}
+            {{ form_widget(form.model) }}
+            {{ form_errors(form.model) }}
+        </div>
+        <div>
+            {{ form_label(form.licensePlate) }}
+            {{ form_widget(form.licensePlate) }}
+            {{ form_errors(form.licensePlate) }}
+        </div>
+        <div>
+            {{ form_label(form.alias) }}
+            {{ form_widget(form.alias) }}
+            {{ form_errors(form.alias) }}
+        </div>
+        <div>
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type) }}
+            {{ form_errors(form.type) }}
+        </div>
+        <div>
+            {{ form_label(form.resources) }}
+            {{ form_widget(form.resources) }}
+            {{ form_errors(form.resources) }}
+        </div>
     </div>
-    <div>
-        {{ form_label(form.model, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-        {{ form_widget(form.model, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}}) }}
-        {{ form_errors(form.model) }}
+
+    {# Columna Derecha #}
+    <div class="space-y-4">
+        <div>
+            {{ form_label(form.registrationDate) }}
+            {{ form_widget(form.registrationDate) }}
+            {{ form_errors(form.registrationDate) }}
+        </div>
+        <div>
+            {{ form_label(form.fuelType) }}
+            {{ form_widget(form.fuelType) }}
+            {{ form_errors(form.fuelType) }}
+        </div>
+        <div>
+            {{ form_label(form.cabinType) }}
+            {{ form_widget(form.cabinType) }}
+            {{ form_errors(form.cabinType) }}
+        </div>
+        <div>
+            {{ form_label(form.nextRevisionDate) }}
+            {{ form_widget(form.nextRevisionDate) }}
+            {{ form_errors(form.nextRevisionDate) }}
+        </div>
+        <div>
+            {{ form_label(form.insuranceDueDate) }}
+            {{ form_widget(form.insuranceDueDate) }}
+            {{ form_errors(form.insuranceDueDate) }}
+        </div>
     </div>
+</div>
+
+{# Campo de la foto y vista previa #}
+<div class="pt-4">
+    {% if form.vars.data.photo %}
+        <div class="mb-4">
+            <p class="block text-sm font-medium text-gray-700">Foto Actual</p>
+            <img src="{{ asset('uploads/vehicles_photos/' ~ form.vars.data.photo) }}" alt="Foto del vehículo" class="mt-2 w-48 h-auto rounded-md object-cover">
+        </div>
+    {% endif %}
     <div>
-        {{ form_label(form.year, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-        {{ form_widget(form.year, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}}) }}
-        {{ form_errors(form.year) }}
+        {{ form_label(form.photo) }}
+        {{ form_widget(form.photo) }}
+        <p class="text-xs text-gray-500 mt-1">Sube una nueva foto para reemplazar la actual.</p>
+        {{ form_errors(form.photo) }}
     </div>
-    <div>
-        {{ form_label(form.licensePlate, null, {'label_attr': {'class': 'block text-sm font-medium text-gray-700'}}) }}
-        {{ form_widget(form.licensePlate, {'attr': {'class': 'mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm'}}) }}
-        {{ form_errors(form.licensePlate) }}
-    </div>
+</div>
+
+
+<div class="pt-6">
     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
         {{ button_label|default('Guardar') }}
     </button>
+</div>
+
 {{ form_end(form) }}
+
+{# Custom styles for form elements if they are not globally defined #}
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        input[type="text"], input[type="date"], select {
+            margin-top: 0.25rem;
+            display: block;
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #D1D5DB; /* border-gray-300 */
+            border-radius: 0.375rem; /* rounded-md */
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); /* shadow-sm */
+        }
+        input[type="text"]:focus, input[type="date"]:focus, select:focus {
+            outline: none;
+            border-color: #4F46E5; /* focus:border-indigo-500 */
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2); /* focus:ring-indigo-500 */
+        }
+        label {
+            display: block;
+            font-size: 0.875rem; /* text-sm */
+            font-weight: 500; /* font-medium */
+            color: #374151; /* text-gray-700 */
+        }
+        .text-red-500 {
+            color: #EF4444;
+        }
+    </style>
+{% endblock %}

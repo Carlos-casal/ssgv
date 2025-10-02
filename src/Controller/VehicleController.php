@@ -7,9 +7,12 @@ use App\Form\VehicleType;
 use App\Repository\VehicleRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\String\Slugger\SluggerInterface;
+use Symfony\Component\Filesystem\Filesystem;
 
 #[Route('/admin/vehicles')]
 class VehicleController extends AbstractController
@@ -23,13 +26,32 @@ class VehicleController extends AbstractController
     }
 
     #[Route('/new', name: 'app_vehicle_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
         $vehicle = new Vehicle();
         $form = $this->createForm(VehicleType::class, $vehicle);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $photoFile = $form->get('photo')->getData();
+
+            if ($photoFile) {
+                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+
+                try {
+                    $photoFile->move(
+                        $this->getParameter('vehicle_photos_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // ... handle exception if something happens during file upload
+                }
+
+                $vehicle->setPhoto($newFilename);
+            }
+
             $entityManager->persist($vehicle);
             $entityManager->flush();
 
@@ -53,12 +75,37 @@ class VehicleController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_vehicle_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager, SluggerInterface $slugger, Filesystem $filesystem): Response
     {
         $form = $this->createForm(VehicleType::class, $vehicle);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $photoFile = $form->get('photo')->getData();
+
+            if ($photoFile) {
+                // Delete old photo if it exists
+                $oldPhoto = $vehicle->getPhoto();
+                if ($oldPhoto) {
+                    $filesystem->remove($this->getParameter('vehicle_photos_directory').'/'.$oldPhoto);
+                }
+
+                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = $slugger->slug($originalFilename);
+                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
+
+                try {
+                    $photoFile->move(
+                        $this->getParameter('vehicle_photos_directory'),
+                        $newFilename
+                    );
+                } catch (FileException $e) {
+                    // ... handle exception
+                }
+
+                $vehicle->setPhoto($newFilename);
+            }
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Vehículo actualizado con éxito.');
@@ -73,9 +120,14 @@ class VehicleController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_vehicle_delete', methods: ['POST'])]
-    public function delete(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager, Filesystem $filesystem): Response
     {
         if ($this->isCsrfTokenValid('delete'.$vehicle->getId(), $request->request->get('_token'))) {
+            $photo = $vehicle->getPhoto();
+            if ($photo) {
+                $filesystem->remove($this->getParameter('vehicle_photos_directory').'/'.$photo);
+            }
+
             $entityManager->remove($vehicle);
             $entityManager->flush();
 
