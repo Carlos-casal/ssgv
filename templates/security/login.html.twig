@@ -3,14 +3,14 @@
 {% block title %}Iniciar Sesión - Sistema de Gestión de Voluntarios{% endblock %}
 
 {% block body %}
-<div class="min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center justify-center p-4">
+<div class="min-h-screen bg-gradient-to-br from-primary-700 to-primary-900 flex items-center justify-center p-4">
     <div class="max-w-md w-full">
         <div class="text-center mb-8">
             <div class="inline-flex items-center justify-center w-16 h-16 bg-white rounded-full mb-4">
-                <i data-lucide="users" class="w-8 h-8 text-blue-600"></i>
+                <i data-lucide="users" class="w-8 h-8 text-primary-600"></i>
             </div>
             <h1 class="text-3xl font-bold text-white mb-2">Sistema de Gestión</h1>
-            <p class="text-blue-200">Gestión de Voluntarios</p>
+            <p class="text-primary-200">Gestión de Voluntarios</p>
         </div>
 
         <div class="bg-white rounded-2xl shadow-2xl p-8">
@@ -31,7 +31,7 @@
                         <div class="relative">
                             <i data-lucide="mail" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
                             <input type="email" value="{{ last_username }}" name="_username" id="inputEmail"
-                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                                    placeholder="admin@voluntarios.org" autocomplete="email" required autofocus>
                         </div>
                     </div>
@@ -43,21 +43,21 @@
                         <div class="relative">
                             <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
                             <input type="password" name="_password" id="inputPassword"
-                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                                    placeholder="••••••••" autocomplete="current-password" required>
                         </div>
                     </div>
 
                     <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                    <button class="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-blue-500 focus:ring-offset-2" type="submit">
+                    <button class="w-full bg-accent-500 hover:bg-accent-600 disabled:bg-accent-400 text-white font-medium py-3 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-accent-500 focus:ring-offset-2" type="submit">
                         Iniciar Sesión
                     </button>
                 </div>
             </form>
 
-            <div class="mt-6 p-4 bg-blue-50 rounded-lg">
-                <p class="text-sm text-blue-800 text-center">
+            <div class="mt-6 p-4 bg-accent-50 rounded-lg">
+                <p class="text-sm text-accent-800 text-center">
                     <strong>Demo:</strong> admin@voluntarios.org / admin123
                 </p>
             </div>

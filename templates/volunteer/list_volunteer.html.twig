@@ -11,12 +11,12 @@
         </div>
         <div class="flex gap-3">
             <a href="{{ path('app_volunteer_export_csv') }}" 
-               class="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+               class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Exportar CSV
             </a>
             <a href="#" 
-               class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+               class="flex items-center gap-2 px-4 py-2 bg-accent-500 text-white rounded-lg hover:bg-accent-600 transition-colors">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Nuevo Voluntario
             </a>
@@ -33,18 +33,18 @@
                         name="search"
                         value="{{ searchTerm }}"
                         placeholder="Buscar por nombre o email..."
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500"
                     />
                 </div>
             </div>
             <div class="flex gap-3">
-                <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-accent-500 focus:border-accent-500">
                     <option value="all" {{ filterStatus == 'all' ? 'selected' : '' }}>Todos los estados</option>
                     <option value="Activo" {{ filterStatus == 'Activo' ? 'selected' : '' }}>Activos</option> {# Asegúrate de que los valores coincidan con los de tu entidad #}
                     <option value="Suspensión" {{ filterStatus == 'Suspensión' ? 'selected' : '' }}>En Suspensión</option> {# Actualizado para reflejar mejor los estados #}
                     <option value="Baja" {{ filterStatus == 'Baja' ? 'selected' : '' }}>De Baja</option> {# Actualizado para reflejar mejor los estados #}
                 </select>
-                <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
                     <i data-lucide="filter" class="w-4 h-4"></i>
                     Filtrar
                 </button>
@@ -90,8 +90,8 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium">
+                                    <div class="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                        <span class="text-primary-600 font-medium">
                                             {{ volunteer.name|split(' ')|map(name => name|first)|join('')|slice(0, 2)|upper }}
                                         </span>
                                     </div>
@@ -137,11 +137,11 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-2">
-                                    <button class="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                                    <button class="p-1 text-primary-600 hover:bg-primary-50 rounded">
                                         <i data-lucide="eye" class="w-4 h-4"></i>
                                     </button>
                                     <a href="{{ path('app_volunteer_edit', {'id': volunteer.id}) }}"
-                                    class="p-1 text-green-600 hover:bg-green-50 rounded">
+                                    class="p-1 text-accent-600 hover:bg-accent-50 rounded">
                                         <i data-lucide="edit" class="w-4 h-4"></i>
                                     </a>
                                     <button class="p-1 text-red-600 hover:bg-red-50 rounded">

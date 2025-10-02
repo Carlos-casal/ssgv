@@ -3,7 +3,7 @@
 <div class="bg-primary-900 text-primary-200 shadow-lg w-64 flex flex-col h-full" id="sidebar">
     <!-- Encabezado de la Barra Lateral -->
     <div class="p-4 border-b border-primary-800 flex items-center gap-3">
-        <div class="w-10 h-10 bg-primary-500 rounded-lg flex items-center justify-center flex-shrink-0">
+        <div class="w-10 h-10 bg-accent-500 rounded-lg flex items-center justify-center flex-shrink-0">
             <i data-lucide="shield" class="w-6 h-6 text-white"></i>
         </div>
         <div>
@@ -19,7 +19,7 @@
                 <li>
                     <a href="{{ path('app_dashboard') }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors
-                              {{ current_route == 'app_dashboard' ? 'bg-primary-500 text-white' : 'hover:bg-primary-800' }}">
+                              {{ current_route == 'app_dashboard' ? 'bg-accent-500 text-white' : 'hover:bg-primary-800' }}">
                         <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="text-sm font-medium">INICIO</span>
                     </a>
@@ -94,13 +94,13 @@
     <!-- Perfil de Usuario y Cerrar Sesión -->
     <div class="p-4 border-t border-primary-800">
         <div class="flex items-center gap-3 mb-3">
-            <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-primary-500">
+            <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-accent-500">
             <div class="flex-1">
                 <p class="font-semibold text-sm text-white">{{ app.user.volunteer.name|default('Usuario') }}</p>
                 <p class="text-xs text-primary-300">{{ app.user.email }}</p>
             </div>
         </div>
-        <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-accent-400 hover:bg-accent-900/50 hover:text-white rounded-lg transition-colors">
+        <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-accent-400 hover:bg-accent-500 hover:text-white rounded-lg transition-colors">
             <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
             <span class="text-sm font-medium">Cerrar Sesión</span>
         </a>

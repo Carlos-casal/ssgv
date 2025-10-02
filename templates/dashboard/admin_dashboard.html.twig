@@ -5,9 +5,9 @@
 {% block content %}
 <div class="p-6 space-y-6">
     <!-- Welcome section -->
-    <div class="bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl p-6 text-white">
+    <div class="bg-gradient-to-r from-primary-500 to-accent-500 rounded-xl p-6 text-white">
         <h2 class="text-2xl font-bold mb-2">¡Bienvenido al Sistema de Gestión!</h2>
-        <p class="text-blue-100">
+        <p class="text-primary-100">
             Gestiona voluntarios, recursos y servicios de manera eficiente desde un solo lugar.
         </p>
     </div>
@@ -24,8 +24,8 @@
                         <span class="text-sm text-gray-500 ml-1">este mes</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                <div class="p-3 bg-accent-100 rounded-lg">
+                    <i data-lucide="users" class="w-6 h-6 text-accent-600"></i>
                 </div>
             </div>
         </div>
@@ -40,8 +40,8 @@
                         <span class="text-sm text-gray-500 ml-1">este mes</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="calendar" class="w-6 h-6 text-green-600"></i>
+                <div class="p-3 bg-accent-100 rounded-lg">
+                    <i data-lucide="calendar" class="w-6 h-6 text-accent-600"></i>
                 </div>
             </div>
         </div>
@@ -56,8 +56,8 @@
                         <span class="text-sm text-gray-500 ml-1">este mes</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="car" class="w-6 h-6 text-purple-600"></i>
+                <div class="p-3 bg-accent-100 rounded-lg">
+                    <i data-lucide="car" class="w-6 h-6 text-accent-600"></i>
                 </div>
             </div>
         </div>
@@ -72,8 +72,8 @@
                         <span class="text-sm text-gray-500 ml-1">este mes</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="alert-triangle" class="w-6 h-6 text-orange-600"></i>
+                <div class="p-3 bg-accent-100 rounded-lg">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-accent-600"></i>
                 </div>
             </div>
         </div>
@@ -85,7 +85,7 @@
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
             <div class="space-y-4">
                 <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                    <div class="w-2 h-2 rounded-full bg-accent-500 mt-2"></div>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
                         <p class="text-sm text-gray-600">María García</p>
@@ -93,7 +93,7 @@
                     </div>
                 </div>
                 <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                    <div class="w-2 h-2 rounded-full bg-primary-500 mt-2"></div>
                     <div class="flex-1">
                         <p class="text-sm font-medium text-gray-900">Servicio completado</p>
                         <p class="text-sm text-gray-600">Equipo Alpha</p>
@@ -107,7 +107,7 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Eventos</h3>
             <div class="space-y-4">
-                <div class="border border-gray-200 rounded-lg p-4">
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-accent-500 transition-colors">
                     <h4 class="font-medium text-gray-900">Formación en Primeros Auxilios</h4>
                     <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
                         <span>📅 15 Mar 2024</span>
@@ -115,7 +115,7 @@
                         <span>👥 25 participantes</span>
                     </div>
                 </div>
-                <div class="border border-gray-200 rounded-lg p-4">
+                <div class="border border-gray-200 rounded-lg p-4 hover:border-accent-500 transition-colors">
                     <h4 class="font-medium text-gray-900">Simulacro de Emergencia</h4>
                     <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
                         <span>📅 18 Mar 2024</span>
@@ -131,16 +131,16 @@
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="{{ path('app_volunteer_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
+            <a href="{{ path('app_volunteer_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-accent-50 hover:border-accent-500 transition-colors">
+                <i data-lucide="users" class="w-5 h-5 text-accent-600"></i>
                 <span class="font-medium">Añadir Voluntario</span>
             </a>
-            <a href="{{ path('app_service_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="calendar" class="w-5 h-5 text-green-600"></i>
+            <a href="{{ path('app_service_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-accent-50 hover:border-accent-500 transition-colors">
+                <i data-lucide="calendar" class="w-5 h-5 text-accent-600"></i>
                 <span class="font-medium">Programar Servicio</span>
             </a>
-            <button class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
+            <button class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-accent-50 hover:border-accent-500 transition-colors">
+                <i data-lucide="trending-up" class="w-5 h-5 text-accent-600"></i>
                 <span class="font-medium">Ver Estadísticas</span>
             </button>
         </div>
