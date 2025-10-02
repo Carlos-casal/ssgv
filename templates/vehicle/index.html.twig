@@ -17,19 +17,22 @@
                 <thead>
                     <tr>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            ID
+                            Foto
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Marca
+                            Marca y Modelo
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Modelo
-                        </th>
-                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            Año
+                            Alias
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Matrícula
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Próxima Revisión
+                        </th>
+                        <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                            Venc. Seguro
                         </th>
                         <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
                             Acciones
@@ -40,19 +43,26 @@
                     {% for vehicle in vehicles %}
                         <tr>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ vehicle.id }}
+                                {% if vehicle.photo %}
+                                    <img src="{{ asset('uploads/vehicles_photos/' ~ vehicle.photo) }}" alt="{{ vehicle.make }} {{ vehicle.model }}" class="w-16 h-16 object-cover rounded">
+                                {% else %}
+                                    <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Sin foto</div>
+                                {% endif %}
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ vehicle.make }}
+                                <p class="text-gray-900 whitespace-no-wrap font-bold">{{ vehicle.make }} {{ vehicle.model }}</p>
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ vehicle.model }}
-                            </td>
-                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
-                                {{ vehicle.year }}
+                                {{ vehicle.alias }}
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 {{ vehicle.licensePlate }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ vehicle.nextRevisionDate ? vehicle.nextRevisionDate|date('d/m/Y') : '' }}
+                            </td>
+                            <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                                {{ vehicle.insuranceDueDate ? vehicle.insuranceDueDate|date('d/m/Y') : '' }}
                             </td>
                             <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
                                 <a href="{{ path('app_vehicle_show', {'id': vehicle.id}) }}" class="text-blue-500 hover:text-blue-800">Ver</a>
@@ -61,7 +71,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="6" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                            <td colspan="7" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
                                 No se encontraron vehículos.
                             </td>
                         </tr>
