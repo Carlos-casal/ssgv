@@ -32,8 +32,8 @@ class Vehicle
     #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $registrationDate = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $fuelType = null;
+    #[ORM\ManyToOne(inversedBy: 'vehicles')]
+    private ?FuelType $fuelType = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $type = null;
@@ -127,12 +127,12 @@ class Vehicle
         return $this;
     }
 
-    public function getFuelType(): ?string
+    public function getFuelType(): ?FuelType
     {
         return $this->fuelType;
     }
 
-    public function setFuelType(?string $fuelType): static
+    public function setFuelType(?FuelType $fuelType): static
     {
         $this->fuelType = $fuelType;
 

@@ -44,7 +44,10 @@
             {{ form_errors(form.registrationDate) }}
         </div>
         <div>
-            {{ form_label(form.fuelType) }}
+            <div class="flex justify-between items-center">
+                {{ form_label(form.fuelType) }}
+                <a href="{{ path('app_admin_fuel_type_new') }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">+ Nuevo Combustible</a>
+            </div>
             {{ form_widget(form.fuelType) }}
             {{ form_errors(form.fuelType) }}
         </div>
