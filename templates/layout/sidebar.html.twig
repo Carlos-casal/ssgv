@@ -40,7 +40,7 @@
         <ul class="space-y-1">
             {% macro nav_link(path, icon, label, is_active = false) %}
                 <li>
-                    <a href="{{ path(path) }}"
+                    <a href="{{ path == '#' ? '#' : path(path) }}"
                        class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors group
                               {{ is_active
                                  ? 'bg-primary-light text-white font-semibold shadow-inner'
@@ -65,7 +65,7 @@
 
             {% macro submenu_item(path, label, is_active = false) %}
                  <li>
-                    <a href="{{ path is not null ? path(path) : '#' }}"
+                    <a href="{{ path is null or path == '#' ? '#' : path(path) }}"
                        class="block px-3 py-2 text-sm rounded-lg transition-colors
                               {{ is_active
                                  ? 'bg-primary-light text-white font-medium'
