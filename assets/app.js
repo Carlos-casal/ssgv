@@ -1,4 +1,5 @@
 import './bootstrap.js';
+import 'quill/dist/quill.snow.css';
 /*
  * Welcome to your app's main JavaScript file!
  *
