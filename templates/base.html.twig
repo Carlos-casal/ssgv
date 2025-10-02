@@ -11,7 +11,7 @@
         {% block stylesheets %}{% endblock %}
         <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-        {{ importmap('app') }}
+        {{ vite_entry_link_tags('app') }}
         <style>
             body {
                 font-family: 'Plus Jakarta Sans', sans-serif;
@@ -25,6 +25,8 @@
         <script>
             lucide.createIcons();
         </script>
-        {% block javascripts %}{% endblock %}
+        {% block javascripts %}
+            {{ vite_entry_script_tags('app') }}
+        {% endblock %}
     </body>
 </html>
