@@ -6,6 +6,8 @@ use App\Entity\Vehicle;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
+use App\Entity\FuelType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -52,8 +54,11 @@ class VehicleType extends AbstractType
                 'widget' => 'single_text',
                 'required' => false,
             ])
-            ->add('fuelType', TextType::class, [
+            ->add('fuelType', EntityType::class, [
+                'class' => FuelType::class,
+                'choice_label' => 'name',
                 'label' => 'Tipo de Combustible',
+                'placeholder' => 'Selecciona un tipo de combustible',
                 'required' => false,
             ])
             ->add('type', TextType::class, [
