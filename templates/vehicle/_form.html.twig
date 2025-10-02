@@ -1,0 +1,95 @@
+{{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+    {# Columna Izquierda #}
+    <div class="space-y-4">
+        <div>
+            {{ form_label(form.make) }}
+            {{ form_widget(form.make) }}
+            {{ form_errors(form.make) }}
+        </div>
+        <div>
+            {{ form_label(form.model) }}
+            {{ form_widget(form.model) }}
+            {{ form_errors(form.model) }}
+        </div>
+        <div>
+            {{ form_label(form.licensePlate) }}
+            {{ form_widget(form.licensePlate) }}
+            {{ form_errors(form.licensePlate) }}
+        </div>
+        <div>
+            {{ form_label(form.alias) }}
+            {{ form_widget(form.alias) }}
+            {{ form_errors(form.alias) }}
+        </div>
+        <div>
+            {{ form_label(form.type) }}
+            {{ form_widget(form.type) }}
+            {{ form_errors(form.type) }}
+        </div>
+        <div>
+            {{ form_label(form.resources) }}
+            {{ form_widget(form.resources) }}
+            {{ form_errors(form.resources) }}
+        </div>
+    </div>
+
+    {# Columna Derecha #}
+    <div class="space-y-4">
+        <div>
+            {{ form_label(form.registrationDate) }}
+            {{ form_widget(form.registrationDate) }}
+            {{ form_errors(form.registrationDate) }}
+        </div>
+        <div>
+            <div class="flex justify-between items-center">
+                {{ form_label(form.fuelType) }}
+                <a href="{{ path('app_admin_fuel_type_new') }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800">+ Nuevo Combustible</a>
+            </div>
+            {{ form_widget(form.fuelType) }}
+            {{ form_errors(form.fuelType) }}
+        </div>
+        <div>
+            {{ form_label(form.cabinType) }}
+            {{ form_widget(form.cabinType) }}
+            {{ form_errors(form.cabinType) }}
+        </div>
+        <div>
+            {{ form_label(form.nextRevisionDate) }}
+            {{ form_widget(form.nextRevisionDate) }}
+            {{ form_errors(form.nextRevisionDate) }}
+        </div>
+        <div>
+            {{ form_label(form.insuranceDueDate) }}
+            {{ form_widget(form.insuranceDueDate) }}
+            {{ form_errors(form.insuranceDueDate) }}
+        </div>
+    </div>
+</div>
+
+{# Campo de la foto y vista previa #}
+<div class="pt-4">
+    {% if form.vars.data.photo %}
+        <div class="mb-4">
+            <p class="block text-sm font-medium text-gray-700">Foto Actual</p>
+            <img src="{{ asset('uploads/vehicles_photos/' ~ form.vars.data.photo) }}" alt="Foto del vehículo" class="mt-2 w-48 h-auto rounded-md object-cover">
+        </div>
+    {% endif %}
+    <div>
+        {{ form_label(form.photo) }}
+        {{ form_widget(form.photo) }}
+        <p class="text-xs text-gray-500 mt-1">Sube una nueva foto para reemplazar la actual.</p>
+        {{ form_errors(form.photo) }}
+    </div>
+</div>
+
+
+<div class="pt-6">
+    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        {{ button_label|default('Guardar') }}
+    </button>
+</div>
+
+{{ form_end(form) }}

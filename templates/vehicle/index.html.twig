@@ -1,0 +1,92 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Lista de Vehículos{% endblock %}
+
+{% block page_title %}Lista de Vehículos{% endblock %}
+
+{% block content %}
+    <div class="flex justify-end mb-4">
+        <a href="{{ path('app_vehicle_new') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Crear Nuevo Vehículo
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden">
+        <table class="min-w-full leading-normal">
+            <thead>
+                <tr>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Foto
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Marca y Modelo
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Alias
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Matrícula
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Próxima Revisión
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Venc. Seguro
+                    </th>
+                    <th class="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vehicle in vehicles %}
+                    <tr>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {% if vehicle.photo %}
+                                <img src="{{ asset('uploads/vehicles_photos/' ~ vehicle.photo) }}" alt="{{ vehicle.make }} {{ vehicle.model }}" class="w-16 h-16 object-cover rounded">
+                            {% else %}
+                                <div class="w-16 h-16 bg-gray-200 rounded flex items-center justify-center text-xs text-gray-500">Sin foto</div>
+                            {% endif %}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <a href="{{ path('app_vehicle_show', {'id': vehicle.id}) }}" class="text-gray-900 hover:text-blue-600 whitespace-no-wrap font-bold">
+                                {{ vehicle.make }} {{ vehicle.model }}
+                            </a>
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {{ vehicle.alias }}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {{ vehicle.licensePlate }}
+                        </td>
+                        <td class="px-5 py-5 border-b border-ray-200 bg-white text-sm">
+                            {{ vehicle.nextRevisionDate ? vehicle.nextRevisionDate|date('d/m/Y') : '' }}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            {{ vehicle.insuranceDueDate ? vehicle.insuranceDueDate|date('d/m/Y') : '' }}
+                        </td>
+                        <td class="px-5 py-5 border-b border-gray-200 bg-white text-sm">
+                            <div class="flex items-center gap-2">
+                                <a href="{{ path('app_vehicle_edit', {'id': vehicle.id}) }}" class="text-gray-600 hover:text-gray-900 p-2 rounded-full hover:bg-gray-100" title="Editar">
+                                    <i data-lucide="pencil" class="w-4 h-4"></i>
+                                </a>
+                                <form method="post" action="{{ path('app_vehicle_delete', {'id': vehicle.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este vehículo?');" class="inline">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vehicle.id) }}">
+                                    <button type="submit" class="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50" title="Eliminar">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                            No se encontraron vehículos.
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+{% endblock %}

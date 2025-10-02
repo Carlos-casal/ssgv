@@ -1,0 +1,17 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Editar Vehículo{% endblock %}
+
+{% block page_title %}Editar Vehículo{% endblock %}
+
+{% block content %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        {{ include('vehicle/_form.html.twig', {'button_label': 'Actualizar'}) }}
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ path('app_vehicle_index') }}" class="text-blue-500 hover:text-blue-800">
+            Volver a la lista
+        </a>
+    </div>
+{% endblock %}
