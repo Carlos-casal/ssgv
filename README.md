@@ -1,4 +1,4 @@
-# Sistema de Gestión de Voluntarios - Symfony + XAMPP
+# Protección Civil de Vigo - Symfony + XAMPP
 
 ## Instalación y Configuración
 

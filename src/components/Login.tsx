@@ -33,7 +33,7 @@ const Login: React.FC = () => {
             <Users className="w-8 h-8 text-blue-600" />
           </div>
           <h1 className="text-3xl font-bold text-white mb-2">Sistema de Gestión</h1>
-          <p className="text-blue-200">Gestión de Voluntarios</p>
+          <p className="text-blue-200">Protección Civil de Vigo</p>
         </div>
 
         {/* Formulario de login */}
