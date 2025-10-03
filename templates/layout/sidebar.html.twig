@@ -1,45 +1,23 @@
-<div class="bg-white shadow-lg w-64 flex flex-col h-full" id="sidebar">
-    <!-- Encabezado de la Barra Lateral -->
-    <div class="p-4 border-b border-gray-200 flex items-center gap-3">
-        <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center flex-shrink-0">
-            <i data-lucide="shield" class="w-5 h-5 text-white"></i>
-        </div>
-        <div>
-            <h2 class="font-semibold text-gray-900">SGV</h2>
-            <p class="text-xs text-gray-500">Gestión Voluntarios</p>
-        </div>
-    </div>
+<!-- Sidebar -->
+<div class="bg-blue-600 text-white w-64 flex flex-col h-full" id="sidebar">
 
-    <!-- Controles del Encabezado Movidos -->
-    <div class="p-4 border-b border-gray-200 space-y-4">
-        <!-- Fecha -->
-        <p class="text-sm text-gray-600 text-center">
-            {{ "now"|date("l, d \\d\\e F \\d\\e Y") }}
-        </p>
-
-        <!-- Barra de Búsqueda -->
+    <!-- Header -->
+    <div class="p-4 border-b border-blue-700 flex items-center justify-between">
+        <h2 class="font-semibold">{{ "now"|date("D")|slice(0, 2) }}, {{ "now"|date("d") }} de {{ "now"|date("M") }} de {{ "now"|date("y") }}</h2>
         <div class="relative">
-            <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400"></i>
-            <input
-                type="text"
-                placeholder="Buscar..."
-                class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 w-full"
-            />
+            <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
+                <i data-lucide="bell" class="w-5 h-5"></i>
+            </button>
+            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
         </div>
-
-        <!-- Notificaciones -->
-        <button class="w-full flex items-center justify-center gap-2 p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors">
-            <i data-lucide="bell" class="w-5 h-5"></i>
-            <span class="text-sm font-medium">Notificaciones</span>
-            <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-        </button>
     </div>
+
     <!-- Navegación Principal -->
     <div class="flex-1 p-2 overflow-y-auto">
         <nav class="space-y-1" id="main-nav">
             <ul class="space-y-1">
                 <li>
-                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
                         <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="text-sm font-medium">INICIO</span>
                     </a>
@@ -48,7 +26,7 @@
                 {% if is_granted('ROLE_ADMIN') %}
                 <!-- GESTIÓN -->
                 <li class="has-submenu">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="folder-kanban" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">GESTIÓN</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
@@ -56,105 +34,105 @@
                     <ul class="pl-4 space-y-1">
                         <!-- PERSONAL -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-800" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="users" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">PERSONAL</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
                             <ul class="pl-4 space-y-1">
-                                <li><a href="{{ path('app_volunteer_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
-                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
+                                <li><a href="{{ path('app_volunteer_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">LISTADO</a></li>
+                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">INFORMES</a></li>
                             </ul>
                         </li>
                         <!-- SERVICIOS -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-800" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm">SERVICIOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
                             <ul class="pl-4 space-y-1">
-                                <li><a href="{{ path('app_services_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LISTADO</a></li>
-                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
-                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">CUADRANTE</a></li>
+                                <li><a href="{{ path('app_services_list') }}" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">LISTADO</a></li>
+                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">INFORMES</a></li>
+                                <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">CUADRANTE</a></li>
                             </ul>
                         </li>
-                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
+                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
                         <!-- RECURSOS -->
                         <li class="has-submenu">
-                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                            <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="archive" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-sm font-medium">RECURSOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </a>
                             <ul class="pl-4 space-y-1">
-                                <li><a href="{{ path('app_vehicle_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm">VEHICULO</span></a></li>
+                                <li><a href="{{ path('app_vehicle_index') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-800"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm">VEHICULO</span></a></li>
                                 <!-- INVENTARIO -->
                                 <li class="has-submenu">
-                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-800" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">INVENTARIO</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
                                     <ul class="pl-4 space-y-1">
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ARTICULOS</a></li>
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ALMACENES</a></li>
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">PROVEEDORES</a></li>
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ENTRADAS-SALIDAS</a></li>
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">TRASPASO</a></li>
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">LOTE</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">ARTICULOS</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">ALMACENES</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">PROVEEDORES</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">ENTRADAS-SALIDAS</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">TRASPASO</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">LOTE</a></li>
                                     </ul>
                                 </li>
                                 <!-- ARCE -->
                                 <li class="has-submenu">
-                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-800" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="puzzle" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-sm">ARCE</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </a>
                                     <ul class="pl-4 space-y-1">
-                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">INFORMES</a></li>
+                                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-900">INFORMES</a></li>
                                     </ul>
                                 </li>
                             </ul>
                         </li>
-                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="fire-hydrant" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">HIDRANTES</span></a></li>
-                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="user-plus" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">FILIACIONES</span></a></li>
-                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TESORERIA</span></a></li>
-                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="check-square" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TAREAS</span></a></li>
+                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="fire-hydrant" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">HIDRANTES</span></a></li>
+                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="user-plus" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">FILIACIONES</span></a></li>
+                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TESORERIA</span></a></li>
+                        <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="check-square" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TAREAS</span></a></li>
                     </ul>
                 </li>
-                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">GESDOC</span></a></li>
-                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">CENTRAL</span></a></li>
-                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">ESTADISTICAS</span></a></li>
+                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">GESDOC</span></a></li>
+                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">CENTRAL</span></a></li>
+                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">ESTADISTICAS</span></a></li>
 
                 <!-- CONFIGURACION -->
                 <li class="has-submenu">
-                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100" aria-haspopup="true" aria-expanded="false">
+                    <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-sm font-medium">CONFIGURACION</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </a>
                     <ul class="pl-4 space-y-1">
-                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">SISTEMAS</a></li>
-                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">UTILIDADES</a></li>
-                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ADMINISTRACION</a></li>
-                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">ENTIDAD</a></li>
-                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-gray-100">SUSCRIPCION</a></li>
+                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-800">SISTEMAS</a></li>
+                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-800">UTILIDADES</a></li>
+                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-800">ADMINISTRACION</a></li>
+                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-800">ENTIDAD</a></li>
+                        <li><a href="#" class="block px-3 py-2 text-sm rounded-lg hover:bg-blue-800">SUSCRIPCION</a></li>
                     </ul>
                 </li>
 
-                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">USUARIO</span></a></li>
+                <li><a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">USUARIO</span></a></li>
                 {% else %}
                     {# Simplified menu for non-admins, e.g., ROLE_VOLUNTEER #}
                      <li>
-                        <a href="{{ path('app_services_list') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                        <a href="{{ path('app_services_list') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
                             <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                             <span class="text-sm font-medium">Servicios</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ path('app_my_services') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-gray-700 hover:bg-gray-100">
+                        <a href="{{ path('app_my_services') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
                             <i data-lucide="star" class="w-5 h-5 flex-shrink-0"></i>
                             <span class="text-sm font-medium">Mis servicios</span>
                         </a>
@@ -171,7 +149,7 @@
 
                     {% if is_responsible_for_any_service %}
                         <li>
-                            <a href="{{ path('app_responsible_services_list') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-yellow-600 bg-yellow-50 hover:bg-yellow-100">
+                            <a href="{{ path('app_responsible_services_list') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg text-yellow-400 bg-blue-800 hover:bg-blue-900">
                                 <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="text-sm font-medium">Servicios Responsable</span>
                             </a>
@@ -183,25 +161,27 @@
     </div>
 
     <!-- Perfil de Usuario y Cerrar Sesión -->
-    <div class="p-4 border-t border-gray-200">
+    <div class="p-4 border-t border-blue-700">
         <div class="flex items-center gap-3 mb-3">
             <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
             <div class="flex-1">
-                <p class="font-medium text-sm text-gray-900">{{ app.user.volunteer.name|default('Usuario') }}</p>
-                <p class="text-xs text-gray-500">{{ app.user.email }}</p>
+                <p class="font-medium text-sm">{{ app.user.volunteer.name|default('Usuario') }}</p>
+                <p class="text-xs text-blue-300">{{ app.user.email }}</p>
             </div>
         </div>
-        <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+        <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors">
             <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
             <span class="text-sm">Cerrar Sesión</span>
         </a>
     </div>
 </div>
+
 <style>
     .has-submenu > ul {
         overflow: hidden;
         max-height: 0;
         transition: max-height 0.3s ease-in-out;
+        background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background for submenus */
     }
     .has-submenu.submenu-open > ul {
         max-height: 1000px; /* A large enough value to show all content */
@@ -209,59 +189,58 @@
     .has-submenu.submenu-open > a > [data-lucide="chevron-right"] {
         transform: rotate(90deg);
     }
+    .has-submenu ul a {
+        color: white; /* Ensure text is white */
+    }
+    .has-submenu ul a:hover {
+        background-color: #1e40af; /* A darker blue for hover */
+    }
 </style>
-<script>
-    function setupSidebar() {
-        const submenuItems = document.querySelectorAll('.has-submenu');
 
-        submenuItems.forEach((item, index) => {
-            if (item.dataset.sidebarListenersAttached) {
+<script>
+    function setupSidebarHover() {
+        const submenuItems = document.querySelectorAll('#main-nav .has-submenu');
+
+        submenuItems.forEach(item => {
+            if (item.dataset.hoverListenersAttached) {
                 return;
             }
-            item.dataset.sidebarListenersAttached = 'true';
+            item.dataset.hoverListenersAttached = 'true';
 
-            const link = item.querySelector('a');
-            const submenu = item.querySelector('ul');
-            if (!link || !submenu) return;
+            let timer;
 
-            // Generate unique IDs for ARIA
-            const submenuId = `submenu-${index}`;
-            submenu.setAttribute('id', submenuId);
-            link.setAttribute('aria-controls', submenuId);
-
-            link.addEventListener('click', function(event) {
-                if (this.getAttribute('href') === '#') {
-                    event.preventDefault();
-                }
-
-                const parentLi = this.parentElement;
-                const isExpanded = parentLi.classList.toggle('submenu-open');
-                this.setAttribute('aria-expanded', isExpanded);
-
-                // Close sibling submenus
-                const parentUl = parentLi.parentElement;
+            const openMenu = () => {
+                clearTimeout(timer);
+                // Close other open submenus at the same level
+                const parentUl = item.parentElement;
                 parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
-                    if (sibling !== parentLi) {
+                    if (sibling !== item) {
                         sibling.classList.remove('submenu-open');
-                        const siblingLink = sibling.querySelector('a');
+                        const siblingLink = sibling.querySelector('a[aria-expanded]');
                         if (siblingLink) {
                             siblingLink.setAttribute('aria-expanded', 'false');
                         }
-                        // Recursively close any open submenus within the sibling
-                        sibling.querySelectorAll('.submenu-open').forEach(sub => {
-                            sub.classList.remove('submenu-open');
-                            const subLink = sub.querySelector('a');
-                            // Ensure the link exists before setting the attribute
-                            if (subLink && subLink.hasAttribute('aria-expanded')) {
-                                subLink.setAttribute('aria-expanded', 'false');
-                            }
-                        });
                     }
                 });
-            });
+                // Open this submenu
+                item.classList.add('submenu-open');
+                const link = item.querySelector('a[aria-expanded]');
+                if(link) link.setAttribute('aria-expanded', 'true');
+            };
+
+            const closeMenu = () => {
+                timer = setTimeout(() => {
+                    item.classList.remove('submenu-open');
+                    const link = item.querySelector('a[aria-expanded]');
+                    if(link) link.setAttribute('aria-expanded', 'false');
+                }, 200); // 200ms delay to allow moving to submenu
+            };
+
+            item.addEventListener('mouseenter', openMenu);
+            item.addEventListener('mouseleave', closeMenu);
         });
     }
 
-    document.addEventListener('turbo:load', setupSidebar);
-    document.addEventListener('DOMContentLoaded', setupSidebar);
+    document.addEventListener('turbo:load', setupSidebarHover);
+    document.addEventListener('DOMContentLoaded', setupSidebarHover);
 </script>
