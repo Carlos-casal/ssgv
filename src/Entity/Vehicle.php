@@ -50,6 +50,9 @@ class Vehicle
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $resources = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isOutOfService = false;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -195,6 +198,18 @@ class Vehicle
     public function setResources(?string $resources): static
     {
         $this->resources = $resources;
+
+        return $this;
+    }
+
+    public function isOutOfService(): bool
+    {
+        return $this->isOutOfService;
+    }
+
+    public function setOutOfService(bool $isOutOfService): static
+    {
+        $this->isOutOfService = $isOutOfService;
 
         return $this;
     }

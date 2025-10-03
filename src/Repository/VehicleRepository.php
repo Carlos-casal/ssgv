@@ -20,4 +20,9 @@ class VehicleRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Vehicle::class);
     }
+
+    public function countAvailableVehicles(): int
+    {
+        return $this->count(['isOutOfService' => false]);
+    }
 }

@@ -136,4 +136,18 @@ class VehicleController extends AbstractController
 
         return $this->redirectToRoute('app_vehicle_index', [], Response::HTTP_SEE_OTHER);
     }
+
+    #[Route('/{id}/toggle-out-of-service', name: 'app_vehicle_toggle_out_of_service', methods: ['POST'])]
+    public function toggleOutOfService(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('toggle'.$vehicle->getId(), $request->request->get('_token'))) {
+            $isOutOfService = $request->request->has('isOutOfService');
+            $vehicle->setOutOfService($isOutOfService);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'El estado del vehículo ha sido actualizado.');
+        }
+
+        return $this->redirectToRoute('app_vehicle_index', [], Response::HTTP_SEE_OTHER);
+    }
 }
