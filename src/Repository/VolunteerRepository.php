@@ -32,4 +32,33 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function countPendingVolunteers(): int
+    {
+        return (int) $this->createQueryBuilder('v')
+            ->select('count(v.id)')
+            ->andWhere('v.status = :status')
+            ->setParameter('status', Volunteer::STATUS_PENDING)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function countActiveVolunteers(): int
+    {
+        return $this->count(['status' => Volunteer::STATUS_ACTIVE]);
+    }
+
+    public function countNewVolunteersThisMonth(): int
+    {
+        $startDate = new \DateTime('first day of this month 00:00:00');
+        $endDate = new \DateTime('last day of this month 23:59:59');
+
+        return (int) $this->createQueryBuilder('v')
+            ->select('count(v.id)')
+            ->where('v.joinDate BETWEEN :start AND :end')
+            ->setParameter('start', $startDate)
+            ->setParameter('end', $endDate)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
 }
