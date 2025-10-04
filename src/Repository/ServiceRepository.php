@@ -187,4 +187,23 @@ class ServiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Finds services completed in the last 30 days.
+     * @return Service[]
+     */
+    public function findCompletedServicesLast30Days(): array
+    {
+        $since = new \DateTime('30 days ago');
+        $now = new \DateTime();
+
+        return $this->createQueryBuilder('s')
+            ->where('s.endDate >= :since')
+            ->andWhere('s.endDate < :now')
+            ->setParameter('since', $since)
+            ->setParameter('now', $now)
+            ->orderBy('s.endDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

@@ -213,6 +213,12 @@ class Volunteer
     private ?\DateTimeInterface $joinDate = null;
 
     /**
+     * @var \DateTimeInterface|null The date when the volunteer's status last changed.
+     */
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $statusChangeDate = null;
+
+    /**
      * @var string|null The specialization of the volunteer (e.g., "Sanitario", "Logística").
      */
     #[ORM\Column(length: 255)]
@@ -838,6 +844,8 @@ class Volunteer
     public function setStatus(string $status): static
     {
         $this->status = $status;
+        $this->setStatusChangeDate(new \DateTime());
+
         return $this;
     }
 
@@ -906,6 +914,27 @@ class Volunteer
         if ($user !== null && $user->getVolunteer() !== $this) {
             $user->setVolunteer($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * Gets the date of the last status change.
+     * @return \DateTimeInterface|null
+     */
+    public function getStatusChangeDate(): ?\DateTimeInterface
+    {
+        return $this->statusChangeDate;
+    }
+
+    /**
+     * Sets the date of the last status change.
+     * @param \DateTimeInterface|null $statusChangeDate
+     * @return static
+     */
+    public function setStatusChangeDate(?\DateTimeInterface $statusChangeDate): static
+    {
+        $this->statusChangeDate = $statusChangeDate;
 
         return $this;
     }

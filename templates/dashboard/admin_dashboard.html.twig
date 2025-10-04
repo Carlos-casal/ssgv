@@ -76,14 +76,36 @@
             <div class="space-y-4">
                 {% for activity in recent_activities %}
                     <div class="flex items-start gap-3">
-                        {% if activity.joinDate is defined %}
-                            <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
-                                <p class="text-sm text-gray-600">{{ activity.name }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ activity.joinDate|date('d/m/Y H:i') }}</p>
-                            </div>
+                        {% if attribute(activity, 'joinDate') is defined %}
+                            {# It's a Volunteer entity #}
+                            {% set joinDate = activity.joinDate %}
+                            {% set statusChangeDate = attribute(activity, 'statusChangeDate') %}
+                            {% set event_date = (statusChangeDate and statusChangeDate > joinDate) ? statusChangeDate : joinDate %}
+
+                            {% if activity.status == 'Baja' %}
+                                <div class="w-2 h-2 rounded-full bg-red-500 mt-2"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Voluntario dado de baja</p>
+                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
+                                </div>
+                            {% elseif activity.status == 'Suspensión' %}
+                                <div class="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Voluntario en suspensión</p>
+                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
+                                </div>
+                            {% else %}
+                                <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
+                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
+                                </div>
+                            {% endif %}
                         {% else %}
+                            {# It's a Service entity #}
                             <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
                             <div class="flex-1">
                                 <p class="text-sm font-medium text-gray-900">Servicio completado</p>

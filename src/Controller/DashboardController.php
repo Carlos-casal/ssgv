@@ -55,13 +55,29 @@ class DashboardController extends AbstractController
             }
 
             // Recent Activities
-            $recentVolunteers = $volunteerRepository->findRecentVolunteers(5);
-            $recentServices = $serviceRepository->findRecentCompletedServices(5);
+            $recentVolunteers = $volunteerRepository->findRecentActivityVolunteers();
+            $recentServices = $serviceRepository->findCompletedServicesLast30Days();
 
             $recentActivities = array_merge($recentVolunteers, $recentServices);
             usort($recentActivities, function ($a, $b) {
-                $dateA = $a instanceof \App\Entity\Volunteer ? $a->getJoinDate() : $a->getEndDate();
-                $dateB = $b instanceof \App\Entity\Volunteer ? $b->getJoinDate() : $b->getEndDate();
+                $dateA = null;
+                if ($a instanceof \App\Entity\Volunteer) {
+                    $joinDate = $a->getJoinDate();
+                    $statusChangeDate = $a->getStatusChangeDate();
+                    $dateA = ($statusChangeDate && $statusChangeDate > $joinDate) ? $statusChangeDate : $joinDate;
+                } else {
+                    $dateA = $a->getEndDate();
+                }
+
+                $dateB = null;
+                if ($b instanceof \App\Entity\Volunteer) {
+                    $joinDate = $b->getJoinDate();
+                    $statusChangeDate = $b->getStatusChangeDate();
+                    $dateB = ($statusChangeDate && $statusChangeDate > $joinDate) ? $statusChangeDate : $joinDate;
+                } else {
+                    $dateB = $b->getEndDate();
+                }
+
                 return $dateB <=> $dateA;
             });
 
@@ -73,7 +89,7 @@ class DashboardController extends AbstractController
                 'available_vehicles_count' => $vehicleRepository->countAvailableVehicles(),
                 'total_annual_service_hours' => round($totalAnnualServiceMinutes / 60),
                 'completed_services_count' => count($completedServicesThisYear),
-                'recent_activities' => array_slice($recentActivities, 0, 5),
+                'recent_activities' => $recentActivities,
                 'upcoming_services' => $serviceRepository->findUpcomingServices(5),
             ]);
         }

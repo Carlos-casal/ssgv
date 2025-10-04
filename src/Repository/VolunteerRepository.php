@@ -111,4 +111,19 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Finds volunteers who joined or had a status change in the last 30 days.
+     * @return Volunteer[]
+     */
+    public function findRecentActivityVolunteers(): array
+    {
+        $since = new \DateTime('30 days ago');
+
+        return $this->createQueryBuilder('v')
+            ->where('v.joinDate >= :since OR v.statusChangeDate >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()
+            ->getResult();
+    }
 }
