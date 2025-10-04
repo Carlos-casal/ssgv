@@ -18,8 +18,22 @@ use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 
+/**
+ * Form type for creating and editing Service entities.
+ * This form includes all fields necessary to define a service, from basic details to resource requirements.
+ */
 class ServiceType extends AbstractType
 {
+    /**
+     * Builds the form structure for the Service entity.
+     *
+     * This method defines all the fields for the form. It also includes a PRE_SUBMIT event listener
+     * to combine the 'numDues' and 'numTecnicos' fields into the 'numNurses' field before submission,
+     * as 'numDues' and 'numTecnicos' are for user interface purposes only and are not mapped to the entity.
+     *
+     * @param FormBuilderInterface $builder The form builder.
+     * @param array $options The options for building the form.
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -181,6 +195,11 @@ class ServiceType extends AbstractType
         });
     }
 
+    /**
+     * Configures the options for this form type.
+     *
+     * @param OptionsResolver $resolver The resolver for the options.
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

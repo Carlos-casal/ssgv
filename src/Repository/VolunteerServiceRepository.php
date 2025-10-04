@@ -7,17 +7,30 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for VolunteerService entities.
+ *
  * @extends ServiceEntityRepository<VolunteerService>
+ *
+ * @method VolunteerService|null find($id, $lockMode = null, $lockVersion = null)
+ * @method VolunteerService|null findOneBy(array $criteria, array $orderBy = null)
+ * @method VolunteerService[]    findAll()
+ * @method VolunteerService[]    findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
  */
 class VolunteerServiceRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry The manager registry.
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, VolunteerService::class);
     }
 
     /**
-     * @return VolunteerService[]
+     * Finds all service participations for a given volunteer, ordered by the service start date in descending order.
+     *
+     * @param \App\Entity\Volunteer $volunteer The volunteer to find services for.
+     * @return VolunteerService[] Returns an array of VolunteerService objects.
      */
     public function findForVolunteerOrderedByServiceDate(\App\Entity\Volunteer $volunteer): array
     {
@@ -47,7 +60,11 @@ class VolunteerServiceRepository extends ServiceEntityRepository
     //    }
 
     /**
-     * @return VolunteerService[]
+     * Finds all service participations for a given service, eagerly loading the associated clock-in/out records
+     * and ordering them by start time in descending order.
+     *
+     * @param \App\Entity\Service $service The service to find participations for.
+     * @return VolunteerService[] Returns an array of VolunteerService objects with their fichajes.
      */
     public function findByServiceWithOrderedFichajes(\App\Entity\Service $service): array
     {

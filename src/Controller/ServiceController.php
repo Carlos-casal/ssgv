@@ -19,8 +19,19 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use DateTime;
 
+/**
+ * Controller for handling services, including creation, listing, and management of volunteers.
+ */
 class ServiceController extends AbstractController
 {
+    /**
+     * Lists all available services.
+     * It also calculates the number of attendees for each service and checks the current user's assistance status.
+     *
+     * @param ServiceRepository $serviceRepository The repository for services.
+     * @param \Symfony\Bundle\SecurityBundle\Security $security The security component to get the current user.
+     * @return Response The response object, rendering the service list page.
+     */
     #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
     public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
@@ -65,6 +76,15 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Handles the creation of a new service.
+     * It processes a form and, upon successful submission, creates the service and a corresponding WhatsApp message.
+     *
+     * @param Request $request The request object.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param WhatsAppMessageGenerator $messageGenerator The service to generate WhatsApp messages.
+     * @return Response|JsonResponse The response object, either redirecting or returning JSON for AJAX requests.
+     */
     #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator): Response
     {
@@ -118,6 +138,15 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays a calendar view of services for a given month and year.
+     *
+     * @param Request $request The request object.
+     * @param ServiceRepository $serviceRepository The repository for services.
+     * @param int|null $year The year to display. Defaults to the current year.
+     * @param int|null $month The month to display. Defaults to the current month.
+     * @return Response The response object, rendering the calendar page.
+     */
     #[Route('/servicios/calendario/{year}/{month}', name: 'app_service_calendar', methods: ['GET'], defaults: ['year' => null, 'month' => null])]
     public function calendar(Request $request, ServiceRepository $serviceRepository, $year, $month): Response
     {
@@ -132,6 +161,13 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays the details of a single service.
+     *
+     * @param Service|null $service The service to display.
+     * @return Response The response object, rendering the service details page.
+     * @throws \Symfony\Component\HttpKernel\Exception\NotFoundHttpException If the service does not exist.
+     */
     #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'], requirements: ['id' => '\d+'])]
     public function show(?Service $service): Response
     {
@@ -145,6 +181,15 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Handles editing an existing service and its associated volunteer clock-in records.
+     *
+     * @param Request $request The request object.
+     * @param Service $service The service to edit.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
+     * @return Response The response object, rendering the edit page or redirecting upon success.
+     */
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
@@ -172,6 +217,14 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Provides a JSON API endpoint to fetch a paginated list of volunteers who can be added to a service.
+     *
+     * @param Request $request The request object containing search and pagination parameters.
+     * @param Service $service The service to which volunteers might be added.
+     * @param VolunteerRepository $volunteerRepository The repository for volunteers.
+     * @return JsonResponse A JSON response with a list of volunteers and pagination data.
+     */
     #[Route('/services/{id}/volunteers', name: 'app_service_get_volunteers', methods: ['GET'])]
     public function getVolunteers(Request $request, Service $service, VolunteerRepository $volunteerRepository): JsonResponse
     {
@@ -237,6 +290,16 @@ class ServiceController extends AbstractController
         return new JsonResponse($data);
     }
 
+    /**
+     * Provides a JSON API endpoint to update the attendance status for multiple volunteers in a service.
+     *
+     * @param Request $request The request object containing volunteer IDs and the new status.
+     * @param Service $service The service to update.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param VolunteerRepository $volunteerRepository The repository for volunteers.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @return JsonResponse A JSON response indicating success or failure.
+     */
     #[Route('/services/{id}/update-attendance', name: 'app_service_update_attendance', methods: ['POST'])]
     public function updateAttendance(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
     {
@@ -295,6 +358,17 @@ class ServiceController extends AbstractController
         return new JsonResponse(['success' => true, 'message' => 'Asistencia actualizada correctamente.']);
     }
 
+    /**
+     * Removes a volunteer's attendance confirmation from a service.
+     * If the removed volunteer was attending and there is a reserve list, the first person on the list is promoted.
+     *
+     * @param Request $request The request object.
+     * @param AssistanceConfirmation $confirmation The assistance confirmation to remove.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @param VolunteerServiceRepository $volunteerServiceRepo The repository for volunteer-service associations.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/assistance-confirmation/{id}/remove', name: 'app_assistance_confirmation_remove', methods: ['POST'])]
     public function removeAttendant(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
@@ -347,6 +421,16 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Toggles whether a volunteer is responsible for managing clock-in/out records for a service.
+     * Ensures that only one volunteer can be responsible at a time.
+     *
+     * @param Request $request The request object.
+     * @param AssistanceConfirmation $confirmation The assistance confirmation of the volunteer.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/assistance-confirmation/{id}/toggle-responsible', name: 'app_assistance_confirmation_toggle_responsible', methods: ['POST'])]
     public function toggleFichajeResponsible(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
@@ -382,6 +466,17 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Allows a volunteer to confirm their attendance for a service.
+     * If the service is full, the volunteer is added to the reserve list.
+     *
+     * @param Service|null $service The service to attend.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param \Symfony\Bundle\SecurityBundle\Security $security The security component.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @param VolunteerServiceRepository $volunteerServiceRepo The repository for volunteer-service associations.
+     * @return Response A redirection to the dashboard.
+     */
     #[Route('/servicio/{id}/asistir', name: 'app_service_attend', methods: ['GET'])]
     public function attend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
@@ -434,6 +529,17 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_dashboard');
     }
 
+    /**
+     * Allows a volunteer to confirm they will not be attending a service.
+     * This also removes their `VolunteerService` record if it exists.
+     *
+     * @param Service|null $service The service to not attend.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param \Symfony\Bundle\SecurityBundle\Security $security The security component.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @param VolunteerServiceRepository $volunteerServiceRepo The repository for volunteer-service associations.
+     * @return Response A redirection to the dashboard.
+     */
     #[Route('/servicio/{id}/no-asistir', name: 'app_service_unattend', methods: ['GET'])]
     public function unattend(?Service $service, EntityManagerInterface $entityManager, \Symfony\Bundle\SecurityBundle\Security $security, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, VolunteerServiceRepository $volunteerServiceRepo): Response
     {
@@ -468,6 +574,12 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_dashboard');
     }
 
+    /**
+     * Displays the attendance list for a service (admin-only).
+     *
+     * @param Service $service The service for which to display attendance.
+     * @return Response The response object, rendering the attendance page.
+     */
     #[Route('/servicios/{id}/asistencia', name: 'app_service_attendance', methods: ['GET'])]
     public function attendance(Service $service): Response
     {
@@ -477,6 +589,13 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays a summary of the current volunteer's services, grouped by year.
+     *
+     * @param \App\Repository\VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
+     * @param \Symfony\Bundle\SecurityBundle\Security $security The security component.
+     * @return Response The response object, rendering the "my services" page.
+     */
     #[Route('/mis-servicios', name: 'app_my_services', methods: ['GET'])]
     public function myServices(\App\Repository\VolunteerServiceRepository $volunteerServiceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
@@ -512,6 +631,17 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Provides a JSON API endpoint to fetch services for a specific day.
+     *
+     * @param ServiceRepository $serviceRepository The repository for services.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @param \Symfony\Bundle\SecurityBundle\Security $security The security component.
+     * @param int $year The year.
+     * @param int $month The month.
+     * @param int $day The day.
+     * @return Response A JSON response containing service data for the given day.
+     */
     #[Route('/services/{year}/{month}/{day}', name: 'app_services_by_day', methods: ['GET'])]
     public function servicesByDay(ServiceRepository $serviceRepository, \App\Repository\AssistanceConfirmationRepository $assistanceConfirmationRepository, \Symfony\Bundle\SecurityBundle\Security $security, $year, $month, $day): Response
     {
@@ -540,6 +670,13 @@ class ServiceController extends AbstractController
         return $this->json($data);
     }
 
+    /**
+     * Displays a page to view a service and share it via WhatsApp.
+     *
+     * @param Service $service The service to view.
+     * @param WhatsAppMessageGenerator $messageGenerator The service to generate the WhatsApp message.
+     * @return Response The response object, rendering the view page.
+     */
     #[Route('/service/{id}/view', name: 'app_service_view', methods: ['GET'])]
     public function view(Service $service, WhatsAppMessageGenerator $messageGenerator): Response
     {
@@ -551,6 +688,12 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Lists the services for which the current user is responsible for managing clock-in/out records.
+     *
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
+     * @return Response The response object, rendering the responsible services list.
+     */
     #[Route('/servicios/responsable', name: 'app_responsible_services_list', methods: ['GET'])]
     public function responsibleServicesList(AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
     {
@@ -573,6 +716,13 @@ class ServiceController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays the management page for a service where the current user is responsible.
+     *
+     * @param Service $service The service to manage.
+     * @param VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
+     * @return Response The response object, rendering the management page.
+     */
     #[Route('/responsible/service/{id}', name: 'app_responsible_service_manage', methods: ['GET'])]
     public function manageResponsibleService(Service $service, VolunteerServiceRepository $volunteerServiceRepository): Response
     {

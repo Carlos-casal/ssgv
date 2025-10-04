@@ -14,9 +14,18 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\Filesystem\Filesystem;
 
+/**
+ * Controller for managing vehicles in the admin panel.
+ */
 #[Route('/admin/vehicles')]
 class VehicleController extends AbstractController
 {
+    /**
+     * Displays a list of all vehicles.
+     *
+     * @param VehicleRepository $vehicleRepository The repository for vehicles.
+     * @return Response The response object.
+     */
     #[Route('/', name: 'app_vehicle_index', methods: ['GET'])]
     public function index(VehicleRepository $vehicleRepository): Response
     {
@@ -25,6 +34,15 @@ class VehicleController extends AbstractController
         ]);
     }
 
+    /**
+     * Creates a new vehicle.
+     * Handles photo uploads for the vehicle.
+     *
+     * @param Request $request The request object.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param SluggerInterface $slugger The slugger to create safe filenames.
+     * @return Response The response object.
+     */
     #[Route('/new', name: 'app_vehicle_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
     {
@@ -66,6 +84,12 @@ class VehicleController extends AbstractController
         ]);
     }
 
+    /**
+     * Displays the details of a specific vehicle.
+     *
+     * @param Vehicle $vehicle The vehicle to display.
+     * @return Response The response object.
+     */
     #[Route('/{id}', name: 'app_vehicle_show', methods: ['GET'])]
     public function show(Vehicle $vehicle): Response
     {
@@ -74,6 +98,17 @@ class VehicleController extends AbstractController
         ]);
     }
 
+    /**
+     * Edits an existing vehicle.
+     * Handles photo updates, including deleting the old photo.
+     *
+     * @param Request $request The request object.
+     * @param Vehicle $vehicle The vehicle to edit.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param SluggerInterface $slugger The slugger to create safe filenames.
+     * @param Filesystem $filesystem The filesystem component to delete files.
+     * @return Response The response object.
+     */
     #[Route('/{id}/edit', name: 'app_vehicle_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager, SluggerInterface $slugger, Filesystem $filesystem): Response
     {
@@ -119,6 +154,16 @@ class VehicleController extends AbstractController
         ]);
     }
 
+    /**
+     * Deletes a vehicle.
+     * Also deletes the associated photo from the filesystem.
+     *
+     * @param Request $request The request object.
+     * @param Vehicle $vehicle The vehicle to delete.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param Filesystem $filesystem The filesystem component to delete files.
+     * @return Response The response object.
+     */
     #[Route('/{id}', name: 'app_vehicle_delete', methods: ['POST'])]
     public function delete(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager, Filesystem $filesystem): Response
     {
@@ -137,6 +182,14 @@ class VehicleController extends AbstractController
         return $this->redirectToRoute('app_vehicle_index', [], Response::HTTP_SEE_OTHER);
     }
 
+    /**
+     * Toggles the "out of service" status of a vehicle.
+     *
+     * @param Request $request The request object.
+     * @param Vehicle $vehicle The vehicle to update.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response The response object.
+     */
     #[Route('/{id}/toggle-out-of-service', name: 'app_vehicle_toggle_out_of_service', methods: ['POST'])]
     public function toggleOutOfService(Request $request, Vehicle $vehicle, EntityManagerInterface $entityManager): Response
     {

@@ -11,8 +11,18 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\Length;
 
+/**
+ * Form type for creating and editing User entities.
+ * This form is typically embedded within other forms, like VolunteerType.
+ */
 class UserType extends AbstractType
 {
+    /**
+     * Builds the form structure for the User entity.
+     *
+     * @param FormBuilderInterface $builder The form builder.
+     * @param array $options The options for building the form.
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -27,8 +37,8 @@ class UserType extends AbstractType
             ])
             ->add('password', PasswordType::class, [
                 'label' => 'Contraseña',
-                'required' => !$options['is_edit'], // Solo requerido si no es edición
-                'mapped' => false, // No mapear directamente, se maneja en el controlador
+                'required' => !$options['is_edit'], // Only required when creating, not editing
+                'mapped' => false, // Not mapped directly, handled in the controller
                 'constraints' => $this->getPasswordConstraints($options['is_edit']),
                 'attr' => [
                     'placeholder' => $options['is_edit'] ? 'Dejar en blanco para no cambiar' : 'Introduce una contraseña',
@@ -36,11 +46,17 @@ class UserType extends AbstractType
             ]);
     }
 
+    /**
+     * Gets the appropriate validation constraints for the password field based on the context.
+     *
+     * @param bool $isEdit Whether the form is in edit mode.
+     * @return array An array of validation constraints.
+     */
     private function getPasswordConstraints(bool $isEdit): array
     {
-        // La restricción Length siempre se aplica si se introduce un valor.
-        // Si es edición y el campo está vacío, no se validará Length gracias a 'required' => false
-        // y la ausencia de NotBlank si $isEdit es true.
+        // The Length constraint always applies if a value is entered.
+        // If it's an edit form and the field is empty, Length won't be validated
+        // thanks to 'required' => false and the absence of NotBlank.
         $constraints = [
             new Length([
                 'min' => 6,
@@ -50,7 +66,7 @@ class UserType extends AbstractType
         ];
 
         if (!$isEdit) {
-            // Solo añadir NotBlank si estamos creando un nuevo usuario (no en edición)
+            // Only add NotBlank if we are creating a new user (not in edit mode)
             array_unshift($constraints, new NotBlank([
                 'message' => 'Por favor, introduce una contraseña.',
             ]));
@@ -59,6 +75,14 @@ class UserType extends AbstractType
         return $constraints;
     }
 
+    /**
+     * Configures the options for this form type.
+     *
+     * It defines a custom option `is_edit` to differentiate between creation and editing contexts,
+     * which controls whether the password field is required.
+     *
+     * @param OptionsResolver $resolver The resolver for the options.
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

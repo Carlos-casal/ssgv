@@ -15,8 +15,23 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Controller for managing volunteer clock-in/out records (Fichajes).
+ */
 class FichajeController extends AbstractController
 {
+    /**
+     * Handles mass clock-in/out for multiple volunteers in a service.
+     * This method takes a start and end time from the request and applies it to all selected volunteers,
+     * creating a single `Fichaje` record for each. It also cleans up any previous records for the service.
+     *
+     * @param Request $request The request object containing form data.
+     * @param Service $service The service to which the clock-in/out records belong.
+     * @param EntityManagerInterface $entityManager The entity manager for database operations.
+     * @param VolunteerRepository $volunteerRepository The repository for volunteers.
+     * @param VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/service/{id}/fichaje', name: 'app_fichaje', methods: ['POST'])]
     public function fichaje(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
@@ -83,6 +98,17 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Adds an individual clock-in/out record for a volunteer in a service.
+     * This can be called via a standard form submission or an AJAX request.
+     * It validates the input and prevents creating overlapping time entries.
+     *
+     * @param Request $request The request object.
+     * @param VolunteerService $volunteerService The association between the volunteer and the service.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param FichajeRepository $fichajeRepository The repository for clock-in/out records.
+     * @return Response A JSON response for AJAX requests or a redirection for standard requests.
+     */
     #[Route('/volunteer_service/{id}/add_fichaje', name: 'app_fichaje_add_individual', methods: ['POST'])]
     public function addIndividualFichaje(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
@@ -163,6 +189,16 @@ class FichajeController extends AbstractController
         }
     }
 
+    /**
+     * Creates a new, open-ended clock-in record for a volunteer at the current time.
+     * It prevents creating a new record if one is already open for the volunteer.
+     *
+     * @param Request $request The request object.
+     * @param VolunteerService $volunteerService The association between the volunteer and the service.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param FichajeRepository $fichajeRepository The repository for clock-in/out records.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/volunteer_service/{id}/clockin', name: 'app_fichaje_clockin', methods: ['POST'])]
     public function clockIn(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
@@ -197,6 +233,15 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Closes an existing open clock-in record for a volunteer at the current time.
+     *
+     * @param Request $request The request object.
+     * @param VolunteerService $volunteerService The association between the volunteer and the service.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param FichajeRepository $fichajeRepository The repository for clock-in/out records.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/volunteer_service/{id}/clockout', name: 'app_fichaje_clockout', methods: ['POST'])]
     public function clockOut(Request $request, VolunteerService $volunteerService, EntityManagerInterface $entityManager, FichajeRepository $fichajeRepository): Response
     {
@@ -223,6 +268,14 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $volunteerService->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Deletes a specific clock-in/out record.
+     *
+     * @param Request $request The request object.
+     * @param Fichaje $fichaje The clock-in/out record to delete.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/fichaje/{id}/delete', name: 'app_fichaje_delete', methods: ['POST'])]
     public function deleteFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
     {
@@ -242,6 +295,14 @@ class FichajeController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $serviceId, '_fragment' => 'asistencias']);
     }
 
+    /**
+     * Edits an existing clock-in/out record.
+     *
+     * @param Request $request The request object containing the updated data.
+     * @param Fichaje $fichaje The clock-in/out record to edit.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response A redirection to the service edit page.
+     */
     #[Route('/fichaje/{id}/edit', name: 'app_fichaje_edit', methods: ['POST'])]
     public function editFichaje(Request $request, Fichaje $fichaje, EntityManagerInterface $entityManager): Response
     {
