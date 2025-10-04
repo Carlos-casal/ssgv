@@ -113,10 +113,36 @@ class ServiceRepository extends ServiceEntityRepository
         $startDate = new \DateTime('first day of january this year 00:00:00');
 
         return $this->createQueryBuilder('s')
+            ->select('s')
+            ->distinct()
+            ->innerJoin('s.volunteerServices', 'vs')
+            ->innerJoin('vs.fichajes', 'f')
             ->where('s.endDate < :now')
             ->andWhere('s.startDate >= :start')
             ->setParameter('now', new \DateTime())
             ->setParameter('start', $startDate)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findUpcomingServices(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.startDate > :now')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('s.startDate', 'ASC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findRecentCompletedServices(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('s')
+            ->where('s.endDate < :now')
+            ->setParameter('now', new \DateTime())
+            ->orderBy('s.endDate', 'DESC')
+            ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
     }
