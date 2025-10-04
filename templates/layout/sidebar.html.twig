@@ -3,12 +3,14 @@
 
     <!-- Header -->
     <div class="p-4 border-b border-blue-700 flex items-center justify-between">
-        <h2 class="font-semibold">{{ "now"|date("D")|slice(0, 2) }}, {{ "now"|date("d") }} de {{ "now"|date("M") }} de {{ "now"|date("y") }}</h2>
+        <h2 class="font-semibold">{{ now|format_spanish_date }}</h2>
         <div class="relative">
             <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
                 <i data-lucide="bell" class="w-5 h-5"></i>
             </button>
-            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            {% if pending_volunteer_count > 0 %}
+                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+            {% endif %}
         </div>
     </div>
 
@@ -199,45 +201,66 @@
 
 <script>
     function setupSidebarHover() {
-        const submenuItems = document.querySelectorAll('#main-nav .has-submenu');
+        const nav = document.getElementById('main-nav');
+        if (!nav) return;
 
-        submenuItems.forEach(item => {
+        const closeSubmenu = (submenu) => {
+            // Recursively close all descendant submenus that are open
+            submenu.querySelectorAll('.submenu-open').forEach(openChild => {
+                openChild.classList.remove('submenu-open');
+                const childLink = openChild.querySelector('a[aria-expanded]');
+                if (childLink) {
+                    childLink.setAttribute('aria-expanded', 'false');
+                }
+            });
+
+            // Close the submenu itself
+            if (submenu.classList.contains('submenu-open')) {
+                submenu.classList.remove('submenu-open');
+                const link = submenu.querySelector('a[aria-expanded]');
+                if (link) {
+                    link.setAttribute('aria-expanded', 'false');
+                }
+            }
+        };
+
+        nav.querySelectorAll('.has-submenu').forEach(item => {
             if (item.dataset.hoverListenersAttached) {
                 return;
             }
             item.dataset.hoverListenersAttached = 'true';
 
-            let timer;
+            let enterTimer;
+            let leaveTimer;
 
-            const openMenu = () => {
-                clearTimeout(timer);
-                // Close other open submenus at the same level
-                const parentUl = item.parentElement;
-                parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
-                    if (sibling !== item) {
-                        sibling.classList.remove('submenu-open');
-                        const siblingLink = sibling.querySelector('a[aria-expanded]');
-                        if (siblingLink) {
-                            siblingLink.setAttribute('aria-expanded', 'false');
+            item.addEventListener('mouseenter', () => {
+                clearTimeout(leaveTimer); // Cancel any pending close operations
+
+                enterTimer = setTimeout(() => {
+                    // Close sibling submenus
+                    const parentUl = item.parentElement;
+                    parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
+                        if (sibling !== item) {
+                            closeSubmenu(sibling);
                         }
-                    }
-                });
-                // Open this submenu
-                item.classList.add('submenu-open');
-                const link = item.querySelector('a[aria-expanded]');
-                if(link) link.setAttribute('aria-expanded', 'true');
-            };
+                    });
 
-            const closeMenu = () => {
-                timer = setTimeout(() => {
-                    item.classList.remove('submenu-open');
+                    // Open this submenu
+                    item.classList.add('submenu-open');
                     const link = item.querySelector('a[aria-expanded]');
-                    if(link) link.setAttribute('aria-expanded', 'false');
-                }, 200); // 200ms delay to allow moving to submenu
-            };
+                    if (link) {
+                        link.setAttribute('aria-expanded', 'true');
+                    }
+                }, 100); // A small delay to prevent accidental opening
+            });
 
-            item.addEventListener('mouseenter', openMenu);
-            item.addEventListener('mouseleave', closeMenu);
+            item.addEventListener('mouseleave', () => {
+                clearTimeout(enterTimer); // Cancel any pending open operations
+
+                leaveTimer = setTimeout(() => {
+                    closeSubmenu(item);
+                }, 200); // Delay to allow moving mouse to child submenu
+            });
         });
     }
 

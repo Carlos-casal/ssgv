@@ -11,42 +11,67 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[UniqueEntity(fields: ['email'], message: 'Ya existe una cuenta con este correo electrónico.')]
-
+/**
+ * Represents a user account in the system.
+ * This entity is used for authentication and authorization, and is linked to a volunteer profile.
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
+    /**
+     * @var int|null The unique identifier for the user.
+     */
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
+    /**
+     * @var string|null The user's email address, used as the login identifier.
+     */
     #[ORM\Column(length: 180, unique: true)]
     private ?string $email = null;
 
+    /**
+     * @var array The roles assigned to the user (e.g., ROLE_ADMIN, ROLE_VOLUNTEER).
+     */
     #[ORM\Column]
     private array $roles = [];
 
     /**
-     * @var string The hashed password
+     * @var string|null The hashed password for the user.
      */
     #[ORM\Column]
     private ?string $password = null;
 
-    // --- NUEVA RELACIÓN ONE-TO-ONE CON Volunteer ---
+    /**
+     * @var Volunteer|null The volunteer profile associated with this user account.
+     */
     #[ORM\OneToOne(mappedBy: 'user', cascade: ['persist', 'remove'])]
     private ?Volunteer $volunteer = null;
-    // ------------------------------------------
 
-
+    /**
+     * Gets the unique identifier for the user.
+     * @return int|null
+     */
     public function getId(): ?int
     {
         return $this->id;
     }
 
+    /**
+     * Gets the user's email address.
+     * @return string|null
+     */
     public function getEmail(): ?string
     {
         return $this->email;
     }
 
+    /**
+     * Sets the user's email address.
+     * @param string $email The new email address.
+     * @return static
+     */
     public function setEmail(string $email): static
     {
         $this->email = $email;
@@ -58,6 +83,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      * A visual identifier that represents this user.
      *
      * @see UserInterface
+     * @return string The user's email address.
      */
     public function getUserIdentifier(): string
     {
@@ -65,7 +91,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Returns the roles granted to the user.
      * @see UserInterface
+     * @return array An array of roles.
      */
     public function getRoles(): array
     {
@@ -76,6 +104,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return array_unique($roles);
     }
 
+    /**
+     * Sets the roles for the user.
+     * @param array $roles The roles to set.
+     * @return static
+     */
     public function setRoles(array $roles): static
     {
         $this->roles = $roles;
@@ -84,13 +117,20 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Returns the hashed password for this user.
      * @see PasswordAuthenticatedUserInterface
+     * @return string The hashed password.
      */
     public function getPassword(): string
     {
         return $this->password;
     }
 
+    /**
+     * Sets the hashed password for the user.
+     * @param string $password The hashed password.
+     * @return static
+     */
     public function setPassword(string $password): static
     {
         $this->password = $password;
@@ -99,6 +139,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
+     * Removes sensitive data from the user.
      * @see UserInterface
      */
     public function eraseCredentials(): void
@@ -107,27 +148,32 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         // $this->plainPassword = null;\
     }
 
-    // --- GETTER Y SETTER PARA LA RELACIÓN VOLUNTEER (ACTUALIZADO) ---
+    /**
+     * Gets the associated volunteer profile.
+     * @return Volunteer|null
+     */
     public function getVolunteer(): ?Volunteer
     {
         return $this->volunteer;
     }
 
-    
-public function setVolunteer(?Volunteer $volunteer): static {
-    if ($this->volunteer === $volunteer) {
+    /**
+     * Sets the associated volunteer profile and maintains the bidirectional relationship.
+     * @param Volunteer|null $volunteer The volunteer profile.
+     * @return static
+     */
+    public function setVolunteer(?Volunteer $volunteer): static
+    {
+        if ($this->volunteer === $volunteer) {
+            return $this;
+        }
+
+        $this->volunteer = $volunteer;
+
+        if ($volunteer !== null && $volunteer->getUser() !== $this) {
+            $volunteer->setUser($this);
+        }
+
         return $this;
     }
-
-    $this->volunteer = $volunteer;
-
-    if ($volunteer !== null && $volunteer->getUser() !== $this) {
-        $volunteer->setUser($this);
-    }
-
-    return $this;
-}
-
-
-    // --------------------------------------------------
 }

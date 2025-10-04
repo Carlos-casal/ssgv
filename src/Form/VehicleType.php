@@ -13,8 +13,17 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 
+/**
+ * Form type for creating and editing Vehicle entities.
+ */
 class VehicleType extends AbstractType
 {
+    /**
+     * Builds the form structure for the Vehicle entity.
+     *
+     * @param FormBuilderInterface $builder The form builder.
+     * @param array $options The options for building the form.
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -85,6 +94,11 @@ class VehicleType extends AbstractType
             ]);
     }
 
+    /**
+     * Configures the options for this form type.
+     *
+     * @param OptionsResolver $resolver The resolver for the options.
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

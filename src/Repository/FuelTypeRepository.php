@@ -7,6 +7,8 @@ use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
+ * Repository for FuelType entities.
+ *
  * @extends ServiceEntityRepository<FuelType>
  *
  * @method FuelType|null find($id, $lockMode = null, $lockVersion = null)
@@ -16,6 +18,9 @@ use Doctrine\Persistence\ManagerRegistry;
  */
 class FuelTypeRepository extends ServiceEntityRepository
 {
+    /**
+     * @param ManagerRegistry $registry The manager registry.
+     */
     public function __construct(ManagerRegistry $registry)
     {
         parent::__construct($registry, FuelType::class);

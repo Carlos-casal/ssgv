@@ -25,9 +25,20 @@ use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
 use Symfony\Component\Security\Http\Attribute\Security;
 
+/**
+ * Controller for managing volunteers, including listing, creation, editing, and reporting.
+ */
 // #[Route('/personal')] // Comentario de línea para la ruta '/personal'
 class VolunteerController extends AbstractController
 {
+    /**
+     * Displays a paginated list of volunteers with filtering and search capabilities.
+     *
+     * @param Request $request The request object to handle search and filter parameters.
+     * @param VolunteerRepository $volunteerRepository The repository for volunteers.
+     * @param PaginatorInterface $paginator The KNP Paginator service.
+     * @return Response The response object, rendering the volunteer list page.
+     */
     #[Route('/voluntarios', name: 'app_volunteer_list')]
     #[Security("is_granted('ROLE_ADMIN')")]
     // Inyecta PaginatorInterface para la paginación
@@ -92,6 +103,14 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    /**
+     * Handles the creation of a new volunteer by an administrator.
+     *
+     * @param Request $request The request object.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param UserPasswordHasherInterface $userPasswordHasher The password hasher service.
+     * @return Response The response object, rendering the new volunteer form or redirecting on success.
+     */
     #[Route('/nuevo_voluntario', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
@@ -169,6 +188,15 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    /**
+     * Handles the public registration form for new volunteers.
+     * New registrations are set to a 'pending' status.
+     *
+     * @param Request $request The request object.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param UserPasswordHasherInterface $userPasswordHasher The password hasher service.
+     * @return Response The response object, rendering the registration form or redirecting on success.
+     */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
     public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
     {
@@ -250,6 +278,15 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    /**
+     * Handles the editing of an existing volunteer's profile.
+     *
+     * @param Request $request The request object.
+     * @param Volunteer $volunteer The volunteer entity to edit.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @param UserPasswordHasherInterface $userPasswordHasher The password hasher service.
+     * @return Response The response object, rendering the edit form or redirecting on success.
+     */
     #[Route('/editar_voluntario-{id}', name: 'app_volunteer_edit', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
     public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
@@ -320,6 +357,12 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    /**
+     * Exports all volunteer data to a CSV file.
+     *
+     * @param VolunteerRepository $volunteerRepository The repository for volunteers.
+     * @return Response A response object containing the CSV file for download.
+     */
     #[Route('/exportar-csv', name: 'app_volunteer_export_csv')]
     #[Security("is_granted('ROLE_ADMIN')")]
     public function exportCsv(VolunteerRepository $volunteerRepository): Response
@@ -368,6 +411,11 @@ class VolunteerController extends AbstractController
         return $response;
     }
 
+    /**
+     * Renders a "coming soon" page for volunteer reports.
+     *
+     * @return Response The response object.
+     */
     #[Route('/informes_voluntarios', name: 'app_volunteer_reports')]
     public function reports(): Response
     {
@@ -378,6 +426,14 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    /**
+     * Generates and displays a report of a specific volunteer's logged hours, with filtering options.
+     *
+     * @param Request $request The request object for filtering.
+     * @param Volunteer $volunteer The volunteer for whom the report is generated.
+     * @param FichajeRepository $fichajeRepository The repository for clock-in/out records.
+     * @return Response The response object, rendering the hours report page.
+     */
     #[Route('/{id}/informe-horas', name: 'app_volunteer_hours_report', methods: ['GET'])]
     public function hoursReport(Request $request, Volunteer $volunteer, FichajeRepository $fichajeRepository): Response
     {

@@ -11,9 +11,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Controller for managing fuel types in the admin panel.
+ */
 #[Route('/admin/fuel-types')]
 class FuelTypeController extends AbstractController
 {
+    /**
+     * Displays a list of all fuel types.
+     *
+     * @param FuelTypeRepository $fuelTypeRepository The repository for fuel types.
+     * @return Response The response object.
+     */
     #[Route('/', name: 'app_admin_fuel_type_index', methods: ['GET'])]
     public function index(FuelTypeRepository $fuelTypeRepository): Response
     {
@@ -22,6 +31,13 @@ class FuelTypeController extends AbstractController
         ]);
     }
 
+    /**
+     * Creates a new fuel type.
+     *
+     * @param Request $request The request object.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response The response object.
+     */
     #[Route('/new', name: 'app_admin_fuel_type_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -44,6 +60,14 @@ class FuelTypeController extends AbstractController
         ]);
     }
 
+    /**
+     * Edits an existing fuel type.
+     *
+     * @param Request $request The request object.
+     * @param FuelType $fuelType The fuel type to edit.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response The response object.
+     */
     #[Route('/{id}/edit', name: 'app_admin_fuel_type_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, FuelType $fuelType, EntityManagerInterface $entityManager): Response
     {
@@ -64,6 +88,14 @@ class FuelTypeController extends AbstractController
         ]);
     }
 
+    /**
+     * Deletes a fuel type.
+     *
+     * @param Request $request The request object.
+     * @param FuelType $fuelType The fuel type to delete.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response The response object.
+     */
     #[Route('/{id}', name: 'app_admin_fuel_type_delete', methods: ['POST'])]
     public function delete(Request $request, FuelType $fuelType, EntityManagerInterface $entityManager): Response
     {

@@ -6,17 +6,35 @@ use App\Entity\Service;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
+/**
+ * A service responsible for generating formatted WhatsApp messages for service announcements.
+ */
 class WhatsAppMessageGenerator
 {
     private TranslatorInterface $translator;
     private UrlGeneratorInterface $urlGenerator;
 
+    /**
+     * WhatsAppMessageGenerator constructor.
+     *
+     * @param TranslatorInterface $translator The translator service for internationalization.
+     * @param UrlGeneratorInterface $urlGenerator The URL generator service to create absolute URLs.
+     */
     public function __construct(TranslatorInterface $translator, UrlGeneratorInterface $urlGenerator)
     {
         $this->translator = $translator;
         $this->urlGenerator = $urlGenerator;
     }
 
+    /**
+     * Creates a formatted, multi-line string suitable for a WhatsApp message from a Service entity.
+     *
+     * The message includes the service title, date, timings, location, required resources, tasks,
+     * and direct links for volunteers to confirm or decline attendance.
+     *
+     * @param Service $service The service entity to generate the message for.
+     * @return string The formatted WhatsApp message.
+     */
     public function createMessage(Service $service): string
     {
         $message = [];
