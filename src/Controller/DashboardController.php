@@ -44,9 +44,14 @@ class DashboardController extends AbstractController
             $completedServicesThisYear = $serviceRepository->findCompletedServicesThisYear();
             $totalAnnualServiceMinutes = 0;
             foreach ($completedServicesThisYear as $service) {
+                $maxHoursInService = 0;
                 foreach ($service->getVolunteerServices() as $volunteerService) {
-                    $totalAnnualServiceMinutes += $volunteerService->calculateTotalDuration();
+                    $duration = $volunteerService->calculateTotalDuration(); // duration in minutes
+                    if ($duration > $maxHoursInService) {
+                        $maxHoursInService = $duration;
+                    }
                 }
+                $totalAnnualServiceMinutes += $maxHoursInService;
             }
 
             return $this->render('dashboard/admin_dashboard.html.twig', [

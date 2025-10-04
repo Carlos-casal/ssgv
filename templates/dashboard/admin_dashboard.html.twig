@@ -1,11 +1,10 @@
 {% extends 'layout/app.html.twig' %}
 
+{% block title %}Panel Inicio{% endblock %}
 {% block page_title %}Panel Inicio{% endblock %}
 
 {% block content %}
 <div class="p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-gray-900">Panel Inicio</h1>
-
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
@@ -57,7 +56,7 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Horas total de servicios anuales</p>
+                    <p class="text-sm font-medium text-gray-600">Horas anuales</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_annual_service_hours }}</p>
                     <div class="flex items-center mt-2">
                         <span class="text-sm text-gray-500">{{ completed_services_count }} servicios completados</span>
