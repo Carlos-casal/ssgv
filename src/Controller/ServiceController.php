@@ -1,6 +1,7 @@
 <?php
 namespace App\Controller;
 
+use App\Entity\ActivityLog;
 use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
 use App\Form\ServiceType;
@@ -73,6 +74,12 @@ class ServiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('SERVICE');
+            $activityLog->setDescription(sprintf('Nuevo servicio "%s" creado.', $service->getTitle()));
+            $entityManager->persist($activityLog);
+
             $entityManager->persist($service);
             $entityManager->flush(); // Flush once to get the ID for URL generation
 
@@ -133,11 +140,23 @@ class ServiceController extends AbstractController
     }
 
     #[Route('/servicios/{id}', name: 'app_service_show', methods: ['GET'], requirements: ['id' => '\d+'])]
-    public function show(?Service $service): Response
+    public function show(?Service $service, EntityManagerInterface $entityManager): Response
     {
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
+
+        // Log service completion if it hasn't been logged yet
+        if ($service->getEndDate() < new \DateTime() && !$service->isIsCompletionLogged()) {
+            $activityLog = new ActivityLog();
+            $activityLog->setType('SERVICE');
+            $activityLog->setDescription(sprintf('El servicio "%s" ha finalizado.', $service->getTitle()));
+            $entityManager->persist($activityLog);
+
+            $service->setIsCompletionLogged(true);
+            $entityManager->flush();
+        }
+
         $form = $this->createForm(ServiceType::class, $service);
         return $this->render('service/show_service.html.twig', [
             'service' => $service,

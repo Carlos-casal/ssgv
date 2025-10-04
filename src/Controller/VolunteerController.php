@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ActivityLog;
 use App\Entity\Volunteer;
 use App\Entity\User;
 use App\Entity\Fichaje;
@@ -156,6 +157,13 @@ class VolunteerController extends AbstractController
 
             $entityManager->persist($user);
             $entityManager->persist($volunteer);
+
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('VOLUNTEER');
+            $activityLog->setDescription(sprintf('Nuevo voluntario "%s" registrado por un administrador.', $volunteer->getName()));
+            $entityManager->persist($activityLog);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Voluntario creado exitosamente.');
@@ -237,6 +245,13 @@ class VolunteerController extends AbstractController
             $entityManager->persist($hydratedUser);
             // Y persistimos el Volunteer, que ya tiene la referencia al User correcto
             $entityManager->persist($hydratedVolunteer);
+
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('VOLUNTEER');
+            $activityLog->setDescription(sprintf('Nueva solicitud de inscripción del voluntario "%s".', $hydratedVolunteer->getName()));
+            $entityManager->persist($activityLog);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
@@ -250,6 +265,56 @@ class VolunteerController extends AbstractController
         ]);
     }
 
+    #[Route('/invitation/{token}', name: 'app_volunteer_registration_from_invitation', methods: ['GET', 'POST'])]
+    public function registrationFromInvitation(
+        string $token,
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $userPasswordHasher,
+        \App\Repository\InvitationRepository $invitationRepository
+    ): Response {
+        $invitation = $invitationRepository->findOneBy(['token' => $token]);
+
+        if (!$invitation || $invitation->isUsed() || $invitation->isExpired()) {
+            $this->addFlash('error', 'El enlace de invitación no es válido o ha caducado.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        $volunteer = new Volunteer();
+        $user = new User();
+        $user->setEmail($invitation->getEmail()); // Pre-fill email
+        $volunteer->setUser($user);
+
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'is_invitation' => true, // Pass this option to the form type
+        ]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $plainPassword = $form->get('user')->get('password')->getData();
+            if ($plainPassword) {
+                $user->setPassword($userPasswordHasher->hashPassword($user, $plainPassword));
+            }
+            $user->setRoles(['ROLE_VOLUNTEER']);
+            $volunteer->setStatus(Volunteer::STATUS_ACTIVE); // Directly activate invited volunteers
+            $volunteer->setJoinDate(new \DateTime());
+
+            $invitation->setIsUsed(true); // Mark invitation as used
+
+            $entityManager->persist($user);
+            $entityManager->persist($volunteer);
+            $entityManager->flush();
+
+            $this->addFlash('success', '¡Bienvenido! Tu registro se ha completado con éxito.');
+            return $this->redirectToRoute('app_login');
+        }
+
+        return $this->render('volunteer/registration_form.html.twig', [
+            'form' => $form->createView(),
+            'email' => $invitation->getEmail(),
+        ]);
+    }
+
     #[Route('/editar_voluntario-{id}', name: 'app_volunteer_edit', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
     public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
@@ -260,6 +325,8 @@ class VolunteerController extends AbstractController
             $this->addFlash('error', 'ERROR CRÍTICO: No hay un usuario asociado a este voluntario.');
             return $this->redirectToRoute('app_volunteer_list');
         }
+
+        $originalStatus = $volunteer->getStatus();
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
@@ -302,6 +369,22 @@ class VolunteerController extends AbstractController
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
+            }
+
+            // Log status change
+            $newStatus = $volunteer->getStatus();
+            if ($originalStatus !== $newStatus) {
+                $activityLog = new ActivityLog();
+                $activityLog->setType('VOLUNTEER');
+                $statusMap = [
+                    Volunteer::STATUS_ACTIVE => 'activado',
+                    Volunteer::STATUS_SUSPENDED => 'suspendido',
+                    Volunteer::STATUS_INACTIVE => 'dado de baja',
+                    Volunteer::STATUS_PENDING => 'movido a pendiente',
+                ];
+                $statusText = $statusMap[$newStatus] ?? $newStatus;
+                $activityLog->setDescription(sprintf('El voluntario "%s" ha sido %s.', $volunteer->getName(), $statusText));
+                $entityManager->persist($activityLog);
             }
 
             try {

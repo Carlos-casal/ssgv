@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\ActivityLog;
 use App\Entity\Vehicle;
 use App\Form\VehicleType;
 use App\Repository\VehicleRepository;
@@ -53,6 +54,13 @@ class VehicleController extends AbstractController
             }
 
             $entityManager->persist($vehicle);
+
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('VEHICLE');
+            $activityLog->setDescription(sprintf('Nuevo vehículo "%s %s" añadido.', $vehicle->getMake(), $vehicle->getModel()));
+            $entityManager->persist($activityLog);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Vehículo creado con éxito.');
@@ -128,7 +136,15 @@ class VehicleController extends AbstractController
                 $filesystem->remove($this->getParameter('vehicle_photos_directory').'/'.$photo);
             }
 
+            $vehicleName = $vehicle->getMake() . ' ' . $vehicle->getModel();
             $entityManager->remove($vehicle);
+
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('VEHICLE');
+            $activityLog->setDescription(sprintf('Vehículo "%s" eliminado.', $vehicleName));
+            $entityManager->persist($activityLog);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'Vehículo eliminado con éxito.');
@@ -143,6 +159,14 @@ class VehicleController extends AbstractController
         if ($this->isCsrfTokenValid('toggle'.$vehicle->getId(), $request->request->get('_token'))) {
             $isOutOfService = $request->request->has('isOutOfService');
             $vehicle->setOutOfService($isOutOfService);
+
+            // Log activity
+            $activityLog = new ActivityLog();
+            $activityLog->setType('VEHICLE');
+            $statusText = $isOutOfService ? 'puesto fuera de servicio' : 'vuelto a poner en servicio';
+            $activityLog->setDescription(sprintf('El vehículo "%s %s" ha sido %s.', $vehicle->getMake(), $vehicle->getModel(), $statusText));
+            $entityManager->persist($activityLog);
+
             $entityManager->flush();
 
             $this->addFlash('success', 'El estado del vehículo ha sido actualizado.');

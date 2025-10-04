@@ -85,6 +85,7 @@ class VolunteerType extends AbstractType
             ->add('phone', TextType::class, [
                 'label' => 'Teléfono de Contacto',
                 'attr' => ['placeholder' => 'Ej: +34 600 123 456'],
+                'required' => !$options['is_invitation'],
             ])
             
             // --- Datos de Contacto de Emergencia ---
@@ -225,7 +226,10 @@ class VolunteerType extends AbstractType
             ])
 
             // --- Rol y Especialización ---
-            ->add('role', ChoiceType::class, [
+            ]);
+
+        if (!$options['is_invitation']) {
+            $builder->add('role', ChoiceType::class, [
                 'label' => 'Rol en la Organización',
                 'choices' => [
                     'Voluntario' => 'Voluntario',
@@ -233,7 +237,11 @@ class VolunteerType extends AbstractType
                     'Especialista' => 'Especialista',
                 ],
                 'placeholder' => 'Selecciona un rol',
-            ])
+                'required' => true,
+            ]);
+        }
+
+        $builder
             ->add('specialization', TextType::class, [
                 'label' => 'Especialización (Opcional)',
                 'attr' => ['placeholder' => 'Ej: Primeros Auxilios, Cocina'],
@@ -244,8 +252,9 @@ class VolunteerType extends AbstractType
             ->add('user', UserType::class, [
                 'label' => false, // La etiqueta general se puede poner en la plantilla si es necesario
                 'by_reference' => false,
-                // Pasar la opción 'is_edit' al UserType
+                // Pasar la opción 'is_edit' y 'is_invitation' al UserType
                 'is_edit' => $options['is_edit'],
+                'is_invitation' => $options['is_invitation'],
             ])
 
             ->add('profilePicture', FileType::class, [
@@ -277,6 +286,9 @@ class VolunteerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
             'is_edit' => false, // Opción por defecto para el formulario
+            'is_invitation' => false,
         ]);
+
+        $resolver->setAllowedTypes('is_invitation', 'bool');
     }
 }

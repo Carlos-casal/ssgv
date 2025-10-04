@@ -19,6 +19,7 @@ class UserType extends AbstractType
             ->add('email', EmailType::class, [
                 'label' => 'Correo Electrónico',
                 'required' => true,
+                'disabled' => $options['is_invitation'],
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Por favor, introduce un correo electrónico.',
@@ -63,9 +64,11 @@ class UserType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => User::class,
-            'is_edit' => false, 
+            'is_edit' => false,
+            'is_invitation' => false,
         ]);
 
         $resolver->setAllowedTypes('is_edit', 'bool');
+        $resolver->setAllowedTypes('is_invitation', 'bool');
     }
 }

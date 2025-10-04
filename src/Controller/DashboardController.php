@@ -3,6 +3,7 @@
 namespace App\Controller;
 
  
+use App\Repository\ActivityLogRepository;
 use App\Repository\VolunteerRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VehicleRepository;
@@ -20,6 +21,7 @@ class DashboardController extends AbstractController
         ServiceRepository $serviceRepository,
         VehicleRepository $vehicleRepository,
         AssistanceConfirmationRepository $assistanceConfirmationRepository,
+        ActivityLogRepository $activityLogRepository,
         Security $security
     ): Response {
         if ($this->getUser() && $this->isGranted('ROLE_ADMIN')) {
@@ -36,17 +38,6 @@ class DashboardController extends AbstractController
                 $totalAnnualServiceMinutes += $maxHoursInService;
             }
 
-            // Recent Activities
-            $recentVolunteers = $volunteerRepository->findRecentVolunteers(5);
-            $recentServices = $serviceRepository->findRecentCompletedServices(5);
-
-            $recentActivities = array_merge($recentVolunteers, $recentServices);
-            usort($recentActivities, function ($a, $b) {
-                $dateA = $a instanceof \App\Entity\Volunteer ? $a->getJoinDate() : $a->getEndDate();
-                $dateB = $b instanceof \App\Entity\Volunteer ? $b->getJoinDate() : $b->getEndDate();
-                return $dateB <=> $dateA;
-            });
-
             return $this->render('dashboard/admin_dashboard.html.twig', [
                 'current_section' => 'inicio',
                 'active_volunteers_count' => $volunteerRepository->countActiveVolunteers(),
@@ -55,7 +46,7 @@ class DashboardController extends AbstractController
                 'available_vehicles_count' => $vehicleRepository->countAvailableVehicles(),
                 'total_annual_service_hours' => round($totalAnnualServiceMinutes / 60),
                 'completed_services_count' => count($completedServicesThisYear),
-                'recent_activities' => array_slice($recentActivities, 0, 5),
+                'recent_activities' => $activityLogRepository->findRecentActivity(3),
                 'upcoming_services' => $serviceRepository->findUpcomingServices(5),
             ]);
         }

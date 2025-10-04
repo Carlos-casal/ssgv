@@ -490,6 +490,9 @@ class Service
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $whatsappMessage = null;
 
+    #[ORM\Column]
+    private ?bool $isCompletionLogged = false;
+
     public function getWhatsappMessage(): ?string
     {
         return $this->whatsappMessage;
@@ -498,6 +501,18 @@ class Service
     public function setWhatsappMessage(?string $whatsappMessage): static
     {
         $this->whatsappMessage = $whatsappMessage;
+
+        return $this;
+    }
+
+    public function isIsCompletionLogged(): ?bool
+    {
+        return $this->isCompletionLogged;
+    }
+
+    public function setIsCompletionLogged(bool $isCompletionLogged): static
+    {
+        $this->isCompletionLogged = $isCompletionLogged;
 
         return $this;
     }
