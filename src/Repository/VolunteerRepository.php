@@ -102,4 +102,13 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    public function findRecentVolunteers(int $limit = 5): array
+    {
+        return $this->createQueryBuilder('v')
+            ->orderBy('v.joinDate', 'DESC')
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
 }

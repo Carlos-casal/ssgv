@@ -74,22 +74,27 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
             <div class="space-y-4">
-                <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
-                        <p class="text-sm text-gray-600">María García</p>
-                        <p class="text-xs text-gray-500 mt-1">Hace 2 horas</p>
+                {% for activity in recent_activities %}
+                    <div class="flex items-start gap-3">
+                        {% if activity.joinDate is defined %}
+                            <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
+                                <p class="text-sm text-gray-600">{{ activity.name }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ activity.joinDate|date('d/m/Y H:i') }}</p>
+                            </div>
+                        {% else %}
+                            <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
+                            <div class="flex-1">
+                                <p class="text-sm font-medium text-gray-900">Servicio completado</p>
+                                <p class="text-sm text-gray-600">{{ activity.title }}</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ activity.endDate|date('d/m/Y H:i') }}</p>
+                            </div>
+                        {% endif %}
                     </div>
-                </div>
-                <div class="flex items-start gap-3">
-                    <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                    <div class="flex-1">
-                        <p class="text-sm font-medium text-gray-900">Servicio completado</p>
-                        <p class="text-sm text-gray-600">Equipo Alpha</p>
-                        <p class="text-xs text-gray-500 mt-1">Hace 4 horas</p>
-                    </div>
-                </div>
+                {% else %}
+                    <p class="text-sm text-gray-500">No hay actividad reciente.</p>
+                {% endfor %}
             </div>
         </div>
 
@@ -97,22 +102,18 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Eventos</h3>
             <div class="space-y-4">
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900">Formación en Primeros Auxilios</h4>
-                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span>📅 15 Mar 2024</span>
-                        <span>🕐 10:00</span>
-                        <span>👥 25 participantes</span>
+                {% for service in upcoming_services %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">{{ service.title }}</h4>
+                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
+                            <span>📅 {{ service.startDate|date('d M Y') }}</span>
+                            <span>🕐 {{ service.startDate|date('H:i') }}</span>
+                            <span>👥 {{ service.maxAttendees }} participantes</span>
+                        </div>
                     </div>
-                </div>
-                <div class="border border-gray-200 rounded-lg p-4">
-                    <h4 class="font-medium text-gray-900">Simulacro de Emergencia</h4>
-                    <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span>📅 18 Mar 2024</span>
-                        <span>🕐 09:00</span>
-                        <span>👥 40 participantes</span>
-                    </div>
-                </div>
+                {% else %}
+                    <p class="text-sm text-gray-500">No hay eventos próximos.</p>
+                {% endfor %}
             </div>
         </div>
     </div>
