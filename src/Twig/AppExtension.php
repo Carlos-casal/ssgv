@@ -33,6 +33,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'pending_volunteer_count' => $this->volunteerRepository->countPendingVolunteers(),
+            'now' => new \DateTime(),
         ];
     }
 
