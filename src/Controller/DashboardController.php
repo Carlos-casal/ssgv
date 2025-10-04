@@ -12,8 +12,26 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\SecurityBundle\Security;
 
+/**
+ * Controller for displaying the main dashboard.
+ */
 class DashboardController extends AbstractController
 {
+    /**
+     * Renders the dashboard for the currently logged-in user.
+     *
+     * This method checks the user's role and renders the appropriate dashboard:
+     * - Admin dashboard with statistics for administrators.
+     * - Volunteer dashboard with service information for volunteers.
+     * If the user is not logged in, it redirects to the login page.
+     *
+     * @param VolunteerRepository $volunteerRepository Repository for volunteer data.
+     * @param ServiceRepository $serviceRepository Repository for service data.
+     * @param VehicleRepository $vehicleRepository Repository for vehicle data.
+     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository Repository for assistance confirmation data.
+     * @param Security $security The security component.
+     * @return Response The response object, either a rendered template or a redirection.
+     */
     #[Route('/', name: 'app_dashboard')]
     public function index(
         VolunteerRepository $volunteerRepository,

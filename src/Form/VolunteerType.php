@@ -15,8 +15,22 @@ use App\Form\UserType;
 use Symfony\Component\Form\Extension\Core\Type\FileType; // ¡AÑADE ESTA LÍNEA!
 use Symfony\Component\Validator\Constraints\File; // ¡AÑADE ESTA LÍNEA!
 
+/**
+ * Form type for creating and editing Volunteer profiles.
+ * This is a comprehensive form that covers personal data, contact information, qualifications, and account details.
+ */
 class VolunteerType extends AbstractType
 {
+    /**
+     * Builds the form structure for the Volunteer entity.
+     *
+     * This method defines all the fields required for a volunteer's profile, organized into sections.
+     * It includes personal details, emergency contacts, professional information, qualifications, and embeds the UserType form
+     * for account management.
+     *
+     * @param FormBuilderInterface $builder The form builder.
+     * @param array $options The options for building the form, including a custom 'is_edit' option.
+     */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -272,6 +286,14 @@ class VolunteerType extends AbstractType
         ;
     }
 
+    /**
+     * Configures the options for this form type.
+     *
+     * It defines a custom option `is_edit` to differentiate between creation and editing contexts,
+     * which is passed down to the embedded UserType form.
+     *
+     * @param OptionsResolver $resolver The resolver for the options.
+     */
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([

@@ -6,8 +6,16 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
+/**
+ * Controller for displaying "coming soon" pages for unimplemented features.
+ */
 class ComingSoonController extends AbstractController
 {
+    /**
+     * Renders the "coming soon" page for the services list.
+     *
+     * @return Response The response object.
+     */
     #[Route('/servicios/listado', name: 'app_services_list')]
     public function servicesList(): Response
     {
@@ -17,6 +25,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for service reports.
+     *
+     * @return Response The response object.
+     */
     #[Route('/servicios/informes', name: 'app_services_reports')]
     public function servicesReports(): Response
     {
@@ -26,6 +39,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for service schedules.
+     *
+     * @return Response The response object.
+     */
     #[Route('/servicios/cuadrantes', name: 'app_services_schedules')]
     public function servicesSchedules(): Response
     {
@@ -35,6 +53,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for communications.
+     *
+     * @return Response The response object.
+     */
     #[Route('/comunicados', name: 'app_communications')]
     public function communications(): Response
     {
@@ -44,6 +67,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for vehicle management.
+     *
+     * @return Response The response object.
+     */
     #[Route('/vehiculos', name: 'app_vehicles')]
     public function vehicles(): Response
     {
@@ -53,6 +81,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for document management.
+     *
+     * @return Response The response object.
+     */
     #[Route('/gesdoc', name: 'app_gesdoc')]
     public function gesdoc(): Response
     {
@@ -62,6 +95,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for the communications central.
+     *
+     * @return Response The response object.
+     */
     #[Route('/central', name: 'app_central')]
     public function central(): Response
     {
@@ -71,6 +109,11 @@ class ComingSoonController extends AbstractController
         ]);
     }
 
+    /**
+     * Renders the "coming soon" page for statistics and reports.
+     *
+     * @return Response The response object.
+     */
     #[Route('/estadisticas', name: 'app_statistics')]
     public function statistics(): Response
     {

@@ -9,14 +9,29 @@ use App\Repository\VolunteerServiceRepository;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Core\User\UserInterface;
 
+/**
+ * Controller for generating and displaying reports.
+ */
 class ReportController extends AbstractController
 {
+    /**
+     * Renders the main reports page.
+     *
+     * @return Response The response object.
+     */
     #[Route('/reports', name: 'app_reports')]
     public function index(): Response
     {
         return $this->render('report/index.html.twig');
     }
 
+    /**
+     * Provides a JSON API endpoint for fetching a user's service report data.
+     *
+     * @param VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
+     * @param UserInterface $user The currently authenticated user.
+     * @return JsonResponse A JSON response containing the user's service history.
+     */
     #[Route('/api/user-report', name: 'app_user_report_api')]
     public function userReport(VolunteerServiceRepository $volunteerServiceRepository, UserInterface $user): JsonResponse
     {
