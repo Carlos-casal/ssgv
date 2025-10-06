@@ -27,27 +27,31 @@ class InvitationController extends AbstractController
             return new JsonResponse(['error' => 'Email address not provided.'], 400);
         }
 
-        if ($kernel->getEnvironment() === 'dev') {
-            $redirectUrl = $urlGenerator->generate('app_volunteer_new', ['email' => $recipientEmail]);
-            return new JsonResponse(['redirect_url' => $redirectUrl]);
-        }
-
-        // For production, generate a registration link and send it via email
         $registrationUrl = $urlGenerator->generate('app_volunteer_registration', [
             'email' => $recipientEmail,
         ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+        $emailBody = $this->renderView('emails/invitation.html.twig', [
+            'registration_url' => $registrationUrl,
+        ]);
+
+        if ($kernel->getEnvironment() === 'dev') {
+            return new JsonResponse([
+                'message' => 'This is a test environment. Email content:',
+                'email_body' => $emailBody,
+                'is_dev' => true,
+            ]);
+        }
 
         $email = (new Email())
             ->from('no-reply@proteccioncivilvigo.org')
             ->to($recipientEmail)
             ->subject('Invitación para unirte a Protección Civil de Vigo')
-            ->html($this->renderView('emails/invitation.html.twig', [
-                'registration_url' => $registrationUrl,
-            ]));
+            ->html($emailBody);
 
         try {
             $mailer->send($email);
-            return new JsonResponse(['message' => 'Invitation sent successfully!']);
+            return new JsonResponse(['message' => 'Invitation sent successfully!', 'is_dev' => false]);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'Could not send email.'], 500);
         }
