@@ -211,8 +211,7 @@ class VolunteerController extends AbstractController
         $invitation = $invitationRepository->findOneBy(['token' => $token]);
 
         if (!$invitation || $invitation->isUsed()) {
-            $this->addFlash('error', 'La invitación no es válida o ya ha sido utilizada.');
-            return $this->redirectToRoute('app_login');
+            return $this->render('error/unauthorized_invitation.html.twig');
         }
 
         $volunteer = new Volunteer();
