@@ -30,7 +30,25 @@ class InvitationController extends AbstractController
             return new JsonResponse(['error' => 'Email address not provided.'], 400);
         }
 
-        // Create and store the invitation
+        if ($kernel->getEnvironment() === 'dev') {
+            // In dev, generate a dummy link for preview without DB interaction
+            $dummyToken = 'dummy-token-for-preview-only';
+            $registrationUrl = $urlGenerator->generate('app_volunteer_registration', [
+                'token' => $dummyToken,
+            ], UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $emailBody = $this->renderView('emails/invitation.html.twig', [
+                'registration_url' => $registrationUrl,
+            ]);
+
+            return new JsonResponse([
+                'message' => 'This is a test environment. Email content:',
+                'email_body' => $emailBody,
+                'is_dev' => true,
+            ]);
+        }
+
+        // In production, create a real invitation and send the email
         $invitation = new Invitation();
         $invitation->setEmail($recipientEmail);
 
@@ -45,14 +63,6 @@ class InvitationController extends AbstractController
             'registration_url' => $registrationUrl,
         ]);
 
-        if ($kernel->getEnvironment() === 'dev') {
-            return new JsonResponse([
-                'message' => 'This is a test environment. Email content:',
-                'email_body' => $emailBody,
-                'is_dev' => true,
-            ]);
-        }
-
         $email = (new Email())
             ->from('no-reply@proteccioncivilvigo.org')
             ->to($recipientEmail)
@@ -63,6 +73,9 @@ class InvitationController extends AbstractController
             $mailer->send($email);
             return new JsonResponse(['message' => 'Invitation sent successfully!', 'is_dev' => false]);
         } catch (\Exception $e) {
+            // If email fails, remove the created invitation to avoid unused tokens
+            $entityManager->remove($invitation);
+            $entityManager->flush();
             return new JsonResponse(['error' => 'Could not send email.'], 500);
         }
     }
