@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Invitation;
+use App\Repository\SettingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +21,8 @@ class InvitationController extends AbstractController
         Request $request,
         MailerInterface $mailer,
         UrlGeneratorInterface $urlGenerator,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SettingRepository $settingRepository
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $recipientEmail = $data['email'] ?? null;
@@ -44,7 +46,11 @@ class InvitationController extends AbstractController
             'registration_url' => $registrationUrl,
         ]);
 
+        $fromAddressSetting = $settingRepository->findOneByKey('mailer_from_address');
+        $fromAddress = $fromAddressSetting && $fromAddressSetting->getSettingValue() ? $fromAddressSetting->getSettingValue() : 'no-reply@proteccioncivilvigo.org';
+
         $email = (new Email())
+            ->from($fromAddress)
             ->to($recipientEmail)
             ->subject('Invitación para unirte a Protección Civil de Vigo')
             ->html($emailBody);
