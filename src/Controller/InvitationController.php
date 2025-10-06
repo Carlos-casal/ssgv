@@ -19,7 +19,6 @@ class InvitationController extends AbstractController
     public function sendInvitation(
         Request $request,
         MailerInterface $mailer,
-        KernelInterface $kernel,
         UrlGeneratorInterface $urlGenerator,
         EntityManagerInterface $entityManager
     ): JsonResponse {
@@ -30,25 +29,7 @@ class InvitationController extends AbstractController
             return new JsonResponse(['error' => 'Email address not provided.'], 400);
         }
 
-        if ($kernel->getEnvironment() === 'dev') {
-            // In dev, generate a dummy link for preview without DB interaction
-            $dummyToken = 'dummy-token-for-preview-only';
-            $registrationUrl = $urlGenerator->generate('app_volunteer_registration', [
-                'token' => $dummyToken,
-            ], UrlGeneratorInterface::ABSOLUTE_URL);
-
-            $emailBody = $this->renderView('emails/invitation.html.twig', [
-                'registration_url' => $registrationUrl,
-            ]);
-
-            return new JsonResponse([
-                'message' => 'This is a test environment. Email content:',
-                'email_body' => $emailBody,
-                'is_dev' => true,
-            ]);
-        }
-
-        // In production, create a real invitation and send the email
+        // Always create a real invitation and send the email
         $invitation = new Invitation();
         $invitation->setEmail($recipientEmail);
 
@@ -71,7 +52,7 @@ class InvitationController extends AbstractController
 
         try {
             $mailer->send($email);
-            return new JsonResponse(['message' => 'Invitation sent successfully!', 'is_dev' => false]);
+            return new JsonResponse(['message' => 'Invitation sent successfully!']);
         } catch (\Exception $e) {
             // If email fails, remove the created invitation to avoid unused tokens
             $entityManager->remove($invitation);
