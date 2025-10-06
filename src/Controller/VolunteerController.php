@@ -11,6 +11,7 @@ use App\Entity\Fichaje;
 use App\Form\VolunteerType;
 use App\Repository\VolunteerRepository;
 use App\Repository\FichajeRepository;
+use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -204,17 +205,20 @@ class VolunteerController extends AbstractController
      * @return Response The response object, rendering the registration form or redirecting on success.
      */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository): Response
     {
-        $volunteer = new Volunteer();
-        $user = new User(); // Creas la instancia de User
-        $volunteer->setUser($user); // La asocias al Volunteer antes de crear el formulario
+        $token = $request->query->get('token');
+        $invitation = $invitationRepository->findOneBy(['token' => $token]);
 
-        // Pre-fill email from query parameter
-        $emailFromQuery = $request->query->get('email');
-        if ($emailFromQuery) {
-            $user->setEmail($emailFromQuery);
+        if (!$invitation || $invitation->isUsed()) {
+            $this->addFlash('error', 'La invitación no es válida o ya ha sido utilizada.');
+            return $this->redirectToRoute('app_login');
         }
+
+        $volunteer = new Volunteer();
+        $user = new User();
+        $user->setEmail($invitation->getEmail());
+        $volunteer->setUser($user);
 
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
@@ -271,6 +275,10 @@ class VolunteerController extends AbstractController
             if (!$hydratedVolunteer->getJoinDate()) {
                 $hydratedVolunteer->setJoinDate(new \DateTime());
             }
+
+            // Mark the invitation as used
+            $invitation->setIsUsed(true);
+            $entityManager->persist($invitation);
 
             // *** PERSISTIR AMBAS ENTIDADES ***
             // Ahora, persistimos la instancia de User que ya fue rellenada y modificada

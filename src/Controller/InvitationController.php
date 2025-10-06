@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Entity\Invitation;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,7 +20,8 @@ class InvitationController extends AbstractController
         Request $request,
         MailerInterface $mailer,
         KernelInterface $kernel,
-        UrlGeneratorInterface $urlGenerator
+        UrlGeneratorInterface $urlGenerator,
+        EntityManagerInterface $entityManager
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $recipientEmail = $data['email'] ?? null;
@@ -27,8 +30,15 @@ class InvitationController extends AbstractController
             return new JsonResponse(['error' => 'Email address not provided.'], 400);
         }
 
+        // Create and store the invitation
+        $invitation = new Invitation();
+        $invitation->setEmail($recipientEmail);
+
+        $entityManager->persist($invitation);
+        $entityManager->flush();
+
         $registrationUrl = $urlGenerator->generate('app_volunteer_registration', [
-            'email' => $recipientEmail,
+            'token' => $invitation->getToken(),
         ], UrlGeneratorInterface::ABSOLUTE_URL);
 
         $emailBody = $this->renderView('emails/invitation.html.twig', [
