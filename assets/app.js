@@ -14,34 +14,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('add-volunteer-modal');
     const closeModalButton = document.getElementById('close-modal-button');
     const sendInvitationButton = document.getElementById('send-invitation-button');
-    const invitationForm = document.getElementById('invitation-form');
-    const emailPreview = document.getElementById('email-preview');
-    const emailBodyContent = document.getElementById('email-body-content');
-    const closePreviewButton = document.getElementById('close-preview-button');
-    const emailInput = document.getElementById('invitation-email');
-
-    const resetModal = () => {
-        modal.classList.add('hidden');
-        invitationForm.classList.remove('hidden');
-        emailPreview.classList.add('hidden');
-        emailInput.value = '';
-    };
 
     if (addVolunteerButton && modal && closeModalButton && sendInvitationButton) {
         addVolunteerButton.addEventListener('click', () => {
             modal.classList.remove('hidden');
         });
 
-        closeModalButton.addEventListener('click', resetModal);
-        closePreviewButton.addEventListener('click', resetModal);
+        closeModalButton.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
 
         modal.addEventListener('click', (event) => {
             if (event.target === modal) {
-                resetModal();
+                modal.classList.add('hidden');
             }
         });
 
         sendInvitationButton.addEventListener('click', () => {
+            const emailInput = document.getElementById('invitation-email');
             const email = emailInput.value.trim();
 
             if (!email) {
@@ -58,22 +48,21 @@ document.addEventListener('DOMContentLoaded', () => {
             })
             .then(response => response.json())
             .then(data => {
-                if (data.is_dev) {
-                    invitationForm.classList.add('hidden');
-                    emailPreview.classList.remove('hidden');
-                    emailBodyContent.innerHTML = data.email_body;
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
                 } else if (data.message) {
                     alert('Invitación enviada correctamente a ' + email);
-                    resetModal();
+                    modal.classList.add('hidden');
+                    emailInput.value = ''; // Clear the input
                 } else {
                     alert('Error al enviar la invitación.');
-                    resetModal();
+                    modal.classList.add('hidden');
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
                 alert('Error al enviar la invitación.');
-                resetModal();
+                modal.classList.add('hidden');
             });
         });
     }

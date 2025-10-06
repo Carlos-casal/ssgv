@@ -163,39 +163,30 @@
 <!-- Add Volunteer Modal -->
 <div id="add-volunteer-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
     <div class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg">
-        <div id="invitation-form">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Añadir Voluntario</h2>
-                <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">&times;</button>
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-xl font-semibold">Añadir Voluntario</h2>
+            <button id="close-modal-button" class="text-gray-500 hover:text-gray-800">&times;</button>
+        </div>
+        <div class="space-y-6">
+            <div>
+                <h3 class="font-medium text-gray-900">Añadir manualmente</h3>
+                <p class="text-sm text-gray-600 mt-1">Introduce los datos del voluntario directamente en el sistema.</p>
+                <a href="{{ path('app_volunteer_new') }}" class="mt-2 block w-full text-center p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                    Ir al formulario
+                </a>
             </div>
-            <div class="space-y-6">
-                <div>
-                    <h3 class="font-medium text-gray-900">Añadir manualmente</h3>
-                    <p class="text-sm text-gray-600 mt-1">Introduce los datos del voluntario directamente en el sistema.</p>
-                    <a href="{{ path('app_volunteer_new') }}" class="mt-2 block w-full text-center p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                        Ir al formulario
-                    </a>
+            <div class="border-t pt-6">
+                <h3 class="font-medium text-gray-900">Enviar invitación por correo</h3>
+                <p class="text-sm text-gray-600 mt-1">Envia un enlace de registro al correo del nuevo voluntario.</p>
+                <div class="mt-4 space-y-2">
+                    <label for="invitation-email" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
+                    <input type="email" id="invitation-email" placeholder="nombre@ejemplo.com" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
                 </div>
-                <div class="border-t pt-6">
-                    <h3 class="font-medium text-gray-900">Enviar invitación por correo</h3>
-                    <p class="text-sm text-gray-600 mt-1">Envia un enlace de registro al correo del nuevo voluntario.</p>
-                    <div class="mt-4 space-y-2">
-                        <label for="invitation-email" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                        <input type="email" id="invitation-email" placeholder="nombre@ejemplo.com" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                    </div>
-                    <button id="send-invitation-button" class="mt-4 w-full p-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
-                        Enviar inscripción
-                    </button>
-                </div>
+                <button id="send-invitation-button" class="mt-4 w-full p-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                    Enviar inscripción
+                </button>
             </div>
         </div>
-        <div id="email-preview" class="hidden">
-            <div class="flex justify-between items-center mb-4">
-               <h2 class="text-xl font-semibold">Contenido del Correo (Entorno de Pruebas)</h2>
-               <button id="close-preview-button" class="text-gray-500 hover:text-gray-800">&times;</button>
-           </div>
-           <div id="email-body-content" class="prose max-w-none"></div>
-       </div>
     </div>
 </div>
 {% endblock %}
