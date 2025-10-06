@@ -210,6 +210,12 @@ class VolunteerController extends AbstractController
         $user = new User(); // Creas la instancia de User
         $volunteer->setUser($user); // La asocias al Volunteer antes de crear el formulario
 
+        // Pre-fill email from query parameter
+        $emailFromQuery = $request->query->get('email');
+        if ($emailFromQuery) {
+            $user->setEmail($emailFromQuery);
+        }
+
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
 

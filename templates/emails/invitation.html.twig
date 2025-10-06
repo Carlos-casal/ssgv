@@ -7,8 +7,10 @@
 <body>
     <h1>¡Estás invitado!</h1>
     <p>Has sido invitado a unirte al equipo de Protección Civil de Vigo.</p>
-    <p>Para completar tu registro, por favor contacta con un administrador para que cree tu cuenta. Puedes acceder a la página de inicio de sesión aquí:</p>
-    <a href="{{ url('app_login') }}">Iniciar Sesión</a>
+    <p>Para completar tu registro y crear tu cuenta, por favor haz clic en el siguiente enlace:</p>
+    <a href="{{ registration_url }}">Completar mi inscripción</a>
+    <p>Si no puedes hacer clic en el enlace, copia y pega la siguiente URL en tu navegador:</p>
+    <p>{{ registration_url }}</p>
     <p>¡Gracias!</p>
 </body>
 </html>
