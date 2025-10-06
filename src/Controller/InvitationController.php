@@ -32,11 +32,18 @@ class InvitationController extends AbstractController
             return new JsonResponse(['redirect_url' => $redirectUrl]);
         }
 
+        // For production, generate a registration link and send it via email
+        $registrationUrl = $urlGenerator->generate('app_volunteer_registration', [
+            'email' => $recipientEmail,
+        ], UrlGeneratorInterface::ABSOLUTE_URL);
+
         $email = (new Email())
             ->from('no-reply@proteccioncivilvigo.org')
             ->to($recipientEmail)
             ->subject('Invitación para unirte a Protección Civil de Vigo')
-            ->html($this->renderView('emails/invitation.html.twig'));
+            ->html($this->renderView('emails/invitation.html.twig', [
+                'registration_url' => $registrationUrl,
+            ]));
 
         try {
             $mailer->send($email);
