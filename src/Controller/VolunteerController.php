@@ -13,6 +13,7 @@ use App\Repository\VolunteerRepository;
 use App\Repository\FichajeRepository;
 use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -205,58 +206,55 @@ class VolunteerController extends AbstractController
      * @return Response The response object, rendering the registration form or redirecting on success.
      */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository): Response
+    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository, KernelInterface $kernel): Response
     {
         $token = $request->query->get('token');
-        $invitation = $invitationRepository->findOneBy(['token' => $token]);
+        $invitation = null;
 
-        if (!$invitation || $invitation->isUsed()) {
-            return $this->render('error/unauthorized_invitation.html.twig');
+        // Special case for dev environment preview link
+        if ($kernel->getEnvironment() === 'dev' && $token === 'dummy-token-for-preview-only') {
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail('test-email-for-preview@example.com');
+            $volunteer->setUser($user);
+        } else {
+            // For production or any other token, validate against the database
+            $invitation = $invitationRepository->findOneBy(['token' => $token]);
+
+            if (!$invitation || $invitation->isUsed()) {
+                return $this->render('error/unauthorized_invitation.html.twig');
+            }
+
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail($invitation->getEmail());
+            $volunteer->setUser($user);
         }
-
-        $volunteer = new Volunteer();
-        $user = new User();
-        $user->setEmail($invitation->getEmail());
-        $volunteer->setUser($user);
 
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // *** AHORA, OBTENEMOS LA INSTANCIA DE USER QUE HA SIDO HIDRATADA POR EL FORMULARIO ***
-            $hydratedVolunteer = $form->getData(); // Obtiene el objeto Volunteer con todos los datos rellenados por el formulario
-            $hydratedUser = $hydratedVolunteer->getUser(); // Obtiene el objeto User que está dentro del Volunteer rellenado
+            $hydratedVolunteer = $form->getData();
+            $hydratedUser = $hydratedVolunteer->getUser();
 
             $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
             $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
 
             $plainPassword = $form->get('user')->get('password')->getData();
-
             if ($plainPassword) {
-                // *** APLICAMOS EL HASHING A LA INSTANCIA DE USER CORRECTA ***
-                $hashedPassword = $userPasswordHasher->hashPassword(
-                    $hydratedUser, // ¡Usar $hydratedUser aquí!
-                    $plainPassword
-                );
-                $hydratedUser->setPassword($hashedPassword); // ¡Setear la contraseña en $hydratedUser!
+                $hashedPassword = $userPasswordHasher->hashPassword($hydratedUser, $plainPassword);
+                $hydratedUser->setPassword($hashedPassword);
             }
-            // *** ASIGNAMOS LOS ROLES A LA INSTANCIA DE USER CORRECTA ***
-            $hydratedUser->setRoles(['ROLE_VOLUNTEER']); // ¡Usar $hydratedUser aquí!
+            $hydratedUser->setRoles(['ROLE_VOLUNTEER']);
 
-            /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
-
-            // Manejar la subida del archivo de la foto
             if ($profilePictureFile) {
                 $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
-
                 try {
-                    $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures',
-                        $newFilename
-                    );
+                    $profilePictureFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures', $newFilename);
                     if ($hydratedVolunteer->getProfilePicture()) {
                         $filesystem = new Filesystem();
                         $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $hydratedVolunteer->getProfilePicture();
@@ -264,7 +262,7 @@ class VolunteerController extends AbstractController
                             $filesystem->remove($oldFilePath);
                         }
                     }
-                    $hydratedVolunteer->setProfilePicture($newFilename); // Asignar a $hydratedVolunteer
+                    $hydratedVolunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
@@ -275,14 +273,13 @@ class VolunteerController extends AbstractController
                 $hydratedVolunteer->setJoinDate(new \DateTime());
             }
 
-            // Mark the invitation as used
-            $invitation->setIsUsed(true);
-            $entityManager->persist($invitation);
+            // Mark the invitation as used, only if it's a real one from the database
+            if ($invitation) {
+                $invitation->setIsUsed(true);
+                $entityManager->persist($invitation);
+            }
 
-            // *** PERSISTIR AMBAS ENTIDADES ***
-            // Ahora, persistimos la instancia de User que ya fue rellenada y modificada
             $entityManager->persist($hydratedUser);
-            // Y persistimos el Volunteer, que ya tiene la referencia al User correcto
             $entityManager->persist($hydratedVolunteer);
             $entityManager->flush();
 
