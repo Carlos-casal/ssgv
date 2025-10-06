@@ -28,8 +28,8 @@ class InvitationController extends AbstractController
             ->html($this->renderView('emails/invitation.html.twig'));
 
         try {
-            // $mailer->send($email); // Descomentar cuando el problema de conexión con Mailtrap esté resuelto.
-            return new JsonResponse(['message' => 'Invitation sent successfully! (Email sending is disabled for now)']);
+            $mailer->send($email);
+            return new JsonResponse(['message' => 'Invitation sent successfully!']);
         } catch (\Exception $e) {
             return new JsonResponse(['error' => 'Could not send email.'], 500);
         }
