@@ -45,7 +45,6 @@ class InvitationController extends AbstractController
         ]);
 
         $email = (new Email())
-            ->from('no-reply@proteccioncivilvigo.org')
             ->to($recipientEmail)
             ->subject('Invitación para unirte a Protección Civil de Vigo')
             ->html($emailBody);
