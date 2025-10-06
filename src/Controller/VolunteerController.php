@@ -13,7 +13,6 @@ use App\Repository\VolunteerRepository;
 use App\Repository\FichajeRepository;
 use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -26,6 +25,8 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
 use Symfony\Component\Security\Http\Attribute\Security;
+use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
+use App\Security\AppAuthenticator;
 
 /**
  * Controller for managing volunteers, including listing, creation, editing, and reporting.
@@ -206,30 +207,25 @@ class VolunteerController extends AbstractController
      * @return Response The response object, rendering the registration form or redirecting on success.
      */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository, KernelInterface $kernel): Response
-    {
+    public function registration(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        UserPasswordHasherInterface $userPasswordHasher,
+        InvitationRepository $invitationRepository,
+        UserAuthenticatorInterface $userAuthenticator,
+        AppAuthenticator $authenticator
+    ): Response {
         $token = $request->query->get('token');
-        $invitation = null;
+        $invitation = $invitationRepository->findOneBy(['token' => $token]);
 
-        // Special case for dev environment preview link
-        if ($kernel->getEnvironment() === 'dev' && $token === 'dummy-token-for-preview-only') {
-            $volunteer = new Volunteer();
-            $user = new User();
-            $user->setEmail('test-email-for-preview@example.com');
-            $volunteer->setUser($user);
-        } else {
-            // For production or any other token, validate against the database
-            $invitation = $invitationRepository->findOneBy(['token' => $token]);
-
-            if (!$invitation || $invitation->isUsed()) {
-                return $this->render('error/unauthorized_invitation.html.twig');
-            }
-
-            $volunteer = new Volunteer();
-            $user = new User();
-            $user->setEmail($invitation->getEmail());
-            $volunteer->setUser($user);
+        if (!$invitation || $invitation->isUsed()) {
+            return $this->render('error/unauthorized_invitation.html.twig');
         }
+
+        $volunteer = new Volunteer();
+        $user = new User();
+        $user->setEmail($invitation->getEmail());
+        $volunteer->setUser($user);
 
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
@@ -237,9 +233,6 @@ class VolunteerController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $hydratedVolunteer = $form->getData();
             $hydratedUser = $hydratedVolunteer->getUser();
-
-            $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
-            $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
 
             $plainPassword = $form->get('user')->get('password')->getData();
             if ($plainPassword) {
@@ -255,36 +248,33 @@ class VolunteerController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
                 try {
                     $profilePictureFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures', $newFilename);
-                    if ($hydratedVolunteer->getProfilePicture()) {
-                        $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $hydratedVolunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) {
-                            $filesystem->remove($oldFilePath);
-                        }
-                    }
                     $hydratedVolunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            $hydratedVolunteer->setStatus(Volunteer::STATUS_PENDING);
+            $hydratedVolunteer->setStatus(Volunteer::STATUS_ACTIVE); // Activate user immediately
             if (!$hydratedVolunteer->getJoinDate()) {
                 $hydratedVolunteer->setJoinDate(new \DateTime());
             }
 
-            // Mark the invitation as used, only if it's a real one from the database
-            if ($invitation) {
-                $invitation->setIsUsed(true);
-                $entityManager->persist($invitation);
-            }
+            // Mark the invitation as used
+            $invitation->setIsUsed(true);
+            $entityManager->persist($invitation);
 
             $entityManager->persist($hydratedUser);
             $entityManager->persist($hydratedVolunteer);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
-            return $this->redirectToRoute('app_volunteer_registration');
+            $this->addFlash('success', '¡Bienvenido/a! Tu registro se ha completado y ya tienes acceso a la plataforma.');
+
+            // Authenticate the user and redirect them to the dashboard
+            return $userAuthenticator->authenticateUser(
+                $hydratedUser,
+                $authenticator,
+                $request
+            );
         }
 
         return $this->render('volunteer/registration_form.html.twig', [
