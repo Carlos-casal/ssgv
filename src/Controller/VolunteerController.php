@@ -187,7 +187,7 @@ class VolunteerController extends AbstractController
             return $this->redirectToRoute('app_volunteer_list');
         }
 
-        return $this->render('volunteer/new_volunterr.html.twig', [
+        return $this->render('volunteer/new_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
             'current_section' => 'personal-nuevo'
