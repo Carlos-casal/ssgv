@@ -183,6 +183,11 @@ class VolunteerController extends AbstractController
                 $volunteer->setJoinDate(new \DateTime());
             }
 
+            // Establecer rol por defecto si no está definido
+            if (!$volunteer->getRole()) {
+                $volunteer->setRole('Voluntario');
+            }
+
             $entityManager->persist($volunteer);
             $entityManager->flush();
 
