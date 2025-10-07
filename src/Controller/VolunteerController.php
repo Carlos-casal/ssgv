@@ -130,6 +130,9 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // CORRECTO: Obtener el User del Volunteer hidratado por el formulario
+            $user = $volunteer->getUser();
+
             $plainPassword = $form->get('user')->get('password')->getData();
 
             if ($plainPassword) { // Solo hashear si se proporcionó una contraseña
@@ -180,7 +183,6 @@ class VolunteerController extends AbstractController
                 $volunteer->setJoinDate(new \DateTime());
             }
 
-            $entityManager->persist($user);
             $entityManager->persist($volunteer);
             $entityManager->flush();
 
