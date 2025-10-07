@@ -392,13 +392,13 @@ class VolunteerController extends AbstractController
         $volunteers = $volunteerRepository->findAll();
 
         // Asegúrate de que el orden y la cantidad de columnas aquí coincidan con los datos que extraes
-        $csvData = "Nombre,Apellidos,DNI,Email,Teléfono,Fecha Nacimiento,Tipo Calle,Dirección,Código Postal,Provincia,Contacto Emergencia,Teléfono Emergencia,Alergias,Profesión,Estado Empleo,Licencias Conducir,Licencias Navegación,Cualificaciones,Rol,Estado,Fecha Ingreso,Especialización\n";
+        $csvData = "Nombre,Apellidos,DNI,Email,Teléfono,Fecha Nacimiento,Tipo Calle,Dirección,Código Postal,Provincia,Contacto Emergencia,Teléfono Emergencia,Alergias,Profesión,Estado Empleo,Licencias Conducir,Licencias Navegación,Cualificaciones,Rol,Estado,Fecha Ingreso\n";
 
         foreach ($volunteers as $volunteer) {
             $userEmail = $volunteer->getUser() ? $volunteer->getUser()->getEmail() : '';
 
             $csvData .= sprintf(
-                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
+                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"\n",
                 $volunteer->getName(),
                 $volunteer->getLastName() ?? '',
                 $volunteer->getDni() ?? '',
@@ -419,8 +419,7 @@ class VolunteerController extends AbstractController
                 implode(';', $volunteer->getSpecificQualifications() ?? []),
                 $volunteer->getRole() ?? '',
                 $volunteer->getStatus() ?? '',
-                $volunteer->getJoinDate() ? $volunteer->getJoinDate()->format('Y-m-d') : '',
-                $volunteer->getSpecialization() ?? ''
+                $volunteer->getJoinDate() ? $volunteer->getJoinDate()->format('Y-m-d') : ''
             );
         }
 
