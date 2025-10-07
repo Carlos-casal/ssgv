@@ -35,14 +35,24 @@ class UserType extends AbstractType
                     ]),
                 ],
             ])
-            ->add('password', PasswordType::class, [
-                'label' => 'Contraseña',
-                'required' => !$options['is_edit'], // Only required when creating, not editing
-                'mapped' => false, // Not mapped directly, handled in the controller
-                'constraints' => $this->getPasswordConstraints($options['is_edit']),
-                'attr' => [
-                    'placeholder' => $options['is_edit'] ? 'Dejar en blanco para no cambiar' : 'Introduce una contraseña',
+            ->add('password', \Symfony\Component\Form\Extension\Core\Type\RepeatedType::class, [
+                'type' => PasswordType::class,
+                'mapped' => false,
+                'first_options'  => [
+                    'label' => 'Contraseña',
+                    'attr' => [
+                        'placeholder' => $options['is_edit'] ? 'Dejar en blanco para no cambiar' : 'Introduce una contraseña',
+                    ],
                 ],
+                'second_options' => [
+                    'label' => 'Repetir Contraseña',
+                    'attr' => [
+                        'placeholder' => 'Vuelve a introducir la contraseña',
+                    ],
+                ],
+                'invalid_message' => 'Las contraseñas deben coincidir.',
+                'required' => !$options['is_edit'],
+                'constraints' => $this->getPasswordConstraints($options['is_edit']),
             ]);
     }
 
