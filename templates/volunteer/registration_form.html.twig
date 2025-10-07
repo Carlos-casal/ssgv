@@ -91,6 +91,18 @@
                     {{ form_widget(form.dateOfBirth, {'attr': {'class': 'w-full'}}) }}
                     {{ form_errors(form.dateOfBirth) }}
                 </div>
+
+                <!-- Fila 4: Número de Identificación e Indicativo -->
+                <div class="col-span-1 mt-4">
+                    {{ form_label(form.numeroIdentificacion, 'Número Identificación') }}
+                    {{ form_widget(form.numeroIdentificacion, {'attr': {'class': 'w-full'}}) }}
+                    {{ form_errors(form.numeroIdentificacion) }}
+                </div>
+                <div class="col-span-1 mt-4">
+                    {{ form_label(form.indicativo, 'Indicativo') }}
+                    {{ form_widget(form.indicativo, {'attr': {'class': 'w-full'}}) }}
+                    {{ form_errors(form.indicativo) }}
+                </div>
             </div>
         </div>
     </div>
