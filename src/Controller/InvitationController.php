@@ -3,11 +3,11 @@
 namespace App\Controller;
 
 use App\Entity\Invitation;
+use App\Repository\SettingRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Annotation\Route;
@@ -20,7 +20,8 @@ class InvitationController extends AbstractController
         Request $request,
         MailerInterface $mailer,
         UrlGeneratorInterface $urlGenerator,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        SettingRepository $settingRepository
     ): JsonResponse {
         $data = json_decode($request->getContent(), true);
         $recipientEmail = $data['email'] ?? null;
@@ -29,7 +30,6 @@ class InvitationController extends AbstractController
             return new JsonResponse(['error' => 'Email address not provided.'], 400);
         }
 
-        // Always create a real invitation and send the email
         $invitation = new Invitation();
         $invitation->setEmail($recipientEmail);
 
@@ -44,8 +44,11 @@ class InvitationController extends AbstractController
             'registration_url' => $registrationUrl,
         ]);
 
+        $fromAddressSetting = $settingRepository->findOneBy(['settingKey' => 'mailer_from_address']);
+        $fromAddress = $fromAddressSetting ? $fromAddressSetting->getSettingValue() : 'no-reply@proteccioncivilvigo.org';
+
         $email = (new Email())
-            ->from('no-reply@proteccioncivilvigo.org')
+            ->from($fromAddress)
             ->to($recipientEmail)
             ->subject('Invitación para unirte a Protección Civil de Vigo')
             ->html($emailBody);
@@ -54,10 +57,9 @@ class InvitationController extends AbstractController
             $mailer->send($email);
             return new JsonResponse(['message' => 'Invitation sent successfully!']);
         } catch (\Exception $e) {
-            // If email fails, remove the created invitation to avoid unused tokens
             $entityManager->remove($invitation);
             $entityManager->flush();
-            return new JsonResponse(['error' => 'Could not send email.'], 500);
+            return new JsonResponse(['error' => 'Could not send email: ' . $e->getMessage()], 500);
         }
     }
 }
