@@ -49,10 +49,24 @@ class VolunteerType extends AbstractType
                 'attr' => ['placeholder' => 'Ej: 12345678A'],
                 'required' => false,
             ])
+            ->add('numeroIdentificacion', TextType::class, [
+                'label' => 'Número Identificación',
+                'attr' => ['placeholder' => 'Ej: 1234'],
+                'required' => false,
+            ])
+            ->add('indicativo', TextType::class, [
+                'label' => 'Indicativo',
+                'attr' => ['placeholder' => 'Ej: ECO-1'],
+                'required' => false,
+            ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
                 'html5' => true,
+                'required' => false,
+            ])
+            ->add('habilitadoConducir', CheckboxType::class, [
+                'label' => 'Habilitado para conducir vehículos de la asociación',
                 'required' => false,
             ])
             ->add('streetType', ChoiceType::class, [

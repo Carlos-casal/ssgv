@@ -237,6 +237,15 @@ class Volunteer
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $numeroIdentificacion = null;
+
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $indicativo = null;
+
+    #[ORM\Column]
+    private ?bool $habilitadoConducir = false;
+
     /**
      * @var Collection<int, AssistanceConfirmation> A collection of this volunteer's assistance confirmations.
      */
@@ -1047,6 +1056,42 @@ class Volunteer
      * @param Service $service The service to find the record for.
      * @return VolunteerService|null The corresponding VolunteerService record, or null if not found.
      */
+    public function getNumeroIdentificacion(): ?string
+    {
+        return $this->numeroIdentificacion;
+    }
+
+    public function setNumeroIdentificacion(?string $numeroIdentificacion): static
+    {
+        $this->numeroIdentificacion = $numeroIdentificacion;
+
+        return $this;
+    }
+
+    public function getIndicativo(): ?string
+    {
+        return $this->indicativo;
+    }
+
+    public function setIndicativo(?string $indicativo): static
+    {
+        $this->indicativo = $indicativo;
+
+        return $this;
+    }
+
+    public function isHabilitadoConducir(): ?bool
+    {
+        return $this->habilitadoConducir;
+    }
+
+    public function setHabilitadoConducir(bool $habilitadoConducir): static
+    {
+        $this->habilitadoConducir = $habilitadoConducir;
+
+        return $this;
+    }
+
     public function getVolunteerServiceForService(Service $service): ?VolunteerService
     {
         foreach ($this->volunteerServices as $vs) {

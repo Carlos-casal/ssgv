@@ -13,6 +13,7 @@ use App\Repository\VolunteerRepository;
 use App\Repository\FichajeRepository;
 use App\Repository\InvitationRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -25,8 +26,6 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Knp\Component\Pager\PaginatorInterface; // ¡Importante!
 use Symfony\Component\Security\Http\Attribute\Security;
-use Symfony\Component\Security\Http\Authentication\UserAuthenticatorInterface;
-use App\Security\AppAuthenticator;
 
 /**
  * Controller for managing volunteers, including listing, creation, editing, and reporting.
@@ -48,57 +47,56 @@ class VolunteerController extends AbstractController
     public function list(
         Request $request,
         VolunteerRepository $volunteerRepository,
-        PaginatorInterface $paginator // Inyección del servicio de paginación
+        PaginatorInterface $paginator
     ): Response {
         $searchTerm = $request->query->get('search', '');
         $filterStatus = $request->query->get('status', 'all');
-        $page = $request->query->getInt('page', 1); // Obtiene el número de página de la URL, por defecto 1
-        $limit = 10; // Define cuántos elementos quieres por página
+        $sort = $request->query->get('sort', 'name');
+        $direction = $request->query->get('direction', 'asc');
 
-        // Crea un QueryBuilder para construir la consulta de los voluntarios
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
-                                            ->leftJoin('v.user', 'u') // Asume que Volunteer tiene una relación con User
-                                            ->addSelect('u'); // Para poder buscar por email de usuario, si es necesario
+            ->leftJoin('v.user', 'u')
+            ->addSelect('u');
 
-        // Aplica filtros de búsqueda si hay un término
         if ($searchTerm) {
             $queryBuilder->andWhere(
                 $queryBuilder->expr()->orX(
                     $queryBuilder->expr()->like('v.name', ':search'),
                     $queryBuilder->expr()->like('v.lastName', ':search'),
-                    $queryBuilder->expr()->like('v.dni', ':search'),
-                    $queryBuilder->expr()->like('u.email', ':search') // Búsqueda por email del usuario
+                    $queryBuilder->expr()->like('v.indicativo', ':search')
                 )
             )
             ->setParameter('search', '%' . $searchTerm . '%');
         }
 
-        // Aplica filtros por estado si no es "all"
         if ($filterStatus !== 'all') {
             $queryBuilder->andWhere('v.status = :status')
                          ->setParameter('status', $filterStatus);
         }
 
-        // Ordena los resultados para una paginación consistente
-        $queryBuilder->orderBy('v.id', 'ASC');
+        $allowedSortFields = ['name', 'phone', 'indicativo'];
+        if (in_array($sort, $allowedSortFields)) {
+            $direction = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
+            $queryBuilder->orderBy('v.' . $sort, $direction);
+        } else {
+            $queryBuilder->orderBy('v.name', 'ASC');
+        }
 
-        // Pagina la consulta usando el servicio KnpPaginator
         $pagination = $paginator->paginate(
-            $queryBuilder->getQuery(), // Pasa el objeto Query resultante del QueryBuilder
-            $page,                     // Número de página actual
-            $limit                     // Elementos por página
+            $queryBuilder->getQuery(),
+            $request->query->getInt('page', 1),
+            10
         );
 
-        // Estadísticas (estas siguen obteniendo todos los datos, podrías optimizarlas si el volumen es muy grande)
         $stats = [
-            'total' => $volunteerRepository->count([]), // Usar count para eficiencia
+            'total' => $volunteerRepository->count([]),
             'Activo' => $volunteerRepository->count(['status' => Volunteer::STATUS_ACTIVE]),
             'Suspensión' => $volunteerRepository->count(['status' => Volunteer::STATUS_SUSPENDED]),
             'Baja' => $volunteerRepository->count(['status' => Volunteer::STATUS_INACTIVE]),
         ];
 
         return $this->render('volunteer/list_volunteer.html.twig', [
-            'pagination' => $pagination, // ¡Pasamos el objeto de paginación a la vista!
+            'pagination' => $pagination,
             'stats' => $stats,
             'searchTerm' => $searchTerm,
             'filterStatus' => $filterStatus,
@@ -207,25 +205,30 @@ class VolunteerController extends AbstractController
      * @return Response The response object, rendering the registration form or redirecting on success.
      */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(
-        Request $request,
-        EntityManagerInterface $entityManager,
-        UserPasswordHasherInterface $userPasswordHasher,
-        InvitationRepository $invitationRepository,
-        UserAuthenticatorInterface $userAuthenticator,
-        AppAuthenticator $authenticator
-    ): Response {
+    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository, KernelInterface $kernel): Response
+    {
         $token = $request->query->get('token');
-        $invitation = $invitationRepository->findOneBy(['token' => $token]);
+        $invitation = null;
 
-        if (!$invitation || $invitation->isUsed()) {
-            return $this->render('error/unauthorized_invitation.html.twig');
+        // Special case for dev environment preview link
+        if ($kernel->getEnvironment() === 'dev' && $token === 'dummy-token-for-preview-only') {
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail('test-email-for-preview@example.com');
+            $volunteer->setUser($user);
+        } else {
+            // For production or any other token, validate against the database
+            $invitation = $invitationRepository->findOneBy(['token' => $token]);
+
+            if (!$invitation || $invitation->isUsed()) {
+                return $this->render('error/unauthorized_invitation.html.twig');
+            }
+
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail($invitation->getEmail());
+            $volunteer->setUser($user);
         }
-
-        $volunteer = new Volunteer();
-        $user = new User();
-        $user->setEmail($invitation->getEmail());
-        $volunteer->setUser($user);
 
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
@@ -233,6 +236,9 @@ class VolunteerController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $hydratedVolunteer = $form->getData();
             $hydratedUser = $hydratedVolunteer->getUser();
+
+            $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
+            $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
 
             $plainPassword = $form->get('user')->get('password')->getData();
             if ($plainPassword) {
@@ -248,33 +254,36 @@ class VolunteerController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
                 try {
                     $profilePictureFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures', $newFilename);
+                    if ($hydratedVolunteer->getProfilePicture()) {
+                        $filesystem = new Filesystem();
+                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $hydratedVolunteer->getProfilePicture();
+                        if ($filesystem->exists($oldFilePath)) {
+                            $filesystem->remove($oldFilePath);
+                        }
+                    }
                     $hydratedVolunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            $hydratedVolunteer->setStatus(Volunteer::STATUS_ACTIVE); // Activate user immediately
+            $hydratedVolunteer->setStatus(Volunteer::STATUS_PENDING);
             if (!$hydratedVolunteer->getJoinDate()) {
                 $hydratedVolunteer->setJoinDate(new \DateTime());
             }
 
-            // Mark the invitation as used
-            $invitation->setIsUsed(true);
-            $entityManager->persist($invitation);
+            // Mark the invitation as used, only if it's a real one from the database
+            if ($invitation) {
+                $invitation->setIsUsed(true);
+                $entityManager->persist($invitation);
+            }
 
             $entityManager->persist($hydratedUser);
             $entityManager->persist($hydratedVolunteer);
             $entityManager->flush();
 
-            $this->addFlash('success', '¡Bienvenido/a! Tu registro se ha completado y ya tienes acceso a la plataforma.');
-
-            // Authenticate the user and redirect them to the dashboard
-            return $userAuthenticator->authenticateUser(
-                $hydratedUser,
-                $authenticator,
-                $request
-            );
+            $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
+            return $this->redirectToRoute('app_volunteer_registration');
         }
 
         return $this->render('volunteer/registration_form.html.twig', [
