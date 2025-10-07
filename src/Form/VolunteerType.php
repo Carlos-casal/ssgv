@@ -49,16 +49,6 @@ class VolunteerType extends AbstractType
                 'attr' => ['placeholder' => 'Ej: 12345678A'],
                 'required' => false,
             ])
-            ->add('numeroIdentificacion', TextType::class, [
-                'label' => 'Número Identificación',
-                'attr' => ['placeholder' => 'Ej: 1234'],
-                'required' => false,
-            ])
-            ->add('indicativo', TextType::class, [
-                'label' => 'Indicativo',
-                'attr' => ['placeholder' => 'Ej: ECO-1'],
-                'required' => false,
-            ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
@@ -235,38 +225,6 @@ class VolunteerType extends AbstractType
                 'required' => false,
             ])
 
-            // --- Titulaciones Específicas Agrupadas (NUEVO) ---
-            ->add('specificQualifications', ChoiceType::class, [
-                'label' => 'Titulaciones Específicas',
-                'choices' => [
-                    'Técnico en Emergencias Sanitarias de Grado Medio' => 'TecnicoEmergencias',
-                    'Certificado de profesionalidad de transporte sanitario' => 'CertificadoTransporteSanitario',
-                    'Título universitario de Enfermería válido en España' => 'TituloEnfermeria',
-                    'Acreditación del registro de enfermeros de transporte sanitario de la Comunidad de Madrid (DUEM)' => 'AcreditacionDUEM',
-                    'Título universitario de Medicina válido en España' => 'TituloMedicina',
-                    'Acreditación del registro de médicos de transporte sanitario de la Comunidad de Madrid (FUEM)' => 'AcreditacionFUEM',
-                ],
-                'multiple' => true, // Permite seleccionar múltiples opciones
-                'expanded' => true,  // Muestra como checkboxes
-                'required' => false,
-                'help' => 'Selecciona todas las titulaciones que poseas.',
-            ])
-
-            // --- Rol y Especialización ---
-            ->add('role', ChoiceType::class, [
-                'label' => 'Rol en la Organización',
-                'choices' => [
-                    'Voluntario' => 'Voluntario',
-                    'Coordinador' => 'Coordinador',
-                    'Especialista' => 'Especialista',
-                ],
-                'placeholder' => 'Selecciona un rol',
-            ])
-            ->add('specialization', TextType::class, [
-                'label' => 'Especialización (Opcional)',
-                'attr' => ['placeholder' => 'Ej: Primeros Auxilios, Cocina'],
-                'required' => false,
-            ])
             
             // --- Datos de Acceso (del UserType anidado) ---
             ->add('user', UserType::class, [

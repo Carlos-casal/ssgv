@@ -167,8 +167,8 @@ class Volunteer
     /**
      * @var bool|null Whether the volunteer has prior volunteering experience.
      */
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $hasVolunteeredBefore = null;
+    #[ORM\Column(type: Types::BOOLEAN)]
+    private ?bool $hasVolunteeredBefore = false;
 
     /**
      * @var string|null Names of institutions where the volunteer has previously volunteered.
