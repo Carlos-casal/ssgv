@@ -46,7 +46,19 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             new TwigFilter('format_spanish_date', [$this, 'formatSpanishDate']),
+            new TwigFilter('strip_phone_prefix', [$this, 'stripPhonePrefix']),
         ];
+    }
+
+    public function stripPhonePrefix(?string $phone): string
+    {
+        if ($phone === null) {
+            return '';
+        }
+        if (str_starts_with($phone, '+34')) {
+            return trim(substr($phone, 3));
+        }
+        return $phone;
     }
 
     /**

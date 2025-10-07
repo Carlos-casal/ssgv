@@ -15,7 +15,7 @@
                 <i data-lucide="download" class="w-4 h-4"></i>
                 Exportar CSV
             </a>
-            <a href="#" 
+            <a href="{{ path('app_volunteer_new') }}"
                class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                 <i data-lucide="plus" class="w-4 h-4"></i>
                 Nuevo Voluntario
@@ -24,7 +24,7 @@
     </div>
 
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <form method="GET" class="flex flex-col lg:flex-row gap-4">
+        <form method="GET" action="{{ path('app_volunteer_list') }}" class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1">
                 <div class="relative">
                     <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
@@ -32,7 +32,7 @@
                         type="text"
                         name="search"
                         value="{{ searchTerm }}"
-                        placeholder="Buscar por nombre o email..."
+                        placeholder="Buscar por nombre o indicativo..."
                         class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                 </div>
@@ -40,9 +40,9 @@
             <div class="flex gap-3">
                 <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     <option value="all" {{ filterStatus == 'all' ? 'selected' : '' }}>Todos los estados</option>
-                    <option value="Activo" {{ filterStatus == 'Activo' ? 'selected' : '' }}>Activos</option> {# Asegúrate de que los valores coincidan con los de tu entidad #}
-                    <option value="Suspensión" {{ filterStatus == 'Suspensión' ? 'selected' : '' }}>En Suspensión</option> {# Actualizado para reflejar mejor los estados #}
-                    <option value="Baja" {{ filterStatus == 'Baja' ? 'selected' : '' }}>De Baja</option> {# Actualizado para reflejar mejor los estados #}
+                    <option value="Activo" {{ filterStatus == 'Activo' ? 'selected' : '' }}>Activos</option>
+                    <option value="Suspensión" {{ filterStatus == 'Suspensión' ? 'selected' : '' }}>En Suspensión</option>
+                    <option value="Baja" {{ filterStatus == 'Baja' ? 'selected' : '' }}>De Baja</option>
                 </select>
                 <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
                     <i data-lucide="filter" class="w-4 h-4"></i>
@@ -62,11 +62,11 @@
             <p class="text-2xl font-bold text-green-600">{{ stats.Activo }}</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">En Suspensión</p> {# Actualizado #}
+            <p class="text-sm text-gray-600">En Suspensión</p>
             <p class="text-2xl font-bold text-orange-600">{{ stats.Suspensión }}</p>
         </div>
         <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">De Baja</p> {# Actualizado #}
+            <p class="text-sm text-gray-600">De Baja</p>
             <p class="text-2xl font-bold text-red-600">{{ stats.Baja }}</p>
         </div>
     </div>
@@ -76,48 +76,66 @@
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Contacto</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Carnet de conducir</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Titulacion Sanitaria</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Permiso de Navegación</th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">
+                            <a href="{{ path('app_volunteer_list', app.request.query.all|merge({sort: 'name', direction: app.request.query.get('direction') == 'asc' ? 'desc' : 'asc'})) }}" class="flex items-center gap-1 hover:text-blue-600">
+                                Voluntario
+                                <i data-lucide="arrow-up-down" class="w-3 h-3"></i>
+                            </a>
+                        </th>
+                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">
+                             <a href="{{ path('app_volunteer_list', app.request.query.all|merge({sort: 'phone', direction: app.request.query.get('direction') == 'asc' ? 'desc' : 'asc'})) }}" class="flex items-center gap-1 hover:text-blue-600">
+                                Contacto
+                                <i data-lucide="arrow-up-down" class="w-3 h-3"></i>
+                            </a>
+                        </th>
+                        <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
+                            Carnet de conducir
+                        </th>
+                        <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
+                            Habilitado
+                        </th>
+                        <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
+                            Titulacion Sanitaria
+                        </th>
+                        <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
+                            Permiso de Navegación
+                        </th>
                         <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200">
-                    {# CAMBIO CLAVE AQUÍ: Iterar sobre 'pagination' en lugar de 'volunteers' #}
                     {% for volunteer in pagination %} 
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium">
-                                            {{ volunteer.name|split(' ')|map(name => name|first)|join('')|slice(0, 2)|upper }}
-                                        </span>
-                                    </div>
+                                    <img src="{{ asset('uploads/profile_pictures/' ~ (volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-10 h-10 rounded-full object-cover">
                                     <div>
-                                        <p class="font-medium text-gray-900"> {{ volunteer.name }}</p>
-                                        <p class="text-sm text-gray-500">ID: {{ volunteer.id }}</p>
+                                        <p class="font-medium text-gray-900">{{ volunteer.name }} {{ volunteer.lastName }}</p>
+                                        <p class="text-sm text-gray-500">Indicativo: {{ volunteer.indicativo|default('N/A') }}</p>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
                                 <div>
-                                    <p class="text-sm text-gray-900">{{ volunteer.phone }}</p>
-                                    {# Asegúrate de que volunteer.user.email esté disponible si user puede ser null #}
+                                    <p class="text-sm text-gray-900">{{ volunteer.phone|strip_phone_prefix }}</p>
                                     <p class="text-sm text-gray-500">{{ volunteer.user ? volunteer.user.email : 'N/A' }}</p> 
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 text-center">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.drivingLicenses is not empty %}
                                         {{ volunteer.drivingLicenses|join(', ') }}
                                     {% else %}
-                                        N/A {# Puedes poner un guión, "Ninguno", etc. #}
+                                        N/A
                                     {% endif %}
                                 </p>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex justify-center">
+                                    <input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" disabled {% if volunteer.isHabilitadoConducir %}checked{% endif %}>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-900 text-center">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.specificQualifications is not empty %}
                                         {{ volunteer.specificQualifications|join(', ') }}
@@ -126,7 +144,7 @@
                                     {% endif %}
                                 </p>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-4 text-center">
                                 <p class="font-medium text-gray-900">
                                     {% if volunteer.navigationLicenses is not empty %}
                                         {{ volunteer.navigationLicenses|join(', ') }}
@@ -152,7 +170,7 @@
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                            <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                                 No se encontraron voluntarios
                             </td>
                         </tr>
@@ -161,7 +179,6 @@
             </table>
         </div>
 
-        {# CAMBIO CLAVE AQUÍ: Renderizar los controles de paginación #}
         <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
             {{ knp_pagination_render(pagination) }}
         </div>
