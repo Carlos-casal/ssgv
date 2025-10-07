@@ -219,12 +219,6 @@ class Volunteer
     private ?\DateTimeInterface $statusChangeDate = null;
 
     /**
-     * @var string|null The specialization of the volunteer (e.g., "Sanitario", "Logística").
-     */
-    #[ORM\Column(length: 255)]
-    private ?string $specialization = null;
-
-    /**
      * @var User|null The User entity associated with this volunteer profile.
      */
     #[ORM\OneToOne(inversedBy: 'volunteer', cascade: ['persist', 'remove'])]
@@ -875,26 +869,6 @@ class Volunteer
     public function setJoinDate(\DateTimeInterface $joinDate): static
     {
         $this->joinDate = $joinDate;
-        return $this;
-    }
-
-    /**
-     * Gets the specialization of the volunteer.
-     * @return string|null
-     */
-    public function getSpecialization(): ?string
-    {
-        return $this->specialization;
-    }
-
-    /**
-     * Sets the specialization of the volunteer.
-     * @param string $specialization The specialization.
-     * @return static
-     */
-    public function setSpecialization(string $specialization): static
-    {
-        $this->specialization = $specialization;
         return $this;
     }
 

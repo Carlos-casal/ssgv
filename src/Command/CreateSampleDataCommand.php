@@ -32,8 +32,7 @@ class CreateSampleDataCommand extends Command
                 'phone' => '+34 600 123 456',
                 'role' => 'Coordinador',
                 'status' => 'active',
-                'joinDate' => new \DateTime('2023-01-15'),
-                'specialization' => 'Primeros Auxilios'
+                'joinDate' => new \DateTime('2023-01-15')
             ],
             [
                 'name' => 'Carlos García Ruiz',
@@ -41,8 +40,7 @@ class CreateSampleDataCommand extends Command
                 'phone' => '+34 600 234 567',
                 'role' => 'Voluntario',
                 'status' => 'active',
-                'joinDate' => new \DateTime('2023-03-20'),
-                'specialization' => 'Rescate'
+                'joinDate' => new \DateTime('2023-03-20')
             ],
             [
                 'name' => 'María José Fernández',
@@ -50,8 +48,7 @@ class CreateSampleDataCommand extends Command
                 'phone' => '+34 600 345 678',
                 'role' => 'Voluntario',
                 'status' => 'inactive',
-                'joinDate' => new \DateTime('2022-11-10'),
-                'specialization' => 'Comunicaciones'
+                'joinDate' => new \DateTime('2022-11-10')
             ],
             [
                 'name' => 'Pedro Sánchez Díaz',
@@ -59,8 +56,7 @@ class CreateSampleDataCommand extends Command
                 'phone' => '+34 600 456 789',
                 'role' => 'Especialista',
                 'status' => 'active',
-                'joinDate' => new \DateTime('2023-02-05'),
-                'specialization' => 'Técnico'
+                'joinDate' => new \DateTime('2023-02-05')
             ]
         ];
 
@@ -72,7 +68,6 @@ class CreateSampleDataCommand extends Command
             $volunteer->setRole($volunteerData['role']);
             $volunteer->setStatus($volunteerData['status']);
             $volunteer->setJoinDate($volunteerData['joinDate']);
-            $volunteer->setSpecialization($volunteerData['specialization']);
 
             $this->entityManager->persist($volunteer);
         }

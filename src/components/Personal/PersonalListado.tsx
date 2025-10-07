@@ -9,7 +9,6 @@ interface Volunteer {
   role: string;
   status: 'active' | 'inactive';
   joinDate: string;
-  specialization: string;
 }
 
 const PersonalListado: React.FC = () => {
@@ -25,8 +24,7 @@ const PersonalListado: React.FC = () => {
       phone: '+34 600 123 456',
       role: 'Coordinador',
       status: 'active',
-      joinDate: '2023-01-15',
-      specialization: 'Primeros Auxilios'
+      joinDate: '2023-01-15'
     },
     {
       id: '2',
@@ -35,8 +33,7 @@ const PersonalListado: React.FC = () => {
       phone: '+34 600 234 567',
       role: 'Voluntario',
       status: 'active',
-      joinDate: '2023-03-20',
-      specialization: 'Rescate'
+      joinDate: '2023-03-20'
     },
     {
       id: '3',
@@ -45,8 +42,7 @@ const PersonalListado: React.FC = () => {
       phone: '+34 600 345 678',
       role: 'Voluntario',
       status: 'inactive',
-      joinDate: '2022-11-10',
-      specialization: 'Comunicaciones'
+      joinDate: '2022-11-10'
     },
     {
       id: '4',
@@ -55,8 +51,7 @@ const PersonalListado: React.FC = () => {
       phone: '+34 600 456 789',
       role: 'Especialista',
       status: 'active',
-      joinDate: '2023-02-05',
-      specialization: 'Técnico'
+      joinDate: '2023-02-05'
     }
   ];
 
@@ -68,7 +63,7 @@ const PersonalListado: React.FC = () => {
   });
 
   const exportToCSV = () => {
-    const headers = ['Nombre', 'Email', 'Teléfono', 'Rol', 'Estado', 'Fecha Ingreso', 'Especialización'];
+    const headers = ['Nombre', 'Email', 'Teléfono', 'Rol', 'Estado', 'Fecha Ingreso'];
     const csvContent = [
       headers.join(','),
       ...filteredVolunteers.map(volunteer => [
@@ -77,8 +72,7 @@ const PersonalListado: React.FC = () => {
         volunteer.phone,
         volunteer.role,
         volunteer.status === 'active' ? 'Activo' : 'Inactivo',
-        volunteer.joinDate,
-        volunteer.specialization
+        volunteer.joinDate
       ].join(','))
     ].join('\n');
 
@@ -187,7 +181,6 @@ const PersonalListado: React.FC = () => {
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Contacto</th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Rol</th>
-                <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Especialización</th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Estado</th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Fecha Ingreso</th>
                 <th className="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
@@ -224,7 +217,6 @@ const PersonalListado: React.FC = () => {
                       {volunteer.role}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">{volunteer.specialization}</td>
                   <td className="px-6 py-4">
                     <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                       volunteer.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
