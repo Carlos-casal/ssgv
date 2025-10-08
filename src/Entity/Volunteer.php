@@ -9,6 +9,7 @@ use Doctrine\DBal\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
+use App\Validator\DniNie;
 
 /**
  * Represents a volunteer's profile, containing personal information, qualifications, and status.
@@ -55,8 +56,8 @@ class Volunteer
     #[ORM\Column(length: 20)]
     #[Assert\NotBlank(message: 'El teléfono no puede estar vacío.')]
     #[Assert\Regex(
-        pattern: '/^\+?[1-9]\d{1,14}$/',
-        message: 'El número de teléfono no es válido. Debe tener un formato internacional.'
+        pattern: '/^(\+34)?[6789]\d{8}$/',
+        message: 'El número de teléfono no parece un formato español válido.'
     )]
     private ?string $phone = null;
 
@@ -64,7 +65,8 @@ class Volunteer
      * @var string|null The DNI (National Identity Document) of the volunteer. Must be unique.
      */
     #[ORM\Column(length: 15, unique: true)]
-    #[Assert\NotBlank(message: 'El DNI no puede estar vacío.')]
+    #[Assert\NotBlank(message: 'El DNI/NIE no puede estar vacío.')]
+    #[DniNie]
     private ?string $dni = null;
 
     /**
