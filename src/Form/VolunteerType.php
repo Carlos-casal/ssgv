@@ -66,10 +66,9 @@ class VolunteerType extends AbstractType
                 'html5' => true,
                 'required' => true,
             ])
-            ->add('indicativo', TextType::class, [
-                'label' => 'Indicativo',
+            ->add('profession', TextType::class, [
+                'label' => 'Profesión',
                 'required' => false,
-                'attr' => ['list' => 'indicativos-list'],
             ])
 
             // --- Dirección ---
@@ -125,10 +124,6 @@ class VolunteerType extends AbstractType
             ])
 
             // --- Cualificaciones ---
-            ->add('profession', TextType::class, [
-                'label' => 'Profesión',
-                'required' => false,
-            ])
             ->add('specificQualifications', ChoiceType::class, [
                 'label' => 'Titulaciones Específicas',
                 'choices' => [
