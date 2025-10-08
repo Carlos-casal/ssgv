@@ -18,19 +18,17 @@
 }
 
 @layer components {
-    /* Scoped styles for the new volunteer form */
-    .form-modern .form-field {
-        @apply w-full bg-transparent px-1 py-2 pl-8; /* Add left padding for icon */
-        @apply border-0 border-b-2 border-gray-300;
-        @apply focus:outline-none focus:ring-0 focus:border-blue-600;
-        @apply transition duration-150 ease-in-out;
+    /* Estilo moderno para campos de formulario */
+    .form-input-modern {
+        @apply w-full border-2 border-black rounded-lg px-3 py-2 transition-colors duration-200;
+        @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
     }
 
-    .form-modern textarea.form-field {
-        @apply min-h-[80px];
+    /* Asegurarse de que los textareas tengan una altura mínima */
+    .form-input-modern.textarea {
+        @apply min-h-[100px];
     }
 
-@layer components {
     .is-valid {
         @apply border-green-500 focus:ring-green-500 focus:border-green-500;
     }
