@@ -112,7 +112,7 @@ class VolunteerController extends AbstractController
      * @param UserPasswordHasherInterface $userPasswordHasher The password hasher service.
      * @return Response The response object, rendering the new volunteer form or redirecting on success.
      */
-    #[Route('/alta_voluntario', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
+    #[Route('/alta-voluntariado', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
     public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, VolunteerRepository $volunteerRepository): Response
     {
