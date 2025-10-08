@@ -285,9 +285,6 @@ class VolunteerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
             'is_edit' => false,
-            'available_indicativos' => [],
         ]);
-
-        $resolver->setAllowedTypes('available_indicativos', 'array');
     }
 }

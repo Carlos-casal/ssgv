@@ -126,10 +126,7 @@ class VolunteerController extends AbstractController
         }
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
-
-        $form = $this->createForm(VolunteerType::class, $volunteer, [
-            'available_indicativos' => $availableIndicativos,
-        ]);
+        $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -179,6 +176,7 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/new_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
+            'available_indicativos' => $availableIndicativos,
             'current_section' => 'personal-nuevo'
         ]);
     }
@@ -301,10 +299,8 @@ class VolunteerController extends AbstractController
         }
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
-
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
-            'available_indicativos' => $availableIndicativos,
         ]);
 
         $form->handleRequest($request);
@@ -355,6 +351,7 @@ class VolunteerController extends AbstractController
         return $this->render('volunteer/edit_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
+            'available_indicativos' => $availableIndicativos,
             'current_section' => 'personal-editar',
         ]);
     }
