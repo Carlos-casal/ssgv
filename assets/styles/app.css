@@ -20,7 +20,7 @@
 @layer components {
     /* Estilo moderno para campos de formulario */
     .form-input-modern {
-        @apply w-full border-2 border-black rounded-lg px-3 py-2 transition-colors duration-200;
+        @apply w-full border-2 border-black rounded-lg px-3 py-2 transition-colors duration-200 bg-gray-50;
         @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
     }
 
