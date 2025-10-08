@@ -136,7 +136,7 @@ class VolunteerRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('v')
             ->select('v.indicativo')
             ->where('v.indicativo IS NOT NULL')
-            ->andWhere('v.status = :status')
+            ->andWhere('LOWER(v.status) = LOWER(:status)')
             ->setParameter('status', Volunteer::STATUS_INACTIVE)
             ->orderBy('v.indicativo', 'ASC');
 

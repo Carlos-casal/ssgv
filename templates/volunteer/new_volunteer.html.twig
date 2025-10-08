@@ -42,11 +42,9 @@
             <div class="mt-4">
                 {{ form_row(form.indicativo) }}
                 <datalist id="indicativos-list">
-                    {% if form.vars.available_indicativos is defined %}
-                        {% for indicativo in form.vars.available_indicativos %}
-                            <option value="{{ indicativo }}">
-                        {% endfor %}
-                    {% endif %}
+                    {% for indicativo in available_indicativos %}
+                        <option value="{{ indicativo }}">
+                    {% endfor %}
                 </datalist>
             </div>
         </div>
