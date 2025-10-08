@@ -14,23 +14,21 @@
 } */
 
 @layer base {
-    input[type="text"],
-    input[type="email"],
-    input[type="password"],
-    input[type="number"],
-    input[type="date"],
-    textarea,
-    select {
-        @apply w-full bg-transparent px-1 py-2;
+    /* Base styles can remain if they are truly global */
+}
+
+@layer components {
+    /* Scoped styles for the new volunteer form */
+    .form-modern .form-field {
+        @apply w-full bg-transparent px-1 py-2 pl-8; /* Add left padding for icon */
         @apply border-0 border-b-2 border-gray-300;
         @apply focus:outline-none focus:ring-0 focus:border-blue-600;
         @apply transition duration-150 ease-in-out;
     }
 
-    textarea {
+    .form-modern textarea.form-field {
         @apply min-h-[80px];
     }
-}
 
 @layer components {
     .is-valid {

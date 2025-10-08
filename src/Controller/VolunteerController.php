@@ -128,12 +128,6 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle the new_indicativo field
-            $newIndicativo = $form->get('new_indicativo')->getData();
-            if (!empty($newIndicativo)) {
-                $volunteer->setIndicativo($newIndicativo);
-            }
-
             // Get email from the unmapped form field and set it on the User entity
             $email = $form->get('email')->getData();
             $user->setEmail($email);
@@ -322,12 +316,6 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle the new_indicativo field
-            $newIndicativo = $form->get('new_indicativo')->getData();
-            if (!empty($newIndicativo)) {
-                $volunteer->setIndicativo($newIndicativo);
-            }
-
             // Handle email update from the unmapped field
             $email = $form->get('email')->getData();
             $user->setEmail($email);
