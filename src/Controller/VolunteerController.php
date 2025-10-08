@@ -114,76 +114,71 @@ class VolunteerController extends AbstractController
      */
     #[Route('/nuevo_voluntario', name: 'app_volunteer_new', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
-    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, VolunteerRepository $volunteerRepository): Response
     {
         $volunteer = new Volunteer();
-        $user = new User(); // CORRECTO: Instanciar User aquí
-        $volunteer->setUser($user); // Asociar el User al Volunteer
+        $user = new User();
+        $volunteer->setUser($user);
 
-        // Pre-fill email from query parameter
         $emailFromQuery = $request->query->get('email');
         if ($emailFromQuery) {
             $user->setEmail($emailFromQuery);
         }
 
-        $form = $this->createForm(VolunteerType::class, $volunteer);
+        $usedIndicativos = $volunteerRepository->findUsedIndicativos();
+        $allPossibleIndicativos = range(1, 50);
+
+        $highestIndicativo = 0;
+        foreach ($usedIndicativos as $indicativo) {
+            if (is_numeric($indicativo) && (int)$indicativo > $highestIndicativo) {
+                $highestIndicativo = (int)$indicativo;
+            }
+        }
+        if ($highestIndicativo > 50) {
+            $allPossibleIndicativos = range(1, $highestIndicativo);
+        }
+
+        $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
+        $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
+
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'available_indicativos' => $availableIndicativos,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // CORRECTO: Obtener el User del Volunteer hidratado por el formulario
             $user = $volunteer->getUser();
-
             $plainPassword = $form->get('user')->get('password')->getData();
 
-            if ($plainPassword) { // Solo hashear si se proporcionó una contraseña
-                $hashedPassword = $userPasswordHasher->hashPassword(
-                    $user,
-                    $plainPassword
-                );
+            if ($plainPassword) {
+                $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
                 $user->setPassword($hashedPassword);
             }
-            $user->setRoles(['ROLE_VOLUNTEER']); // Usando ROLE_VOLUNTEER según tu código
+            $user->setRoles(['ROLE_VOLUNTEER']);
 
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
 
-            // Manejar la subida del archivo de la foto
             if ($profilePictureFile) {
                 $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
-                // Esto es para limpiar el nombre de archivo, haciéndolo seguro para URLs
                 $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
                 $newFilename = $safeFilename.'-'.uniqid().'.'.$profilePictureFile->guessExtension();
 
                 try {
                     $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures', // Directorio de destino
+                        $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures',
                         $newFilename
                     );
-                    // Si ya existe una foto (aunque en 'new' no debería haber, es buena práctica), bórrala.
-                    // Esta lógica es más común en 'edit', pero no causa daño aquí.
-                    if ($volunteer->getProfilePicture()) {
-                        $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures/'.$volunteer->getProfilePicture();
-                        if ($filesystem->exists($oldFilePath)) {
-                            $filesystem->remove($oldFilePath);
-                        }
-                    }
-                    // ¡IMPORTANTE! Asignar el nombre del archivo a la entidad Volunteer
                     $volunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
-                    // Manejar el error de subida de archivo si ocurre
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
-                    // Puedes considerar no persistir el voluntario si la subida falla críticamente
-                    // return $this->redirectToRoute('app_volunteer_new');
                 }
             }
 
-            // Establecer fecha de ingreso si no está definida
             if (!$volunteer->getJoinDate()) {
                 $volunteer->setJoinDate(new \DateTime());
             }
 
-            // Establecer rol por defecto si no está definido
             if (!$volunteer->getRole()) {
                 $volunteer->setRole('Voluntario');
             }
@@ -311,30 +306,49 @@ class VolunteerController extends AbstractController
      */
     #[Route('/editar_voluntario-{id}', name: 'app_volunteer_edit', methods: ['GET', 'POST'])]
     #[Security("is_granted('ROLE_ADMIN')")]
-    public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function edit(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, VolunteerRepository $volunteerRepository): Response
     {
         $user = $volunteer->getUser();
         if (!$user) {
-            // This should not happen in a normal flow if a volunteer must have a user.
             $this->addFlash('error', 'ERROR CRÍTICO: No hay un usuario asociado a este voluntario.');
             return $this->redirectToRoute('app_volunteer_list');
         }
 
+        $usedIndicativos = $volunteerRepository->findUsedIndicativos();
+        $currentIndicativo = $volunteer->getIndicativo();
+
+        if ($currentIndicativo && ($key = array_search($currentIndicativo, $usedIndicativos)) !== false) {
+            unset($usedIndicativos[$key]);
+        }
+
+        $allPossibleIndicativos = range(1, 50);
+        $highestIndicativo = 0;
+        foreach ($usedIndicativos as $indicativo) {
+            if (is_numeric($indicativo) && (int)$indicativo > $highestIndicativo) {
+                $highestIndicativo = (int)$indicativo;
+            }
+        }
+        if ($highestIndicativo > 50) {
+            $allPossibleIndicativos = range(1, $highestIndicativo);
+        }
+
+        $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
+        $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
+
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
+            'available_indicativos' => $availableIndicativos,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle password update
             $plainPassword = $form->get('user')->get('password')->getData();
             if ($plainPassword) {
                 $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
                 $user->setPassword($hashedPassword);
             }
 
-            // Handle profile picture upload
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
             if ($profilePictureFile) {
@@ -348,7 +362,6 @@ class VolunteerController extends AbstractController
                         $newFilename
                     );
 
-                    // Remove old picture if it exists
                     if ($volunteer->getProfilePicture()) {
                         $filesystem = new Filesystem();
                         $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $volunteer->getProfilePicture();

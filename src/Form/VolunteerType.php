@@ -49,6 +49,15 @@ class VolunteerType extends AbstractType
                 'attr' => ['placeholder' => 'Ej: 12345678A'],
                 'required' => false,
             ])
+            ->add('indicativo', TextType::class, [
+                'label' => 'Indicativo',
+                'required' => false,
+                'attr' => [
+                    'placeholder' => 'Selecciona o introduce un indicativo',
+                    'list' => 'indicativos-list',
+                ],
+                'help' => 'Puedes seleccionar de la lista de sugerencias o introducir uno nuevo.',
+            ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
@@ -270,7 +279,10 @@ class VolunteerType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
-            'is_edit' => false, // Opción por defecto para el formulario
+            'is_edit' => false,
+            'available_indicativos' => [],
         ]);
+
+        $resolver->setAllowedTypes('available_indicativos', 'array');
     }
 }
