@@ -126,4 +126,22 @@ class VolunteerRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Finds all used 'indicativo' numbers from active volunteers.
+     * @return string[]
+     */
+    public function findUsedIndicativos(): array
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('v.indicativo')
+            ->where('v.indicativo IS NOT NULL')
+            ->andWhere('v.status = :status')
+            ->setParameter('status', Volunteer::STATUS_ACTIVE)
+            ->orderBy('v.indicativo', 'ASC');
+
+        $result = $qb->getQuery()->getScalarResult();
+
+        return array_map('current', $result);
+    }
 }

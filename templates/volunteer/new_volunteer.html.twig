@@ -39,6 +39,16 @@
                 <div class="col-span-1 mt-4">{{ form_row(form.dni) }}</div>
                 <div class="col-span-1 mt-4">{{ form_row(form.dateOfBirth) }}</div>
             </div>
+            <div class="mt-4">
+                {{ form_row(form.indicativo) }}
+                <datalist id="indicativos-list">
+                    {% if form.vars.available_indicativos is defined %}
+                        {% for indicativo in form.vars.available_indicativos %}
+                            <option value="{{ indicativo }}">
+                        {% endfor %}
+                    {% endif %}
+                </datalist>
+            </div>
         </div>
     </div>
 
