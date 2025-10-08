@@ -15,7 +15,7 @@ def run(playwright):
 
         # Step 2: Verify the initial layout and title
         print("Verifying initial layout...")
-        expect(page.get_by_role("heading", name="Alta Voluntario")).to_be_visible()
+        expect(page.get_by_role("heading", name="Alta de Nuevo Voluntario")).to_be_visible()
         page.screenshot(path="jules-scratch/verification/01_new_volunteer_form_layout.png")
         print("Initial layout screenshot taken.")
 
@@ -45,16 +45,21 @@ def run(playwright):
 
         # Test invalid state (required but empty)
         name_input.fill("Jules")
-        name_input.fill("") # Trigger validation
+        name_input.press("Tab") # Trigger validation
+        expect(name_input).to_have_class(re.compile(r'.*is-valid.*'))
+
+        name_input.fill("")
+        name_input.press("Tab")
         expect(name_input).to_have_class(re.compile(r'.*is-invalid.*'))
         expect(page.locator('.form-error-message')).to_be_visible()
-        print("Invalid state (red border) works.")
+        print("Invalid state (red border and icon) works.")
 
         # Test valid state
         name_input.fill("Jules Verne")
+        name_input.press("Tab")
         expect(name_input).to_have_class(re.compile(r'.*is-valid.*'))
         expect(page.locator('.form-error-message')).not_to_be_visible()
-        print("Valid state (green border) works.")
+        print("Valid state (green border and icon) works.")
 
         # Step 6: Take a final screenshot showing interactivity
         print("Taking final screenshot of interactive states...")

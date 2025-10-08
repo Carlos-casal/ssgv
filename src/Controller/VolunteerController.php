@@ -121,10 +121,19 @@ class VolunteerController extends AbstractController
         $volunteer->setUser($user);
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
-        $form = $this->createForm(VolunteerType::class, $volunteer);
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'available_indicativos' => $availableIndicativos,
+        ]);
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle the new_indicativo field
+            $newIndicativo = $form->get('new_indicativo')->getData();
+            if (!empty($newIndicativo)) {
+                $volunteer->setIndicativo($newIndicativo);
+            }
+
             // Get email from the unmapped form field and set it on the User entity
             $email = $form->get('email')->getData();
             $user->setEmail($email);
@@ -295,18 +304,35 @@ class VolunteerController extends AbstractController
         }
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
+
+        // Add the current volunteer's indicativo to the list if it exists, to allow re-selection
+        if ($volunteer->getIndicativo() && !in_array($volunteer->getIndicativo(), $availableIndicativos)) {
+            $availableIndicativos[] = $volunteer->getIndicativo();
+            sort($availableIndicativos);
+        }
+
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
+            'available_indicativos' => $availableIndicativos,
         ]);
+
+        // Manually set the unmapped email field for display
+        $form->get('email')->setData($user->getEmail());
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $plainPassword = $form->get('user')->get('password')->getData();
-            if ($plainPassword) {
-                $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
-                $user->setPassword($hashedPassword);
+            // Handle the new_indicativo field
+            $newIndicativo = $form->get('new_indicativo')->getData();
+            if (!empty($newIndicativo)) {
+                $volunteer->setIndicativo($newIndicativo);
             }
+
+            // Handle email update from the unmapped field
+            $email = $form->get('email')->getData();
+            $user->setEmail($email);
+
+            // Password is not updated from this form, so password logic is removed.
 
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
