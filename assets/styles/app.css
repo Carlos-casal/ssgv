@@ -20,8 +20,8 @@
 @layer components {
     /* Estilo moderno para campos de formulario */
     .form-input-modern {
-        @apply w-full border border-gray-300 rounded-md px-3 py-2 transition-colors duration-200 bg-gray-100 text-gray-900;
-        @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 focus:bg-white;
+        @apply w-full border border-gray-300 rounded-md px-3 py-2 bg-white text-gray-900 shadow-sm;
+        @apply focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500;
     }
 
     /* Asegurarse de que los textareas tengan una altura mínima */
