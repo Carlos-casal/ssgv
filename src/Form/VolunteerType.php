@@ -161,6 +161,11 @@ class VolunteerType extends AbstractType
                 'placeholder' => 'Selecciona una opción',
                 'required' => false,
             ])
+            ->add('role', TextType::class, [
+                'label' => 'Rol en la Agrupación',
+                'required' => true,
+                'attr' => ['placeholder' => 'Ej: Voluntario, Jefe de Unidad'],
+            ])
             ->add('drivingLicenses', ChoiceType::class, [
                 'label' => 'Permiso de Conducción',
                 'choices' => [
