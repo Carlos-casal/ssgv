@@ -211,6 +211,36 @@ class VolunteerType extends AbstractType
             ])
         ;
 
+        // --- Aplicar clases CSS a los campos apropiados ---
+        foreach ($builder->all() as $child) {
+            $config = $child->getOptions();
+            $type = get_class($child->getType()->getInnerType());
+
+            // Lista de tipos de campo a los que queremos aplicar el estilo
+            $textualInputTypes = [
+                TextType::class,
+                EmailType::class,
+                TextareaType::class,
+                DateType::class,
+            ];
+
+            // Aplicar solo a tipos de campo textuales y a ChoiceType no expandidos
+            $isApplicableChoice = ($type === ChoiceType::class && ($config['expanded'] ?? false) === false);
+
+            if (in_array($type, $textualInputTypes) || $isApplicableChoice) {
+                $attr = $config['attr'] ?? [];
+                // Usamos trim para evitar dobles espacios si la clase ya existía
+                $attr['class'] = trim(($attr['class'] ?? '') . ' form-input-modern');
+
+                if ($type === TextareaType::class) {
+                    $attr['class'] .= ' textarea';
+                }
+
+                // Volver a añadir el campo con la configuración actualizada
+                $builder->add($child->getName(), $type, array_merge($config, ['attr' => $attr]));
+            }
+        }
+
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $data = $event->getData();
             $form = $event->getForm();
