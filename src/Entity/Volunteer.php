@@ -74,7 +74,10 @@ class Volunteer
      */
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     #[Assert\NotBlank(message: 'La fecha de nacimiento no puede estar vacía.')]
-    #[Assert\LessThanOrEqual('-16 years', message: 'El voluntario debe tener al menos 16 años.')]
+    #[Assert\LessThan(
+        value: '-16 years',
+        message: 'El voluntario debe tener al menos 16 años cumplidos.'
+    )]
     private ?\DateTimeInterface $dateOfBirth = null;
 
     /**
@@ -260,9 +263,6 @@ class Volunteer
      */
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $profilePicture = null;
-
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $numeroIdentificacion = null;
 
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $indicativo = null;
@@ -1064,18 +1064,6 @@ class Volunteer
      * @param Service $service The service to find the record for.
      * @return VolunteerService|null The corresponding VolunteerService record, or null if not found.
      */
-    public function getNumeroIdentificacion(): ?string
-    {
-        return $this->numeroIdentificacion;
-    }
-
-    public function setNumeroIdentificacion(?string $numeroIdentificacion): static
-    {
-        $this->numeroIdentificacion = $numeroIdentificacion;
-
-        return $this;
-    }
-
     public function getIndicativo(): ?string
     {
         return $this->indicativo;

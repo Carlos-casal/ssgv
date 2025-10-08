@@ -54,7 +54,6 @@ class VolunteerType extends AbstractType
             ->add('phone', TextType::class, [
                 'label' => 'Teléfono',
                 'required' => true,
-                'help' => 'Formato internacional, ej: +34666112233',
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Correo Electrónico',
@@ -67,25 +66,10 @@ class VolunteerType extends AbstractType
                 'html5' => true,
                 'required' => true,
             ])
-            ->add('indicativo', ChoiceType::class, [
-                'label' => 'Indicativo (Sugerencias)',
+            ->add('indicativo', TextType::class, [
+                'label' => 'Indicativo',
                 'required' => false,
-                'choices' => array_combine(
-                    $options['available_indicativos'],
-                    $options['available_indicativos']
-                ),
-                'placeholder' => 'Selecciona un indicativo libre',
-                'help' => 'Selecciona un número de la lista. Si necesitas uno nuevo, usa el campo de abajo.',
-            ])
-            ->add('new_indicativo', TextType::class, [
-                'label' => 'Otro Indicativo (si no está en la lista)',
-                'required' => false,
-                'mapped' => false, // This field is not mapped to the entity directly
-                'attr' => ['placeholder' => 'Introduce un número nuevo'],
-            ])
-            ->add('numeroIdentificacion', TextType::class, [
-                'label' => 'Número de Identificación',
-                'required' => false,
+                'attr' => ['list' => 'indicativos-list'],
             ])
 
             // --- Dirección ---
@@ -276,9 +260,6 @@ class VolunteerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
             'is_edit' => false,
-            'available_indicativos' => [],
         ]);
-
-        $resolver->setAllowedTypes('available_indicativos', 'array');
     }
 }

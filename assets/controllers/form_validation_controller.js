@@ -3,12 +3,15 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     connect() {
         this.element.addEventListener('submit', this.handleSubmit.bind(this));
+        // Add blur listeners to all relevant inputs
+        this.element.querySelectorAll('input[data-action], select[data-action], textarea[data-action]').forEach(input => {
+            input.addEventListener('blur', this.validate.bind(this));
+        });
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
     }
 
     // --- Conditional Field Logic ---
-
     toggleDrivingLicenseExpiry() {
         const drivingLicensesCheckboxes = this.element.querySelectorAll('input[name="volunteer[drivingLicenses][]"]');
         const expiryWrapper = document.getElementById('driving-license-expiry-wrapper');
@@ -16,7 +19,11 @@ export default class extends Controller {
 
         const anyChecked = Array.from(drivingLicensesCheckboxes).some(cb => cb.checked);
         expiryWrapper.classList.toggle('hidden', !anyChecked);
-        expiryWrapper.querySelector('input').required = anyChecked;
+        const expiryInput = expiryWrapper.querySelector('input');
+        if(expiryInput) {
+            expiryInput.required = anyChecked;
+            if (!anyChecked) this.removeValidation(expiryInput);
+        }
     }
 
     togglePreviousInstitutions() {
@@ -26,17 +33,21 @@ export default class extends Controller {
 
         const isYesChecked = hasVolunteeredYes && hasVolunteeredYes.checked;
         institutionsWrapper.classList.toggle('hidden', !isYesChecked);
-        institutionsWrapper.querySelector('textarea').required = isYesChecked;
+        const textarea = institutionsWrapper.querySelector('textarea');
+        if (textarea) {
+            textarea.required = isYesChecked;
+            if (!isYesChecked) this.removeValidation(textarea);
+        }
     }
 
     // --- Form Actions ---
-
     addAnother(event) {
         event.preventDefault();
         this.element.reset();
         this.element.querySelectorAll('.validation-icon, .form-error-message').forEach(el => el.remove());
         this.element.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
             el.classList.remove('is-valid', 'is-invalid');
+            el.style.paddingLeft = '';
         });
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
@@ -53,15 +64,23 @@ export default class extends Controller {
 
         if (!isFormValid) {
             event.preventDefault();
+            const firstInvalid = this.element.querySelector('.is-invalid');
+            if(firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
         }
     }
 
-    // --- Real-time Validation ---
-
+    // --- Real-time Validation (on blur) ---
     validate(event) {
         const input = event.target;
         let isValid = true;
         let message = '';
+
+        if (!input.required && input.value.trim() === '') {
+            this.removeValidation(input);
+            return true;
+        }
 
         if (input.required && input.value.trim() === '') {
             isValid = false;
@@ -73,11 +92,32 @@ export default class extends Controller {
                     if (!isValid) message = 'El DNI/NIE no es válido.';
                     break;
                 case 'volunteer_phone':
-                    const phoneValue = input.value.startsWith('+34') ? input.value.substring(3) : input.value;
-                    const phoneRegex = /^[6789]\d{8}$/;
+                    const phoneValue = input.value.trim().replace('+34', '');
+                    const phoneRegex = /^[679]\d{8}$/;
                     if (!phoneRegex.test(phoneValue)) {
                         isValid = false;
-                        message = 'El formato del teléfono no es válido.';
+                        message = 'El formato del teléfono no es válido (9 dígitos).';
+                    }
+                    break;
+                case 'volunteer_dateOfBirth':
+                    const birthDate = new Date(input.value);
+                    if (isNaN(birthDate.getTime())) {
+                        isValid = false;
+                        message = 'La fecha no es válida.';
+                        break;
+                    }
+                    const today = new Date();
+                    const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+                    if (birthDate > sixteenYearsAgo) {
+                        isValid = false;
+                        message = 'El voluntario debe tener al menos 16 años cumplidos.';
+                    }
+                    break;
+                 case 'volunteer_email':
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(input.value)) {
+                        isValid = false;
+                        message = 'El formato del correo no es válido.';
                     }
                     break;
             }
@@ -88,44 +128,49 @@ export default class extends Controller {
     }
 
     validateDniNie(value) {
-        const dni = value.toUpperCase();
-        if (!/^[XYZ\d]\d{7}[A-Z]$/.test(dni)) return false;
+        const dni = value.toUpperCase().trim();
+        if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
 
-        let number = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
+        const numberPart = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
         const letter = dni.substr(dni.length - 1, 1);
 
-        return 'TRWAGMYFPDXBNJZSQVHLCKE'[number % 23] === letter;
+        return 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart) % 23] === letter;
     }
 
     // --- UI Update Helpers ---
-
     updateFieldValidation(input, isValid, message) {
         this.removeValidation(input);
+        const wrapper = input.closest('.relative');
+        if (!wrapper) return;
 
-        const iconWrapper = document.createElement('span');
-        iconWrapper.className = 'validation-icon absolute right-3 top-1/2 transform -translate-y-1/2';
+        const icon = document.createElement('span');
+        icon.className = 'validation-icon absolute left-0 top-0 mt-3 ml-2 flex items-center';
+
+        input.style.paddingLeft = '2rem';
 
         if (isValid) {
             input.classList.add('is-valid');
-            iconWrapper.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
         } else {
             input.classList.add('is-invalid');
-            iconWrapper.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
 
             const errorEl = document.createElement('p');
             errorEl.className = 'form-error-message text-xs text-red-600 mt-1';
             errorEl.textContent = message;
-            input.parentElement.appendChild(errorEl);
+            wrapper.appendChild(errorEl);
         }
 
-        input.parentElement.classList.add('relative');
-        input.parentElement.appendChild(iconWrapper);
+        wrapper.insertBefore(icon, input);
     }
 
     removeValidation(input) {
         input.classList.remove('is-valid', 'is-invalid');
-        const parent = input.parentElement;
-        parent.querySelector('.validation-icon')?.remove();
-        parent.querySelector('.form-error-message')?.remove();
+        input.style.paddingLeft = '';
+        const wrapper = input.closest('.relative');
+        if (!wrapper) return;
+
+        wrapper.querySelector('.validation-icon')?.remove();
+        wrapper.querySelector('.form-error-message')?.remove();
     }
 }

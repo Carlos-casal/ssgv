@@ -14,12 +14,32 @@ def run(playwright):
         page.goto("http://localhost:5173/nuevo_voluntario", timeout=15000)
 
         # Step 2: Verify the initial layout and title
-        print("Verifying initial layout...")
-        expect(page.get_by_role("heading", name="Alta de Nuevo Voluntario")).to_be_visible()
-        page.screenshot(path="jules-scratch/verification/01_new_volunteer_form_layout.png")
+        print("Verifying initial layout and underline style...")
+        expect(page.get_by_role("button", name="Dar de Alta")).to_be_visible()
+        page.screenshot(path="jules-scratch/verification/01_new_form_layout.png")
         print("Initial layout screenshot taken.")
 
-        # Step 3: Test conditional field for driving license
+        # Step 3: Test real-time validation (on blur)
+        print("Testing real-time validation on DNI field...")
+        dni_input = page.locator('#volunteer_dni')
+
+        # Test invalid state
+        dni_input.fill("12345")
+        dni_input.press("Tab") # Trigger blur
+        expect(dni_input).to_have_class(re.compile(r'.*is-invalid.*'))
+        expect(page.locator('.validation-icon')).to_be_visible()
+        expect(page.locator('.form-error-message')).to_have_text('El DNI/NIE no es válido.')
+        print("Invalid state (red icon and message) works.")
+
+        # Test valid state
+        dni_input.fill("12345678Z") # A valid DNI
+        dni_input.press("Tab")
+        expect(dni_input).to_have_class(re.compile(r'.*is-valid.*'))
+        expect(page.locator('.validation-icon')).to_be_visible()
+        expect(page.locator('.form-error-message')).not_to_be_visible()
+        print("Valid state (green icon) works.")
+
+        # Step 4: Test conditional field for driving license
         print("Testing conditional logic for driving license...")
         driving_license_checkbox = page.locator('input[name="volunteer[drivingLicenses][]"][value="B"]')
         expiry_wrapper = page.locator('#driving-license-expiry-wrapper')
@@ -29,41 +49,17 @@ def run(playwright):
         expect(expiry_wrapper).to_be_visible()
         print("Driving license conditional logic works.")
 
-        # Step 4: Test conditional field for previous volunteering
-        print("Testing conditional logic for previous experience...")
-        has_volunteered_yes = page.locator('input[name="volunteer[hasVolunteeredBefore]"][value="1"]')
-        institutions_wrapper = page.locator('#previous-institutions-wrapper')
-
-        expect(institutions_wrapper).to_be_hidden()
-        has_volunteered_yes.check()
-        expect(institutions_wrapper).to_be_visible()
-        print("Previous experience conditional logic works.")
-
-        # Step 5: Test real-time validation (invalid and valid states)
-        print("Testing real-time validation...")
-        name_input = page.locator('#volunteer_name')
-
-        # Test invalid state (required but empty)
-        name_input.fill("Jules")
-        name_input.press("Tab") # Trigger validation
-        expect(name_input).to_have_class(re.compile(r'.*is-valid.*'))
-
-        name_input.fill("")
-        name_input.press("Tab")
-        expect(name_input).to_have_class(re.compile(r'.*is-invalid.*'))
-        expect(page.locator('.form-error-message')).to_be_visible()
-        print("Invalid state (red border and icon) works.")
-
-        # Test valid state
-        name_input.fill("Jules Verne")
-        name_input.press("Tab")
-        expect(name_input).to_have_class(re.compile(r'.*is-valid.*'))
-        expect(page.locator('.form-error-message')).not_to_be_visible()
-        print("Valid state (green border and icon) works.")
-
-        # Step 6: Take a final screenshot showing interactivity
+        # Step 5: Take a final screenshot showing interactivity
         print("Taking final screenshot of interactive states...")
-        page.screenshot(path="jules-scratch/verification/02_new_volunteer_form_interactive.png")
+        page.screenshot(path="jules-scratch/verification/02_form_interactive_state.png")
+
+        # Step 6: Test "Add Another" button
+        print("Testing 'Add Another' button...")
+        page.get_by_role("button", name="Añadir Otro").click()
+        expect(dni_input).to_have_value("")
+        expect(page.locator('.validation-icon')).not_to_be_visible()
+        expect(driving_license_checkbox).not_to_be_checked()
+        print("'Add Another' button functionality is correct.")
 
         print("Verification script completed successfully.")
 

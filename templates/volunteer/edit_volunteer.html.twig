@@ -1,252 +1,123 @@
-{# templates/volunteer/edit_volunteer.html.twig #}
+{% extends 'layout/app.html.twig' %}
 
-{% extends 'layout/app.html.twig' %} {# Usamos 'layout/app.html.twig' como base, ajusta si tu layout base es diferente #}
-
-{% block page_title %}Editando a {{ volunteer.name }} {{ volunteer.lastName }}{% endblock %}
+{% block page_title %}Editando a {{ volunteer.name }}{% endblock %}
 
 {% block content %}
+<div class="container mx-auto p-4 lg:p-6">
+    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-controller': 'form-validation'}}) }}
 
-    <div class="container mx-auto p-6">
-        <h1 class="text-2xl font-bold mb-6 text-gray-900">
-            Editando a #{{ volunteer.id }} - {{ volunteer.name }} {{ volunteer.lastName }}
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-gray-800">
+            Editando a <span class="text-blue-600">{{ volunteer.name }} {{ volunteer.lastName }}</span>
         </h1>
+    </div>
 
-        {# Mensajes flash #}
-        {% for message in app.flashes('success') %}
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline">{{ message }}</span>
-            </div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <span class="block sm:inline">{{ message }}</span>
-            </div>
-        {% endfor %}
+    {# --- Section: Profile Picture --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Foto de Perfil</h2>
+        <img id="preview-element" src="{{ volunteer.profilePicture ? asset('uploads/profile_pictures/' ~ volunteer.profilePicture) : asset('images/placeholder-avatar.png') }}" alt="Vista previa" class="w-32 h-32 rounded-full object-cover mb-4 border-2 border-gray-200 shadow-sm mx-auto">
+        {{ form_widget(form.profilePicture, {'attr': {'data-action': 'change->form-validation#previewImage'}}) }}
+        <p class="text-xs text-gray-500 mt-2">JPG o PNG, máx 1MB.</p>
+    </div>
 
-        {# Contenedor principal del formulario con estilos #}
-        {{ form_start(form, {'attr': {'class': 'bg-white p-6 rounded-lg shadow-md'}, 'enctype': 'multipart/form-data'}) }}
-
-        {# CONTENEDOR PRINCIPAL: Flex para la fila superior (foto + datos básicos) #}
-        <div class="flex flex-col md:flex-row gap-6 mb-8">
-
-            {# Recuadro de la foto de perfil (Izquierda - md:w-1/2) #}
-            <div class="w-full md:w-1/2 p-4 border border-gray-200 rounded-lg text-center bg-gray-50">
-                <h3 class="text-xl font-semibold mb-4 text-gray-800">Foto de Perfil</h3>
-                <div class="mb-4">
-                    {% if volunteer.profilePicture %}
-                        <img id="preview-element" src="{{ asset('uploads/profile_pictures/' ~ volunteer.profilePicture) }}"
-                             alt="Foto de perfil"
-                             class="w-32 h-32 rounded-full object-cover mx-auto border-2 border-blue-300 shadow mb-4">
-                    {% else %}
-                        {# ESTE ES EL DIV "SIN FOTO" VISIBLE INICIALMENTE #}
-                        <div id="preview-element"
-                             class="w-32 h-32 rounded-full mx-auto bg-gray-300 flex items-center justify-center text-gray-600 text-sm mb-4 border-2 border-blue-300 shadow">
-                            Sin Foto
-                        </div>
-                    {% endif %}
-                </div>
-                {# El recuadro del input de archivo se mantiene estrecho y centrado #}
-                <div class="w-fit mx-auto">
-                    {{ form_row(form.profilePicture, {
-                        label: 'Cambiar foto',
-                        attr: {
-                            'class': 'block text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none'
-                        }
-                    }) }}
-                </div>
-                <p class="text-xs text-gray-500 mt-1">Sube una imagen JPG o PNG (máx. 1MB).</p>
-            </div>
-
-            {# Recuadro de Datos Básicos (Derecha - md:w-1/2) #}
-            <div class="w-full md:w-1/2 p-4 border border-gray-200 rounded-lg bg-gray-50">
-                <h3 class="text-xl font-semibold mb-4 text-gray-800">Datos Básicos</h3>
-                <div class="mb-4">
-                    <span class="block text-sm font-medium text-gray-700">ID Voluntario</span>
-                    <span class="text-lg font-semibold text-gray-900">{{ volunteer.id }}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-x-6">
-                    <!-- Fila 1: Nombre y Apellidos -->
-                    <div class="col-span-1">
-                        {{ form_label(form.name, 'Nombre') }}
-                        {{ form_widget(form.name, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.name) }}
-                    </div>
-                    <div class="col-span-1">
-                        {{ form_label(form.lastName, 'Apellidos') }}
-                        {{ form_widget(form.lastName, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.lastName) }}
-                    </div>
-
-                    <!-- Fila 2: Teléfono y Correo -->
-                    <div class="col-span-1 mt-4">
-                        {{ form_label(form.phone, 'Teléfono de contacto') }}
-                        {{ form_widget(form.phone, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.phone) }}
-                    </div>
-                    <div class="col-span-1 mt-4">
-                        {{ form_label(form.user.email, 'Correo') }}
-                        {{ form_widget(form.user.email, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.user.email) }}
-                    </div>
-
-                    <!-- Fila 3: DNI y Fecha de Nacimiento -->
-                    <div class="col-span-1 mt-4">
-                        {{ form_label(form.dni, 'DNI') }}
-                        {{ form_widget(form.dni, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.dni) }}
-                    </div>
-                    <div class="col-span-1 mt-4">
-                        {{ form_label(form.dateOfBirth, 'Fecha de nacimiento') }}
-                        {{ form_widget(form.dateOfBirth, {'attr': {'class': 'w-full'}}) }}
-                        {{ form_errors(form.dateOfBirth) }}
-                    </div>
-                </div>
-                <div class="mt-4">
-                    {{ form_row(form.indicativo) }}
-                    <datalist id="indicativos-list">
+    {# --- Section: Datos Personales --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Datos Personales</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div class="relative">{{ form_row(form.name, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.lastName, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dni, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.phone, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.email, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">
+                {{ form_label(form.indicativo) }}
+                {{ form_widget(form.indicativo) }}
+                <datalist id="indicativos-list">
                     {% for indicativo in available_indicativos %}
                         <option value="{{ indicativo }}">
                     {% endfor %}
-                    </datalist>
+                </datalist>
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Dirección --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Dirección</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-8">
+                <div class="relative md:col-span-1">{{ form_row(form.streetType, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
+                <div class="relative md:col-span-2">{{ form_row(form.address, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            </div>
+            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-8">
+                <div class="relative">{{ form_row(form.postalCode, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+                <div class="relative">{{ form_row(form.city, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+                <div class="relative">{{ form_row(form.province, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Contacto de Emergencia --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Contacto de Emergencia</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+            <div class="relative">{{ form_row(form.contactPerson1, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.contactPhone1, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+        </div>
+    </div>
+
+    {# --- Section: Información de Salud --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Información de Salud</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+            {{ form_row(form.foodAllergies) }}
+            {{ form_row(form.otherAllergies) }}
+        </div>
+    </div>
+
+    {# --- Section: Cualificaciones --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Cualificaciones</h2>
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="space-y-4">
+                {{ form_row(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseExpiry'}}) }}
+                <div id="driving-license-expiry-wrapper" class="hidden relative">
+                    {{ form_row(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'change->form-validation#validate'}}) }}
+                </div>
+                {{ form_row(form.habilitadoConducir) }}
+            </div>
+            <div class="space-y-4">{{ form_row(form.navigationLicenses) }}</div>
+            <div class="space-y-4">{{ form_row(form.specificQualifications) }}</div>
+        </div>
+        <div class="mt-6 border-t pt-6 relative">
+            {{ form_row(form.otherQualifications) }}
+        </div>
+    </div>
+
+    {# --- Section: Motivación e Intereses --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Motivación e Intereses</h2>
+        <div class="space-y-6">
+            <div class="relative">{{ form_row(form.motivation, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.howKnown, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="flex items-center gap-8">
+                {{ form_row(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#togglePreviousInstitutions'}}) }}
+                <div id="previous-institutions-wrapper" class="flex-grow hidden relative">
+                    {{ form_row(form.previousVolunteeringInstitutions, {'attr': {'data-action': 'input->form-validation#validate'}}) }}
                 </div>
             </div>
         </div>
-
-        {# Recuadro con el Resto de Datos del Voluntario (debajo de la fila superior, ocupa todo el ancho) #}
-        <div class="w-full p-4 border border-gray-200 rounded-lg bg-white mb-8">
-            <h3 class="text-xl font-semibold mb-4 text-gray-800">Datos Detallados del Voluntario</h3>
-
-            {# Sección: Dirección #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Dirección</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>{{ form_row(form.streetType) }}</div>
-                <div>{{ form_row(form.address) }}</div>
-                <div>{{ form_row(form.postalCode) }}</div>
-                <div>{{ form_row(form.province) }}</div>
-                <div>{{ form_row(form.city) }}</div>
-            </div>
-
-            {# Sección: Información de Emergencia #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Información de Emergencia</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>{{ form_row(form.contactPerson1) }}</div>
-                <div>{{ form_row(form.contactPhone1) }}</div>
-                <div>{{ form_row(form.contactPerson2) }}</div>
-                <div>{{ form_row(form.contactPhone2) }}</div>
-            </div>
-
-            {# Sección: Información Médica #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Información Médica</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>{{ form_row(form.allergies) }}</div>
-                {# <div>{{ form_row(form.medicalConditions) }}</div> #}
-            </div>
-
-            {# Sección: Información Profesional y Cualificaciones #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Profesional y Cualificaciones</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>{{ form_row(form.profession) }}</div>
-                <div>{{ form_row(form.employmentStatus) }}</div>
-                <div>{{ form_row(form.drivingLicenses) }}</div>
-                <div>{{ form_row(form.drivingLicenseExpiryDate) }}</div>
-                <div class="col-span-2">{{ form_row(form.habilitadoConducir) }}</div>
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.navigationLicenses) }}
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.otherQualifications) }}
-            </div>
-
-            {# Sección: Otros Datos e Intereses #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Otros Datos e Intereses</h2>
-            <div class="mb-4">
-                {{ form_row(form.languages) }}
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.motivation) }}
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.howKnown) }}
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.hasVolunteeredBefore) }}
-            </div>
-            <div class="mb-4">
-                {{ form_row(form.previousVolunteeringInstitutions) }}
-            </div>
-
-            {# Sección: Rol y Especialización #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Rol y Especialización</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>{{ form_row(form.role) }}</div>
-            </div>
-
-            {# Contraseña (opcional, solo si se desea cambiar) #}
-            <h2 class="text-lg font-semibold mt-6 mb-4 text-gray-800 border-b pb-2">Actualizar Contraseña</h2>
-            <p class="text-sm text-gray-600 mb-4">Solo cambia la contraseña si deseas actualizarla. Déjala en blanco para mantener la actual.</p>
-           {#  <div>{{ form_row(form.user.password, {'label': 'Nueva contraseña'}) }}</div> #}
-        </div>
-
-        <div class="flex items-center justify-end gap-3 mt-6">
-            <a href="{{ path('app_volunteer_list') }}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</a>
-            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition-colors">Guardar Cambios</button>
-        </div>
-
-        {{ form_end(form) }}
     </div>
 
-    {# INICIO DEL BLOQUE DE JAVASCRIPT - ADAPTADO PARA REEMPLAZAR DIV POR IMG #}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Selecciona el input de archivo por su tipo y parte del atributo 'name'
-            const profilePictureInput = document.querySelector('input[type="file"][name$="[profilePicture]"]');
-            // Usamos 'let' para la previsualización porque su referencia podría cambiar (de div a img)
-            let previewElement = document.getElementById('preview-element');
+    {# --- Action Buttons --- #}
+    <div class="flex justify-end items-center pt-6 border-t mt-8">
+        <div class="flex items-center gap-3">
+            <a href="{{ path('app_volunteer_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">Cancelar</a>
+            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm text-sm">Guardar Cambios</button>
+        </div>
+    </div>
 
-            if (profilePictureInput && previewElement) {
-                profilePictureInput.addEventListener('change', function (event) {
-                    const file = event.target.files[0];
-
-                    if (file) {
-                        const reader = new FileReader();
-
-                        reader.onload = function (e) {
-                            // Si el elemento de previsualización actual es un DIV (el "Sin Foto"),
-                            // lo reemplazamos por una nueva etiqueta IMG.
-                            if (previewElement.tagName === 'DIV') {
-                                const newImg = document.createElement('img');
-                                newImg.id = 'preview-element'; // Mantiene el mismo ID
-                                newImg.alt = 'Foto de perfil';
-                                // Copia las clases para mantener el estilo circular y responsivo
-                                newImg.className = 'w-32 h-32 rounded-full object-cover mx-auto border-2 border-blue-300 shadow mb-4';
-                                previewElement.parentNode.replaceChild(newImg, previewElement);
-                                previewElement = newImg; // Actualiza la referencia al nuevo elemento IMG
-                            }
-                            // Establece la fuente de la imagen
-                            previewElement.src = e.target.result;
-                        };
-                        reader.onerror = function(e) {
-                            console.error('Error al leer el archivo:', e);
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        // Si no se selecciona ningún archivo o se cancela,
-                        // y el elemento actual es una IMG, lo revertimos a un DIV "Sin Foto".
-                        if (previewElement.tagName === 'IMG') {
-                            const newDiv = document.createElement('div');
-                            newDiv.id = 'preview-element'; // Mantiene el mismo ID
-                            newDiv.className = 'w-32 h-32 rounded-full mx-auto bg-gray-300 flex items-center justify-center text-gray-600 text-sm mb-4 border-2 border-blue-300 shadow';
-                            newDiv.textContent = 'Sin Foto';
-                            previewElement.parentNode.replaceChild(newDiv, previewElement);
-                            previewElement = newDiv; // Actualiza la referencia al nuevo elemento DIV
-                        }
-                    }
-                });
-            } else {
-                console.error("ERROR: Elementos de previsualización o input de archivo no encontrados.");
-            }
-        });
-    </script>
-    {# FIN DEL BLOQUE DE JAVASCRIPT #}
+    {{ form_end(form) }}
+</div>
 {% endblock %}
