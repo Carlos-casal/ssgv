@@ -121,9 +121,7 @@ class VolunteerController extends AbstractController
         $volunteer->setUser($user);
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
-        $form = $this->createForm(VolunteerType::class, $volunteer, [
-            'available_indicativos' => $availableIndicativos,
-        ]);
+        $form = $this->createForm(VolunteerType::class, $volunteer);
 
         $form->handleRequest($request);
 
@@ -307,7 +305,6 @@ class VolunteerController extends AbstractController
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
-            'available_indicativos' => $availableIndicativos,
         ]);
 
         // Manually set the unmapped email field for display
