@@ -11,21 +11,13 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Datos Personales</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-            <div class="relative">{{ form_row(form.name, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.lastName, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.dni, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.phone, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.email, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">
-                {{ form_label(form.indicativo) }}
-                {{ form_widget(form.indicativo) }}
-                <datalist id="indicativos-list">
-                    {% for indicativo in available_indicativos %}
-                        <option value="{{ indicativo }}">
-                    {% endfor %}
-                </datalist>
-            </div>
+            <div class="relative">{{ form_row(form.name, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.lastName, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dni, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'change->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.phone, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.email, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.profession, {'attr': {'class': 'border-blue-300 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
         </div>
     </div>
 
