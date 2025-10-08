@@ -13,7 +13,11 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use App\Form\UserType;
 use Symfony\Component\Form\Extension\Core\Type\FileType; // ¡AÑADE ESTA LÍNEA!
-use Symfony\Component\Validator\Constraints\File; // ¡AÑADE ESTA LÍNEA!
+use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Validator\Constraints\NotBlank;
 
 /**
  * Form type for creating and editing Volunteer profiles.
@@ -31,11 +35,6 @@ class VolunteerType extends AbstractType
      * @param FormBuilderInterface $builder The form builder.
      * @param array $options The options for building the form, including a custom 'is_edit' option.
      */
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
-use Symfony\Component\Form\FormEvent;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Validator\Constraints\NotBlank;
-
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
