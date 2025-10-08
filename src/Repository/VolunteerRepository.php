@@ -128,7 +128,8 @@ class VolunteerRepository extends ServiceEntityRepository
     }
 
     /**
-     * Finds all used 'indicativo' numbers from active volunteers.
+     * Finds all used 'indicativo' numbers from volunteers who are not inactive.
+     * This includes active, suspended, and pending volunteers.
      * @return string[]
      */
     public function findUsedIndicativos(): array
@@ -136,12 +137,35 @@ class VolunteerRepository extends ServiceEntityRepository
         $qb = $this->createQueryBuilder('v')
             ->select('v.indicativo')
             ->where('v.indicativo IS NOT NULL')
-            ->andWhere('v.status = :status')
-            ->setParameter('status', Volunteer::STATUS_ACTIVE)
+            ->andWhere('v.status != :status')
+            ->setParameter('status', Volunteer::STATUS_INACTIVE)
             ->orderBy('v.indicativo', 'ASC');
 
         $result = $qb->getQuery()->getScalarResult();
 
         return array_map('current', $result);
+    }
+
+    /**
+     * Finds the highest numeric indicativo value in the table.
+     * @return int
+     */
+    public function findHighestIndicativo(): int
+    {
+        $qb = $this->createQueryBuilder('v')
+            ->select('v.indicativo')
+            ->where('v.indicativo IS NOT NULL')
+            ->orderBy('LENGTH(v.indicativo)', 'DESC')
+            ->addOrderBy('v.indicativo', 'DESC')
+            ->setMaxResults(1);
+
+        $result = $qb->getQuery()->getOneOrNullResult();
+
+        // Return 0 if no indicativo is found
+        if (!$result || !is_numeric($result['indicativo'])) {
+            return 0;
+        }
+
+        return (int) $result['indicativo'];
     }
 }

@@ -126,17 +126,11 @@ class VolunteerController extends AbstractController
         }
 
         $usedIndicativos = $volunteerRepository->findUsedIndicativos();
-        $allPossibleIndicativos = range(1, 50);
+        $highestEverIndicativo = $volunteerRepository->findHighestIndicativo();
 
-        $highestIndicativo = 0;
-        foreach ($usedIndicativos as $indicativo) {
-            if (is_numeric($indicativo) && (int)$indicativo > $highestIndicativo) {
-                $highestIndicativo = (int)$indicativo;
-            }
-        }
-        if ($highestIndicativo > 50) {
-            $allPossibleIndicativos = range(1, $highestIndicativo);
-        }
+        // The range should go up to at least 50, or the highest number ever used.
+        $maxRange = max(50, $highestEverIndicativo);
+        $allPossibleIndicativos = range(1, $maxRange);
 
         $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
         $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
@@ -321,16 +315,9 @@ class VolunteerController extends AbstractController
             unset($usedIndicativos[$key]);
         }
 
-        $allPossibleIndicativos = range(1, 50);
-        $highestIndicativo = 0;
-        foreach ($usedIndicativos as $indicativo) {
-            if (is_numeric($indicativo) && (int)$indicativo > $highestIndicativo) {
-                $highestIndicativo = (int)$indicativo;
-            }
-        }
-        if ($highestIndicativo > 50) {
-            $allPossibleIndicativos = range(1, $highestIndicativo);
-        }
+        $highestEverIndicativo = $volunteerRepository->findHighestIndicativo();
+        $maxRange = max(50, $highestEverIndicativo);
+        $allPossibleIndicativos = range(1, $maxRange);
 
         $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
         $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
