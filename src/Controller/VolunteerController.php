@@ -120,24 +120,23 @@ class VolunteerController extends AbstractController
         $user = new User();
         $volunteer->setUser($user);
 
-        $emailFromQuery = $request->query->get('email');
-        if ($emailFromQuery) {
-            $user->setEmail($emailFromQuery);
-        }
-
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
         $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $user = $volunteer->getUser();
-            $plainPassword = $form->get('user')->get('password')->getData();
+            // Get email from the unmapped form field and set it on the User entity
+            $email = $form->get('email')->getData();
+            $user->setEmail($email);
 
-            if ($plainPassword) {
-                $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
-                $user->setPassword($hashedPassword);
-            }
+            // Auto-generate a secure password
+            $plainPassword = bin2hex(random_bytes(12)); // 24 characters
+            $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
+            $user->setPassword($hashedPassword);
+
+            // Set default roles
             $user->setRoles(['ROLE_VOLUNTEER']);
+            $volunteer->setRole('Voluntario');
 
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
@@ -162,14 +161,11 @@ class VolunteerController extends AbstractController
                 $volunteer->setJoinDate(new \DateTime());
             }
 
-            if (!$volunteer->getRole()) {
-                $volunteer->setRole('Voluntario');
-            }
-
             $entityManager->persist($volunteer);
             $entityManager->flush();
 
-            $this->addFlash('success', 'Voluntario creado exitosamente.');
+            // Flash the temporary password for the admin. In a real app, this would be emailed.
+            $this->addFlash('success', 'Voluntario creado exitosamente. Contraseña temporal: ' . $plainPassword);
             return $this->redirectToRoute('app_volunteer_list');
         }
 

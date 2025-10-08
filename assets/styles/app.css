@@ -31,3 +31,17 @@
         @apply min-h-[80px];
     }
 }
+
+@layer components {
+    .is-valid {
+        @apply border-green-500 focus:ring-green-500 focus:border-green-500;
+    }
+
+    .is-invalid {
+        @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+    }
+
+    .form-error-message {
+        @apply text-sm text-red-600 mt-1;
+    }
+}

@@ -7,12 +7,15 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBal\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Represents a volunteer's profile, containing personal information, qualifications, and status.
  * This entity is linked to a User account for authentication.
  */
 #[ORM\Entity(repositoryClass: VolunteerRepository::class)]
+#[UniqueEntity(fields: ['indicativo'], message: 'Este indicativo ya está en uso.')]
 class Volunteer
 {
     /** @var string Status for an active volunteer. */
@@ -36,72 +39,89 @@ class Volunteer
      * @var string|null The first name of the volunteer.
      */
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre no puede estar vacío.')]
     private ?string $name = null;
 
     /**
      * @var string|null The last name of the volunteer.
      */
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Los apellidos no pueden estar vacíos.')]
     private ?string $lastName = null;
 
     /**
      * @var string|null The phone number of the volunteer.
      */
     #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'El teléfono no puede estar vacío.')]
+    #[Assert\Regex(
+        pattern: '/^\+?[1-9]\d{1,14}$/',
+        message: 'El número de teléfono no es válido. Debe tener un formato internacional.'
+    )]
     private ?string $phone = null;
 
     /**
      * @var string|null The DNI (National Identity Document) of the volunteer. Must be unique.
      */
-    #[ORM\Column(length: 15, unique: true, nullable: true)]
+    #[ORM\Column(length: 15, unique: true)]
+    #[Assert\NotBlank(message: 'El DNI no puede estar vacío.')]
     private ?string $dni = null;
 
     /**
      * @var \DateTimeInterface|null The date of birth of the volunteer.
      */
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[Assert\NotBlank(message: 'La fecha de nacimiento no puede estar vacía.')]
+    #[Assert\LessThanOrEqual('-16 years', message: 'El voluntario debe tener al menos 16 años.')]
     private ?\DateTimeInterface $dateOfBirth = null;
 
     /**
      * @var string|null The type of street for the address (e.g., "Calle", "Avenida").
      */
-    #[ORM\Column(length: 50, nullable: true)]
+    #[ORM\Column(length: 50)]
+    #[Assert\NotBlank(message: 'El tipo de vía no puede estar vacío.')]
     private ?string $streetType = null;
 
     /**
      * @var string|null The main address line.
      */
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'La dirección no puede estar vacía.')]
     private ?string $address = null;
 
     /**
      * @var string|null The postal code.
      */
-    #[ORM\Column(length: 10, nullable: true)]
+    #[ORM\Column(length: 10)]
+    #[Assert\NotBlank(message: 'El código postal no puede estar vacío.')]
     private ?string $postalCode = null;
 
     /**
      * @var string|null The province.
      */
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'La provincia no puede estar vacía.')]
     private ?string $province = null;
 
     /**
      * @var string|null The city.
      */
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 100)]
+    #[Assert\NotBlank(message: 'La población no puede estar vacía.')]
     private ?string $city = null;
 
     /**
      * @var string|null The name of the primary emergency contact.
      */
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre del contacto de emergencia no puede estar vacío.')]
     private ?string $contactPerson1 = null;
 
     /**
      * @var string|null The phone number of the primary emergency contact.
      */
-    #[ORM\Column(length: 20, nullable: true)]
+    #[ORM\Column(length: 20)]
+    #[Assert\NotBlank(message: 'El teléfono del contacto de emergencia no puede estar vacío.')]
     private ?string $contactPhone1 = null;
 
     /**
@@ -117,10 +137,16 @@ class Volunteer
     private ?string $contactPhone2 = null;
 
     /**
-     * @var string|null Information about any allergies the volunteer has.
+     * @var string|null Information about food allergies.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $allergies = null;
+    private ?string $foodAllergies = null;
+
+    /**
+     * @var string|null Information about other non-food allergies.
+     */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $otherAllergies = null;
 
     /**
      * @var string|null The volunteer's profession.
@@ -155,13 +181,15 @@ class Volunteer
     /**
      * @var string|null The volunteer's motivation for joining.
      */
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    #[ORM\Column(type: Types::TEXT)]
+    #[Assert\NotBlank(message: 'El motivo no puede estar vacío.')]
     private ?string $motivation = null;
 
     /**
      * @var string|null How the volunteer heard about the organization.
      */
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'Este campo no puede estar vacío.')]
     private ?string $howKnown = null;
 
     /**
@@ -550,23 +578,27 @@ class Volunteer
         return $this;
     }
 
-    /**
-     * Gets information about allergies.
-     * @return string|null
-     */
-    public function getAllergies(): ?string
+    public function getFoodAllergies(): ?string
     {
-        return $this->allergies;
+        return $this->foodAllergies;
     }
 
-    /**
-     * Sets information about allergies.
-     * @param string|null $allergies The allergy information.
-     * @return static
-     */
-    public function setAllergies(?string $allergies): static
+    public function setFoodAllergies(?string $foodAllergies): static
     {
-        $this->allergies = $allergies;
+        $this->foodAllergies = $foodAllergies;
+
+        return $this;
+    }
+
+    public function getOtherAllergies(): ?string
+    {
+        return $this->otherAllergies;
+    }
+
+    public function setOtherAllergies(?string $otherAllergies): static
+    {
+        $this->otherAllergies = $otherAllergies;
+
         return $this;
     }
 

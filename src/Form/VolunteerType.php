@@ -31,245 +31,226 @@ class VolunteerType extends AbstractType
      * @param FormBuilderInterface $builder The form builder.
      * @param array $options The options for building the form, including a custom 'is_edit' option.
      */
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Validator\Constraints\NotBlank;
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
             // --- Datos Personales ---
             ->add('name', TextType::class, [
-                'label' => 'Nombre Completo del Voluntario',
-                'attr' => ['placeholder' => 'Ej: Juan'],
+                'label' => 'Nombre',
+                'required' => true,
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Apellidos',
-                'attr' => ['placeholder' => 'Ej: García López'],
-                'required' => false,
+                'required' => true,
             ])
             ->add('dni', TextType::class, [
                 'label' => 'DNI',
-                'attr' => ['placeholder' => 'Ej: 12345678A'],
-                'required' => false,
+                'required' => true,
             ])
-            ->add('indicativo', TextType::class, [
-                'label' => 'Indicativo',
-                'required' => false,
-                'attr' => [
-                    'placeholder' => 'Selecciona o introduce un indicativo',
-                    'list' => 'indicativos-list',
-                ],
-                'help' => 'Puedes seleccionar de la lista de sugerencias o introducir uno nuevo.',
+            ->add('phone', TextType::class, [
+                'label' => 'Teléfono',
+                'required' => true,
+                'help' => 'Formato internacional, ej: +34666112233',
+            ])
+            ->add('email', EmailType::class, [
+                'label' => 'Correo Electrónico',
+                'mapped' => false, // No se mapea directamente a la entidad Volunteer, sino a User
+                'required' => true,
             ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
                 'html5' => true,
+                'required' => true,
+            ])
+            ->add('indicativo', TextType::class, [
+                'label' => 'Indicativo',
+                'required' => false,
+                'attr' => ['list' => 'indicativos-list'],
+            ])
+            ->add('numeroIdentificacion', TextType::class, [
+                'label' => 'Número de Identificación',
                 'required' => false,
             ])
-            ->add('habilitadoConducir', CheckboxType::class, [
-                'label' => 'Habilitado para conducir vehículos de la asociación',
-                'required' => false,
-            ])
+
+            // --- Dirección ---
             ->add('streetType', ChoiceType::class, [
                 'label' => 'Tipo de Vía',
+                'required' => true,
                 'choices' => [
-                    'Calle' => 'Calle',
-                    'Avenida' => 'Avenida',
-                    'Plaza' => 'Plaza',
-                    'Paseo' => 'Paseo',
-                    'Ronda' => 'Ronda',
-                    'Vía' => 'Via',
-                    'Carretera' => 'Carretera',
-                    'Camino' => 'Camino',
-                    'Bulevar' => 'Bulevar',
-                    'Glorieta' => 'Glorieta',
-                    'Urbanización' => 'Urbanización',
-                    'Bloque' => 'Bloque',
-                    'Edificio' => 'Edificio',
+                    'Calle' => 'Calle', 'Avenida' => 'Avenida', 'Plaza' => 'Plaza', 'Paseo' => 'Paseo',
+                    'Ronda' => 'Ronda', 'Vía' => 'Via', 'Carretera' => 'Carretera', 'Camino' => 'Camino',
+                    'Bulevar' => 'Bulevar', 'Glorieta' => 'Glorieta', 'Urbanización' => 'Urbanización',
                     'Otro' => 'Otro',
                 ],
-                'placeholder' => 'Selecciona un tipo de vía',
-                'required' => false,
+                'placeholder' => 'Selecciona un tipo',
             ])
             ->add('address', TextType::class, [
-                'label' => 'Nombre de la Vía, Número, Piso, Puerta',
+                'label' => 'Dirección',
+                'required' => true,
                 'attr' => ['placeholder' => 'Ej: Gran Vía, 10, 3º A'],
-                'required' => false,
-            ])
-            ->add('postalCode', TextType::class, [
-                'label' => 'Código Postal',
-                'attr' => ['placeholder' => 'Ej: 28001'],
-                'required' => false,
-            ])
-            ->add('province', TextType::class, [
-                'label' => 'Provincia',
-                'attr' => ['placeholder' => 'Ej: Madrid'],
-                'required' => false,
             ])
             ->add('city', TextType::class, [
                 'label' => 'Población',
-                'attr' => ['placeholder' => 'Ej: Madrid'],
-                'required' => false,
+                'required' => true,
             ])
-            ->add('phone', TextType::class, [
-                'label' => 'Teléfono de Contacto',
-                'attr' => ['placeholder' => 'Ej: +34 600 123 456'],
+            ->add('province', TextType::class, [
+                'label' => 'Provincia',
+                'required' => true,
             ])
-            
-            // --- Datos de Contacto de Emergencia ---
+            ->add('postalCode', TextType::class, [
+                'label' => 'Código Postal',
+                'required' => true,
+            ])
+
+            // --- Contacto de Emergencia ---
             ->add('contactPerson1', TextType::class, [
-                'label' => 'Nombre de Persona de Contacto 1 (Emergencia)',
-                'attr' => ['placeholder' => 'Ej: María Pérez'],
-                'required' => false,
+                'label' => 'Nombre de Contacto de Emergencia',
+                'required' => true,
             ])
             ->add('contactPhone1', TextType::class, [
-                'label' => 'Teléfono de Contacto 1 (Emergencia)',
-                'attr' => ['placeholder' => 'Ej: +34 600 987 654'],
-                'required' => false,
-            ])
-            ->add('contactPerson2', TextType::class, [
-                'label' => 'Nombre de Persona de Contacto 2 (Opcional)',
-                'attr' => ['placeholder' => 'Ej: Pedro Gómez'],
-                'required' => false,
-            ])
-            ->add('contactPhone2', TextType::class, [
-                'label' => 'Teléfono de Contacto 2 (Opcional)',
-                'attr' => ['placeholder' => 'Ej: +34 600 111 222'],
-                'required' => false,
+                'label' => 'Teléfono de Emergencia',
+                'required' => true,
             ])
 
             // --- Datos de Salud ---
-            ->add('allergies', TextareaType::class, [
-                'label' => 'Alergias / Consideraciones de Salud (Opcional)',
-                'attr' => ['placeholder' => 'Ej: Alergia al polen, Diabético. Especificar tipo y precauciones.'],
+            ->add('foodAllergies', TextareaType::class, [
+                'label' => 'Alergias Alimentarias',
                 'required' => false,
+                'attr' => ['placeholder' => 'Indica si tiene alguna alergia alimentaria'],
+            ])
+            ->add('otherAllergies', TextareaType::class, [
+                'label' => 'Otras Alergias (medicamentos, etc.)',
+                'required' => false,
+                'attr' => ['placeholder' => 'Indica cualquier otra alergia relevante'],
             ])
 
-            // --- Datos Profesionales ---
+            // --- Cualificaciones ---
             ->add('profession', TextType::class, [
                 'label' => 'Profesión',
-                'attr' => ['placeholder' => 'Ej: Médico, Ingeniero, Estudiante'],
                 'required' => false,
             ])
-            ->add('employmentStatus', ChoiceType::class, [
-                'label' => 'Situación Laboral',
+            ->add('specificQualifications', ChoiceType::class, [
+                'label' => 'Titulaciones Específicas',
                 'choices' => [
-                    'Activo' => 'Activo',
-                    'Desempleado' => 'Desempleado',
-                    'Estudiante' => 'Estudiante',
-                    'Jubilado' => 'Jubilado',
-                    'Otro' => 'Otro',
-                ],
-                'placeholder' => 'Selecciona una opción',
-                'required' => false,
-            ])
-            ->add('role', TextType::class, [
-                'label' => 'Rol en la Agrupación',
-                'required' => true,
-                'attr' => ['placeholder' => 'Ej: Voluntario, Jefe de Unidad'],
-            ])
-            ->add('drivingLicenses', ChoiceType::class, [
-                'label' => 'Permiso de Conducción',
-                'choices' => [
-                    'A1' => 'A1',
-                    'A' => 'A',
-                    'B' => 'B',
-                    'C1' => 'C1',
-                    'C' => 'C',
-                    'D1' => 'D1',
-                    'D' => 'D',
-                    'EC' => 'EC',
-                ],
-                'multiple' => true,
-                'expanded' => true, // Muestra como checkboxes
-                'required' => false,
-            ])
-            ->add('drivingLicenseExpiryDate', DateType::class, [
-                'label' => 'Fecha de Caducidad del Permiso de Conducción',
-                'widget' => 'single_text',
-                'html5' => true,
-                'required' => false,
-            ])
-
-            // --- Otros Datos e Intereses ---
-            ->add('languages', TextareaType::class, [
-                'label' => 'Idiomas (indicar cada idioma con el nivel que posee: bajo, medio o alto)',
-                'attr' => ['placeholder' => 'Ej: Inglés: alto, Francés: medio, Alemán: bajo'],
-                'required' => false,
-            ])
-            ->add('motivation', TextareaType::class, [
-                'label' => 'Motivos por los que quiere ser voluntario',
-                'attr' => ['placeholder' => 'Describe tus motivaciones para unirte al voluntariado.'],
-                'required' => false,
-            ])
-            ->add('howKnown', TextType::class, [
-                'label' => '¿Cómo nos ha conocido?',
-                'attr' => ['placeholder' => 'Ej: Redes sociales, Amigo, Evento'],
-                'required' => false,
-            ])
-            ->add('hasVolunteeredBefore', ChoiceType::class, [
-                'label' => '¿Ha realizado funciones de voluntariado con anterioridad?',
-                'choices' => [
-                    'Sí' => true,
-                    'No' => false,
-                ],
-                'expanded' => true, // Muestra como radio buttons
-                'multiple' => false,
-                'required' => false,
-            ])
-            ->add('previousVolunteeringInstitutions', TextareaType::class, [
-                'label' => 'En caso afirmativo, indique la institución o instituciones donde ha realizado funciones de voluntariado',
-                'attr' => ['placeholder' => 'Ej: Cruz Roja (2018-2019), Cáritas (2020)'],
-                'required' => false,
-            ])
-            ->add('otherQualifications', TextareaType::class, [
-                'label' => 'Otros Títulos, Lugar y Año (distintos a los anteriores)',
-                'attr' => ['placeholder' => 'Ej: Curso de rescate (Madrid, 2020), Certificado de buceo (Canarias, 2018)'],
-                'required' => false,
-            ])
-            ->add('navigationLicenses', ChoiceType::class, [
-                'label' => 'Permisos de Navegación',
-                'choices' => [
-                    'Licencia de Navegación (LN)' => 'LN',
-                    'Patrón de Navegación Básica (PNB)' => 'PNB',
-                    'Patrón de Embarcaciones de Recreo (PER)' => 'PER',
-                    'Patrón de Yate (PY)' => 'PY',
-                    'Capitán de Yate (CY)' => 'CY',
+                    'TES (Técnico en Emergencias Sanitarias)' => 'TES',
+                    'TTS (Técnico en Transporte Sanitario)' => 'TTS',
+                    'Enfermería' => 'Enfermeria',
+                    'DUE (Diplomado Universitario en Enfermería)' => 'DUE',
+                    'Médico' => 'Medico',
                 ],
                 'multiple' => true,
                 'expanded' => true,
                 'required' => false,
             ])
-
-            
-            // --- Datos de Acceso (del UserType anidado) ---
-            ->add('user', UserType::class, [
-                'label' => false, // La etiqueta general se puede poner en la plantilla si es necesario
-                'by_reference' => false,
-                // Pasar la opción 'is_edit' al UserType
-                'is_edit' => $options['is_edit'],
+            ->add('drivingLicenses', ChoiceType::class, [
+                'label' => 'Permisos de Conducción',
+                'choices' => [
+                    'A1' => 'A1', 'A' => 'A', 'B' => 'B', 'C1' => 'C1',
+                    'C' => 'C', 'D1' => 'D1', 'D' => 'D', 'EC' => 'EC',
+                ],
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+            ])
+            ->add('drivingLicenseExpiryDate', DateType::class, [
+                'label' => 'Fecha de Caducidad (Carnet Conducir)',
+                'widget' => 'single_text',
+                'html5' => true,
+                'required' => false, // Se hará obligatorio con JS y listener
+            ])
+            ->add('habilitadoConducir', CheckboxType::class, [
+                'label' => 'Habilitado para conducir vehículos de la asociación',
+                'required' => false,
+            ])
+            ->add('navigationLicenses', ChoiceType::class, [
+                'label' => 'Permisos de Navegación',
+                'choices' => [
+                    'Licencia de Navegación (LN)' => 'LN', 'PNB' => 'PNB', 'PER' => 'PER',
+                    'Patrón de Yate (PY)' => 'PY', 'Capitán de Yate (CY)' => 'CY',
+                ],
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+            ])
+            ->add('otherQualifications', TextareaType::class, [
+                'label' => 'Otras Cualificaciones',
+                'required' => false,
+                'attr' => ['placeholder' => 'Otros títulos, cursos, etc.'],
             ])
 
+            // --- Motivación e Intereses ---
+            ->add('motivation', TextareaType::class, [
+                'label' => 'Motivación para ser voluntario',
+                'required' => true,
+            ])
+            ->add('howKnown', TextType::class, [
+                'label' => '¿Cómo nos has conocido?',
+                'required' => true,
+            ])
+            ->add('hasVolunteeredBefore', ChoiceType::class, [
+                'label' => '¿Tienes experiencia previa como voluntario?',
+                'choices' => [
+                    'Sí' => true,
+                    'No' => false,
+                ],
+                'expanded' => true,
+                'required' => true,
+            ])
+            ->add('previousVolunteeringInstitutions', TextareaType::class, [
+                'label' => 'Si es así, ¿dónde?',
+                'required' => false, // Se hará obligatorio con JS y listener
+                'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
+            ])
+
+            // --- Foto de Perfil ---
             ->add('profilePicture', FileType::class, [
-                'label' => 'Foto de Perfil (JPG, PNG)',
-                'mapped' => false, // Importante: se maneja manualmente en el controlador
-                'required' => false, // No es obligatorio cambiar la foto al editar
+                'label' => 'Foto de Perfil',
+                'mapped' => false,
+                'required' => false,
                 'constraints' => [
                     new File([
                         'maxSize' => '1024k',
-                        'mimeTypes' => [
-                            'image/jpeg',
-                            'image/png',
-                        ],
-                        'mimeTypesMessage' => 'Por favor, sube una imagen JPG o PNG válida.',
-                        'maxSizeMessage' => 'La imagen es demasiado grande ({{ size }} {{ suffix }}). El tamaño máximo permitido es {{ limit }} {{ suffix }}.',
+                        'mimeTypes' => ['image/jpeg', 'image/png'],
                     ])
                 ],
-                'attr' => [
-                    'accept' => 'image/jpeg, image/png', // Para el diálogo del navegador
-                ],
-                // El 'help' se puede ajustar o manejar directamente en la plantilla para mostrar la imagen actual
-                // 'help' => ($options['data'] && $options['data']->getProfilePicture()) ? 'Reemplazar foto actual.' : 'Subir nueva foto.',
             ])
         ;
+
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            $form = $event->getForm();
+
+            // Lógica para la fecha de caducidad del carnet de conducir
+            if (!empty($data['drivingLicenses'])) {
+                $form->add('drivingLicenseExpiryDate', DateType::class, [
+                    'label' => 'Fecha de Caducidad (Carnet Conducir)',
+                    'widget' => 'single_text',
+                    'html5' => true,
+                    'required' => true,
+                    'constraints' => [
+                        new NotBlank(['message' => 'La fecha de caducidad es obligatoria si seleccionas un permiso.']),
+                    ],
+                ]);
+            }
+
+            // Lógica para la experiencia previa de voluntariado
+            if (isset($data['hasVolunteeredBefore']) && $data['hasVolunteeredBefore'] === '1') { // '1' para 'Sí'
+                $form->add('previousVolunteeringInstitutions', TextareaType::class, [
+                    'label' => 'Si es así, ¿dónde?',
+                    'required' => true,
+                    'constraints' => [
+                        new NotBlank(['message' => 'Este campo es obligatorio si tienes experiencia previa.']),
+                    ],
+                    'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
+                ]);
+            }
+        });
     }
 
     /**
