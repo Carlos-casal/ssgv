@@ -11,13 +11,13 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Datos Personales</h2>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
-            <div class="relative">{{ form_row(form.name, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.lastName, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.dni, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'change->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.phone, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.email, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.profession, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.name, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.lastName, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dni, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'change->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.phone, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.email, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.profession, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
         </div>
     </div>
 
@@ -26,13 +26,13 @@
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Dirección</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-8">
-                <div class="relative md:col-span-1">{{ form_row(form.streetType, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'change->form-validation#validate'}}) }}</div>
-                <div class="relative md:col-span-2">{{ form_row(form.address, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+                <div class="relative md:col-span-1">{{ form_row(form.streetType, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'change->form-validation#validate'}}) }}</div>
+                <div class="relative md:col-span-2">{{ form_row(form.address, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
             <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-x-8">
-                <div class="relative">{{ form_row(form.postalCode, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-                <div class="relative">{{ form_row(form.city, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-                <div class="relative">{{ form_row(form.province, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+                <div class="relative">{{ form_row(form.postalCode, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+                <div class="relative">{{ form_row(form.city, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+                <div class="relative">{{ form_row(form.province, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
         </div>
     </div>
@@ -41,8 +41,8 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Contacto de Emergencia</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-            <div class="relative">{{ form_row(form.contactPerson1, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.contactPhone1, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.contactPerson1, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.contactPhone1, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
         </div>
     </div>
 
@@ -50,8 +50,8 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Información de Salud</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
-            {{ form_row(form.foodAllergies, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500'}}) }}
-            {{ form_row(form.otherAllergies, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500'}}) }}
+            {{ form_row(form.foodAllergies, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500'}}) }}
+            {{ form_row(form.otherAllergies, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500'}}) }}
         </div>
     </div>
 
@@ -62,7 +62,7 @@
             <div class="space-y-4">
                 {{ form_row(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseExpiry'}}) }}
                 <div id="driving-license-expiry-wrapper" class="hidden relative">
-                    {{ form_row(form.drivingLicenseExpiryDate, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}
+                    {{ form_row(form.drivingLicenseExpiryDate, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}
                 </div>
                 {{ form_row(form.habilitadoConducir) }}
             </div>
@@ -70,7 +70,7 @@
             <div class="space-y-4">{{ form_row(form.specificQualifications) }}</div>
         </div>
         <div class="mt-6 border-t pt-6 relative">
-            {{ form_row(form.otherQualifications, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500'}}) }}
+            {{ form_row(form.otherQualifications, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500'}}) }}
         </div>
     </div>
 
@@ -78,12 +78,12 @@
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Motivación e Intereses</h2>
         <div class="space-y-6">
-            <div class="relative">{{ form_row(form.motivation, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
-            <div class="relative">{{ form_row(form.howKnown, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.motivation, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
+            <div class="relative">{{ form_row(form.howKnown, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}</div>
             <div class="flex items-center gap-8">
                 {{ form_row(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#togglePreviousInstitutions'}}) }}
                 <div id="previous-institutions-wrapper" class="flex-grow hidden relative">
-                    {{ form_row(form.previousVolunteeringInstitutions, {'attr': {'class': 'border-blue-600 rounded-lg px-3 py-2 focus:border-blue-500 focus:ring-blue-500', 'data-action': 'blur->form-validation#validate'}}) }}
+                    {{ form_row(form.previousVolunteeringInstitutions, {'attr': {'class': 'border-black rounded-lg px-3 py-2 focus:border-gray-500 focus:ring-gray-500', 'data-action': 'blur->form-validation#validate'}}) }}
                 </div>
             </div>
         </div>
