@@ -125,15 +125,7 @@ class VolunteerController extends AbstractController
             $user->setEmail($emailFromQuery);
         }
 
-        $usedIndicativos = $volunteerRepository->findUsedIndicativos();
-        $highestEverIndicativo = $volunteerRepository->findHighestIndicativo();
-
-        // The range should go up to at least 50, or the highest number ever used.
-        $maxRange = max(50, $highestEverIndicativo);
-        $allPossibleIndicativos = range(1, $maxRange);
-
-        $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
-        $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
+        $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'available_indicativos' => $availableIndicativos,
@@ -308,19 +300,7 @@ class VolunteerController extends AbstractController
             return $this->redirectToRoute('app_volunteer_list');
         }
 
-        $usedIndicativos = $volunteerRepository->findUsedIndicativos();
-        $currentIndicativo = $volunteer->getIndicativo();
-
-        if ($currentIndicativo && ($key = array_search($currentIndicativo, $usedIndicativos)) !== false) {
-            unset($usedIndicativos[$key]);
-        }
-
-        $highestEverIndicativo = $volunteerRepository->findHighestIndicativo();
-        $maxRange = max(50, $highestEverIndicativo);
-        $allPossibleIndicativos = range(1, $maxRange);
-
-        $usedNumericIndicativos = array_map('intval', array_filter($usedIndicativos, 'is_numeric'));
-        $availableIndicativos = array_diff($allPossibleIndicativos, $usedNumericIndicativos);
+        $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
