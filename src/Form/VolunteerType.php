@@ -40,7 +40,7 @@ class VolunteerType extends AbstractType
         $builder
             // --- Datos Personales ---
             ->add('name', TextType::class, [
-                'label' => 'Nome',
+                'label' => 'Nombre',
                 'required' => true,
             ])
             ->add('lastName', TextType::class, [
@@ -48,7 +48,7 @@ class VolunteerType extends AbstractType
                 'required' => true,
             ])
             ->add('dni', TextType::class, [
-                'label' => 'DNI',
+                'label' => 'DIN/NIE',
                 'required' => true,
             ])
             ->add('phone', TextType::class, [
