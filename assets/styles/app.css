@@ -18,21 +18,19 @@
 }
 
 @layer components {
-    /* Estilo para campos de entrada de texto con un recuadro negro visible */
+    /* Estilo para campos de entrada de texto con un borde azul sutil */
     .form-input-modern {
-        background-color: white !important;
-        border-width: 2px !important;
-        border-style: solid !important;
-        border-color: red !important;
+        border: 1px solid #93c5fd; /* Light Blue Border */
         width: 100%;
-        padding: 0.5rem 1rem;
-        color: black;
-        border-radius: 0; /* Rectangular corners */
+        padding: 0.5rem 0.75rem;
+        border-radius: 0.375rem; /* rounded-md */
+        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
     }
 
     .form-input-modern:focus {
         outline: none;
-        border-color: #3b82f6 !important; /* Blue focus border */
+        border-color: #3b82f6; /* Blue-500 */
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
     }
 
     /* Asegurarse de que los textareas tengan una altura mínima */
