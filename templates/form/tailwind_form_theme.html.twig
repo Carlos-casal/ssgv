@@ -1,7 +1,7 @@
 {% use "form_div_layout.html.twig" %}
 
 {%- block form_widget_simple -%}
-    {% set base_class = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500' %}
+    {% set base_class = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full' %}
     {% if type is defined and (type == 'checkbox' or type == 'radio') %}
         {# Use smaller, more appropriate classes for checkboxes and radios #}
         {% set base_class = 'h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500' %}
@@ -16,14 +16,14 @@
 
 {%- block textarea_widget -%}
     {% set attr = attr|merge({
-        'class': (attr.class|default('') ~ ' p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500')|trim
+        'class': (attr.class|default('') ~ ' p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full')|trim
     }) %}
     {{- parent() -}}
 {%- endblock textarea_widget -%}
 
 {%- block choice_widget_collapsed -%}
     {% set attr = attr|merge({
-        'class': (attr.class|default('') ~ ' p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500')|trim
+        'class': (attr.class|default('') ~ ' p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full')|trim
     }) %}
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
