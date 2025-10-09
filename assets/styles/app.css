@@ -18,6 +18,14 @@
 }
 
 @layer components {
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    .no-scrollbar {
+        -ms-overflow-style: none;  /* IE and Edge */
+        scrollbar-width: none;  /* Firefox */
+    }
 
     .is-valid {
         @apply border-green-500 focus:ring-green-500 focus:border-green-500;

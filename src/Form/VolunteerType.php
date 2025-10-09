@@ -37,38 +37,48 @@ class VolunteerType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $defaultAttr = ['class' => 'form-input-modern', 'style' => 'border: 2px solid blue !important;'];
+        $textAreaAttr = ['class' => 'form-input-modern textarea', 'style' => 'border: 2px solid blue !important;'];
+
         $builder
             // --- Datos Personales ---
             ->add('name', TextType::class, [
-                'label' => 'noobre',
+                'label' => 'Nome',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('lastName', TextType::class, [
                 'label' => 'Apellidos',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('dni', TextType::class, [
                 'label' => 'DNI',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('phone', TextType::class, [
                 'label' => 'Teléfono',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('email', EmailType::class, [
                 'label' => 'Correo Electrónico',
                 'mapped' => false, // No se mapea directamente a la entidad Volunteer, sino a User
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
                 'html5' => true,
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('profession', TextType::class, [
                 'label' => 'Profesión',
                 'required' => false,
+                'attr' => $defaultAttr,
             ])
 
             // --- Dirección ---
@@ -82,45 +92,51 @@ class VolunteerType extends AbstractType
                     'Otro' => 'Otro',
                 ],
                 'placeholder' => 'Selecciona un tipo',
+                'attr' => $defaultAttr,
             ])
             ->add('address', TextType::class, [
                 'label' => 'Dirección',
                 'required' => true,
-                'attr' => ['placeholder' => 'Ej: Gran Vía, 10, 3º A'],
+                'attr' => array_merge($defaultAttr, ['placeholder' => 'Ej: Gran Vía, 10, 3º A']),
             ])
             ->add('city', TextType::class, [
                 'label' => 'Población',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('province', TextType::class, [
                 'label' => 'Provincia',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('postalCode', TextType::class, [
                 'label' => 'Código Postal',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
 
             // --- Contacto de Emergencia ---
             ->add('contactPerson1', TextType::class, [
                 'label' => 'Nombre de Contacto de Emergencia',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('contactPhone1', TextType::class, [
                 'label' => 'Teléfono de Emergencia',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
 
             // --- Datos de Salud ---
             ->add('foodAllergies', TextareaType::class, [
                 'label' => 'Alergias Alimentarias',
                 'required' => false,
-                'attr' => ['placeholder' => 'Indica si tiene alguna alergia alimentaria'],
+                'attr' => array_merge($textAreaAttr, ['placeholder' => 'Indica si tiene alguna alergia alimentaria']),
             ])
             ->add('otherAllergies', TextareaType::class, [
                 'label' => 'Otras Alergias (medicamentos, etc.)',
                 'required' => false,
-                'attr' => ['placeholder' => 'Indica cualquier otra alergia relevante'],
+                'attr' => array_merge($textAreaAttr, ['placeholder' => 'Indica cualquier otra alergia relevante']),
             ])
 
             // --- Cualificaciones ---
@@ -152,6 +168,7 @@ class VolunteerType extends AbstractType
                 'widget' => 'single_text',
                 'html5' => true,
                 'required' => false, // Se hará obligatorio con JS y listener
+                'attr' => $defaultAttr,
             ])
             ->add('habilitadoConducir', CheckboxType::class, [
                 'label' => 'Habilitado para conducir vehículos de la asociación',
@@ -170,17 +187,19 @@ class VolunteerType extends AbstractType
             ->add('otherQualifications', TextareaType::class, [
                 'label' => 'Otras Cualificaciones',
                 'required' => false,
-                'attr' => ['placeholder' => 'Otros títulos, cursos, etc.'],
+                'attr' => array_merge($textAreaAttr, ['placeholder' => 'Otros títulos, cursos, etc.']),
             ])
 
             // --- Motivación e Intereses ---
             ->add('motivation', TextareaType::class, [
                 'label' => 'Motivación para ser voluntario',
                 'required' => true,
+                'attr' => $textAreaAttr,
             ])
             ->add('howKnown', TextType::class, [
                 'label' => '¿Cómo nos has conocido?',
                 'required' => true,
+                'attr' => $defaultAttr,
             ])
             ->add('hasVolunteeredBefore', ChoiceType::class, [
                 'label' => '¿Tienes experiencia previa como voluntario?',
@@ -194,7 +213,7 @@ class VolunteerType extends AbstractType
             ->add('previousVolunteeringInstitutions', TextareaType::class, [
                 'label' => 'Si es así, ¿dónde?',
                 'required' => false, // Se hará obligatorio con JS y listener
-                'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
+                'attr' => array_merge($textAreaAttr, ['placeholder' => 'Ej: Cruz Roja, Cáritas...']),
             ])
 
             // --- Foto de Perfil ---
