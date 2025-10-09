@@ -18,21 +18,19 @@
 }
 
 @layer components {
-    /* Estilo moderno para campos de formulario (CSS estándar para evitar conflictos) */
+    /* Estilo para campos de entrada de texto con fondo naranja y borde azul */
     .form-input-modern {
+        background-color: orange;
+        border: 2px solid blue;
         width: 100%;
-        border: 1px solid #9ca3af; /* Tailwind gray-400 */
-        border-radius: 9999px; /* rounded-full */
-        padding: 0.5rem 1rem; /* py-2 px-4 */
-        background-color: #ffffff;
-        color: #111827; /* Tailwind gray-900 */
-        transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        padding: 0.5rem 1rem;
+        color: black;
+        border-radius: 0; /* Rectangular corners */
     }
 
     .form-input-modern:focus {
         outline: none;
-        border-color: #3b82f6; /* Tailwind blue-500 */
-        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5); /* Simulates ring-2 ring-blue-500 */
+        border-color: darkblue;
     }
 
     /* Asegurarse de que los textareas tengan una altura mínima */
