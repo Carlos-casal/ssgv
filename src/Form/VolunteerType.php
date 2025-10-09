@@ -117,14 +117,6 @@ class VolunteerType extends AbstractType
                 'label' => 'Teléfono de Emergencia',
                 'required' => true,
             ])
-            ->add('contactPerson2', TextType::class, [
-                'label' => 'Nombre de Contacto de Emergencia 2',
-                'required' => false,
-            ])
-            ->add('contactPhone2', TextType::class, [
-                'label' => 'Teléfono de Emergencia 2',
-                'required' => false,
-            ])
 
             // --- Datos de Salud ---
             ->add('foodAllergies', TextareaType::class, [
@@ -137,28 +129,8 @@ class VolunteerType extends AbstractType
                 'required' => false,
                 'attr' => ['placeholder' => 'Indica cualquier otra alergia relevante'],
             ])
-            ->add('allergies', TextareaType::class, [
-                'label' => 'Alergias (Alimentarias, medicamentosas, etc.)',
-                'required' => false,
-                'mapped' => false, // No se mapea directamente
-                'attr' => ['placeholder' => 'Indica todas las alergias relevantes'],
-            ])
 
             // --- Cualificaciones ---
-             ->add('employmentStatus', ChoiceType::class, [
-                'label' => 'Estado Laboral',
-                'required' => false,
-                'choices'  => [
-                    'Estudiante' => 'Estudiante',
-                    'Empleado a tiempo completo' => 'Empleado a tiempo completo',
-                    'Empleado a tiempo parcial' => 'Empleado a tiempo parcial',
-                    'Autónomo' => 'Autónomo',
-                    'Desempleado' => 'Desempleado',
-                    'Jubilado' => 'Jubilado',
-                    'Otro' => 'Otro',
-                ],
-                'placeholder' => 'Selecciona tu situación laboral',
-            ])
             ->add('specificQualifications', ChoiceType::class, [
                 'label' => 'Titulaciones Específicas',
                 'choices' => [
@@ -207,11 +179,6 @@ class VolunteerType extends AbstractType
                 'required' => false,
                 'attr' => ['placeholder' => 'Otros títulos, cursos, etc.'],
             ])
-            ->add('languages', TextType::class, [
-                'label' => 'Idiomas',
-                'required' => false,
-                'attr' => ['placeholder' => 'Ej: Inglés B2, Francés A1'],
-            ])
 
             // --- Motivación e Intereses ---
             ->add('motivation', TextareaType::class, [
@@ -254,14 +221,6 @@ class VolunteerType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $data = $event->getData();
             $form = $event->getForm();
-            $volunteer = $form->getData();
-
-            if (isset($data['allergies']) && $volunteer instanceof Volunteer) {
-                // Asumimos que todo lo introducido puede ser relevante para ambas categorías
-                // o se puede decidir una lógica más compleja si es necesario.
-                $volunteer->setFoodAllergies($data['allergies']);
-                $volunteer->setOtherAllergies($data['allergies']);
-            }
 
             // Lógica para la fecha de caducidad del carnet de conducir
             if (!empty($data['drivingLicenses'])) {
