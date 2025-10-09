@@ -126,10 +126,6 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get email from the unmapped form field and set it on the User entity
-            $email = $form->get('email')->getData();
-            $user->setEmail($email);
-
             // Auto-generate a secure password
             $plainPassword = bin2hex(random_bytes(12)); // 24 characters
             $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
@@ -217,18 +213,20 @@ class VolunteerController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $hydratedVolunteer = $form->getData();
-            $hydratedUser = $hydratedVolunteer->getUser();
+            $volunteer = $form->getData();
+            $user = $volunteer->getUser();
 
             $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
             $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
 
+            // Hash the password from the form
             $plainPassword = $form->get('user')->get('password')->getData();
             if ($plainPassword) {
-                $hashedPassword = $userPasswordHasher->hashPassword($hydratedUser, $plainPassword);
-                $hydratedUser->setPassword($hashedPassword);
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword($user, $plainPassword)
+                );
             }
-            $hydratedUser->setRoles(['ROLE_VOLUNTEER']);
+            $user->setRoles(['ROLE_VOLUNTEER']);
 
             $profilePictureFile = $form->get('profilePicture')->getData();
             if ($profilePictureFile) {
@@ -237,22 +235,22 @@ class VolunteerController extends AbstractController
                 $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
                 try {
                     $profilePictureFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures', $newFilename);
-                    if ($hydratedVolunteer->getProfilePicture()) {
+                    if ($volunteer->getProfilePicture()) {
                         $filesystem = new Filesystem();
-                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $hydratedVolunteer->getProfilePicture();
+                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $volunteer->getProfilePicture();
                         if ($filesystem->exists($oldFilePath)) {
                             $filesystem->remove($oldFilePath);
                         }
                     }
-                    $hydratedVolunteer->setProfilePicture($newFilename);
+                    $volunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            $hydratedVolunteer->setStatus(Volunteer::STATUS_PENDING);
-            if (!$hydratedVolunteer->getJoinDate()) {
-                $hydratedVolunteer->setJoinDate(new \DateTime());
+            $volunteer->setStatus(Volunteer::STATUS_PENDING);
+            if (!$volunteer->getJoinDate()) {
+                $volunteer->setJoinDate(new \DateTime());
             }
 
             // Mark the invitation as used, only if it's a real one from the database
@@ -261,8 +259,8 @@ class VolunteerController extends AbstractController
                 $entityManager->persist($invitation);
             }
 
-            $entityManager->persist($hydratedUser);
-            $entityManager->persist($hydratedVolunteer);
+            $entityManager->persist($user);
+            $entityManager->persist($volunteer);
             $entityManager->flush();
 
             $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
@@ -307,16 +305,9 @@ class VolunteerController extends AbstractController
             'is_edit' => true,
         ]);
 
-        // Manually set the unmapped email field for display
-        $form->get('email')->setData($user->getEmail());
-
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Handle email update from the unmapped field
-            $email = $form->get('email')->getData();
-            $user->setEmail($email);
-
             // Password is not updated from this form, so password logic is removed.
 
             /** @var UploadedFile $profilePictureFile */
