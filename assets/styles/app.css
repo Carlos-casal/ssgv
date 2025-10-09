@@ -21,7 +21,7 @@
     /* Estilo para campos de entrada de texto con fondo naranja y borde azul */
     .form-input-modern {
         background-color: orange;
-        border: 2px solid blue;
+        border: 2px solid blue !important; /* Forzar la visibilidad del borde */
         width: 100%;
         padding: 0.5rem 1rem;
         color: black;
