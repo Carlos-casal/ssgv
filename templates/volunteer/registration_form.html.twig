@@ -61,7 +61,11 @@
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Datos Personales</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                            <div>{{ form_row(form.name) }}</div>
+                            <div>
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name, {'attr': {'style': 'border: 10px solid fuchsia !important;'}}) }}
+                                {{ form_errors(form.name) }}
+                            </div>
                             <div>{{ form_row(form.lastName) }}</div>
                             <div>{{ form_row(form.phone) }}</div>
                             <div>{{ form_row(form.user.email) }}</div>
