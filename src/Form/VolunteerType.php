@@ -37,8 +37,8 @@ class VolunteerType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $defaultAttr = ['class' => 'form-input-modern'];
-        $textAreaAttr = ['class' => 'form-input-modern textarea'];
+        $defaultAttr = ['class' => 'form-input-modern', 'style' => 'border: 2px solid blue !important;'];
+        $textAreaAttr = ['class' => 'form-input-modern textarea', 'style' => 'border: 2px solid blue !important;'];
 
         $builder
             // --- Datos Personales ---
