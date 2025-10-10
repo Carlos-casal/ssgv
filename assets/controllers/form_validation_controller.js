@@ -148,6 +148,21 @@ export default class extends Controller {
         window.location.href = '/'; // Redirect to a safe page (e.g., homepage).
     }
 
+    /**
+     * Parses a YYYY-MM-DD string into a Date object in a timezone-safe way.
+     * This avoids issues where `new Date('YYYY-MM-DD')` can be interpreted as UTC midnight
+     * and shift the date by a day depending on the user's timezone.
+     * @param {string} dateString The date string in YYYY-MM-DD format.
+     * @returns {Date|null}
+     */
+    _parseDate(dateString) {
+        if (!dateString) return null;
+        const parts = dateString.split('-');
+        if (parts.length !== 3) return null;
+        // new Date(year, monthIndex, day) correctly handles it as local time.
+        return new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+    }
+
     // --- Core Validation Logic ---
 
     /**
@@ -167,8 +182,11 @@ export default class extends Controller {
         // Special handling for date of birth to manage the 16-18 age gate.
         if (input.id === 'volunteer_dateOfBirth') {
             if (isValid) {
-                const birthDate = new Date(input.value);
-                const eighteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 18));
+                const birthDate = this._parseDate(input.value); // Use timezone-safe parser
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+
                 // The modal should only show if the date is valid AND the person is under 18.
                 if (birthDate > eighteenYearsAgo) {
                     this._showAgeModal();
@@ -224,8 +242,8 @@ export default class extends Controller {
                 }
                 break;
             case 'volunteer_dateOfBirth':
-                const birthDate = new Date(value);
-                if (isNaN(birthDate.getTime())) {
+                const birthDate = this._parseDate(input.value); // Use timezone-safe parser
+                if (!birthDate || isNaN(birthDate.getTime())) {
                      return [false, 'La fecha no es válida.'];
                 }
                 const today = new Date();
