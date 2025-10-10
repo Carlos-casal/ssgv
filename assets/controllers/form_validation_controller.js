@@ -181,23 +181,28 @@ export default class extends Controller {
 
         // Special handling for date of birth to manage the 16-18 age gate.
         if (input.id === 'volunteer_dateOfBirth') {
-            if (isValid) {
-                const birthDate = this._parseDate(input.value); // Use timezone-safe parser
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-
-                // The modal should only show if the date is valid AND the person is under 18.
-                if (birthDate > eighteenYearsAgo) {
-                    this._showAgeModal();
-                }
-                // Mark as valid regardless of whether the modal is shown.
-                this._updateFieldValidationUI(input, true, '');
-            } else {
-                // If invalid (e.g., under 16), show the error.
-                this._updateFieldValidationUI(input, false, message);
+            const birthDate = this._parseDate(input.value);
+            if (!birthDate || isNaN(birthDate.getTime())) {
+                this._updateFieldValidationUI(input, false, 'La fecha no es válida.');
+                return false;
             }
-            return isValid;
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+            if (birthDate > sixteenYearsAgo) {
+                this._updateFieldValidationUI(input, false, 'El voluntario debe tener al menos 16 años.');
+                return false;
+            }
+
+            const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+            if (birthDate > eighteenYearsAgo) {
+                this._showAgeModal();
+            }
+
+            this._updateFieldValidationUI(input, true, '');
+            return true;
         }
 
         // Standard validation for all other fields.
@@ -239,19 +244,6 @@ export default class extends Controller {
             case 'volunteer_email':
                 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
                     return [false, 'El formato del correo no es válido.'];
-                }
-                break;
-            case 'volunteer_dateOfBirth':
-                const birthDate = this._parseDate(input.value); // Use timezone-safe parser
-                if (!birthDate || isNaN(birthDate.getTime())) {
-                     return [false, 'La fecha no es válida.'];
-                }
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
-
-                if (birthDate > sixteenYearsAgo) {
-                    return [false, 'El voluntario debe tener al menos 16 años.'];
                 }
                 break;
         }
