@@ -69,9 +69,9 @@
                 </div>
                 <div data-field-container class="flex-grow" style="min-width: 300px;">
                     <div class="flex items-center gap-0">
-                        {{ form_label(form.email, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        {{ form_label(form.user.email, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
-                            {{ form_widget(form.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                            {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
                         </div>
                     </div>
                     <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
