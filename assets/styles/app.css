@@ -28,12 +28,14 @@
     form[data-controller="form-validation"] .is-valid:focus {
         border-color: #22c55e; /* Tailwind's green-500 */
         --tw-ring-color: #22c55e; /* Ensures the focus ring is also green */
+        padding-right: 2.5rem; /* Add padding for the icon */
     }
 
     form[data-controller="form-validation"] .is-invalid,
     form[data-controller="form-validation"] .is-invalid:focus {
         border-color: #ef4444; /* Tailwind's red-500 */
         --tw-ring-color: #ef4444; /* Ensures the focus ring is also red */
+        padding-right: 2.5rem; /* Add padding for the icon */
     }
 
     .form-error-message {

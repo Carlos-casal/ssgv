@@ -18,7 +18,7 @@
         <div class="space-y-4">
             {# Row 1: DNI, Name, LastName, DateOfBirth - Using flex-wrap for responsiveness #}
             <div class="flex flex-row flex-wrap items-start gap-x-4 gap-y-4">
-                <div data-field-container class="w-52">
+                <div data-field-container class="w-56">
                     <div class="flex items-center gap-0">
                         {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
@@ -27,7 +27,7 @@
                     </div>
                     <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                 </div>
-                <div data-field-container class="flex-grow" style="min-width: 250px;">
+                <div data-field-container class="flex-grow" style="min-width: 220px;">
                     <div class="flex items-center gap-0">
                         {{ form_label(form.name, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
@@ -36,7 +36,7 @@
                     </div>
                     <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                 </div>
-                <div data-field-container class="flex-grow" style="min-width: 250px;">
+                <div data-field-container class="flex-grow" style="min-width: 220px;">
                      <div class="flex items-center gap-0">
                         {{ form_label(form.lastName, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
@@ -45,7 +45,7 @@
                     </div>
                     <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                 </div>
-                <div data-field-container class="flex-grow" style="min-width: 250px;">
+                <div data-field-container class="flex-grow" style="min-width: 220px;">
                     <div class="flex items-center gap-0">
                         {{ form_label(form.dateOfBirth, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
@@ -58,7 +58,7 @@
 
             {# Row 2: Phone, Email - Using flex-wrap for responsiveness #}
             <div class="flex flex-row flex-wrap items-start gap-x-4 gap-y-4">
-                <div data-field-container class="w-52">
+                <div data-field-container class="w-56">
                     <div class="flex items-center gap-0">
                         {{ form_label(form.phone, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                         <div class="relative flex-1">
