@@ -29,10 +29,12 @@
 
     .is-valid {
         @apply border-green-500 focus:ring-green-500 focus:border-green-500;
+        border-color: #22c55e !important;
     }
 
     .is-invalid {
         @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+        border-color: #ef4444 !important;
     }
 
     .form-error-message {
