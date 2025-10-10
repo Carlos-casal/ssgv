@@ -135,6 +135,8 @@ export default class extends Controller {
         }
         if (this.hasDateOfBirthInputTarget) {
             this.dateOfBirthInputTarget.readOnly = true;
+            // Re-validate to ensure the green check appears and stays
+            this._validateInput(this.dateOfBirthInputTarget);
         }
     }
 
@@ -156,21 +158,32 @@ export default class extends Controller {
     _validateInput(input) {
         // Don't re-validate the date of birth if it has been locked after modal acceptance.
         if (input.id === 'volunteer_dateOfBirth' && input.readOnly) {
+            this._updateFieldValidationUI(input, true); // Ensure it stays green
             return true;
         }
 
         const [isValid, message] = this._getValidationRules(input);
-        this._updateFieldValidationUI(input, isValid, message);
 
-        // Special check for age verification modal.
-        if (input.id === 'volunteer_dateOfBirth' && isValid) {
-            const birthDate = new Date(input.value);
-            const eighteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 18));
-            if (birthDate > eighteenYearsAgo) {
-                this._showAgeModal();
+        // Special handling for date of birth to manage the 16-18 age gate.
+        if (input.id === 'volunteer_dateOfBirth') {
+            if (isValid) {
+                const birthDate = new Date(input.value);
+                const eighteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 18));
+                // The modal should only show if the date is valid AND the person is under 18.
+                if (birthDate > eighteenYearsAgo) {
+                    this._showAgeModal();
+                }
+                // Mark as valid regardless of whether the modal is shown.
+                this._updateFieldValidationUI(input, true, '');
+            } else {
+                // If invalid (e.g., under 16), show the error.
+                this._updateFieldValidationUI(input, false, message);
             }
+            return isValid;
         }
 
+        // Standard validation for all other fields.
+        this._updateFieldValidationUI(input, isValid, message);
         return isValid;
     }
 
@@ -212,8 +225,14 @@ export default class extends Controller {
                 break;
             case 'volunteer_dateOfBirth':
                 const birthDate = new Date(value);
-                const sixteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 16));
-                if (isNaN(birthDate.getTime()) || birthDate > sixteenYearsAgo) {
+                if (isNaN(birthDate.getTime())) {
+                     return [false, 'La fecha no es válida.'];
+                }
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
+
+                if (birthDate > sixteenYearsAgo) {
                     return [false, 'El voluntario debe tener al menos 16 años.'];
                 }
                 break;
@@ -300,14 +319,17 @@ export default class extends Controller {
     // --- Misc ---
 
     /**
-     * Sets the 'max' attribute for the date of birth input to prevent future dates.
+     * Sets the 'max' attribute for the date of birth input to prevent selecting dates for anyone under 16.
      */
     setDateOfBirthMaxDate() {
         if (!this.hasDateOfBirthInputTarget) return;
 
         const today = new Date();
-        // The format must be YYYY-MM-DD for the 'max' attribute.
-        const maxDate = today.toISOString().split('T')[0];
+        const maxYear = today.getFullYear() - 16;
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        const maxDate = `${maxYear}-${month}-${day}`;
         this.dateOfBirthInputTarget.setAttribute('max', maxDate);
     }
 
