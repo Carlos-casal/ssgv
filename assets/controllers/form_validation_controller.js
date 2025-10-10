@@ -5,7 +5,14 @@ export default class extends Controller {
         this.element.addEventListener('submit', this.handleSubmit.bind(this));
         // Add blur listeners to all relevant inputs
         this.element.querySelectorAll('input[data-action], select[data-action], textarea[data-action]').forEach(input => {
-            input.addEventListener('blur', this.validate.bind(this));
+            const actions = input.dataset.action.split(' ');
+            actions.forEach(action => {
+                const [event, handler] = action.split('->');
+                const methodName = handler.split('#')[1];
+                if (this[methodName]) {
+                    input.addEventListener(event, this[methodName].bind(this));
+                }
+            });
         });
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
@@ -72,6 +79,19 @@ export default class extends Controller {
     }
 
     // --- Real-time Validation (on blur) ---
+    validateOnInput(event) {
+        const input = event.target;
+        if (input.id === 'volunteer_dni') {
+            const isValid = this.validateDniNie(input.value);
+            if (isValid) {
+                this.updateFieldValidation(input, true, '');
+            } else {
+                // On input, only remove validation, don't show error
+                this.removeValidation(input);
+            }
+        }
+    }
+
     validate(event) {
         const input = event.target;
         let isValid = true;
@@ -140,37 +160,40 @@ export default class extends Controller {
     // --- UI Update Helpers ---
     updateFieldValidation(input, isValid, message) {
         this.removeValidation(input);
-        const wrapper = input.closest('.relative');
+        const wrapper = input.parentElement; // The div containing the input
         if (!wrapper) return;
 
-        const icon = document.createElement('span');
-        icon.className = 'validation-icon absolute left-0 top-0 mt-3 ml-2 flex items-center';
-
-        input.style.paddingLeft = '2rem';
+        // Ensure the wrapper is relative for icon positioning
+        wrapper.classList.add('relative');
 
         if (isValid) {
             input.classList.add('is-valid');
+            // Add check icon
+            const icon = document.createElement('span');
+            icon.className = 'validation-icon absolute right-2 top-1/2 -translate-y-1/2';
             icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
+            wrapper.appendChild(icon);
         } else {
             input.classList.add('is-invalid');
-            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-
-            const errorEl = document.createElement('p');
-            errorEl.className = 'form-error-message text-xs text-red-600 mt-1';
-            errorEl.textContent = message;
-            wrapper.appendChild(errorEl);
+            // On blur, if there is a message, show it
+            if (message) {
+                 const errorEl = document.createElement('p');
+                 errorEl.className = 'form-error-message text-xs text-red-600 mt-1';
+                 errorEl.textContent = message;
+                 // Insert error after the flex container
+                 wrapper.parentElement.appendChild(errorEl);
+            }
         }
-
-        wrapper.insertBefore(icon, input);
     }
 
     removeValidation(input) {
         input.classList.remove('is-valid', 'is-invalid');
-        input.style.paddingLeft = '';
-        const wrapper = input.closest('.relative');
+        const wrapper = input.parentElement;
         if (!wrapper) return;
 
+        // Remove icon
         wrapper.querySelector('.validation-icon')?.remove();
-        wrapper.querySelector('.form-error-message')?.remove();
+        // Remove error message from the outer container
+        wrapper.parentElement.querySelector('.form-error-message')?.remove();
     }
 }

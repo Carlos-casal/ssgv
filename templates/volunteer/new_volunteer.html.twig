@@ -15,7 +15,9 @@
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-32">{{ form_widget(form.dni) }}</div>
+                    <div class="w-32 relative">
+                        {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#validateOnInput blur->form-validation#validate'}}) }}
+                    </div>
                 </div>
                 {{ form_errors(form.dni) }}
             </div>
