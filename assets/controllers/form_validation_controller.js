@@ -1,38 +1,85 @@
+/**
+ * @file Stimulus controller for real-time form validation and dynamic field interactions.
+ *
+ * This controller handles:
+ * - Real-time validation of individual fields on blur.
+ * - Special validation for DNI/NIE, phone numbers, and email formats.
+ * - A final validation pass on form submission.
+ * - Toggling the visibility of conditional fields (e.g., driving license expiry date).
+ * - Displaying a modal for age verification for volunteers between 16 and 18 years old.
+ * - Resetting the form for a new entry without a page reload.
+ *
+ * It is designed to be robust by using Stimulus targets and data attributes to decouple
+ * the controller from the specific HTML structure or CSS classes.
+ */
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
+    static targets = [
+        "dateOfBirthInput",
+        "ageModal",
+    ];
+
     connect() {
-        this.element.addEventListener('submit', this.handleSubmit.bind(this));
-        // Add blur listeners to all relevant inputs
-        this.element.querySelectorAll('input[data-action], select[data-action], textarea[data-action]').forEach(input => {
-            const actions = input.dataset.action.split(' ');
-            actions.forEach(action => {
-                const [event, handler] = action.split('->');
-                const methodName = handler.split('#')[1];
-                if (this[methodName]) {
-                    input.addEventListener(event, this[methodName].bind(this));
-                }
-            });
-        });
+        // Set initial state for conditional fields when the form loads.
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
+        // Set the max date for the date of birth input to prevent selecting future dates for under-16s.
         this.setDateOfBirthMaxDate();
     }
 
-    setDateOfBirthMaxDate() {
-        const dateOfBirthInput = this.element.querySelector('#volunteer_dateOfBirth');
-        if (!dateOfBirthInput) return;
+    /**
+     * Handles the form submission.
+     * Prevents submission and highlights errors if the form is invalid.
+     */
+    handleSubmit(event) {
+        let isFormValid = true;
+        // Validate all fields that are required or have a value.
+        this.element.querySelectorAll('input, select, textarea').forEach(input => {
+            if (input.required || input.value.trim() !== '') {
+                if (!this._validateInput(input)) {
+                    isFormValid = false;
+                }
+            }
+        });
 
-        const today = new Date();
-        const maxYear = today.getFullYear() - 16;
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-
-        const maxDate = `${maxYear}-${month}-${day}`;
-        dateOfBirthInput.setAttribute('max', maxDate);
+        if (!isFormValid) {
+            event.preventDefault();
+            // Scroll to the first invalid field to bring it to the user's attention.
+            const firstInvalid = this.element.querySelector('.is-invalid');
+            if (firstInvalid) {
+                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
     }
 
-    // --- Conditional Field Logic ---
+    /**
+     * Validates a single field, typically on the 'blur' event.
+     */
+    validateField(event) {
+        this._validateInput(event.target);
+    }
+
+    /**
+     * Provides real-time validation for the DNI/NIE field as the user types.
+     * Only shows a success state to avoid showing errors prematurely.
+     */
+    validateDniOnInput(event) {
+        const input = event.target;
+        const isValid = this._validateDniNie(input.value);
+        if (isValid) {
+            // Show green checkmark if valid.
+            this._updateFieldValidationUI(input, true);
+        } else {
+            // Clear validation if it becomes invalid while typing.
+            this._removeValidationUI(input);
+        }
+    }
+
+    /**
+     * Toggles the visibility of the driving license expiry date field.
+     * This field is only required and shown if a driving license is selected.
+     */
     toggleDrivingLicenseExpiry() {
         const drivingLicensesCheckboxes = this.element.querySelectorAll('input[name="volunteer[drivingLicenses][]"]');
         const expiryWrapper = document.getElementById('driving-license-expiry-wrapper');
@@ -41,12 +88,17 @@ export default class extends Controller {
         const anyChecked = Array.from(drivingLicensesCheckboxes).some(cb => cb.checked);
         expiryWrapper.classList.toggle('hidden', !anyChecked);
         const expiryInput = expiryWrapper.querySelector('input');
-        if(expiryInput) {
+        if (expiryInput) {
             expiryInput.required = anyChecked;
-            if (!anyChecked) this.removeValidation(expiryInput);
+            // Clear validation state if the field is hidden.
+            if (!anyChecked) this._removeValidationUI(expiryInput);
         }
     }
 
+    /**
+     * Toggles the visibility of the "previous institutions" field.
+     * This field is only required and shown if the user indicates they have prior volunteer experience.
+     */
     togglePreviousInstitutions() {
         const hasVolunteeredYes = this.element.querySelector('input[name="volunteer[hasVolunteeredBefore]"][value="1"]');
         const institutionsWrapper = document.getElementById('previous-institutions-wrapper');
@@ -57,160 +109,235 @@ export default class extends Controller {
         const textarea = institutionsWrapper.querySelector('textarea');
         if (textarea) {
             textarea.required = isYesChecked;
-            if (!isYesChecked) this.removeValidation(textarea);
+            // Clear validation state if the field is hidden.
+            if (!isYesChecked) this._removeValidationUI(textarea);
         }
     }
 
-    // --- Form Actions ---
-    addAnother(event) {
-        event.preventDefault();
-        this.element.reset();
-        this.element.querySelectorAll('.validation-icon, .form-error-message').forEach(el => el.remove());
-        this.element.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
-            el.classList.remove('is-valid', 'is-invalid');
-            el.style.paddingLeft = '';
-        });
-        this.toggleDrivingLicenseExpiry();
-        this.togglePreviousInstitutions();
-        window.scrollTo(0, 0);
-    }
+    // --- Age Modal ---
 
-    handleSubmit(event) {
-        let isFormValid = true;
-        this.element.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
-            if (!this.validate({ target: input })) {
-                isFormValid = false;
-            }
-        });
-
-        if (!isFormValid) {
-            event.preventDefault();
-            const firstInvalid = this.element.querySelector('.is-invalid');
-            if(firstInvalid) {
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+    /**
+     * Displays the age verification modal.
+     */
+    _showAgeModal() {
+        if (this.hasAgeModalTarget) {
+            this.ageModalTarget.classList.remove('hidden');
         }
     }
 
-    // --- Real-time Validation (on blur) ---
-    validateOnInput(event) {
-        const input = event.target;
-        if (input.id === 'volunteer_dni') {
-            const isValid = this.validateDniNie(input.value);
-            if (isValid) {
-                this.updateFieldValidation(input, true, '');
-            } else {
-                // On input, only remove validation, don't show error
-                this.removeValidation(input);
-            }
+    /**
+     * Handles the user's acceptance of the parental authorization.
+     * Hides the modal and makes the date input read-only to prevent changes.
+     */
+    acceptAuthorization() {
+        if (this.hasAgeModalTarget) {
+            this.ageModalTarget.classList.add('hidden');
+        }
+        if (this.hasDateOfBirthInputTarget) {
+            this.dateOfBirthInputTarget.readOnly = true;
         }
     }
 
-    validate(event) {
-        const input = event.target;
-        let isValid = true;
-        let message = '';
+    /**
+     * Handles the user's cancellation of the authorization.
+     * Redirects the user away from the registration form.
+     */
+    cancelAuthorization() {
+        window.location.href = '/'; // Redirect to a safe page (e.g., homepage).
+    }
 
-        if (!input.required && input.value.trim() === '') {
-            this.removeValidation(input);
+    // --- Core Validation Logic ---
+
+    /**
+     * Central validation function that orchestrates validation for a given input.
+     * @param {HTMLElement} input The input element to validate.
+     * @returns {boolean} True if the input is valid, false otherwise.
+     */
+    _validateInput(input) {
+        // Don't re-validate the date of birth if it has been locked after modal acceptance.
+        if (input.id === 'volunteer_dateOfBirth' && input.readOnly) {
             return true;
         }
 
-        if (input.required && input.value.trim() === '') {
-            isValid = false;
-            message = 'Este campo es obligatorio.';
-        } else {
-            switch (input.id) {
-                case 'volunteer_dni':
-                    isValid = this.validateDniNie(input.value);
-                    if (!isValid) message = 'El DNI/NIE no es válido.';
-                    break;
-                case 'volunteer_phone':
-                    const phoneValue = input.value.trim().replace('+34', '');
-                    const phoneRegex = /^[679]\d{8}$/;
-                    if (!phoneRegex.test(phoneValue)) {
-                        isValid = false;
-                        message = 'El formato del teléfono no es válido (9 dígitos).';
-                    }
-                    break;
-                case 'volunteer_dateOfBirth':
-                    const birthDate = new Date(input.value);
-                    if (isNaN(birthDate.getTime())) {
-                        isValid = false;
-                        message = 'La fecha no es válida.';
-                        break;
-                    }
-                    const today = new Date();
-                    const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
-                    if (birthDate > sixteenYearsAgo) {
-                        isValid = false;
-                        message = 'El voluntario debe tener al menos 16 años cumplidos.';
-                    }
-                    break;
-                 case 'volunteer_email':
-                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-                    if (!emailRegex.test(input.value)) {
-                        isValid = false;
-                        message = 'El formato del correo no es válido.';
-                    }
-                    break;
+        const [isValid, message] = this._getValidationRules(input);
+        this._updateFieldValidationUI(input, isValid, message);
+
+        // Special check for age verification modal.
+        if (input.id === 'volunteer_dateOfBirth' && isValid) {
+            const birthDate = new Date(input.value);
+            const eighteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 18));
+            if (birthDate > eighteenYearsAgo) {
+                this._showAgeModal();
             }
         }
 
-        this.updateFieldValidation(input, isValid, message);
         return isValid;
     }
 
-    validateDniNie(value) {
+    /**
+     * Gets the validation result for a given input based on its type and constraints.
+     * @param {HTMLElement} input The input element.
+     * @returns {[boolean, string]} A tuple containing the validity state and an error message.
+     */
+    _getValidationRules(input) {
+        const value = input.value.trim();
+
+        // 1. Check for required fields
+        if (input.required && value === '') {
+            return [false, 'Este campo es obligatorio.'];
+        }
+
+        // 2. Skip validation for non-required empty fields
+        if (!input.required && value === '') {
+            return [true, ''];
+        }
+
+        // 3. Apply specific validation rules based on field ID
+        switch (input.id) {
+            case 'volunteer_dni':
+                if (!this._validateDniNie(value)) {
+                    return [false, 'El DNI/NIE no es válido.'];
+                }
+                break;
+            case 'volunteer_phone':
+            case 'volunteer_contactPhone1':
+                if (!/^[679]\d{8}$/.test(value.replace(/\s+/g, ''))) {
+                    return [false, 'El formato del teléfono no es válido (9 dígitos sin prefijo).'];
+                }
+                break;
+            case 'volunteer_email':
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return [false, 'El formato del correo no es válido.'];
+                }
+                break;
+            case 'volunteer_dateOfBirth':
+                const birthDate = new Date(value);
+                const sixteenYearsAgo = new Date(new Date().setFullYear(new Date().getFullYear() - 16));
+                if (isNaN(birthDate.getTime()) || birthDate > sixteenYearsAgo) {
+                    return [false, 'El voluntario debe tener al menos 16 años.'];
+                }
+                break;
+        }
+
+        // If no specific rules failed, the field is valid.
+        return [true, ''];
+    }
+
+    /**
+     * Validates a Spanish DNI or NIE number.
+     * @param {string} value The DNI/NIE to validate.
+     * @returns {boolean} True if valid.
+     */
+    _validateDniNie(value) {
         const dni = value.toUpperCase().trim();
         if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
 
         const numberPart = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
         const letter = dni.substr(dni.length - 1, 1);
+        const controlLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart, 10) % 23];
 
-        return 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart) % 23] === letter;
+        return letter === controlLetter;
     }
 
     // --- UI Update Helpers ---
-    updateFieldValidation(input, isValid, message) {
-        this.removeValidation(input);
-        const fieldContainer = input.parentElement; // The div containing the input
+
+    /**
+     * Updates the UI to show validation status (success or error).
+     * @param {HTMLElement} input The input element.
+     * @param {boolean} isValid The validation status.
+     * @param {string} [message=''] The error message to display if invalid.
+     */
+    _updateFieldValidationUI(input, isValid, message = '') {
+        this._removeValidationUI(input); // Clear previous state first.
+
+        const fieldContainer = input.closest('[data-field-container]');
         if (!fieldContainer) return;
 
-        // Ensure the container is relative for icon positioning
-        fieldContainer.classList.add('relative');
+        const iconContainer = input.parentElement; // Assumes input is wrapped for icon positioning.
         const icon = document.createElement('span');
-        icon.className = 'validation-icon absolute right-2 top-1/2 -translate-y-1/2';
+        icon.className = 'validation-icon absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center';
 
         if (isValid) {
             input.classList.add('is-valid');
             icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
-            fieldContainer.appendChild(icon);
         } else {
             input.classList.add('is-invalid');
-            // Add error icon only if there's content, not for simple "required"
-            if (input.value.trim() !== '') {
-                icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
-                fieldContainer.appendChild(icon);
-            }
+            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
 
-            if (message) {
-                 const errorEl = document.createElement('p');
-                 errorEl.className = 'form-error-message text-xs text-red-600 mt-1';
-                 errorEl.textContent = message;
-                 // Append error to the top-level div of the field for correct positioning
-                 fieldContainer.closest('.flex').parentElement.appendChild(errorEl);
+            const errorContainer = fieldContainer.querySelector('[data-error-container]');
+            if (errorContainer && message) {
+                errorContainer.textContent = message;
+                errorContainer.classList.remove('hidden');
             }
+        }
+        iconContainer.appendChild(icon);
+    }
+
+    /**
+     * Removes all validation indicators (styles, icons, messages) from a field.
+     * @param {HTMLElement} input The input element.
+     */
+    _removeValidationUI(input) {
+        input.classList.remove('is-valid', 'is-invalid');
+
+        const fieldContainer = input.closest('[data-field-container]');
+        if (!fieldContainer) return;
+
+        // Remove validation icon
+        const icon = input.parentElement.querySelector('.validation-icon');
+        if (icon) {
+            icon.remove();
+        }
+
+        // Hide and clear error message
+        const errorContainer = fieldContainer.querySelector('[data-error-container]');
+        if (errorContainer) {
+            errorContainer.textContent = '';
+            errorContainer.classList.add('hidden');
         }
     }
 
-    removeValidation(input) {
-        input.classList.remove('is-valid', 'is-invalid');
-        const fieldContainer = input.parentElement;
-        if (!fieldContainer) return;
+    // --- Misc ---
 
-        fieldContainer.querySelector('.validation-icon')?.remove();
-        // Find the error message in the correct parent and remove it
-        fieldContainer.closest('.flex').parentElement.querySelector('.form-error-message')?.remove();
+    /**
+     * Sets the 'max' attribute for the date of birth input to prevent future dates.
+     */
+    setDateOfBirthMaxDate() {
+        if (!this.hasDateOfBirthInputTarget) return;
+
+        const today = new Date();
+        // The format must be YYYY-MM-DD for the 'max' attribute.
+        const maxDate = today.toISOString().split('T')[0];
+        this.dateOfBirthInputTarget.setAttribute('max', maxDate);
+    }
+
+    /**
+     * Resets the form to its initial state to allow for another entry.
+     */
+    addAnother(event) {
+        event.preventDefault();
+        this.element.reset(); // Resets form field values.
+
+        // Clear all validation UI from the form.
+        this.element.querySelectorAll('.validation-icon').forEach(el => el.remove());
+        this.element.querySelectorAll('[data-error-container]').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
+        this.element.querySelectorAll('.is-valid, .is-invalid').forEach(el => {
+            el.classList.remove('is-valid', 'is-invalid');
+        });
+
+        // Re-initialize conditional fields.
+        this.toggleDrivingLicenseExpiry();
+        this.togglePreviousInstitutions();
+
+        // Ensure date input is not readonly
+        if (this.hasDateOfBirthInputTarget) {
+            this.dateOfBirthInputTarget.readOnly = false;
+        }
+
+        // Scroll to the top of the page.
+        window.scrollTo(0, 0);
     }
 }

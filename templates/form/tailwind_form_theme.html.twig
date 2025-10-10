@@ -27,3 +27,10 @@
     }) %}
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
+
+{%- block form_label -%}
+    {{- parent() -}}
+    {% if required %}
+        <span class="text-red-500 ml-1">*</span>
+    {% endif %}
+{%- endblock form_label -%}
