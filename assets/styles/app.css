@@ -28,13 +28,11 @@
     }
 
     .is-valid {
-        @apply border-green-500 focus:ring-green-500 focus:border-green-500;
-        border-color: #22c55e !important;
+        border-color: #22c55e !important; /* Tailwind green-500 */
     }
 
     .is-invalid {
-        @apply border-red-500 focus:ring-red-500 focus:border-red-500;
-        border-color: #ef4444 !important;
+        border-color: #ef4444 !important; /* Tailwind red-500 */
     }
 
     .form-error-message {
