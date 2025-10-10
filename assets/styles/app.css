@@ -1,17 +1,9 @@
 @import "quill/dist/quill.snow.css";
-/* assets/styles/app.css (o login.css) */
+/* assets/styles/app.css */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Puedes añadir tu propio CSS personalizado aquí si es necesario,
-   pero la mayoría de los estilos deberían venir de las clases de Tailwind en tu Twig. */
-
-/* Ejemplo del fondo azul claro que tenías, si quieres eliminarlo: */
-/* body {
-    background-color: lightblue;
-} */
 
 @layer base {
     /* Base styles can remain if they are truly global */
@@ -27,12 +19,21 @@
         scrollbar-width: none;  /* Firefox */
     }
 
-    .is-valid {
-        border-color: #22c55e !important; /* Tailwind green-500 */
+    /*
+     * High-specificity selectors for form validation states.
+     * These are designed to reliably override base styles from Tailwind or form themes
+     * without using `!important`. They target validated fields within the validation controller's form.
+    */
+    form[data-controller="form-validation"] .is-valid,
+    form[data-controller="form-validation"] .is-valid:focus {
+        border-color: #22c55e; /* Tailwind's green-500 */
+        --tw-ring-color: #22c55e; /* Ensures the focus ring is also green */
     }
 
-    .is-invalid {
-        border-color: #ef4444 !important; /* Tailwind red-500 */
+    form[data-controller="form-validation"] .is-invalid,
+    form[data-controller="form-validation"] .is-invalid:focus {
+        border-color: #ef4444; /* Tailwind's red-500 */
+        --tw-ring-color: #ef4444; /* Ensures the focus ring is also red */
     }
 
     .form-error-message {
