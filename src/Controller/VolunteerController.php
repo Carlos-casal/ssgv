@@ -184,61 +184,87 @@ class VolunteerController extends AbstractController
      * @return Response The response object, rendering the registration form or redirecting on success.
      */
     #[Route('/nueva_inscripcion', name: 'app_volunteer_registration', methods: ['GET', 'POST'])]
-    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher): Response
+    public function registration(Request $request, EntityManagerInterface $entityManager, UserPasswordHasherInterface $userPasswordHasher, InvitationRepository $invitationRepository, KernelInterface $kernel): Response
     {
-        $volunteer = new Volunteer();
-        $user = new User();
-        $volunteer->setUser($user);
+        $token = $request->query->get('token');
+        $invitation = null;
 
-        $form = $this->createForm(VolunteerType::class, $volunteer, [
-            'is_edit' => false,
-            'is_public_registration' => true,
-        ]);
+        // Special case for dev environment preview link
+        if ($kernel->getEnvironment() === 'dev' && $token === 'dummy-token-for-preview-only') {
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail('test-email-for-preview@example.com');
+            $volunteer->setUser($user);
+        } else {
+            // For production or any other token, validate against the database
+            $invitation = $invitationRepository->findOneBy(['token' => $token]);
+
+            if (!$invitation || $invitation->isUsed()) {
+                return $this->render('error/unauthorized_invitation.html.twig');
+            }
+
+            $volunteer = new Volunteer();
+            $user = new User();
+            $user->setEmail($invitation->getEmail());
+            $volunteer->setUser($user);
+        }
+
+        $form = $this->createForm(VolunteerType::class, $volunteer);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $volunteer = $form->getData();
             $user = $volunteer->getUser();
 
-            // Auto-generate a secure password
-            $plainPassword = bin2hex(random_bytes(12)); // 24 characters
-            $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
-            $user->setPassword($hashedPassword);
+            $lastVolunteer = $entityManager->getRepository(Volunteer::class)->findOneBy([], ['id' => 'DESC']);
+            $expedientNumber = $lastVolunteer ? $lastVolunteer->getId() + 1 : 1;
 
-            // Set default roles
+            // Hash the password from the form
+            $plainPassword = $form->get('user')->get('password')->getData();
+            if ($plainPassword) {
+                $user->setPassword(
+                    $userPasswordHasher->hashPassword($user, $plainPassword)
+                );
+            }
             $user->setRoles(['ROLE_VOLUNTEER']);
-            $volunteer->setRole('Voluntario');
 
-            /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
-
             if ($profilePictureFile) {
                 $originalFilename = pathinfo($profilePictureFile->getClientOriginalName(), PATHINFO_FILENAME);
                 $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$profilePictureFile->guessExtension();
-
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $profilePictureFile->guessExtension();
                 try {
-                    $profilePictureFile->move(
-                        $this->getParameter('kernel.project_dir').'/public/uploads/profile_pictures',
-                        $newFilename
-                    );
+                    $profilePictureFile->move($this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures', $newFilename);
+                    if ($volunteer->getProfilePicture()) {
+                        $filesystem = new Filesystem();
+                        $oldFilePath = $this->getParameter('kernel.project_dir') . '/public/uploads/profile_pictures/' . $volunteer->getProfilePicture();
+                        if ($filesystem->exists($oldFilePath)) {
+                            $filesystem->remove($oldFilePath);
+                        }
+                    }
                     $volunteer->setProfilePicture($newFilename);
                 } catch (FileException $e) {
                     $this->addFlash('error', 'No se pudo subir la foto de perfil: ' . $e->getMessage());
                 }
             }
 
-            $volunteer->setStatus(Volunteer::STATUS_ACTIVE);
+            $volunteer->setStatus(Volunteer::STATUS_PENDING);
             if (!$volunteer->getJoinDate()) {
                 $volunteer->setJoinDate(new \DateTime());
             }
 
+            // Mark the invitation as used, only if it's a real one from the database
+            if ($invitation) {
+                $invitation->setIsUsed(true);
+                $entityManager->persist($invitation);
+            }
+
+            $entityManager->persist($user);
             $entityManager->persist($volunteer);
             $entityManager->flush();
 
-            $this->addFlash('registration_success', '¡Voluntario registrado con éxito!');
-            $this->addFlash('generated_password', $plainPassword);
-
-            return $this->redirectToRoute('app_registration_success');
+            $this->addFlash('success', 'Solicitud de inscripción enviada correctamente. Número de expediente: ' . $expedientNumber);
+            return $this->redirectToRoute('app_volunteer_registration');
         }
 
         return $this->render('volunteer/registration_form.html.twig', [
@@ -472,28 +498,5 @@ class VolunteerController extends AbstractController
             'start_date' => $startDate,
             'end_date' => $endDate,
         ]);
-    }
-
-    /**
-     * Displays a success page after a new volunteer completes their registration.
-     * This page shows the auto-generated password.
-     *
-     * @param Request $request
-     * @return Response
-     */
-    #[Route('/registro-completado', name: 'app_registration_success', methods: ['GET'])]
-    public function registrationSuccess(Request $request): Response
-    {
-        // This is a simple way to pass data once. For more complex scenarios,
-        // you might fetch the user from the database if an ID is passed.
-        $successMessage = $request->getSession()->getFlashBag()->peek('registration_success');
-        $password = $request->getSession()->getFlashBag()->peek('generated_password');
-
-        if (empty($successMessage) || empty($password)) {
-            // Redirect to the registration page if accessed directly without completing the form
-            return $this->redirectToRoute('app_volunteer_registration');
-        }
-
-        return $this->render('volunteer/registration_success.html.twig');
     }
 }

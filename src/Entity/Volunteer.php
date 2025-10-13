@@ -267,8 +267,6 @@ class Volunteer
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $indicativo = null;
 
-    #[ORM\Column]
-    private ?bool $habilitadoConducir = false;
 
     /**
      * @var Collection<int, AssistanceConfirmation> A collection of this volunteer's assistance confirmations.
@@ -1076,17 +1074,6 @@ class Volunteer
         return $this;
     }
 
-    public function isHabilitadoConducir(): ?bool
-    {
-        return $this->habilitadoConducir;
-    }
-
-    public function setHabilitadoConducir(bool $habilitadoConducir): static
-    {
-        $this->habilitadoConducir = $habilitadoConducir;
-
-        return $this;
-    }
 
     public function getVolunteerServiceForService(Service $service): ?VolunteerService
     {
