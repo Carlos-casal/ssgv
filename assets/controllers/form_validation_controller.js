@@ -5,10 +5,11 @@ import { Controller } from '@hotwired/stimulus';
  * It provides real-time validation, manages conditional UI elements like modals, and handles DNI formatting.
  */
 export default class extends Controller {
-    static targets = ["modal"];
+    static targets = ["modal", "dateOfBirthInput"];
 
     connect() {
         this.setDefaultDateOfBirth();
+        this.setDateOfBirthMaxDate();
     }
 
     /**
@@ -64,6 +65,43 @@ export default class extends Controller {
         }
         // Also run standard validation to show checkmark
         this._validateInput(event.target);
+    }
+
+    /**
+     * Sets the 'max' attribute for the date of birth input to prevent selecting dates for anyone under 16.
+     */
+    setDateOfBirthMaxDate() {
+        if (!this.hasDateOfBirthInputTarget) return;
+
+        const today = new Date();
+        const maxYear = today.getFullYear() - 16;
+        const minYear = today.getFullYear() - 100;
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        const maxDate = `${maxYear}-${month}-${day}`;
+        const minDate = `${minYear}-${month}-${day}`;
+
+        this.dateOfBirthInputTarget.setAttribute('max', maxDate);
+        this.dateOfBirthInputTarget.setAttribute('min', minDate);
+    }
+
+    /**
+     * Toggles the visibility of the driving license expiry date field.
+     * This field is only required and shown if a driving license is selected.
+     */
+    toggleDrivingLicenseExpiry() {
+        const drivingLicensesCheckboxes = this.element.querySelectorAll('input[name="volunteer[drivingLicenses][]"]');
+        const expiryWrapper = document.getElementById('driving-license-expiry-wrapper');
+        if (!expiryWrapper) return;
+
+        const anyChecked = Array.from(drivingLicensesCheckboxes).some(cb => cb.checked);
+        expiryWrapper.classList.toggle('hidden', !anyChecked);
+        const expiryInput = expiryWrapper.querySelector('input');
+        if (expiryInput) {
+            expiryInput.required = anyChecked;
+            if (!anyChecked) this._removeValidationUI(expiryInput);
+        }
     }
 
     /**
@@ -141,20 +179,29 @@ export default class extends Controller {
      * Updates the UI to show validation status.
      */
     _updateFieldValidationUI(input, isValid, message = '') {
-        this._removeValidationUI(input);
-        const group = input.closest('div'); // Simple parent div
+        this._removeValidationUI(input); // Clear previous state first.
+
+        const fieldContainer = input.closest('[data-field-container]');
+        if (!fieldContainer) return;
+
+        const iconContainer = input.parentElement; // Assumes input is wrapped for icon positioning.
+        const icon = document.createElement('span');
+        icon.className = 'validation-icon absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center';
 
         if (isValid) {
-            input.classList.add('border-green-500');
-            input.classList.remove('border-red-500');
+            input.classList.add('is-valid');
+            icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
         } else {
-            input.classList.add('border-red-500');
-            input.classList.remove('border-green-500');
-            const errorElement = document.createElement('p');
-            errorElement.className = 'text-red-500 text-xs italic mt-1 validation-error';
-            errorElement.textContent = message;
-            group.appendChild(errorElement);
+            input.classList.add('is-invalid');
+            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+            const errorContainer = fieldContainer.querySelector('[data-error-container]');
+            if (errorContainer && message) {
+                errorContainer.textContent = message;
+                errorContainer.classList.remove('hidden');
+            }
         }
+        iconContainer.appendChild(icon);
     }
 
     /**
