@@ -120,6 +120,14 @@ class VolunteerType extends AbstractType
                 'label' => 'Teléfono de Emergencia',
                 'required' => true,
             ])
+            ->add('contactPerson2', TextType::class, [
+                'label' => 'Nombre de Contacto de Emergencia 2',
+                'required' => false,
+            ])
+            ->add('contactPhone2', TextType::class, [
+                'label' => 'Teléfono de Emergencia 2',
+                'required' => false,
+            ])
 
             // --- Datos de Salud ---
             ->add('foodAllergies', TextareaType::class, [
