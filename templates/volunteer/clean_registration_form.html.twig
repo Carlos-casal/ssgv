@@ -1,0 +1,138 @@
+{# templates/volunteer/clean_registration_form.html.twig #}
+
+{% extends 'layout/public.html.twig' %}
+
+{% block page_title %}Formulario de Inscripción Limpio{% endblock %}
+
+{% set card_styles = 'bg-white p-6 rounded-xl shadow-sm border border-gray-200' %}
+{% set card_title_styles = 'text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-6' %}
+
+{% block content %}
+<div class="bg-gray-50">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto">
+        {# Header con fondo azul y logo #}
+        <div class="bg-blue-600 p-6 sm:p-8 text-center">
+            <div class="inline-block bg-white p-2 rounded-full shadow-md">
+                <img src="https://raw.githubusercontent.com/Carlos-casal/ssgv/main/public/images/logo.png" alt="Logo Protección Civil Vigo" class="w-24 h-24">
+            </div>
+            <h1 class="text-3xl font-bold text-white mt-4">Formulario de Inscripción (Limpio)</h1>
+            <p class="text-blue-100">Esta es una versión sin validaciones de JavaScript.</p>
+        </div>
+
+        {# Contenido del formulario con padding #}
+        <div class="p-6 sm:p-8">
+            {{ form_start(form, {'attr': {'class': 'space-y-8'}, 'enctype': 'multipart/form-data'}) }}
+
+            {# CONTENEDOR PRINCIPAL: Grid para las tarjetas #}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                {# Columna Izquierda: Foto y Datos Básicos #}
+                <div class="lg:col-span-1 space-y-8">
+                    {# Tarjeta de la foto de perfil #}
+                    <div class="{{ card_styles }} text-center">
+                        <h3 class="{{ card_title_styles }}">Foto de Perfil</h3>
+                        <div class="mb-4">
+                            <div class="w-32 h-32 rounded-full mx-auto bg-gray-200 flex items-center justify-center text-gray-500 text-sm mb-4 border-2 border-blue-200 shadow-inner">
+                                Sin Foto
+                            </div>
+                        </div>
+                        <div class="w-fit mx-auto">
+                            {{ form_row(form.profilePicture) }}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Sube una imagen JPG o PNG (máx. 1MB).</p>
+                    </div>
+                </div>
+
+                {# Columna Derecha: Todas las demás tarjetas #}
+                <div class="lg:col-span-2 space-y-8">
+                    {# Tarjeta de Datos Personales #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Datos Personales</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                            <div>{{ form_row(form.name) }}</div>
+                            <div>{{ form_row(form.lastName) }}</div>
+                            <div>{{ form_row(form.phone) }}</div>
+                            <div>{{ form_row(form.user.email) }}</div>
+                            <div>{{ form_row(form.dni) }}</div>
+                            <div>{{ form_row(form.dateOfBirth) }}</div>
+                        </div>
+                    </div>
+
+                    {# Tarjeta de Dirección #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Dirección</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>{{ form_row(form.streetType) }}</div>
+                            <div class="md:col-span-2">{{ form_row(form.address) }}</div>
+                            <div>{{ form_row(form.postalCode) }}</div>
+                            <div>{{ form_row(form.city) }}</div>
+                            <div>{{ form_row(form.province) }}</div>
+                        </div>
+                    </div>
+
+                    {# Tarjeta de Información de Emergencia #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Contacto de Emergencia</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>{{ form_row(form.contactPerson1) }}</div>
+                            <div>{{ form_row(form.contactPhone1) }}</div>
+                            <div>{{ form_row(form.contactPerson2) }}</div>
+                            <div>{{ form_row(form.contactPhone2) }}</div>
+                        </div>
+                    </div>
+
+                    {# Tarjeta de Información Médica #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Información Médica</h3>
+                        {{ form_row(form.allergies) }}
+                    </div>
+
+                    {# Tarjeta de Cualificaciones #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Cualificaciones Profesionales</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>{{ form_row(form.profession) }}</div>
+                            <div>{{ form_row(form.employmentStatus) }}</div>
+                        </div>
+                        <div class="mb-4">{{ form_row(form.drivingLicenses) }}</div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>{{ form_row(form.drivingLicenseExpiryDate) }}</div>
+                            <div class="flex items-center h-full">{{ form_row(form.habilitadoConducir) }}</div>
+                        </div>
+                        <div class="mb-4">{{ form_row(form.navigationLicenses) }}</div>
+                        {{ form_row(form.otherQualifications) }}
+                    </div>
+
+                    {# Tarjeta de Otros Datos #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Otros Datos e Intereses</h3>
+                        <div class="space-y-4">
+                            {{ form_row(form.languages) }}
+                            {{ form_row(form.motivation) }}
+                            {{ form_row(form.howKnown) }}
+                            {{ form_row(form.hasVolunteeredBefore) }}
+                            {{ form_row(form.previousVolunteeringInstitutions) }}
+                        </div>
+                    </div>
+
+                    {# Tarjeta de Contraseña #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Contraseña de Acceso</h3>
+                        <p class="text-sm text-gray-600 mb-4">Elige una contraseña segura para acceder a la plataforma. Las contraseñas deben coincidir.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>{{ form_row(form.user.password.first) }}</div>
+                            <div>{{ form_row(form.user.password.second) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 mt-8">
+                <button type="submit" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors shadow-md">Completar Inscripción</button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
