@@ -12,8 +12,9 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use App\Form\UserType;
-use Symfony\Component\Form\Extension\Core\Type\FileType;
+use Symfony\Component\Form\Extension\Core\Type\FileType; // ¡AÑADE ESTA LÍNEA!
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -28,7 +29,8 @@ class VolunteerType extends AbstractType
      * Builds the form structure for the Volunteer entity.
      *
      * This method defines all the fields required for a volunteer's profile, organized into sections.
-     * It includes personal details, emergency contacts, professional information, and qualifications.
+     * It includes personal details, emergency contacts, professional information, qualifications, and embeds the UserType form
+     * for account management.
      *
      * @param FormBuilderInterface $builder The form builder.
      * @param array $options The options for building the form, including a custom 'is_edit' option.
@@ -53,10 +55,8 @@ class VolunteerType extends AbstractType
                 'label' => 'Teléfono',
                 'required' => true,
             ])
-             ->add('user', UserType::class, [
+            ->add('user', UserType::class, [
                 'label' => false,
-                'is_edit' => $options['is_edit'],
-                'is_public_registration' => $options['is_public_registration'],
             ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
@@ -99,16 +99,9 @@ class VolunteerType extends AbstractType
                 'label' => 'Población',
                 'required' => true,
             ])
-            ->add('province', ChoiceType::class, [
+            ->add('province', TextType::class, [
                 'label' => 'Provincia',
                 'required' => true,
-                'choices' => [
-                    'A Coruña' => 'A Coruña',
-                    'Lugo' => 'Lugo',
-                    'Ourense' => 'Ourense',
-                    'Pontevedra' => 'Pontevedra',
-                ],
-                'placeholder' => 'Selecciona una provincia',
             ])
             ->add('postalCode', TextType::class, [
                 'label' => 'Código Postal',
@@ -123,14 +116,6 @@ class VolunteerType extends AbstractType
             ->add('contactPhone1', TextType::class, [
                 'label' => 'Teléfono de Emergencia',
                 'required' => true,
-            ])
-            ->add('contactPerson2', TextType::class, [
-                'label' => 'Nombre de Contacto de Emergencia 2',
-                'required' => false,
-            ])
-            ->add('contactPhone2', TextType::class, [
-                'label' => 'Teléfono de Emergencia 2',
-                'required' => false,
             ])
 
             // --- Datos de Salud ---
@@ -273,10 +258,6 @@ class VolunteerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
             'is_edit' => false,
-            'is_public_registration' => false,
         ]);
-
-        $resolver->setAllowedTypes('is_edit', 'bool');
-        $resolver->setAllowedTypes('is_public_registration', 'bool');
     }
 }
