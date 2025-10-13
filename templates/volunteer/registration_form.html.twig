@@ -44,15 +44,19 @@
                 {# Columna Izquierda: Foto y Datos Básicos #}
                 <div class="lg:col-span-1 space-y-8">
                     {# Tarjeta de la foto de perfil #}
-                    <div class="{{ card_styles }} text-center">
+                    <div class="{{ card_styles }} text-center" data-controller="image-preview">
                         <h3 class="{{ card_title_styles }}">Foto de Perfil</h3>
-                        <div class="mb-4">
-                            <div id="preview-element" class="w-32 h-32 rounded-full mx-auto bg-gray-200 flex items-center justify-center text-gray-500 text-sm mb-4 border-2 border-blue-200 shadow-inner">
-                                Sin Foto
-                            </div>
+                        <div class="mb-4" data-image-preview-target="preview">
+                            {# This will be populated by the image-preview controller #}
                         </div>
                         <div class="w-fit mx-auto">
-                            {{ form_row(form.profilePicture) }}
+                            {{ form_widget(form.profilePicture, {
+                                'attr': {
+                                    'data-image-preview-target': 'input',
+                                    'data-action': 'change->image-preview#displayPreview'
+                                }
+                            }) }}
+                            {{ form_errors(form.profilePicture) }}
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Sube una imagen JPG o PNG (máx. 1MB).</p>
                     </div>
@@ -176,32 +180,5 @@
     </div>
 </div>
 
-{# Bloque de JavaScript para la previsualización de la imagen #}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const profilePictureInput = document.querySelector('input[type="file"][name$="[profilePicture]"]');
-        let previewElement = document.getElementById('preview-element');
-
-        if (profilePictureInput && previewElement) {
-            profilePictureInput.addEventListener('change', function (event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function (e) {
-                        if (previewElement.tagName === 'DIV') {
-                            const newImg = document.createElement('img');
-                            newImg.id = 'preview-element';
-                            newImg.alt = 'Foto de perfil';
-                            newImg.className = 'w-32 h-32 rounded-full object-cover mx-auto border-2 border-blue-300 shadow';
-                            previewElement.parentNode.replaceChild(newImg, previewElement);
-                            previewElement = newImg;
-                        }
-                        previewElement.src = e.target.result;
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-        }
-    });
-</script>
+{# The old JavaScript block has been removed and its logic moved to the image-preview_controller.js #}
 {% endblock %}
