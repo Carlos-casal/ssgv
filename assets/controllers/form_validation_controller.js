@@ -199,9 +199,8 @@ export default class extends Controller {
                 this._showAgeModal();
                 // When modal is shown, we don't set a validation state yet.
                 // The user's choice in the modal will determine the next step.
-                // We return true here so the form can be submitted if this is the only "issue".
-                // The backend will have the final say.
-                return true;
+                // We return false here to prevent the form from being submitted until the user interacts with the modal.
+                return false;
             }
 
             // If 18 or older, it's valid.
