@@ -499,4 +499,22 @@ class VolunteerController extends AbstractController
             'end_date' => $endDate,
         ]);
     }
+
+    /**
+     * Renders a clean version of the registration form without any client-side validation.
+     * This is intended for testing and starting from a clean slate.
+     */
+    #[Route('/formulario_limpio', name: 'app_volunteer_clean_registration', methods: ['GET'])]
+    public function cleanRegistration(Request $request): Response
+    {
+        $volunteer = new Volunteer();
+        $user = new User();
+        $volunteer->setUser($user);
+
+        $form = $this->createForm(VolunteerType::class, $volunteer);
+
+        return $this->render('volunteer/clean_registration_form.html.twig', [
+            'form' => $form->createView(),
+        ]);
+    }
 }
