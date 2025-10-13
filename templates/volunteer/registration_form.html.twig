@@ -73,7 +73,7 @@
                                 {{ form_label(form.dateOfBirth) }}
                                 {{ form_widget(form.dateOfBirth, {
                                     'attr': {
-                                        'data-action': 'input->form-validation#calculateAndShowAge',
+                                        'data-action': 'change->form-validation#calculateAndShowAge',
                                         'data-form-validation-target': 'dateOfBirthInput'
                                     }
                                 }) }}
