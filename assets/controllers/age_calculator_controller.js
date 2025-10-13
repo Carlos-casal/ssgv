@@ -4,6 +4,7 @@ export default class extends Controller {
     static targets = ["dateInput", "modal", "ageText"];
 
     connect() {
+        console.log("AgeCalculator controller connected!");
         // Ensure the modal is hidden on load
         this.modalTarget.classList.add('hidden');
     }
