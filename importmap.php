@@ -22,6 +22,12 @@ return [
     '@symfony/stimulus-bundle' => [
         'path' => './vendor/symfony/stimulus-bundle/assets/dist/loader.js',
     ],
+    'stimulus-loading' => [
+        'path' => './vendor/symfony/stimulus-bundle/assets/dist/loading.js',
+    ],
+    './controllers/age_calculator_controller.js' => [
+        'path' => './assets/controllers/age_calculator_controller.js',
+    ],
     '@hotwired/turbo' => [
         'version' => '7.3.0',
     ],
