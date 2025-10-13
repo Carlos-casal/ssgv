@@ -15,17 +15,10 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = [
-        "dateOfBirthInput",
-        "ageModal",
-    ];
-
     connect() {
         // Set initial state for conditional fields when the form loads.
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
-        // Set the max date for the date of birth input to prevent selecting future dates for under-16s.
-        this.setDateOfBirthMaxDate();
     }
 
     /**
@@ -114,39 +107,6 @@ export default class extends Controller {
         }
     }
 
-    // --- Age Modal ---
-
-    /**
-     * Displays the age verification modal.
-     */
-    _showAgeModal() {
-        if (this.hasAgeModalTarget) {
-            this.ageModalTarget.classList.remove('hidden');
-        }
-    }
-
-    /**
-     * Handles the user's acceptance of the parental authorization.
-     * Hides the modal and makes the date input read-only to prevent changes.
-     */
-    acceptAuthorization() {
-        if (this.hasAgeModalTarget) {
-            this.ageModalTarget.classList.add('hidden');
-        }
-        if (this.hasDateOfBirthInputTarget) {
-            this.dateOfBirthInputTarget.readOnly = true;
-            // Re-validate to ensure the green check appears and stays
-            this._validateInput(this.dateOfBirthInputTarget);
-        }
-    }
-
-    /**
-     * Handles the user's cancellation of the authorization.
-     * Redirects the user away from the registration form.
-     */
-    cancelAuthorization() {
-        window.location.href = '/'; // Redirect to a safe page (e.g., homepage).
-    }
 
     /**
      * Parses a YYYY-MM-DD string into a Date object in a timezone-safe way.
@@ -177,36 +137,6 @@ export default class extends Controller {
             return true;
         }
 
-        // Special handling for date of birth to manage the 16-18 age gate.
-        if (input.id === 'volunteer_dateOfBirth') {
-            const birthDate = this._parseDate(input.value);
-            if (!birthDate || isNaN(birthDate.getTime())) {
-                this._updateFieldValidationUI(input, false, 'La fecha no es válida.');
-                return false;
-            }
-
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
-
-            const sixteenYearsAgo = new Date(today.getFullYear() - 16, today.getMonth(), today.getDate());
-            if (birthDate > sixteenYearsAgo) {
-                this._updateFieldValidationUI(input, false, 'El voluntario debe tener al menos 16 años.');
-                return false;
-            }
-
-            const eighteenYearsAgo = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-            if (birthDate > eighteenYearsAgo) {
-                this._showAgeModal();
-                // When modal is shown, we don't set a validation state yet.
-                // The user's choice in the modal will determine the next step.
-                // We return false here to prevent the form from being submitted until the user interacts with the modal.
-                return false;
-            }
-
-            // If 18 or older, it's valid.
-            this._updateFieldValidationUI(input, true, '');
-            return true;
-        }
 
         // Standard validation for all other fields.
         const [isValid, message] = this._getValidationRules(input);
@@ -331,21 +261,6 @@ export default class extends Controller {
     }
 
     // --- Misc ---
-
-    /**
-     * Sets the 'max' attribute for the date of birth input to prevent selecting dates for anyone under 16.
-     */
-    setDateOfBirthMaxDate() {
-        if (!this.hasDateOfBirthInputTarget) return;
-
-        const today = new Date();
-        const maxYear = today.getFullYear() - 16;
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-
-        const maxDate = `${maxYear}-${month}-${day}`;
-        this.dateOfBirthInputTarget.setAttribute('max', maxDate);
-    }
 
     /**
      * Resets the form to its initial state to allow for another entry.
