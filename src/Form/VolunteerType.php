@@ -63,6 +63,9 @@ class VolunteerType extends AbstractType
                 'widget' => 'single_text',
                 'html5' => true,
                 'required' => true,
+                'attr' => [
+                    'max' => (new \DateTime())->modify('-16 years')->format('Y-m-d'),
+                ],
             ])
             ->add('profession', TextType::class, [
                 'label' => 'Profesión',
