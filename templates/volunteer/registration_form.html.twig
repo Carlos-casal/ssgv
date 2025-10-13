@@ -67,12 +67,14 @@
                             <div>{{ form_row(form.user.email) }}</div>
                             <div>{{ form_row(form.dni) }}</div>
                             <div data-controller="age-calculator">
-                                {{ form_row(form.dateOfBirth, {
+                                {{ form_label(form.dateOfBirth) }}
+                                {{ form_widget(form.dateOfBirth, {
                                     'attr': {
                                         'data-action': 'input->age-calculator#calculateAndShowAge',
                                         'data-age-calculator-target': 'dateInput'
                                     }
                                 }) }}
+                                {{ form_errors(form.dateOfBirth) }}
 
                                 {# Modal Structure #}
                                 <div data-age-calculator-target="modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" id="age-modal">
