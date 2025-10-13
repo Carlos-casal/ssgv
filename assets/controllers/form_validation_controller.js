@@ -15,10 +15,47 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
+    static targets = ["modal", "ageText", "dateOfBirthInput"];
+
     connect() {
         // Set initial state for conditional fields when the form loads.
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
+        if (this.hasModalTarget) {
+            this.modalTarget.classList.add('hidden');
+        }
+    }
+
+    calculateAndShowAge() {
+        const birthDateString = this.dateOfBirthInputTarget.value;
+        if (!birthDateString) {
+            return;
+        }
+
+        const birthDate = new Date(birthDateString);
+        const today = new Date();
+
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDifference = today.getMonth() - birthDate.getMonth();
+
+        if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birthDate.getDate())) {
+            age--;
+        }
+
+        this.ageTextTarget.textContent = `Tienes ${age} años.`;
+        this.openModal();
+    }
+
+    openModal() {
+        if (this.hasModalTarget) {
+            this.modalTarget.classList.remove('hidden');
+        }
+    }
+
+    closeModal() {
+        if (this.hasModalTarget) {
+            this.modalTarget.classList.add('hidden');
+        }
     }
 
     /**
