@@ -15,10 +15,13 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
+    static targets = ["dateOfBirthInput"];
+
     connect() {
         // Set initial state for conditional fields when the form loads.
         this.toggleDrivingLicenseExpiry();
         this.togglePreviousInstitutions();
+        this.setDateOfBirthMaxDate();
     }
 
     /**
@@ -261,6 +264,21 @@ export default class extends Controller {
     }
 
     // --- Misc ---
+
+    /**
+     * Sets the 'max' attribute for the date of birth input to prevent selecting dates for anyone under 18.
+     */
+    setDateOfBirthMaxDate() {
+        if (!this.hasDateOfBirthInputTarget) return;
+
+        const today = new Date();
+        const maxYear = today.getFullYear() - 18;
+        const month = String(today.getMonth() + 1).padStart(2, '0');
+        const day = String(today.getDate()).padStart(2, '0');
+
+        const maxDate = `${maxYear}-${month}-${day}`;
+        this.dateOfBirthInputTarget.setAttribute('max', maxDate);
+    }
 
     /**
      * Resets the form to its initial state to allow for another entry.
