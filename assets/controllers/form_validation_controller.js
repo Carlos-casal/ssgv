@@ -60,7 +60,7 @@ export default class extends Controller {
             age--;
         }
 
-        if (age < 16) {
+        if (age < 18) {
             this.openModal();
         }
         // Also run standard validation to show checkmark
