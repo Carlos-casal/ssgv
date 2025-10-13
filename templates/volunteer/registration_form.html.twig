@@ -69,7 +69,7 @@
                             <div data-controller="age-calculator">
                                 {{ form_row(form.dateOfBirth, {
                                     'attr': {
-                                        'data-action': 'change->age-calculator#calculateAndShowAge',
+                                        'data-action': 'input->age-calculator#calculateAndShowAge',
                                         'data-age-calculator-target': 'dateInput'
                                     }
                                 }) }}
