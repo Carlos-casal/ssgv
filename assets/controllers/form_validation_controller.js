@@ -208,11 +208,22 @@ export default class extends Controller {
      * Removes all validation indicators from a field.
      */
     _removeValidationUI(input) {
-        input.classList.remove('border-red-500', 'border-green-500');
-        const group = input.closest('div');
-        const errorElement = group.querySelector('.validation-error');
-        if (errorElement) {
-            errorElement.remove();
+        input.classList.remove('is-valid', 'is-invalid');
+
+        const fieldContainer = input.closest('[data-field-container]');
+        if (!fieldContainer) return;
+
+        // Remove validation icon
+        const icon = input.parentElement.querySelector('.validation-icon');
+        if (icon) {
+            icon.remove();
+        }
+
+        // Hide and clear error message
+        const errorContainer = fieldContainer.querySelector('[data-error-container]');
+        if (errorContainer) {
+            errorContainer.textContent = '';
+            errorContainer.classList.add('hidden');
         }
     }
 
