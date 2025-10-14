@@ -20,7 +20,7 @@
         </div>
 
         {# Contenido del formulario con padding #}
-        <div class="p-6 sm:p-8" data-controller="age-modal">
+        <div class="p-6 sm:p-8" data-controller="age-modal simple-validation">
             {{ form_start(form, {'attr': {'class': 'space-y-8'}, 'enctype': 'multipart/form-data'}) }}
 
             {# CONTENEDOR PRINCIPAL: Grid para las tarjetas #}
@@ -31,13 +31,9 @@
                     {# Tarjeta de la foto de perfil #}
                     <div class="{{ card_styles }} text-center">
                         <h3 class="{{ card_title_styles }}">Foto de Perfil</h3>
-                        <div class="mb-4">
-                            <div class="w-32 h-32 rounded-full mx-auto bg-gray-200 flex items-center justify-center text-gray-500 text-sm mb-4 border-2 border-blue-200 shadow-inner">
-                                Sin Foto
-                            </div>
-                        </div>
                         <div class="w-fit mx-auto">
-                            {{ form_row(form.profilePicture) }}
+                            {{ form_widget(form.profilePicture, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.profilePicture) }}
                         </div>
                         <p class="text-xs text-gray-500 mt-2">Sube una imagen JPG o PNG (máx. 1MB).</p>
                     </div>
@@ -49,16 +45,36 @@
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Datos Personales</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                            <div>{{ form_row(form.name) }}</div>
-                            <div>{{ form_row(form.lastName) }}</div>
-                            <div>{{ form_row(form.phone) }}</div>
-                            <div>{{ form_row(form.user.email) }}</div>
-                            <div>{{ form_row(form.dni) }}</div>
+                            <div>
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.name) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.lastName) }}
+                                {{ form_widget(form.lastName, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.lastName) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.phone) }}
+                                {{ form_widget(form.phone, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.phone) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.user.email) }}
+                                {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.user.email) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.dni) }}
+                                {{ form_widget(form.dni, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.dni) }}
+                            </div>
                             <div>
                                 {{ form_label(form.dateOfBirth) }}
                                 {{ form_widget(form.dateOfBirth, {
                                     'attr': {
-                                        'data-action': 'change->age-modal#calculateAndShowAge',
+                                        'data-action': 'change->age-modal#calculateAndShowAge blur->simple-validation#validate',
                                         'data-age-modal-target': 'dateOfBirthInput'
                                     }
                                 }) }}
@@ -88,11 +104,31 @@
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Dirección</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>{{ form_row(form.streetType) }}</div>
-                            <div class="md:col-span-2">{{ form_row(form.address) }}</div>
-                            <div>{{ form_row(form.postalCode) }}</div>
-                            <div>{{ form_row(form.city) }}</div>
-                            <div>{{ form_row(form.province) }}</div>
+                            <div>
+                                {{ form_label(form.streetType) }}
+                                {{ form_widget(form.streetType, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.streetType) }}
+                            </div>
+                            <div class="md:col-span-2">
+                                {{ form_label(form.address) }}
+                                {{ form_widget(form.address, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.address) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.postalCode) }}
+                                {{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.postalCode) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.city) }}
+                                {{ form_widget(form.city, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.city) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.province) }}
+                                {{ form_widget(form.province, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.province) }}
+                            </div>
                         </div>
                     </div>
 
@@ -100,45 +136,117 @@
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Contacto de Emergencia</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>{{ form_row(form.contactPerson1) }}</div>
-                            <div>{{ form_row(form.contactPhone1) }}</div>
-                            <div>{{ form_row(form.contactPerson2) }}</div>
-                            <div>{{ form_row(form.contactPhone2) }}</div>
+                            <div>
+                                {{ form_label(form.contactPerson1) }}
+                                {{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.contactPerson1) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.contactPhone1) }}
+                                {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.contactPhone1) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.contactPerson2) }}
+                                {{ form_widget(form.contactPerson2, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.contactPerson2) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.contactPhone2) }}
+                                {{ form_widget(form.contactPhone2, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.contactPhone2) }}
+                            </div>
                         </div>
                     </div>
 
                     {# Tarjeta de Información Médica #}
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Información Médica</h3>
-                        {{ form_row(form.foodAllergies) }}
-                        {{ form_row(form.otherAllergies) }}
+                        <div>
+                            {{ form_label(form.foodAllergies) }}
+                            {{ form_widget(form.foodAllergies, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.foodAllergies) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.otherAllergies) }}
+                            {{ form_widget(form.otherAllergies, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.otherAllergies) }}
+                        </div>
                     </div>
 
                     {# Tarjeta de Cualificaciones #}
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Cualificaciones Profesionales</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>{{ form_row(form.profession) }}</div>
-                            <div>{{ form_row(form.employmentStatus) }}</div>
+                            <div>
+                                {{ form_label(form.profession) }}
+                                {{ form_widget(form.profession, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.profession) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.employmentStatus) }}
+                                {{ form_widget(form.employmentStatus, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.employmentStatus) }}
+                            </div>
                         </div>
-                        <div class="mb-4">{{ form_row(form.drivingLicenses) }}</div>
+                        <div class="mb-4">
+                            {{ form_label(form.drivingLicenses) }}
+                            {{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.drivingLicenses) }}
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div>{{ form_row(form.drivingLicenseExpiryDate) }}</div>
-                            <div class="flex items-center h-full">{{ form_row(form.habilitadoConducir) }}</div>
+                            <div>
+                                {{ form_label(form.drivingLicenseExpiryDate) }}
+                                {{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.drivingLicenseExpiryDate) }}
+                            </div>
+                            <div class="flex items-center h-full">
+                                {{ form_label(form.habilitadoConducir) }}
+                                {{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.habilitadoConducir) }}
+                            </div>
                         </div>
-                        <div class="mb-4">{{ form_row(form.navigationLicenses) }}</div>
-                        {{ form_row(form.otherQualifications) }}
+                        <div class="mb-4">
+                            {{ form_label(form.navigationLicenses) }}
+                            {{ form_widget(form.navigationLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.navigationLicenses) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.otherQualifications) }}
+                            {{ form_widget(form.otherQualifications, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.otherQualifications) }}
+                        </div>
                     </div>
 
                     {# Tarjeta de Otros Datos #}
                     <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Otros Datos e Intereses</h3>
                         <div class="space-y-4">
-                            {{ form_row(form.languages) }}
-                            {{ form_row(form.motivation) }}
-                            {{ form_row(form.howKnown) }}
-                            {{ form_row(form.hasVolunteeredBefore) }}
-                            {{ form_row(form.previousVolunteeringInstitutions) }}
+                            <div>
+                                {{ form_label(form.languages) }}
+                                {{ form_widget(form.languages, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.languages) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.motivation) }}
+                                {{ form_widget(form.motivation, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.motivation) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.howKnown) }}
+                                {{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.howKnown) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.hasVolunteeredBefore) }}
+                                {{ form_widget(form.hasVolunteeredBefore, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.hasVolunteeredBefore) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.previousVolunteeringInstitutions) }}
+                                {{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.previousVolunteeringInstitutions) }}
+                            </div>
                         </div>
                     </div>
 
@@ -147,8 +255,16 @@
                         <h3 class="{{ card_title_styles }}">Contraseña de Acceso</h3>
                         <p class="text-sm text-gray-600 mb-4">Elige una contraseña segura para acceder a la plataforma. Las contraseñas deben coincidir.</p>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>{{ form_row(form.user.password.first) }}</div>
-                            <div>{{ form_row(form.user.password.second) }}</div>
+                            <div>
+                                {{ form_label(form.user.password.first) }}
+                                {{ form_widget(form.user.password.first, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.user.password.first) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.user.password.second) }}
+                                {{ form_widget(form.user.password.second, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.user.password.second) }}
+                            </div>
                         </div>
                     </div>
                 </div>
