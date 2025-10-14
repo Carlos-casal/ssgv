@@ -36,10 +36,10 @@ export default class extends Controller {
         icon.className = 'validation-icon absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center';
 
         if (isValid) {
-            input.classList.add('is-valid');
+            input.style.borderColor = '#22c55e'; // Tailwind's green-500
             icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
         } else {
-            input.classList.add('is-invalid');
+            input.style.borderColor = '#ef4444'; // Tailwind's red-500
             icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
         }
 
@@ -56,7 +56,7 @@ export default class extends Controller {
      * @param {HTMLElement} input The input element.
      */
     _removeValidationUI(input) {
-        input.classList.remove('is-valid', 'is-invalid');
+        input.style.borderColor = ''; // Revert to default border color
         const icon = input.parentElement.querySelector('.validation-icon');
         if (icon) {
             icon.remove();
