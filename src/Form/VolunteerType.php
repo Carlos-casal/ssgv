@@ -13,7 +13,6 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use App\Form\UserType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
-use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormEvent;
@@ -165,13 +164,21 @@ class VolunteerType extends AbstractType
                 'expanded' => true,
                 'required' => false,
             ])
-            ->add('drivingLicenses', CollectionType::class, [
-                'entry_type' => DrivingLicenseType::class,
-                'entry_options' => ['label' => false],
-                'allow_add' => true,
-                'allow_delete' => true,
-                'by_reference' => false,
+            ->add('drivingLicenses', ChoiceType::class, [
                 'label' => 'Permisos de Conducción',
+                'choices' => [
+                    'A1' => 'A1', 'A' => 'A', 'B' => 'B', 'C1' => 'C1',
+                    'C' => 'C', 'D1' => 'D1', 'D' => 'D', 'EC' => 'EC',
+                ],
+                'multiple' => true,
+                'expanded' => true,
+                'required' => false,
+            ])
+            ->add('drivingLicenseExpiryDate', DateType::class, [
+                'label' => 'Fecha de Caducidad (Carnet Conducir)',
+                'widget' => 'single_text',
+                'html5' => true,
+                'required' => false,
             ])
             ->add('navigationLicenses', ChoiceType::class, [
                 'label' => 'Permisos de Navegación',
@@ -231,7 +238,7 @@ class VolunteerType extends AbstractType
             ])
             ->add('previousVolunteeringInstitutions', TextareaType::class, [
                 'label' => 'Si es así, ¿dónde?',
-                'required' => false, // Se hará obligatorio con JS y listener
+                'required' => false,
                 'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
             ])
 
@@ -253,7 +260,6 @@ class VolunteerType extends AbstractType
             $data = $event->getData();
             $form = $event->getForm();
 
-            // Lógica para la experiencia previa de voluntariado
             if (isset($data['hasVolunteeredBefore']) && $data['hasVolunteeredBefore'] === '1') { // '1' para 'Sí'
                 $form->add('previousVolunteeringInstitutions', TextareaType::class, [
                     'label' => 'Si es así, ¿dónde?',
