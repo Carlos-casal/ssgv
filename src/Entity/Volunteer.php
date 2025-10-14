@@ -178,6 +178,12 @@ class Volunteer
     private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
 
     /**
+     * @var bool|null Whether the volunteer is authorized to drive association vehicles.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
+    private ?bool $habilitadoConducir = false;
+
+    /**
      * @var string|null Languages spoken by the volunteer.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -679,6 +685,26 @@ class Volunteer
     public function setDrivingLicenseExpiryDate(?\DateTimeInterface $drivingLicenseExpiryDate): static
     {
         $this->drivingLicenseExpiryDate = $drivingLicenseExpiryDate;
+        return $this;
+    }
+
+    /**
+     * Gets whether the volunteer is authorized to drive association vehicles.
+     * @return bool|null
+     */
+    public function isHabilitadoConducir(): ?bool
+    {
+        return $this->habilitadoConducir;
+    }
+
+    /**
+     * Sets whether the volunteer is authorized to drive association vehicles.
+     * @param bool|null $habilitadoConducir
+     * @return static
+     */
+    public function setHabilitadoConducir(?bool $habilitadoConducir): static
+    {
+        $this->habilitadoConducir = $habilitadoConducir;
         return $this;
     }
 

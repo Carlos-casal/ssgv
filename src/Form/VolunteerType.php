@@ -186,8 +186,30 @@ class VolunteerType extends AbstractType
                 'required' => false,
                 'attr' => ['placeholder' => 'Otros títulos, cursos, etc.'],
             ])
+            ->add('employmentStatus', ChoiceType::class, [
+                'label' => 'Situación Laboral',
+                'choices' => [
+                    'Estudiante' => 'estudiante',
+                    'Empleado a tiempo completo' => 'empleado_completo',
+                    'Empleado a tiempo parcial' => 'empleado_parcial',
+                    'Autónomo' => 'autonomo',
+                    'Desempleado' => 'desempleado',
+                    'Jubilado' => 'jubilado',
+                    'Otro' => 'otro',
+                ],
+                'required' => true,
+            ])
+            ->add('habilitadoConducir', CheckboxType::class, [
+                'label'    => 'Habilitado para conducir vehículos de la asociación',
+                'required' => false,
+            ])
 
             // --- Motivación e Intereses ---
+            ->add('languages', TextType::class, [
+                'label' => 'Idiomas',
+                'required' => false,
+                'attr' => ['placeholder' => 'Ej: Inglés, Francés...'],
+            ])
             ->add('motivation', TextareaType::class, [
                 'label' => 'Motivación para ser voluntario',
                 'required' => true,
