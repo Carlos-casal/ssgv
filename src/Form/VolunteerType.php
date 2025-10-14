@@ -164,21 +164,13 @@ class VolunteerType extends AbstractType
                 'expanded' => true,
                 'required' => false,
             ])
-            ->add('drivingLicenses', ChoiceType::class, [
+            ->add('drivingLicenses', CollectionType::class, [
+                'entry_type' => DrivingLicenseType::class,
+                'entry_options' => ['label' => false],
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
                 'label' => 'Permisos de Conducción',
-                'choices' => [
-                    'A1' => 'A1', 'A' => 'A', 'B' => 'B', 'C1' => 'C1',
-                    'C' => 'C', 'D1' => 'D1', 'D' => 'D', 'EC' => 'EC',
-                ],
-                'multiple' => true,
-                'expanded' => true,
-                'required' => false,
-            ])
-            ->add('drivingLicenseExpiryDate', DateType::class, [
-                'label' => 'Fecha de Caducidad (Carnet Conducir)',
-                'widget' => 'single_text',
-                'html5' => true,
-                'required' => false, // Se hará obligatorio con JS y listener
             ])
             ->add('navigationLicenses', ChoiceType::class, [
                 'label' => 'Permisos de Navegación',
@@ -259,19 +251,6 @@ class VolunteerType extends AbstractType
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $data = $event->getData();
             $form = $event->getForm();
-
-            // Lógica para la fecha de caducidad del carnet de conducir
-            if (!empty($data['drivingLicenses'])) {
-                $form->add('drivingLicenseExpiryDate', DateType::class, [
-                    'label' => 'Fecha de Caducidad (Carnet Conducir)',
-                    'widget' => 'single_text',
-                    'html5' => true,
-                    'required' => true,
-                    'constraints' => [
-                        new NotBlank(['message' => 'La fecha de caducidad es obligatoria si seleccionas un permiso.']),
-                    ],
-                ]);
-            }
 
             // Lógica para la experiencia previa de voluntariado
             if (isset($data['hasVolunteeredBefore']) && $data['hasVolunteeredBefore'] === '1') { // '1' para 'Sí'
