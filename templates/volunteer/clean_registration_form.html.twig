@@ -191,10 +191,22 @@
                                 {{ form_errors(form.employmentStatus) }}
                             </div>
                         </div>
-                        <div class="mb-4">
-                            {{ form_label(form.drivingLicenses) }}
-                            {{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
-                            {{ form_errors(form.drivingLicenses) }}
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div>
+                                {{ form_label(form.drivingLicenses) }}
+                                {{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.drivingLicenses) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.navigationLicenses) }}
+                                {{ form_widget(form.navigationLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.navigationLicenses) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.specificQualifications) }}
+                                {{ form_widget(form.specificQualifications, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_errors(form.specificQualifications) }}
+                            </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
@@ -207,11 +219,6 @@
                                 {{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
                                 {{ form_errors(form.habilitadoConducir) }}
                             </div>
-                        </div>
-                        <div class="mb-4">
-                            {{ form_label(form.navigationLicenses) }}
-                            {{ form_widget(form.navigationLicenses, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
-                            {{ form_errors(form.navigationLicenses) }}
                         </div>
                         <div>
                             {{ form_label(form.otherQualifications) }}
