@@ -32,7 +32,11 @@ export default class extends Controller {
         }
 
         if (this.hasAgeTextTarget) {
-            this.ageTextTarget.textContent = `La edad calculada es: ${age} años.`;
+            if (age < 18) {
+                this.ageTextTarget.innerHTML = `Tienes ${age} años. <br><br> Al ser menor de edad, necesitarás presentar una autorización de tu tutor legal. <br> La fecha de nacimiento no podrá ser modificada una vez completado el registro.`;
+            } else {
+                this.ageTextTarget.textContent = `La edad calculada es: ${age} años.`;
+            }
         }
 
         this.openModal();
