@@ -59,7 +59,9 @@ export default class extends Controller {
         }
 
         const icon = document.createElement('span');
-        icon.className = 'validation-icon absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center';
+        const isDateInput = input.type === 'date';
+        const iconPositionClass = isDateInput ? 'right-10' : 'right-3';
+        icon.className = `validation-icon absolute ${iconPositionClass} top-1/2 -translate-y-1/2 flex items-center justify-center`;
 
         if (isValid) {
             input.style.borderColor = '#22c55e'; // Tailwind's green-500
