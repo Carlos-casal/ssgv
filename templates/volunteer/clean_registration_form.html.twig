@@ -191,16 +191,20 @@
                                 {{ form_errors(form.employmentStatus) }}
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4" data-controller="license-expiry">
-                            <div data-license-expiry-target="licenseContainer">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
+                            <div data-controller="toggle-visibility">
                                 {{ form_label(form.drivingLicenses) }}
-                                <div class="flex flex-col space-y-2 mt-2" data-license-expiry-target="checkboxes">
-                                    {# Checkboxes will be dynamically populated or handled by JS #}
+                                <div class="flex flex-col space-y-2 mt-2">
+                                    {% for child in form.drivingLicenses %}
+                                        <div class="flex items-center">
+                                            {{ form_widget(child, {'attr': {'data-toggle-visibility-target': 'checkbox', 'data-action': 'change->toggle-visibility#toggle'}}) }}
+                                            <label class="ml-2 text-sm font-medium text-gray-900">{{ child.vars.label }}</label>
+                                        </div>
+                                    {% endfor %}
                                 </div>
-                                <div data-license-expiry-target="prototypes" data-prototype="{{ form_widget(form.drivingLicenses.vars.prototype)|e('html_attr') }}"></div>
                                 {{ form_errors(form.drivingLicenses) }}
                             </div>
-                             <div>
+                            <div>
                                 {{ form_label(form.navigationLicenses) }}
                                 <div class="flex flex-col space-y-2 mt-2">
                                     {% for child in form.navigationLicenses %}
@@ -226,6 +230,11 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div data-toggle-visibility-target="targetToToggle">
+                                {{ form_label(form.drivingLicenseExpiryDate) }}
+                                {{ form_widget(form.drivingLicenseExpiryDate) }}
+                                {{ form_errors(form.drivingLicenseExpiryDate) }}
+                            </div>
                             <div class="flex items-center h-full">
                                 {{ form_label(form.habilitadoConducir) }}
                                 {{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}

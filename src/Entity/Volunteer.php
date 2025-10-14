@@ -166,10 +166,16 @@ class Volunteer
     private ?string $employmentStatus = null;
 
     /**
-     * @var array|null An array of driving license objects, each with a 'type' and 'expiry' date.
+     * @var array|null An array of driving licenses the volunteer holds.
      */
     #[ORM\Column(type: Types::JSON, nullable: true)]
-    private ?array $drivingLicenses = [];
+    private ?array $drivingLicenses = null;
+
+    /**
+     * @var \DateTimeInterface|null The expiry date of the driving license.
+     */
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
 
     /**
      * @var bool|null Whether the volunteer is authorized to drive association vehicles.
@@ -662,6 +668,25 @@ class Volunteer
         return $this;
     }
 
+    /**
+     * Gets the expiry date of the driving license.
+     * @return \DateTimeInterface|null
+     */
+    public function getDrivingLicenseExpiryDate(): ?\DateTimeInterface
+    {
+        return $this->drivingLicenseExpiryDate;
+    }
+
+    /**
+     * Sets the expiry date of the driving license.
+     * @param \DateTimeInterface|null $drivingLicenseExpiryDate The expiry date.
+     * @return static
+     */
+    public function setDrivingLicenseExpiryDate(?\DateTimeInterface $drivingLicenseExpiryDate): static
+    {
+        $this->drivingLicenseExpiryDate = $drivingLicenseExpiryDate;
+        return $this;
+    }
 
     /**
      * Gets whether the volunteer is authorized to drive association vehicles.
