@@ -102,9 +102,16 @@ class VolunteerType extends AbstractType
                 'label' => 'Población',
                 'required' => true,
             ])
-            ->add('province', TextType::class, [
+            ->add('province', ChoiceType::class, [
                 'label' => 'Provincia',
                 'required' => true,
+                'choices' => [
+                    'A Coruña' => 'A Coruña',
+                    'Lugo' => 'Lugo',
+                    'Ourense' => 'Ourense',
+                    'Pontevedra' => 'Pontevedra',
+                ],
+                'placeholder' => 'Selecciona una provincia',
             ])
             ->add('postalCode', TextType::class, [
                 'label' => 'Código Postal',
