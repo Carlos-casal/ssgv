@@ -27,11 +27,13 @@ export default class extends Controller {
         } else if (input.type === 'email') {
             isValid = this._validateEmail(input.value);
         } else if (input.id.includes('Phone')) {
+            const value = input.value.trim();
             // If the field is not required and is empty, it's valid.
-            if (!input.required && input.value.trim() === '') {
+            if (!input.required && value === '') {
                 isValid = true;
             } else {
-                isValid = this._validatePhone(input.value);
+                // If it's not empty, it MUST be valid.
+                isValid = this._validatePhone(value);
             }
         } else {
             // Generic validation for all other required fields
@@ -142,6 +144,7 @@ export default class extends Controller {
      */
     _validatePhone(value) {
         // A 9-digit number for Spain, or a + followed by 8-15 digits for international.
+        // Anchors (^) and ($) are used to ensure the whole string matches.
         const phoneRegex = /^(?:\d{9}|(?:\+)\d{8,15})$/;
         return phoneRegex.test(value.replace(/\s+/g, ''));
     }
