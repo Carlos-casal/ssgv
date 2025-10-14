@@ -26,6 +26,8 @@ export default class extends Controller {
             isValid = this._validateDniNie(input.value);
         } else if (input.type === 'email') {
             isValid = this._validateEmail(input.value);
+        } else if (input.id.includes('Phone')) {
+            isValid = this._validatePhone(input.value);
         } else {
             // Generic validation for all other required fields
             isValid = input.value.trim() !== '';
@@ -126,5 +128,15 @@ export default class extends Controller {
         if (value.trim() === '') return false;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(value);
+    }
+
+    /**
+     * Validates a phone number format (Spanish 9-digit or international).
+     * @param {string} value The phone number to validate.
+     * @returns {boolean} True if valid.
+     */
+    _validatePhone(value) {
+        const phoneRegex = /^(?:\d{9}|(?:\+)\d{1,15})$/;
+        return phoneRegex.test(value.replace(/\s+/g, ''));
     }
 }
