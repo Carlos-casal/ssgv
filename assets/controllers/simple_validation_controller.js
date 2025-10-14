@@ -19,7 +19,16 @@ export default class extends Controller {
             return;
         }
 
-        const isValid = input.value.trim() !== '';
+        let isValid;
+
+        // Use specific validation for DNI/NIE field
+        if (input.id === 'volunteer_dni') {
+            isValid = this._validateDniNie(input.value);
+        } else {
+            // Generic validation for all other required fields
+            isValid = input.value.trim() !== '';
+        }
+
         this._updateFieldValidationUI(input, isValid);
     }
 
@@ -78,5 +87,29 @@ export default class extends Controller {
         if (icon) {
             icon.remove();
         }
+    }
+
+    /**
+     * Converts the input of an event target to uppercase.
+     * @param {Event} event The input event.
+     */
+    toUpperCase(event) {
+        event.target.value = event.target.value.toUpperCase();
+    }
+
+    /**
+     * Validates a Spanish DNI or NIE number.
+     * @param {string} value The DNI/NIE to validate.
+     * @returns {boolean} True if valid.
+     */
+    _validateDniNie(value) {
+        const dni = value.toUpperCase().trim();
+        if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
+
+        const numberPart = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
+        const letter = dni.substr(dni.length - 1, 1);
+        const controlLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart, 10) % 23];
+
+        return letter === controlLetter;
     }
 }

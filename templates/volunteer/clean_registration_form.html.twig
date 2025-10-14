@@ -67,7 +67,7 @@
                             </div>
                             <div>
                                 {{ form_label(form.dni) }}
-                                {{ form_widget(form.dni, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.dni, {'attr': {'data-action': 'blur->simple-validation#validate input->simple-validation#toUpperCase'}}) }}
                                 {{ form_errors(form.dni) }}
                             </div>
                             <div>
