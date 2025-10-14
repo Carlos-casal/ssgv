@@ -26,7 +26,7 @@ export default class extends Controller {
             isValid = this._validateDniNie(input.value);
         } else if (input.type === 'email') {
             isValid = this._validateEmail(input.value);
-        } else if (input.id.includes('Phone')) {
+        } else if (['volunteer_phone', 'volunteer_contactPhone1', 'volunteer_contactPhone2'].includes(input.id)) {
             const value = input.value.trim();
             // If the field is not required and is empty, it's valid.
             if (!input.required && value === '') {

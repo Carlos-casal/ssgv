@@ -31,6 +31,11 @@ class ApiController extends AbstractController
 
         $data = $poblaciones[$province] ?? [];
 
+        // Sort the data alphabetically by name
+        usort($data, function ($a, $b) {
+            return strcmp($a['name'], $b['name']);
+        });
+
         return $this->json($data);
     }
 }

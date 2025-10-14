@@ -24,12 +24,16 @@ export default class extends Controller {
         const province = this.provinceTarget.value;
         const citySelect = this.cityTarget;
 
+        // Always clear previous options and set a default state
+        citySelect.innerHTML = '<option value="">Cargando...</option>';
+        citySelect.disabled = true;
+
         if (!province) {
-            this._clearAndDisable(citySelect, 'Selecciona una provincia primero');
+            citySelect.innerHTML = '<option value="">Selecciona una provincia primero</option>';
             return;
         }
 
-        const url = this.urlValue + '?province=' + encodeURIComponent(province);
+        const url = `${this.urlValue}?province=${encodeURIComponent(province)}`;
 
         try {
             const response = await fetch(url);
@@ -38,15 +42,21 @@ export default class extends Controller {
             }
             const cities = await response.json();
 
-            this._clearAndEnable(citySelect, 'Selecciona una población');
-            cities.forEach(city => {
-                const option = new Option(city.name, city.name);
-                citySelect.add(option);
-            });
+            citySelect.innerHTML = ''; // Clear the "Cargando..." message
+            citySelect.add(new Option('Selecciona una población', ''));
+
+            if (cities.length > 0) {
+                cities.forEach(city => {
+                    citySelect.add(new Option(city.name, city.name));
+                });
+                citySelect.disabled = false;
+            } else {
+                citySelect.innerHTML = '<option value="">No hay poblaciones disponibles</option>';
+            }
 
         } catch (error) {
             console.error("Could not fetch cities:", error);
-            this._clearAndDisable(citySelect, 'Error al cargar poblaciones');
+            citySelect.innerHTML = '<option value="">Error al cargar poblaciones</option>';
         }
     }
 
