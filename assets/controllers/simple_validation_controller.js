@@ -31,7 +31,24 @@ export default class extends Controller {
     _updateFieldValidationUI(input, isValid) {
         this._removeValidationUI(input); // Clear previous state first.
 
-        const iconContainer = input.parentElement;
+        // --- DOM Restructuring for Icon Positioning ---
+        // Get the parent of the input field.
+        const originalParent = input.parentElement;
+        let wrapper = originalParent.querySelector('.input-wrapper');
+
+        // If the wrapper doesn't exist, create it. This is a one-time operation.
+        if (!wrapper) {
+            // Create the new wrapper div.
+            wrapper = document.createElement('div');
+            wrapper.className = 'input-wrapper relative';
+
+            // Insert the wrapper into the DOM right after the input field.
+            originalParent.insertBefore(wrapper, input.nextSibling);
+
+            // Move the input field inside the new wrapper.
+            wrapper.appendChild(input);
+        }
+
         const icon = document.createElement('span');
         icon.className = 'validation-icon absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center';
 
@@ -43,12 +60,8 @@ export default class extends Controller {
             icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
         }
 
-        // Ensure the parent element can contain the absolutely positioned icon
-        if (getComputedStyle(iconContainer).position === 'static') {
-            iconContainer.style.position = 'relative';
-        }
-
-        iconContainer.appendChild(icon);
+        // Append the icon to the wrapper, not the original parent.
+        wrapper.appendChild(icon);
     }
 
     /**
@@ -57,7 +70,11 @@ export default class extends Controller {
      */
     _removeValidationUI(input) {
         input.style.borderColor = ''; // Revert to default border color
-        const icon = input.parentElement.querySelector('.validation-icon');
+
+        // The icon is now inside a wrapper, which is a sibling of the input if it exists.
+        const wrapper = input.parentElement.querySelector('.input-wrapper') || input.parentElement;
+        const icon = wrapper.querySelector('.validation-icon');
+
         if (icon) {
             icon.remove();
         }
