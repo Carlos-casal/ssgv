@@ -57,7 +57,7 @@
                             </div>
                             <div>
                                 {{ form_label(form.phone) }}
-                                {{ form_widget(form.phone, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.phone, {'attr': {'data-action': 'blur->simple-validation#validate input->simple-validation#filterPhoneInput'}}) }}
                                 {{ form_errors(form.phone) }}
                             </div>
                             <div>
@@ -101,7 +101,7 @@
                     </div>
 
                     {# Tarjeta de Dirección #}
-                    <div class="{{ card_styles }}">
+                    <div class="{{ card_styles }}" data-controller="dependent-fields">
                         <h3 class="{{ card_title_styles }}">Dirección</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
@@ -121,12 +121,12 @@
                             </div>
                             <div>
                                 {{ form_label(form.city) }}
-                                {{ form_widget(form.city, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.city, {'attr': {'data-dependent-fields-target': 'city', 'data-action': 'blur->simple-validation#validate'}}) }}
                                 {{ form_errors(form.city) }}
                             </div>
                             <div>
                                 {{ form_label(form.province) }}
-                                {{ form_widget(form.province, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.province, {'attr': {'data-dependent-fields-target': 'province', 'data-action': 'dependent-fields#loadCities blur->simple-validation#validate'}}) }}
                                 {{ form_errors(form.province) }}
                             </div>
                         </div>
@@ -143,7 +143,7 @@
                             </div>
                             <div>
                                 {{ form_label(form.contactPhone1) }}
-                                {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->simple-validation#validate input->simple-validation#filterPhoneInput'}}) }}
                                 {{ form_errors(form.contactPhone1) }}
                             </div>
                             <div>
@@ -153,7 +153,7 @@
                             </div>
                             <div>
                                 {{ form_label(form.contactPhone2) }}
-                                {{ form_widget(form.contactPhone2, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                                {{ form_widget(form.contactPhone2, {'attr': {'data-action': 'blur->simple-validation#validate input->simple-validation#filterPhoneInput'}}) }}
                                 {{ form_errors(form.contactPhone2) }}
                             </div>
                         </div>

@@ -27,7 +27,12 @@ export default class extends Controller {
         } else if (input.type === 'email') {
             isValid = this._validateEmail(input.value);
         } else if (input.id.includes('Phone')) {
-            isValid = this._validatePhone(input.value);
+            // If the field is not required and is empty, it's valid.
+            if (!input.required && input.value.trim() === '') {
+                isValid = true;
+            } else {
+                isValid = this._validatePhone(input.value);
+            }
         } else {
             // Generic validation for all other required fields
             isValid = input.value.trim() !== '';
@@ -136,7 +141,27 @@ export default class extends Controller {
      * @returns {boolean} True if valid.
      */
     _validatePhone(value) {
+        // A 9-digit number or a + followed by 1 to 15 digits.
         const phoneRegex = /^(?:\d{9}|(?:\+)\d{1,15})$/;
         return phoneRegex.test(value.replace(/\s+/g, ''));
+    }
+
+    /**
+     * Filters the input of a phone field to allow only numbers and a leading '+'.
+     * @param {Event} event The input event.
+     */
+    filterPhoneInput(event) {
+        const input = event.target;
+        let value = input.value;
+
+        // Allow only digits and a plus sign at the beginning.
+        let sanitizedValue = value.replace(/[^\d+]/g, '');
+
+        // Ensure '+' is only at the start.
+        if (sanitizedValue.lastIndexOf('+') > 0) {
+            sanitizedValue = '+' + sanitizedValue.replace(/\+/g, '');
+        }
+
+        input.value = sanitizedValue;
     }
 }
