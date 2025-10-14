@@ -24,6 +24,8 @@ export default class extends Controller {
         // Use specific validation for DNI/NIE field
         if (input.id === 'volunteer_dni') {
             isValid = this._validateDniNie(input.value);
+        } else if (input.type === 'email') {
+            isValid = this._validateEmail(input.value);
         } else {
             // Generic validation for all other required fields
             isValid = input.value.trim() !== '';
@@ -113,5 +115,16 @@ export default class extends Controller {
         const controlLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart, 10) % 23];
 
         return letter === controlLetter;
+    }
+
+    /**
+     * Validates an email address format.
+     * @param {string} value The email to validate.
+     * @returns {boolean} True if valid.
+     */
+    _validateEmail(value) {
+        if (value.trim() === '') return false;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(value);
     }
 }
