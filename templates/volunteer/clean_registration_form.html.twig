@@ -177,7 +177,7 @@
                     </div>
 
                     {# Tarjeta de Cualificaciones #}
-                    <div class="{{ card_styles }}">
+                    <div class="{{ card_styles }}" data-controller="toggle-visibility">
                         <h3 class="{{ card_title_styles }}">Cualificaciones Profesionales</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
@@ -192,7 +192,7 @@
                             </div>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
-                            <div data-controller="toggle-visibility">
+                            <div>
                                 {{ form_label(form.drivingLicenses) }}
                                 <div class="flex flex-col space-y-2 mt-2">
                                     {% for child in form.drivingLicenses %}
@@ -229,17 +229,17 @@
                                 {{ form_errors(form.specificQualifications) }}
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                            <div data-toggle-visibility-target="targetToToggle">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" data-toggle-visibility-target="targetToToggle">
+                            <div>
                                 {{ form_label(form.drivingLicenseExpiryDate) }}
                                 {{ form_widget(form.drivingLicenseExpiryDate) }}
                                 {{ form_errors(form.drivingLicenseExpiryDate) }}
                             </div>
-                            <div class="flex items-center h-full">
-                                {{ form_label(form.habilitadoConducir) }}
-                                {{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
-                                {{ form_errors(form.habilitadoConducir) }}
-                            </div>
+                        </div>
+                        <div class="flex items-center h-full">
+                            {{ form_label(form.habilitadoConducir) }}
+                            {{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'blur->simple-validation#validate'}}) }}
+                            {{ form_errors(form.habilitadoConducir) }}
                         </div>
                         <div>
                             {{ form_label(form.otherQualifications) }}
