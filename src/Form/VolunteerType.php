@@ -101,7 +101,7 @@ class VolunteerType extends AbstractType
             ->add('city', ChoiceType::class, [
                 'label' => 'Población',
                 'required' => true,
-                'placeholder' => 'Selecciona una provincia primero',
+                'placeholder' => 'Población',
                 'choices' => [], // Will be loaded by JS
             ])
             ->add('province', ChoiceType::class, [

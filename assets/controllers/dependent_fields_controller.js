@@ -43,7 +43,7 @@ export default class extends Controller {
             const cities = await response.json();
 
             citySelect.innerHTML = ''; // Clear the "Cargando..." message
-            citySelect.add(new Option('Selecciona una población', ''));
+            citySelect.add(new Option('Población', ''));
 
             if (cities.length > 0) {
                 cities.forEach(city => {
