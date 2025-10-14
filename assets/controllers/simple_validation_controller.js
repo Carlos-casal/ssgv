@@ -141,8 +141,8 @@ export default class extends Controller {
      * @returns {boolean} True if valid.
      */
     _validatePhone(value) {
-        // A 9-digit number or a + followed by 1 to 15 digits.
-        const phoneRegex = /^(?:\d{9}|(?:\+)\d{1,15})$/;
+        // A 9-digit number for Spain, or a + followed by 8-15 digits for international.
+        const phoneRegex = /^(?:\d{9}|(?:\+)\d{8,15})$/;
         return phoneRegex.test(value.replace(/\s+/g, ''));
     }
 

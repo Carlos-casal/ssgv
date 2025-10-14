@@ -101,7 +101,9 @@
                     </div>
 
                     {# Tarjeta de Dirección #}
-                    <div class="{{ card_styles }}" data-controller="dependent-fields">
+                    <div class="{{ card_styles }}"
+                         data-controller="dependent-fields"
+                         data-dependent-fields-url-value="/api/poblaciones">
                         <h3 class="{{ card_title_styles }}">Dirección</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
