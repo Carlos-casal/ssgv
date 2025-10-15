@@ -16,6 +16,17 @@
             display: grid;
             gap: 1.5rem; /* 24px */
         }
+        .is-invalid {
+            border-color: #dc3545;
+        }
+        .invalid-feedback {
+            color: #dc3545;
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+        .is-valid {
+            border-color: #28a745;
+        }
     </style>
 {% endblock %}
 
@@ -41,14 +52,13 @@
             <!-- Personal Data Card -->
             <div class="form-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {{ form_row(form.dni, {'attr': {'data-action': 'input->form-validation#toUpperCase'}}) }}
-                    {{ form_row(form.name) }}
-                    {{ form_row(form.lastName) }}
-                    {{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open'}}) }}
-                    {{ form_row(form.phone) }}
-                    {% if form.user.email is defined %}{{ form_row(form.user.email) }}{% endif %}
-                    {{ form_row(form.profession) }}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>{{ form_row(form.dni, {'attr': {'data-action': 'input->form-validation#toUpperCase'}}) }}</div>
+                    <div>{{ form_row(form.name) }}</div>
+                    <div>{{ form_row(form.lastName) }}</div>
+                    <div>{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open'}}) }}</div>
+                    <div>{{ form_row(form.phone) }}</div>
+                    {% if form.user.email is defined %}<div>{{ form_row(form.user.email) }}</div>{% endif %}
                 </div>
             </div>
 
@@ -88,6 +98,7 @@
                     <h3 class="font-medium text-gray-600 mb-2">Titulaciones Específicas</h3>
                     {{ form_widget(form.specificQualifications) }}
                 </div>
+                {{ form_row(form.profession) }}
                 {{ form_row(form.otherQualifications) }}
             </div>
 
