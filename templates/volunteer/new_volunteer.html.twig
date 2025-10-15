@@ -7,199 +7,219 @@
 {% set card_title_styles = 'text-xl font-semibold text-gray-800 border-b border-gray-200 pb-3 mb-6' %}
 
 {% block content %}
-<div class="container mx-auto p-4 lg:p-6">
-    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-controller': 'form-validation', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
-
-    {# --- Main Grid Container --- #}
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-        {# --- Left Column (lg:col-span-1) --- #}
-        <div class="lg:col-span-1 space-y-8">
-            {# --- Section: Información de Salud --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Información de Salud</h2>
-                <div class="space-y-4">
-                    <div>
-                        {{ form_label(form.foodAllergies) }}
-                        {{ form_widget(form.foodAllergies, {'attr': {'class': 'h-24'}}) }}
-                    </div>
-                    <div>
-                        {{ form_label(form.otherAllergies) }}
-                        {{ form_widget(form.otherAllergies, {'attr': {'class': 'h-24'}}) }}
-                    </div>
-                </div>
+<div class="bg-gray-50 -m-4 lg:-m-6 p-4 lg:p-6">
+    <div class="bg-white rounded-lg shadow-lg overflow-hidden max-w-5xl mx-auto">
+        {# Header con fondo azul y logo #}
+        <div class="bg-blue-600 p-6 sm:p-8 text-center">
+            <div class="inline-block bg-white p-2 rounded-full shadow-md">
+                <img src="https://raw.githubusercontent.com/Carlos-casal/ssgv/main/public/images/logo.png" alt="Logo Protección Civil Vigo" class="w-24 h-24">
             </div>
-
-            {# --- Section: Contacto de Emergencia --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Contacto de Emergencia</h2>
-                <div class="space-y-4">
-                    <div data-field-container>
-                        {{ form_label(form.contactPerson1) }}
-                        {{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.contactPhone1) }}
-                        {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                </div>
-            </div>
-
-            {# --- Section: Motivación e Intereses --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Motivación e Intereses</h2>
-                <div class="space-y-4">
-                    <div data-field-container>
-                        {{ form_label(form.motivation) }}
-                        {{ form_widget(form.motivation, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.howKnown) }}
-                        {{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.hasVolunteeredBefore) }}
-                        <div data-action="change->form-validation#togglePreviousInstitutions">
-                            {{ form_widget(form.hasVolunteeredBefore) }}
-                        </div>
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div id="previous-institutions-wrapper" class="hidden" data-field-container>
-                        {{ form_label(form.previousVolunteeringInstitutions) }}
-                        {{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                </div>
-            </div>
+            <h1 class="text-3xl font-bold text-white mt-4">Alta de Nuevo Voluntario</h1>
+            <p class="text-blue-100">Rellena los campos para dar de alta a un nuevo miembro.</p>
         </div>
 
-        {# --- Right Column (lg:col-span-2) --- #}
-        <div class="lg:col-span-2 space-y-8">
-            {# --- Section: Datos Personales --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Datos Personales</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div data-field-container>
-                        {{ form_label(form.dni) }}
-                        {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#validateDniOnInput blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+        {# Contenido del formulario con padding #}
+        <div class="p-6 sm:p-8" data-controller="form-validation">
+            {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
+
+            {# CONTENEDOR PRINCIPAL: Grid para las tarjetas #}
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                {# Columna Izquierda: Foto y Datos de Salud/Emergencia #}
+                <div class="lg:col-span-1 space-y-8">
+                    {# Tarjeta de la foto de perfil #}
+                    <div class="{{ card_styles }} text-center">
+                        <h3 class="{{ card_title_styles }}">Foto de Perfil</h3>
+                        <div class="w-fit mx-auto">
+                            {{ form_widget(form.profilePicture) }}
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">Sube una imagen JPG o PNG (máx. 1MB).</p>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.name) }}
-                        {{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+
+                    {# Tarjeta de Información de Salud #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Información de Salud</h3>
+                        <div class="space-y-4">
+                            <div>
+                                {{ form_label(form.foodAllergies) }}
+                                {{ form_widget(form.foodAllergies, {'attr': {'class': 'h-24'}}) }}
+                            </div>
+                            <div>
+                                {{ form_label(form.otherAllergies) }}
+                                {{ form_widget(form.otherAllergies, {'attr': {'class': 'h-24'}}) }}
+                            </div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.lastName) }}
-                        {{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+
+                    {# Tarjeta de Contacto de Emergencia #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Contacto de Emergencia</h3>
+                        <div class="space-y-4">
+                            <div data-field-container>
+                                {{ form_label(form.contactPerson1) }}
+                                {{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.contactPhone1) }}
+                                {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.dateOfBirth) }}
-                        {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                </div>
+
+                {# Columna Derecha: Todas las demás tarjetas #}
+                <div class="lg:col-span-2 space-y-8">
+                    {# Tarjeta de Datos Personales #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Datos Personales</h3>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                            <div data-field-container>
+                                {{ form_label(form.dni) }}
+                                {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#validateDniOnInput blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.name) }}
+                                {{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.lastName) }}
+                                {{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.dateOfBirth) }}
+                                {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.phone) }}
+                                {{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.user.email) }}
+                                {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                             <div data-field-container>
+                                {{ form_label(form.profession) }}
+                                {{ form_widget(form.profession) }}
+                            </div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.phone) }}
-                        {{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+
+                    {# Tarjeta de Dirección #}
+                    <div class="{{ card_styles }}"
+                         data-controller="dependent-fields"
+                         data-dependent-fields-url-value="/api/poblaciones">
+                        <h3 class="{{ card_title_styles }}">Dirección</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                             <div data-field-container>
+                                {{ form_label(form.streetType) }}
+                                {{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div class="md:col-span-2" data-field-container>
+                                {{ form_label(form.address) }}
+                                {{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.postalCode) }}
+                                {{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.province) }}
+                                {{ form_widget(form.province, {'attr': {'data-dependent-fields-target': 'province', 'data-action': 'dependent-fields#loadCities blur->form-validation#validateField'}}) }}
+                                 <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.city) }}
+                                {{ form_widget(form.city, {'attr': {'data-dependent-fields-target': 'city', 'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.user.email) }}
-                        {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+
+                    {# Tarjeta de Cualificaciones #}
+                    <div class="{{ card_styles }}">
+                        <h3 class="{{ card_title_styles }}">Cualificaciones</h3>
+                        <div class="space-y-4">
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                                <div>
+                                    {{ form_label(form.drivingLicenses) }}
+                                    <div class="flex-1" data-action="change->form-validation#toggleDrivingLicenseExpiry">{{ form_widget(form.drivingLicenses) }}</div>
+                                </div>
+                                <div>
+                                    {{ form_label(form.navigationLicenses) }}
+                                    {{ form_widget(form.navigationLicenses) }}
+                                </div>
+                                <div>
+                                    {{ form_label(form.specificQualifications) }}
+                                    {{ form_widget(form.specificQualifications) }}
+                                </div>
+                            </div>
+                            {% if form.drivingLicenseExpiryDate is defined %}
+                            <div id="driving-license-expiry-wrapper" class="hidden" data-field-container>
+                                {{ form_label(form.drivingLicenseExpiryDate) }}
+                                {{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            {% endif %}
+                             <div>
+                                {{ form_label(form.otherQualifications) }}
+                                {{ form_widget(form.otherQualifications, {'attr': {'class': 'h-24'}}) }}
+                            </div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.profession) }}
-                        {{ form_widget(form.profession) }}
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.profilePicture) }}
-                        {{ form_widget(form.profilePicture) }}
+
+                     {# Tarjeta de Motivación e Intereses #}
+                    <div class="{{ card_styles }}">
+                        <h2 class="{{ card_title_styles }}">Motivación e Intereses</h2>
+                        <div class="space-y-4">
+                            <div data-field-container>
+                                {{ form_label(form.motivation) }}
+                                {{ form_widget(form.motivation, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.howKnown) }}
+                                {{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div data-field-container>
+                                {{ form_label(form.hasVolunteeredBefore) }}
+                                <div data-action="change->form-validation#togglePreviousInstitutions">
+                                    {{ form_widget(form.hasVolunteeredBefore) }}
+                                </div>
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                            <div id="previous-institutions-wrapper" class="hidden" data-field-container>
+                                {{ form_label(form.previousVolunteeringInstitutions) }}
+                                {{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
+                                <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {# --- Section: Dirección --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Dirección</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div data-field-container>
-                        {{ form_label(form.streetType) }}
-                        {{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div class="md:col-span-2" data-field-container>
-                        {{ form_label(form.address) }}
-                        {{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.postalCode) }}
-                        {{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.city) }}
-                        {{ form_widget(form.city, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.province) }}
-                        {{ form_widget(form.province, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
+            <div class="flex justify-end items-center pt-6 border-t mt-8">
+                <div class="flex items-center gap-3">
+                    <a href="{{ path('app_volunteer_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">Cancelar</a>
+                    <button type="button" data-action="click->form-validation#addAnother" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">Añadir Otro</button>
+                    <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm text-sm">Dar de Alta</button>
                 </div>
             </div>
 
-            {# --- Section: Cualificaciones --- #}
-            <div class="{{ card_styles }}">
-                <h2 class="{{ card_title_styles }}">Cualificaciones</h2>
-                <div class="space-y-4">
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div>
-                            {{ form_label(form.drivingLicenses) }}
-                            <div class="flex-1" data-action="change->form-validation#toggleDrivingLicenseExpiry">{{ form_widget(form.drivingLicenses) }}</div>
-                        </div>
-                        <div>
-                            {{ form_label(form.navigationLicenses) }}
-                            {{ form_widget(form.navigationLicenses) }}
-                        </div>
-                        <div>
-                            {{ form_label(form.specificQualifications) }}
-                            {{ form_widget(form.specificQualifications) }}
-                        </div>
-                    </div>
-                    {% if form.drivingLicenseExpiryDate is defined %}
-                    <div id="driving-license-expiry-wrapper" class="hidden" data-field-container>
-                        {{ form_label(form.drivingLicenseExpiryDate) }}
-                        {{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    {% endif %}
-                     <div>
-                        {{ form_label(form.otherQualifications) }}
-                        {{ form_widget(form.otherQualifications, {'attr': {'class': 'h-24'}}) }}
-                    </div>
-                </div>
-            </div>
+            {{ form_end(form) }}
         </div>
     </div>
-
-    {# --- Action Buttons --- #}
-    <div class="flex justify-end items-center pt-6 border-t mt-8">
-        <div class="flex items-center gap-3">
-            <a href="{{ path('app_volunteer_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">Cancelar</a>
-            <button type="button" data-action="click->form-validation#addAnother" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">Añadir Otro</button>
-            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm text-sm">Dar de Alta</button>
-        </div>
-    </div>
-
-    {{ form_end(form) }}
 </div>
 
 {# --- Modal de Autorización para Menores --- #}
