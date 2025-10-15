@@ -4,7 +4,7 @@ import { Controller } from '@hotwired/stimulus';
  * A simple controller to calculate age from a date input and display it in a modal.
  */
 export default class extends Controller {
-    static targets = ["modal", "ageText", "dateOfBirthInput"];
+    static targets = ["modal", "age", "dateOfBirthInput"];
 
     connect() {
         if (this.hasModalTarget) {
@@ -13,10 +13,10 @@ export default class extends Controller {
     }
 
     /**
-     * Calculates the age based on the date input and shows the modal.
+     * Calculates the age based on the date input and opens the modal.
      */
-    calculateAndShowAge() {
-        const birthDateString = this.dateOfBirthInputTarget.value;
+    open(event) {
+        const birthDateString = event.target.value;
         if (!birthDateString) {
             return;
         }
@@ -31,18 +31,19 @@ export default class extends Controller {
             age--;
         }
 
-        if (this.hasAgeTextTarget) {
-            if (age < 18) {
-                this.ageTextTarget.innerHTML = `Tienes ${age} años. <br><br> Al ser menor de edad, necesitarás presentar una autorización de tu tutor legal. <br> La fecha de nacimiento no podrá ser modificada una vez completado el registro.`;
-                this.openModal();
+        if (this.hasAgeTarget) {
+            this.ageTarget.textContent = age;
+            const ageInfo = this.modalTarget.querySelector('.age-info');
+            if (ageInfo) {
+                if (age < 18) {
+                    ageInfo.innerHTML = `Al ser menor de edad, necesitarás presentar una autorización de tu tutor legal.`;
+                    ageInfo.classList.remove('hidden');
+                } else {
+                    ageInfo.classList.add('hidden');
+                }
             }
         }
-    }
 
-    /**
-     * Shows the modal.
-     */
-    openModal() {
         if (this.hasModalTarget) {
             this.modalTarget.classList.remove('hidden');
         }
@@ -51,7 +52,7 @@ export default class extends Controller {
     /**
      * Hides the modal.
      */
-    closeModal() {
+    close() {
         if (this.hasModalTarget) {
             this.modalTarget.classList.add('hidden');
         }
