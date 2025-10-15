@@ -28,12 +28,17 @@ class VolunteerType extends AbstractType
             'C' => 'C', 'D1' => 'D1', 'D' => 'D', 'EC' => 'EC',
         ];
 
+        $isCleanLayout = $options['is_clean_layout'];
+
         $builder
             ->add('name', TextType::class, ['label' => 'Nombre', 'required' => true])
             ->add('lastName', TextType::class, ['label' => 'Apellidos', 'required' => true])
             ->add('dni', TextType::class, ['label' => 'DIN/NIE', 'required' => true])
             ->add('phone', TextType::class, ['label' => 'Teléfono', 'required' => true])
-            ->add('user', UserType::class, ['label' => false])
+            ->add('user', UserType::class, [
+                'label' => false,
+                'is_public_registration' => $isCleanLayout,
+            ])
             ->add('dateOfBirth', DateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
@@ -42,11 +47,6 @@ class VolunteerType extends AbstractType
                 'attr' => ['max' => (new \DateTime())->modify('-16 years')->format('Y-m-d')],
             ])
             ->add('profession', TextType::class, ['label' => 'Profesión', 'required' => false])
-            ->add('indicativo', TextType::class, [
-                'label' => 'Indicativo',
-                'required' => false,
-                 'attr' => ['list' => 'indicativos-list', 'placeholder' => 'Ej: L30, V45...', 'autocomplete' => 'off']
-            ])
             ->add('streetType', ChoiceType::class, [
                 'label' => 'Tipo de Vía',
                 'required' => true,
@@ -74,8 +74,6 @@ class VolunteerType extends AbstractType
             ->add('postalCode', TextType::class, ['label' => 'Código Postal', 'required' => true])
             ->add('contactPerson1', TextType::class, ['label' => 'Nombre de Contacto de Emergencia', 'required' => true])
             ->add('contactPhone1', TextType::class, ['label' => 'Teléfono de Emergencia', 'required' => true])
-            ->add('contactPerson2', TextType::class, ['label' => 'Nombre de Contacto de Emergencia 2', 'required' => false])
-            ->add('contactPhone2', TextType::class, ['label' => 'Teléfono de Emergencia 2', 'required' => false])
             ->add('foodAllergies', TextareaType::class, ['label' => 'Alergias Alimentarias', 'required' => false, 'attr' => ['placeholder' => 'Indica si tiene alguna alergia alimentaria']])
             ->add('otherAllergies', TextareaType::class, ['label' => 'Otras Alergias (medicamentos, etc.)', 'required' => false, 'attr' => ['placeholder' => 'Indica cualquier otra alergia relevante']])
             ->add('specificQualifications', ChoiceType::class, [
@@ -110,21 +108,6 @@ class VolunteerType extends AbstractType
                 'required' => false,
             ])
             ->add('otherQualifications', TextareaType::class, ['label' => 'Otras Cualificaciones', 'required' => false, 'attr' => ['placeholder' => 'Otros títulos, cursos, etc.']])
-            ->add('employmentStatus', ChoiceType::class, [
-                'label' => 'Situación Laboral',
-                'choices' => [
-                    'Estudiante' => 'estudiante',
-                    'Empleado a tiempo completo' => 'empleado_completo',
-                    'Empleado a tiempo parcial' => 'empleado_parcial',
-                    'Autónomo' => 'autonomo',
-                    'Desempleado' => 'desempleado',
-                    'Jubilado' => 'jubilado',
-                    'Otro' => 'otro',
-                ],
-                'required' => true,
-            ])
-            ->add('habilitadoConducir', CheckboxType::class, ['label'    => 'Habilitado para conducir vehículos de la asociación', 'required' => false])
-            ->add('languages', TextType::class, ['label' => 'Idiomas', 'required' => false, 'attr' => ['placeholder' => 'Ej: Inglés, Francés...']])
             ->add('motivation', TextareaType::class, ['label' => 'Motivación para ser voluntario', 'required' => true])
             ->add('howKnown', TextType::class, ['label' => '¿Cómo nos has conocido?', 'required' => true])
             ->add('hasVolunteeredBefore', ChoiceType::class, [
@@ -140,6 +123,36 @@ class VolunteerType extends AbstractType
                 'required' => false,
                 'constraints' => [new File(['maxSize' => '1024k', 'mimeTypes' => ['image/jpeg', 'image/png']])],
             ]);
+
+        if (!$isCleanLayout) {
+            $builder->add('indicativo', TextType::class, [
+                'label' => 'Indicativo',
+                'required' => false,
+                 'attr' => ['list' => 'indicativos-list', 'placeholder' => 'Ej: L30, V45...', 'autocomplete' => 'off']
+            ]);
+        }
+
+        if ($isCleanLayout) {
+            $builder
+                ->add('contactPerson2', TextType::class, ['label' => 'Nombre de Contacto de Emergencia 2', 'required' => false])
+                ->add('contactPhone2', TextType::class, ['label' => 'Teléfono de Emergencia 2', 'required' => false])
+                ->add('employmentStatus', ChoiceType::class, [
+                    'label' => 'Situación Laboral',
+                    'choices' => [
+                        'Estudiante' => 'estudiante',
+                        'Empleado a tiempo completo' => 'empleado_completo',
+                        'Empleado a tiempo parcial' => 'empleado_parcial',
+                        'Autónomo' => 'autonomo',
+                        'Desempleado' => 'desempleado',
+                        'Jubilado' => 'jubilado',
+                        'Otro' => 'otro',
+                    ],
+                    'required' => true,
+                ])
+                ->add('habilitadoConducir', CheckboxType::class, ['label'    => 'Habilitado para conducir vehículos de la asociación', 'required' => false])
+                ->add('languages', TextType::class, ['label' => 'Idiomas', 'required' => false, 'attr' => ['placeholder' => 'Ej: Inglés, Francés...']]);
+        }
+
 
         // Add a date field for each license type, but not mapped to the entity
         foreach ($licenseChoices as $label => $value) {
@@ -187,6 +200,7 @@ class VolunteerType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Volunteer::class,
             'is_edit' => false,
+            'is_clean_layout' => false,
         ]);
     }
 }
