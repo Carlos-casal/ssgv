@@ -212,7 +212,8 @@ class VolunteerController extends AbstractController
         }
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
-            'is_clean_layout' => true,
+            'is_edit' => true,
+            'is_clean_layout' => false,
         ]);
         $form->handleRequest($request);
 
