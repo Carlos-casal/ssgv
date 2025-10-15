@@ -19,7 +19,7 @@
         </div>
 
         {# Contenido del formulario con padding #}
-        <div class="p-6 sm:p-8" data-controller="form-validation">
+        <div class="p-6 sm:p-8" data-controller="form-validation age-modal dependent-fields" data-dependent-fields-url-value="/api/poblaciones">
             {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
 
             {# CONTENEDOR PRINCIPAL: Grid para las tarjetas #}
@@ -92,7 +92,7 @@
                             </div>
                             <div data-field-container>
                                 {{ form_label(form.dateOfBirth) }}
-                                {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField change->age-modal#calculateAndShowAge', 'data-age-modal-target': 'dateOfBirthInput'}}) }}
                                 <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
                             </div>
                             <div data-field-container>
@@ -113,9 +113,7 @@
                     </div>
 
                     {# Tarjeta de Dirección #}
-                    <div class="{{ card_styles }}"
-                         data-controller="dependent-fields"
-                         data-dependent-fields-url-value="/api/poblaciones">
+                    <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Dirección</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                              <div data-field-container>

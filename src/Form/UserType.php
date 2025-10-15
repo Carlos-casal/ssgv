@@ -34,8 +34,10 @@ class UserType extends AbstractType
                         'message' => 'Por favor, introduce un correo electrónico.',
                     ]),
                 ],
-            ])
-            ->add('password', \Symfony\Component\Form\Extension\Core\Type\RepeatedType::class, [
+            ]);
+
+        if ($options['is_public_registration']) {
+            $builder->add('password', \Symfony\Component\Form\Extension\Core\Type\RepeatedType::class, [
                 'type' => PasswordType::class,
                 'mapped' => false,
                 'first_options'  => [
@@ -54,6 +56,7 @@ class UserType extends AbstractType
                 'required' => !$options['is_edit'],
                 'constraints' => $this->getPasswordConstraints($options['is_edit']),
             ]);
+        }
     }
 
     /**
@@ -98,8 +101,10 @@ class UserType extends AbstractType
         $resolver->setDefaults([
             'data_class' => User::class,
             'is_edit' => false,
+            'is_public_registration' => false,
         ]);
 
         $resolver->setAllowedTypes('is_edit', 'bool');
+        $resolver->setAllowedTypes('is_public_registration', 'bool');
     }
 }
