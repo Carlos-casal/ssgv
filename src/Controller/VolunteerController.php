@@ -121,7 +121,9 @@ class VolunteerController extends AbstractController
         $volunteer->setUser($user);
 
         $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
-        $form = $this->createForm(VolunteerType::class, $volunteer);
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'is_clean_layout' => false,
+        ]);
 
         $form->handleRequest($request);
 
@@ -209,7 +211,9 @@ class VolunteerController extends AbstractController
             $volunteer->setUser($user);
         }
 
-        $form = $this->createForm(VolunteerType::class, $volunteer);
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'is_clean_layout' => true,
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -303,6 +307,7 @@ class VolunteerController extends AbstractController
 
         $form = $this->createForm(VolunteerType::class, $volunteer, [
             'is_edit' => true,
+            'is_clean_layout' => false,
         ]);
 
         $form->handleRequest($request);
@@ -511,7 +516,9 @@ class VolunteerController extends AbstractController
         $user = new User();
         $volunteer->setUser($user);
 
-        $form = $this->createForm(VolunteerType::class, $volunteer);
+        $form = $this->createForm(VolunteerType::class, $volunteer, [
+            'is_clean_layout' => true,
+        ]);
 
         return $this->render('volunteer/clean_registration_form.html.twig', [
             'form' => $form->createView(),
