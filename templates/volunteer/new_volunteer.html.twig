@@ -20,12 +20,16 @@
                 <h2 class="{{ card_title_styles }}">Información de Salud</h2>
                 <div class="space-y-4">
                     <div>
-                        {{ form_label(form.foodAllergies) }}
-                        {{ form_widget(form.foodAllergies, {'attr': {'class': 'h-24'}}) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.foodAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1 h-24">{{ form_widget(form.foodAllergies) }}</div>
+                        </div>
                     </div>
                     <div>
-                        {{ form_label(form.otherAllergies) }}
-                        {{ form_widget(form.otherAllergies, {'attr': {'class': 'h-24'}}) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.otherAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1 h-24">{{ form_widget(form.otherAllergies) }}</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -35,14 +39,18 @@
                 <h2 class="{{ card_title_styles }}">Contacto de Emergencia</h2>
                 <div class="space-y-4">
                     <div data-field-container>
-                        {{ form_label(form.contactPerson1) }}
-                        {{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                        <div class="flex items-center gap-0">
+                            {{ form_label(form.contactPerson1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                            <div class="flex-1 relative">{{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                        </div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                     </div>
                     <div data-field-container>
-                        {{ form_label(form.contactPhone1) }}
-                        {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                        <div class="flex items-center gap-0">
+                            {{ form_label(form.contactPhone1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                            <div class="w-40 relative">{{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                        </div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                     </div>
                 </div>
             </div>
@@ -52,26 +60,32 @@
                 <h2 class="{{ card_title_styles }}">Motivación e Intereses</h2>
                 <div class="space-y-4">
                     <div data-field-container>
-                        {{ form_label(form.motivation) }}
-                        {{ form_widget(form.motivation, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.howKnown) }}
-                        {{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.hasVolunteeredBefore) }}
-                        <div data-action="change->form-validation#togglePreviousInstitutions">
-                            {{ form_widget(form.hasVolunteeredBefore) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.motivation, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1 h-24 relative">{{ form_widget(form.motivation, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
                         </div>
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                    </div>
+                    <div data-field-container>
+                        <div class="flex items-center gap-0">
+                            {{ form_label(form.howKnown, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                            <div class="flex-1 relative">{{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                        </div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                    </div>
+                    <div data-field-container>
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.hasVolunteeredBefore, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1 relative" data-action="change->form-validation#togglePreviousInstitutions">{{ form_widget(form.hasVolunteeredBefore) }}</div>
+                        </div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                     </div>
                     <div id="previous-institutions-wrapper" class="hidden" data-field-container>
-                        {{ form_label(form.previousVolunteeringInstitutions) }}
-                        {{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'class': 'h-24', 'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                         <div class="flex items-start gap-0">
+                            {{ form_label(form.previousVolunteeringInstitutions, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1 h-24 relative">{{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                        </div>
+                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                     </div>
                 </div>
             </div>
@@ -82,44 +96,78 @@
             {# --- Section: Datos Personales --- #}
             <div class="{{ card_styles }}">
                 <h2 class="{{ card_title_styles }}">Datos Personales</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                    <div data-field-container>
-                        {{ form_label(form.dni) }}
-                        {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#validateDniOnInput blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                <div class="space-y-4">
+                    <div class="flex flex-row flex-wrap items-start gap-x-4 gap-y-4">
+                        <div data-field-container class="w-60">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#validateDniOnInput blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container class="flex-grow" style="min-width: 200px;">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.name, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container class="flex-grow" style="min-width: 200px;">
+                             <div class="flex items-center gap-0">
+                                {{ form_label(form.lastName, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container class="w-64">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.dateOfBirth, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.name) }}
-                        {{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                    <div class="flex flex-row flex-wrap items-start gap-x-4 gap-y-4">
+                        <div data-field-container class="w-60">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.phone, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container class="flex-grow" style="min-width: 300px;">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.user.email, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">
+                                    {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                                </div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
                     </div>
-                    <div data-field-container>
-                        {{ form_label(form.lastName) }}
-                        {{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.dateOfBirth) }}
-                        {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.phone) }}
-                        {{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.user.email) }}
-                        {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.profession) }}
-                        {{ form_widget(form.profession) }}
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.profilePicture) }}
-                        {{ form_widget(form.profilePicture) }}
+                    <div class="flex flex-row flex-wrap items-start gap-x-4 gap-y-4">
+                        <div class="flex-grow" style="min-width: 300px;">
+                             <div class="flex items-center gap-0">
+                                {{ form_label(form.profession, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">{{ form_widget(form.profession) }}</div>
+                            </div>
+                        </div>
+                        <div class="flex-grow" style="min-width: 300px;">
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.profilePicture, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="relative flex-1">{{ form_widget(form.profilePicture) }}</div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -127,31 +175,45 @@
             {# --- Section: Dirección --- #}
             <div class="{{ card_styles }}">
                 <h2 class="{{ card_title_styles }}">Dirección</h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div data-field-container>
-                        {{ form_label(form.streetType) }}
-                        {{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                <div class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                        <div data-field-container>
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.streetType, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="flex-1 relative">{{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container>
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.address, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="flex-1 relative">{{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
                     </div>
-                    <div class="md:col-span-2" data-field-container>
-                        {{ form_label(form.address) }}
-                        {{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.postalCode) }}
-                        {{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.city) }}
-                        {{ form_widget(form.city, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
-                    </div>
-                    <div data-field-container>
-                        {{ form_label(form.province) }}
-                        {{ form_widget(form.province, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8">
+                        <div data-field-container>
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.postalCode, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="w-24 relative">{{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container>
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.city, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="flex-1 relative">{{ form_widget(form.city, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
+                        <div data-field-container>
+                            <div class="flex items-center gap-0">
+                                {{ form_label(form.province, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                                <div class="flex-1 relative">{{ form_widget(form.province, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                            </div>
+                            <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -161,27 +223,31 @@
                 <h2 class="{{ card_title_styles }}">Cualificaciones</h2>
                 <div class="space-y-4">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        <div>
-                            {{ form_label(form.drivingLicenses) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.drivingLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
                             <div class="flex-1" data-action="change->form-validation#toggleDrivingLicenseExpiry">{{ form_widget(form.drivingLicenses) }}</div>
                         </div>
-                        <div>
-                            {{ form_label(form.navigationLicenses) }}
-                            {{ form_widget(form.navigationLicenses) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.navigationLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1">{{ form_widget(form.navigationLicenses) }}</div>
                         </div>
-                        <div>
-                            {{ form_label(form.specificQualifications) }}
-                            {{ form_widget(form.specificQualifications) }}
+                        <div class="flex items-start gap-0">
+                            {{ form_label(form.specificQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                            <div class="flex-1">{{ form_widget(form.specificQualifications) }}</div>
                         </div>
                     </div>
+                    {% if form.drivingLicenseExpiryDate is defined %}
                     <div id="driving-license-expiry-wrapper" class="hidden" data-field-container>
-                        {{ form_label(form.drivingLicenseExpiryDate) }}
-                        {{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                        <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4"></div>
+                        <div class="flex items-center gap-0">
+                            {{ form_label(form.drivingLicenseExpiryDate, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                            <div class="w-40 relative">{{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                        </div>
+                         <div data-error-container class="form-error-message text-xs text-red-600 mt-1 h-4 ml-24 pl-1"></div>
                     </div>
-                     <div>
-                        {{ form_label(form.otherQualifications) }}
-                        {{ form_widget(form.otherQualifications, {'attr': {'class': 'h-24'}}) }}
+                    {% endif %}
+                     <div class="flex items-start gap-0">
+                        {{ form_label(form.otherQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                        <div class="flex-1 h-24">{{ form_widget(form.otherQualifications) }}</div>
                     </div>
                 </div>
             </div>
