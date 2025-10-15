@@ -120,22 +120,25 @@ class VolunteerController extends AbstractController
         $user = new User();
         $volunteer->setUser($user);
 
-        $availableIndicativos = $volunteerRepository->findAvailableIndicativos();
         $form = $this->createForm(VolunteerType::class, $volunteer, [
-            'is_clean_layout' => false,
+            'is_clean_layout' => true,
         ]);
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Auto-generate a secure password
-            $plainPassword = bin2hex(random_bytes(12)); // 24 characters
-            $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
-            $user->setPassword($hashedPassword);
+            // The form now includes password fields, so we get it from there
+            $user = $volunteer->getUser();
+            $plainPassword = $form->get('user')->get('password')->getData();
+            if ($plainPassword) {
+                 $hashedPassword = $userPasswordHasher->hashPassword($user, $plainPassword);
+                 $user->setPassword($hashedPassword);
+            }
 
             // Set default roles
             $user->setRoles(['ROLE_VOLUNTEER']);
             $volunteer->setRole('Voluntario');
+            $volunteer->setStatus(Volunteer::STATUS_ACTIVE); // Set as active directly
 
             /** @var UploadedFile $profilePictureFile */
             $profilePictureFile = $form->get('profilePicture')->getData();
@@ -163,15 +166,13 @@ class VolunteerController extends AbstractController
             $entityManager->persist($volunteer);
             $entityManager->flush();
 
-            // Flash the temporary password for the admin. In a real app, this would be emailed.
-            $this->addFlash('success', 'Voluntario creado exitosamente. Contraseña temporal: ' . $plainPassword);
+            $this->addFlash('success', 'Voluntario creado exitosamente.');
             return $this->redirectToRoute('app_volunteer_list');
         }
 
-        return $this->render('volunteer/new_volunteer.html.twig', [
+        return $this->render('volunteer/new.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
-            'available_indicativos' => $availableIndicativos,
             'current_section' => 'personal-nuevo'
         ]);
     }
