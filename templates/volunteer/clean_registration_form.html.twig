@@ -177,7 +177,7 @@
                     </div>
 
                     {# Tarjeta de Cualificaciones #}
-                    <div class="{{ card_styles }}" data-controller="toggle-visibility">
+                    <div class="{{ card_styles }}">
                         <h3 class="{{ card_title_styles }}">Cualificaciones Profesionales</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
@@ -194,11 +194,17 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-4">
                             <div>
                                 {{ form_label(form.drivingLicenses) }}
-                                <div class="flex flex-col space-y-2 mt-2">
-                                    {% for child in form.drivingLicenses %}
-                                        <div class="flex items-center">
-                                            {{ form_widget(child, {'attr': {'data-toggle-visibility-target': 'checkbox', 'data-action': 'change->toggle-visibility#toggle'}}) }}
-                                            <label class="ml-2 text-sm font-medium text-gray-900">{{ child.vars.label }}</label>
+                                <div class="flex flex-col space-y-4 mt-2">
+                                    {% for license in form.drivingLicenses %}
+                                        <div data-controller="license-date-toggle">
+                                            <div class="flex items-center">
+                                                {{ form_widget(license, {'attr': {'data-action': 'change->license-date-toggle#toggle'}}) }}
+                                                <label class="ml-2 text-sm font-medium text-gray-900">{{ license.vars.label }}</label>
+                                            </div>
+                                            <div class="hidden mt-2 ml-6" data-license-date-toggle-target="dateContainer">
+                                                <label class="text-sm text-gray-600">Fecha de Caducidad:</label>
+                                                {{ form_widget(attribute(form, 'expiry_date_' ~ license.vars.value), {'attr': {'class': 'p-1 border-gray-300 rounded-lg text-sm w-full'}}) }}
+                                            </div>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -227,13 +233,6 @@
                                     {% endfor %}
                                 </div>
                                 {{ form_errors(form.specificQualifications) }}
-                            </div>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" data-toggle-visibility-target="targetToToggle">
-                            <div>
-                                {{ form_label(form.drivingLicenseExpiryDate) }}
-                                {{ form_widget(form.drivingLicenseExpiryDate) }}
-                                {{ form_errors(form.drivingLicenseExpiryDate) }}
                             </div>
                         </div>
                         <div class="flex items-center h-full">
