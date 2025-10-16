@@ -161,6 +161,6 @@ class VolunteerController extends AbstractController
     {
         // This function is for editing, which is out of scope for the current task.
         // It remains unchanged.
-        return $this.redirectToRoute('app_volunteer_list');
+        return $this->redirectToRoute('app_volunteer_list');
     }
 }
