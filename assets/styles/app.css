@@ -69,9 +69,9 @@
     .form-floating > input:focus ~ label,
     .form-floating > input:not(:placeholder-shown) ~ label {
         opacity: 1;
-        transform: scale(.85) translateY(-0.8rem) translateX(.15rem);
+        transform: scale(.85) translateY(-0.75rem) translateX(.15rem);
         background-color: white;
-        padding: 0 4px;
+        padding: 0 0.25rem;
         height: auto;
     }
 
