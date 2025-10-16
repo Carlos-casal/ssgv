@@ -67,7 +67,7 @@
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
             <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
                 <div class="md:col-span-2 form-floating">
-                    {{ form_widget(form.dni, {'attr': {'placeholder': 'DNI/NIF', 'data-action': 'input->form-validation#toUpperCase blur->form-validation#validateField'}}) }}
+                    {{ form_widget(form.dni, {'attr': {'data-action': 'input->form-validation#toUpperCase blur->form-validation#validateField'}}) }}
                     {{ form_label(form.dni) }}
                     {{ form_errors(form.dni) }}
                 </div>
