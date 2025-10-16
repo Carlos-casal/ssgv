@@ -45,4 +45,20 @@
     .form-error-message {
         @apply text-sm text-red-600 mt-1;
     }
+
+    .form-floating {
+        position: relative;
+        padding-top: 1.5rem; /* Make space for the label */
+    }
+
+    .form-floating > label {
+        position: absolute;
+        top: 0;
+        left: 0;
+        /* Match the standard label styles */
+        font-size: 0.875rem; /* text-sm */
+        font-weight: 500; /* font-medium */
+        color: #374151; /* text-gray-700 */
+        pointer-events: none; /* Clicks pass through to the input */
+    }
 }
