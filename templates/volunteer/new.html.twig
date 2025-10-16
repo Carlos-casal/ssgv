@@ -37,10 +37,37 @@
         </div>
     </div>
 
-    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
+    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit', 'class': 'grid grid-cols-1 lg:grid-cols-3 gap-8'}}) }}
         {{ form_errors(form) }}
 
-        <div class="w-full">
+        <!-- Left Column -->
+        <div class="lg:col-span-1">
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Foto de Perfil</h2>
+                {{ form_row(form.profilePicture) }}
+            </div>
+
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Información de Salud</h2>
+                <div class="form-grid">
+                    {{ form_row(form.foodAllergies) }}
+                    {{ form_row(form.otherAllergies) }}
+                </div>
+            </div>
+
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Contacto de Emergencia</h2>
+                <div class="form-grid">
+                    {{ form_row(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_row(form.contactPerson2) }}
+                    {{ form_row(form.contactPhone2) }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column -->
+        <div class="lg:col-span-2">
             <div class="form-card">
                 <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
                 <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
@@ -101,32 +128,9 @@
                     {% if form.user.password.second is defined %}{{ form_row(form.user.password.second, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
                 </div>
             </div>
-
-            <div class="form-card">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">Foto de Perfil</h2>
-                {{ form_row(form.profilePicture) }}
-            </div>
-
-            <div class="form-card">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">Información de Salud</h2>
-                <div class="form-grid">
-                    {{ form_row(form.foodAllergies) }}
-                    {{ form_row(form.otherAllergies) }}
-                </div>
-            </div>
-
-            <div class="form-card">
-                <h2 class="text-xl font-semibold mb-4 text-gray-700">Contacto de Emergencia</h2>
-                <div class="form-grid">
-                    {{ form_row(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                    {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                    {{ form_row(form.contactPerson2) }}
-                    {{ form_row(form.contactPhone2) }}
-                </div>
-            </div>
         </div>
 
-        <div class="flex justify-end mt-4">
+        <div class="lg:col-span-3 flex justify-end mt-4">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg">Dar de Alta</button>
         </div>
     {{ form_end(form) }}
