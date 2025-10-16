@@ -60,13 +60,14 @@
 
     .form-floating > label {
         position: absolute;
-        top: 0.5rem; /* Position it at the top */
+        top: -0.5rem; /* Position it half-way above the top line */
         left: 0.85rem;
-        transform: scale(0.85); /* Make it smaller */
+        transform: scale(0.85);
         transform-origin: 0 0;
-        color: #6b7280; /* Gray text color */
-        background-color: white; /* To cut through the border */
+        color: #4a5568; /* A darker gray to ensure visibility */
+        background-color: white;
         padding: 0 0.25rem;
-        pointer-events: none; /* So clicks go to the input */
+        pointer-events: none;
+        z-index: 10; /* Bring it to the front */
     }
 }
