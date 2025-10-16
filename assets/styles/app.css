@@ -45,29 +45,4 @@
     .form-error-message {
         @apply text-sm text-red-600 mt-1;
     }
-
-    .form-floating {
-        position: relative;
-    }
-
-    .form-floating > input {
-        /* Add top padding to make space for the label */
-        padding-top: 1.25rem;
-        padding-bottom: 0.75rem;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-    }
-
-    .form-floating > label {
-        position: absolute;
-        top: -0.5rem; /* Position it half-way above the top line */
-        left: 0.85rem;
-        transform: scale(0.85);
-        transform-origin: 0 0;
-        color: #4a5568; /* A darker gray to ensure visibility */
-        background-color: white;
-        padding: 0 0.25rem;
-        pointer-events: none;
-        z-index: 10; /* Bring it to the front */
-    }
 }
