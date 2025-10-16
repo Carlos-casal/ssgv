@@ -171,9 +171,6 @@ class Volunteer
     #[ORM\Column(type: Types::JSON)]
     private array $drivingLicenses = [];
 
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
-
     /**
      * @var bool|null Whether the volunteer is authorized to drive association vehicles.
      */
@@ -662,17 +659,6 @@ class Volunteer
     public function setDrivingLicenses(?array $drivingLicenses): static
     {
         $this->drivingLicenses = $drivingLicenses;
-        return $this;
-    }
-
-    public function getDrivingLicenseExpiryDate(): ?\DateTimeInterface
-    {
-        return $this->drivingLicenseExpiryDate;
-    }
-
-    public function setDrivingLicenseExpiryDate(?\DateTimeInterface $drivingLicenseExpiryDate): static
-    {
-        $this->drivingLicenseExpiryDate = $drivingLicenseExpiryDate;
         return $this;
     }
 

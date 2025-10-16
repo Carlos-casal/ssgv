@@ -1,6 +1,3 @@
-/**
- * @file Stimulus controller for real-time form validation and dynamic field interactions.
- */
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
@@ -14,16 +11,15 @@ export default class extends Controller {
         this.togglePreviousVolunteering();
     }
 
-    /**
-     * Converts the DNI input to uppercase as the user types.
-     */
     toUpperCase(event) {
-        event.target.value = event.target.value.toUpperCase();
+        const input = event.target;
+        const originalValue = input.value;
+        const sanitizedValue = originalValue.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        if (originalValue !== sanitizedValue) {
+            input.value = sanitizedValue;
+        }
     }
 
-    /**
-     * Toggles the visibility of the driving license expiry date field based on checkbox selections.
-     */
     toggleDrivingLicenseDate() {
         if (!this.hasDrivingLicenseContainerTarget || !this.hasDrivingLicenseDateTarget) return;
         const drivingLicensesCheckboxes = this.drivingLicenseContainerTarget.querySelectorAll('input[type="checkbox"]');
@@ -36,9 +32,6 @@ export default class extends Controller {
         }
     }
 
-    /**
-     * Toggles the visibility of the "previous institutions" textarea based on radio button selection.
-     */
     togglePreviousVolunteering() {
         if (!this.hasPreviousVolunteeringInstitutionsTarget) return;
         const hasVolunteeredYes = this.element.querySelector('input[name*="[hasVolunteeredBefore]"][value="1"]');
@@ -51,16 +44,11 @@ export default class extends Controller {
         }
     }
 
-    /**
-     * Handles the form submission, preventing it if validation fails.
-     */
     handleSubmit(event) {
         let isFormValid = true;
-        this.element.querySelectorAll('input, select, textarea').forEach(input => {
-            if (input.required || (input.type !== 'file' && input.value.trim() !== '')) {
-                if (!this._validateInput(input)) {
-                    isFormValid = false;
-                }
+        this.element.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
+            if (!this._validateInput(input)) {
+                isFormValid = false;
             }
         });
 
@@ -73,29 +61,16 @@ export default class extends Controller {
         }
     }
 
-    /**
-     * Validates a single field on the 'blur' event.
-     */
     validateField(event) {
         this._validateInput(event.target);
     }
 
-    /**
-     * Core validation function for a given input.
-     * @param {HTMLElement} input
-     * @returns {boolean}
-     */
     _validateInput(input) {
         const [isValid, message] = this._getValidationRules(input);
         this._updateFieldValidationUI(input, isValid, message);
         return isValid;
     }
 
-    /**
-     * Gets validation rules and messages for an input.
-     * @param {HTMLElement} input
-     * @returns {[boolean, string]}
-     */
     _getValidationRules(input) {
         const value = input.value.trim();
 
@@ -103,16 +78,17 @@ export default class extends Controller {
             return [false, 'Este campo es obligatorio.'];
         }
 
-        if (!input.required && value === '') {
-            return [true, ''];
+        if (value === '') return [true, ''];
+
+        if (input.id.includes('dni')) {
+            if(!this._validateDniNie(value)) return [false, 'El DNI/NIE no es válido.'];
         }
 
-        if (input.id.includes('dni') && !this._validateDniNie(value)) {
-            return [false, 'El DNI/NIE no es válido.'];
-        }
-
-        if ((input.id.includes('phone') || input.id.includes('contactPhone')) && !/^[679]\d{8}$/.test(value.replace(/\s+/g, ''))) {
-            return [false, 'El formato del teléfono no es válido (9 dígitos sin prefijo).'];
+        if (input.id.includes('phone') || input.id.includes('contactPhone')) {
+            const phoneValue = value.replace(/[\s+]/g, '');
+            if (!/^\d{9,15}$/.test(phoneValue)) {
+                 return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
+            }
         }
 
         if (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
@@ -122,11 +98,6 @@ export default class extends Controller {
         return [true, ''];
     }
 
-    /**
-     * Validates a Spanish DNI or NIE.
-     * @param {string} value
-     * @returns {boolean}
-     */
     _validateDniNie(value) {
         const dni = value.toUpperCase().trim();
         if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
@@ -136,36 +107,38 @@ export default class extends Controller {
         return letter === controlLetter;
     }
 
-    /**
-     * Updates the UI to show validation status.
-     * @param {HTMLElement} input
-     * @param {boolean} isValid
-     * @param {string} [message='']
-     */
     _updateFieldValidationUI(input, isValid, message = '') {
         this._removeValidationUI(input);
-        const fieldContainer = input.closest('.form-group') || input.parentElement;
+        const parent = input.closest('div');
+        if (!parent) return;
+
+        parent.style.position = 'relative';
+
+        const icon = document.createElement('span');
+        icon.className = 'validation-icon';
+
         if (isValid) {
             input.classList.add('is-valid');
+            icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
         } else {
             input.classList.add('is-invalid');
+            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
             const errorContainer = document.createElement('div');
             errorContainer.className = 'invalid-feedback';
             errorContainer.textContent = message;
-            fieldContainer.appendChild(errorContainer);
+            parent.appendChild(errorContainer);
         }
+        parent.appendChild(icon);
     }
 
-    /**
-     * Removes all validation indicators from a field.
-     * @param {HTMLElement} input
-     */
     _removeValidationUI(input) {
         input.classList.remove('is-valid', 'is-invalid');
-        const fieldContainer = input.closest('.form-group') || input.parentElement;
-        const error = fieldContainer.querySelector('.invalid-feedback');
-        if (error) {
-            error.remove();
-        }
+        const parent = input.closest('div');
+        if (!parent) return;
+        const icon = parent.querySelector('.validation-icon');
+        if (icon) icon.remove();
+        const error = parent.querySelector('.invalid-feedback');
+        if (error) error.remove();
     }
 }
