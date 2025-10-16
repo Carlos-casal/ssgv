@@ -48,17 +48,33 @@
 
     .form-floating {
         position: relative;
-        padding-top: 1.5rem; /* Make space for the label */
+    }
+
+    .form-floating > input {
+        height: 3.5rem;
+        padding: 1rem 0.75rem;
     }
 
     .form-floating > label {
         position: absolute;
         top: 0;
         left: 0;
-        /* Match the standard label styles */
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500; /* font-medium */
-        color: #374151; /* text-gray-700 */
-        pointer-events: none; /* Clicks pass through to the input */
+        height: 100%;
+        padding: 1rem 0.75rem;
+        pointer-events: none;
+        border: 1px solid transparent;
+        transform-origin: 0 0;
+        transition: opacity .1s ease-in-out,transform .1s ease-in-out;
+        color: #6b7280;
+    }
+
+    .form-floating > input:focus ~ label,
+    .form-floating > input:not(:placeholder-shown) ~ label {
+        opacity: 1;
+        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
+        background-color: white;
+        padding: 0 0.25rem;
+        height: auto;
+        color: #374151;
     }
 }
