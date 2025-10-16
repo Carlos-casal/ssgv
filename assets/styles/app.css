@@ -51,30 +51,18 @@
     }
 
     .form-floating > input {
-        height: 3.5rem;
-        padding: 1rem 0.75rem;
+        width: 80%; /* Make the input narrower */
     }
 
     .form-floating > label {
         position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        padding: 1rem 0.75rem;
-        pointer-events: none;
-        border: 1px solid transparent;
-        transform-origin: 0 0;
-        transition: opacity .1s ease-in-out,transform .1s ease-in-out;
-        color: #6b7280;
-    }
-
-    .form-floating > input:focus ~ label,
-    .form-floating > input:not(:placeholder-shown) ~ label {
-        opacity: 1;
-        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem);
-        background-color: white;
+        top: -0.6rem; /* Move it up to sit on the border */
+        left: 1.2rem; /* Move it more to the right */
+        font-size: 1rem; /* Match standard label size */
+        color: #374151; /* Match standard label color */
+        background-color: white; /* To create the 'cutout' effect */
         padding: 0 0.25rem;
-        height: auto;
-        color: #374151;
+        pointer-events: none;
+        z-index: 10;
     }
 }
