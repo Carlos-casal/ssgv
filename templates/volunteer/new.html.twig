@@ -41,12 +41,38 @@
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>{{ form_row(form.dni) }}</div>
-                <div>{{ form_row(form.name) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.lastName) }}</div>
-                <div>{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}</div>
-                <div>{{ form_row(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                {% if form.user.email is defined %}<div>{{ form_row(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>{% endif %}
+                <div>
+                    {{ form_label(form.dni) }}
+                    {{ form_widget(form.dni) }}
+                    {{ form_errors(form.dni) }}
+                </div>
+                <div>
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name) }}
+                    {{ form_errors(form.name) }}
+                </div>
+                <div class="md:col-span-2">
+                    {{ form_label(form.lastName) }}
+                    {{ form_widget(form.lastName) }}
+                    {{ form_errors(form.lastName) }}
+                </div>
+                <div>
+                    {{ form_label(form.dateOfBirth) }}
+                    {{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}
+                    {{ form_errors(form.dateOfBirth) }}
+                </div>
+                <div>
+                    {{ form_label(form.phone) }}
+                    {{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.phone) }}
+                </div>
+                {% if form.user.email is defined %}
+                <div>
+                    {{ form_label(form.user.email) }}
+                    {{ form_widget(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.user.email) }}
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -58,29 +84,73 @@
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Información de Salud</h2>
             <div class="grid grid-cols-1 gap-6">
-                {{ form_row(form.foodAllergies) }}
-                {{ form_row(form.otherAllergies) }}
+                <div>
+                    {{ form_label(form.foodAllergies) }}
+                    {{ form_widget(form.foodAllergies) }}
+                    {{ form_errors(form.foodAllergies) }}
+                </div>
+                <div>
+                    {{ form_label(form.otherAllergies) }}
+                    {{ form_widget(form.otherAllergies) }}
+                    {{ form_errors(form.otherAllergies) }}
+                </div>
             </div>
         </div>
 
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Contacto de Emergencia</h2>
-            <div class="form-grid">
-                {{ form_row(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                {{ form_row(form.contactPerson2) }}
-                {{ form_row(form.contactPhone2) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    {{ form_label(form.contactPerson1) }}
+                    {{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.contactPerson1) }}
+                </div>
+                <div>
+                    {{ form_label(form.contactPhone1) }}
+                    {{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.contactPhone1) }}
+                </div>
+                <div>
+                    {{ form_label(form.contactPerson2) }}
+                    {{ form_widget(form.contactPerson2) }}
+                    {{ form_errors(form.contactPerson2) }}
+                </div>
+                <div>
+                    {{ form_label(form.contactPhone2) }}
+                    {{ form_widget(form.contactPhone2) }}
+                    {{ form_errors(form.contactPhone2) }}
+                </div>
             </div>
         </div>
 
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Dirección</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">{{ form_row(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1">{{ form_row(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="province">{{ form_row(form.province, {'attr': {'data-action': 'change->dependent-fields#loadCities'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="city">{{ form_row(form.city) }}</div>
+                <div class="md:col-span-1">
+                    {{ form_label(form.streetType) }}
+                    {{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.streetType) }}
+                </div>
+                <div class="md:col-span-2">
+                    {{ form_label(form.address) }}
+                    {{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.address) }}
+                </div>
+                <div class="md:col-span-1">
+                    {{ form_label(form.postalCode) }}
+                    {{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.postalCode) }}
+                </div>
+                <div class="md:col-span-1" data-dependent-fields-target="province">
+                    {{ form_label(form.province) }}
+                    {{ form_widget(form.province, {'attr': {'data-action': 'change->dependent-fields#loadCities'}}) }}
+                    {{ form_errors(form.province) }}
+                </div>
+                <div class="md:col-span-1" data-dependent-fields-target="city">
+                    {{ form_label(form.city) }}
+                    {{ form_widget(form.city) }}
+                    {{ form_errors(form.city) }}
+                </div>
             </div>
         </div>
 
@@ -88,37 +158,79 @@
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Cualificaciones</h2>
             <div class="mb-4">
                 <h3 class="font-medium text-gray-600 mb-2">Permisos de Conducción</h3>
-                <div data-form-validation-target="drivingLicenseContainer">{{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseDate'}}) }}</div>
+                <div data-form-validation-target="drivingLicenseContainer">
+                    {{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseDate'}}) }}
+                    {{ form_errors(form.drivingLicenses) }}
+                </div>
             </div>
-             <div class="mb-4 hidden" data-form-validation-target="drivingLicenseDate">{{ form_row(form.drivingLicenseExpiryDate) }}</div>
+             <div class="mb-4 hidden" data-form-validation-target="drivingLicenseDate">
+                {{ form_label(form.drivingLicenseExpiryDate) }}
+                {{ form_widget(form.drivingLicenseExpiryDate) }}
+                {{ form_errors(form.drivingLicenseExpiryDate) }}
+             </div>
             <div class="mb-4">
                 <h3 class="font-medium text-gray-600 mb-2">Permisos de Navegación</h3>
                 {{ form_widget(form.navigationLicenses) }}
+                {{ form_errors(form.navigationLicenses) }}
             </div>
             <div class="mb-4">
                 <h3 class="font-medium text-gray-600 mb-2">Titulaciones Específicas</h3>
                 {{ form_widget(form.specificQualifications) }}
+                {{ form_errors(form.specificQualifications) }}
             </div>
-            {{ form_row(form.profession, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-            {{ form_row(form.otherQualifications) }}
+            <div>
+                {{ form_label(form.profession) }}
+                {{ form_widget(form.profession, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                {{ form_errors(form.profession) }}
+            </div>
+            <div>
+                {{ form_label(form.otherQualifications) }}
+                {{ form_widget(form.otherQualifications) }}
+                {{ form_errors(form.otherQualifications) }}
+            </div>
         </div>
 
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Motivación e Intereses</h2>
-            {{ form_row(form.motivation, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-            {{ form_row(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+            <div>
+                {{ form_label(form.motivation) }}
+                {{ form_widget(form.motivation, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                {{ form_errors(form.motivation) }}
+            </div>
+            <div>
+                {{ form_label(form.howKnown) }}
+                {{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                {{ form_errors(form.howKnown) }}
+            </div>
             <div class="mt-4">
                 <h3 class="font-medium text-gray-600 mb-2">¿Has sido voluntario antes?</h3>
                 {{ form_widget(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#togglePreviousVolunteering'}}) }}
+                {{ form_errors(form.hasVolunteeredBefore) }}
             </div>
-            <div class="hidden mt-4" data-form-validation-target="previousVolunteeringInstitutions">{{ form_row(form.previousVolunteeringInstitutions) }}</div>
+            <div class="hidden mt-4" data-form-validation-target="previousVolunteeringInstitutions">
+                {{ form_label(form.previousVolunteeringInstitutions) }}
+                {{ form_widget(form.previousVolunteeringInstitutions) }}
+                {{ form_errors(form.previousVolunteeringInstitutions) }}
+            </div>
         </div>
 
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Contraseña de Acceso</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% if form.user.password.first is defined %}{{ form_row(form.user.password.first, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
-                {% if form.user.password.second is defined %}{{ form_row(form.user.password.second, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
+                {% if form.user.password.first is defined %}
+                <div>
+                    {{ form_label(form.user.password.first) }}
+                    {{ form_widget(form.user.password.first, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.user.password.first) }}
+                </div>
+                {% endif %}
+                {% if form.user.password.second is defined %}
+                <div>
+                    {{ form_label(form.user.password.second) }}
+                    {{ form_widget(form.user.password.second, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_errors(form.user.password.second) }}
+                </div>
+                {% endif %}
             </div>
         </div>
 
