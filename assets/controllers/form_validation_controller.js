@@ -11,13 +11,25 @@ export default class extends Controller {
         this.togglePreviousVolunteering();
     }
 
+    // Sanitizes DNI/NIE input in real-time
     toUpperCase(event) {
         const input = event.target;
-        const originalValue = input.value;
-        const sanitizedValue = originalValue.toUpperCase().replace(/[^A-Z0-9]/g, '');
-        if (originalValue !== sanitizedValue) {
-            input.value = sanitizedValue;
-        }
+        // Allow numbers, letters X, Y, Z, and Ñ
+        input.value = input.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
+    }
+
+    // Sanitizes Name input in real-time
+    sanitizeAlpha(event) {
+        const input = event.target;
+        // Allow letters (including Spanish accents) and spaces
+        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s]/g, '');
+    }
+
+    // Sanitizes Last Name input in real-time
+    sanitizeAlphaHyphen(event) {
+        const input = event.target;
+         // Allow letters (including Spanish accents), spaces, and hyphens
+        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s-]/g, '');
     }
 
     toggleDrivingLicenseDate() {
@@ -66,8 +78,12 @@ export default class extends Controller {
     }
 
     _validateInput(input) {
-        const [isValid, message] = this._getValidationRules(input);
-        this._updateFieldValidationUI(input, isValid, message);
+        // Find the actual input/select/textarea if the action was on a wrapper div
+        const field = input.matches('input, select, textarea') ? input : input.querySelector('input, select, textarea');
+        if (!field) return true; // Nothing to validate
+
+        const [isValid, message] = this._getValidationRules(field);
+        this._updateFieldValidationUI(field, isValid, message);
         return isValid;
     }
 
@@ -80,11 +96,25 @@ export default class extends Controller {
 
         if (value === '') return [true, ''];
 
-        if (input.id.includes('dni')) {
-            if(!this._validateDniNie(value)) return [false, 'El DNI/NIE no es válido.'];
+        const inputId = input.id.toLowerCase();
+
+        if (inputId.includes('dni')) {
+            if (!this._validateDniNie(value)) return [false, 'El formato del DNI/NIE es incorrecto.'];
         }
 
-        if (input.id.includes('phone') || input.id.includes('contactPhone')) {
+        if (inputId.includes('name') && !inputId.includes('lastname')) {
+             if (!/^[a-zA-Z\u00C0-\u017F\s]+$/.test(value)) {
+                return [false, 'El nombre solo puede contener letras y espacios.'];
+            }
+        }
+
+        if (inputId.includes('lastname')) {
+             if (!/^[a-zA-Z\u00C0-\u017F\s-]+$/.test(value)) {
+                return [false, 'Los apellidos solo pueden contener letras, espacios y guiones.'];
+            }
+        }
+
+        if (inputId.includes('phone') || inputId.includes('contactphone')) {
             const phoneValue = value.replace(/[\s+]/g, '');
             if (!/^\d{9,15}$/.test(phoneValue)) {
                  return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
@@ -109,36 +139,28 @@ export default class extends Controller {
 
     _updateFieldValidationUI(input, isValid, message = '') {
         this._removeValidationUI(input);
-        const parent = input.closest('div');
-        if (!parent) return;
-
-        parent.style.position = 'relative';
-
-        const icon = document.createElement('span');
-        icon.className = 'validation-icon';
 
         if (isValid) {
             input.classList.add('is-valid');
-            icon.innerHTML = `<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`;
         } else {
             input.classList.add('is-invalid');
-            icon.innerHTML = `<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
 
             const errorContainer = document.createElement('div');
-            errorContainer.className = 'invalid-feedback';
+            errorContainer.className = 'form-error-message';
             errorContainer.textContent = message;
-            parent.appendChild(errorContainer);
+            // Insert after the input's direct parent, which is the floating label wrapper
+            input.parentElement.after(errorContainer);
         }
-        parent.appendChild(icon);
     }
 
     _removeValidationUI(input) {
         input.classList.remove('is-valid', 'is-invalid');
-        const parent = input.closest('div');
+        const parent = input.parentElement;
         if (!parent) return;
-        const icon = parent.querySelector('.validation-icon');
-        if (icon) icon.remove();
-        const error = parent.querySelector('.invalid-feedback');
-        if (error) error.remove();
+
+        const nextElement = parent.nextElementSibling;
+        if (nextElement && nextElement.classList.contains('form-error-message')) {
+            nextElement.remove();
+        }
     }
 }
