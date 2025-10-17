@@ -4,11 +4,16 @@ export default class extends Controller {
     static targets = ["input"];
 
     connect() {
-        this.inputTarget.addEventListener('input', this.validate.bind(this));
+        this.validate = this.validate.bind(this);
+        this.inputTarget.addEventListener('input', this.validate);
+    }
+
+    disconnect() {
+        this.inputTarget.removeEventListener('input', this.validate);
     }
 
     validate(event) {
-        let value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+        let value = event.target.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
         if (value.length > 9) {
             value = value.slice(0, 9);
         }
