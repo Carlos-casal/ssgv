@@ -46,17 +46,27 @@
         @apply text-sm text-red-600 mt-1;
     }
 
-    .custom-fieldset {
-        border: 1px solid #d1d5db; /* border-gray-300 */
-        border-radius: 0.5rem; /* rounded-lg */
-        padding: 0.75rem;
+    .fieldset-style {
+        position: relative;
+        padding-top: 1.5rem; /* Make space for the label */
     }
 
-    .custom-fieldset legend {
+    .fieldset-style label {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.75rem;
+        background: white;
         padding: 0 0.25rem;
-        margin-left: 0.5rem;
+        /* Match standard label styles */
         font-size: 0.875rem; /* text-sm */
         font-weight: 500; /* font-medium */
         color: #374151; /* text-gray-700 */
+    }
+
+    .fieldset-style input {
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        border-radius: 0.5rem; /* rounded-lg */
+        padding: 0.75rem;
+        width: 100%;
     }
 }
