@@ -8,7 +8,7 @@
 
     {% if type in text_types %}
         {% set attr = attr|merge({
-            'class': (attr.class|default('') ~ ' block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
+            'class': (attr.class|default('') ~ ' block w-full p-2.5 text-sm text-gray-900 bg-transparent rounded-lg border-1 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
             'placeholder': ' '
         }) %}
     {% else %}
@@ -40,7 +40,7 @@
     {% set type = type|default('text') %}
 
     {% if type in text_types %}
-        <div class="relative z-0 w-full mb-5 group">
+        <div class="relative">
             {{- form_widget(form) -}}
             {{- form_label(form) -}}
             {{- form_errors(form) -}}
@@ -61,7 +61,7 @@
         {% set type = type|default('text') %}
 
         {% if type in text_types %}
-             {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6')|trim}) %}
+             {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-white px-2 peer-focus:px-2 peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 start-1')|trim}) %}
         {% endif %}
 
         {%- if not compound -%}
