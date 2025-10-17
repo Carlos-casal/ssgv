@@ -63,10 +63,5 @@
         color: #374151; /* text-gray-700 */
     }
 
-    .fieldset-style input {
-        border: 1px solid #d1d5db; /* border-gray-300 */
-        border-radius: 0.5rem; /* rounded-lg */
-        padding: 0.75rem;
-        width: 100%;
-    }
+    /* The input is now styled by the form_widget_simple block in the theme */
 }

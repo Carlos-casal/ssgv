@@ -53,3 +53,18 @@
         </label>
     {%- endif -%}
 {%- endblock form_label -%}
+
+{%- block form_row -%}
+    {% set text_types = ['text', 'email', 'password', 'number', 'tel', 'search', 'url', 'date', 'time', 'datetime-local'] %}
+    {% set type = type|default('text') %}
+
+    {% if type in text_types %}
+        <div class="fieldset-style">
+            {{- form_label(form) -}}
+            {{- form_widget(form) -}}
+            {{- form_errors(form) -}}
+        </div>
+    {% else %}
+        {{- parent() -}}
+    {% endif %}
+{%- endblock form_row -%}

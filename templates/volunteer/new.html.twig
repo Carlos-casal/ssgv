@@ -43,14 +43,9 @@
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
             <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
-                <div class="md:col-span-2">
-                    {{ form_row(form.dni, {
-                        'row_attr': {'class': 'fieldset-style'},
-                        'attr': {'data-action': 'input->form-validation#toUpperCase blur->form-validation#validateField'}
-                    }) }}
-                </div>
-                <div class="md:col-span-4">{{ form_row(form.name, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-6">{{ form_row(form.lastName, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                <div class="md:col-span-2">{{ form_row(form.dni) }}</div>
+                <div class="md:col-span-4">{{ form_row(form.name) }}</div>
+                <div class="md:col-span-6">{{ form_row(form.lastName) }}</div>
                 <div class="md:col-span-2">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}</div>
                 <div class="md:col-span-2">{{ form_row(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
                 {% if form.user.email is defined %}<div class="md:col-span-2">{{ form_row(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>{% endif %}
