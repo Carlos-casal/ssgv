@@ -24,112 +24,106 @@
 {% endblock %}
 
 {% block content %}
-<header class="bg-blue-600 text-white p-4 flex items-center space-x-8 shadow-md">
-    <div class="flex items-center space-x-4">
-        <span class="text-sm font-medium">{{ now|format_spanish_date }}</span>
-        <a href="{{ path('app_volunteer_list', {'status': 'pending'}) }}" class="relative p-1 rounded-full hover:bg-blue-700 transition-colors">
-            <i data-lucide="bell" class="w-5 h-5"></i>
-            {% if pending_volunteer_count > 0 %}
-                <span class="absolute top-0 right-0 block h-2.5 w-2.5 rounded-full bg-orange-500 ring-2 ring-blue-600"></span>
-            {% endif %}
-        </a>
-    </div>
-    <h1 class="text-xl font-bold">
-        Alta Voluntari@
-    </h1>
-</header>
-<div class="w-full px-6 py-8"
+<div class="p-6 space-y-6"
     data-controller="form-validation age-modal dependent-fields"
     data-dependent-fields-url-value="/api/poblaciones">
 
-    {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
-        {{ form_errors(form) }}
-
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
-                <div class="md:col-span-2">{{ form_row(form.dni) }}</div>
-                <div class="md:col-span-4">{{ form_row(form.name) }}</div>
-                <div class="md:col-span-6">{{ form_row(form.lastName) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                {% if form.user.email is defined %}<div class="md:col-span-2">{{ form_row(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>{% endif %}
-            </div>
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Alta de Nuevo Voluntari@</h2>
+            <p class="text-gray-600">Rellena el formulario para dar de alta a un nuevo voluntario en el sistema.</p>
         </div>
+    </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Foto de Perfil</h2>
-            {{ form_row(form.profilePicture) }}
-        </div>
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
+            {{ form_errors(form) }}
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Información de Salud</h2>
-            <div class="form-grid">
-                {{ form_row(form.foodAllergies) }}
-                {{ form_row(form.otherAllergies) }}
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
+                <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
+                    <div class="md:col-span-2">{{ form_row(form.dni) }}</div>
+                    <div class="md:col-span-4">{{ form_row(form.name) }}</div>
+                    <div class="md:col-span-6">{{ form_row(form.lastName) }}</div>
+                    <div class="md:col-span-2">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}</div>
+                    <div class="md:col-span-2">{{ form_row(form.phone, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                    {% if form.user.email is defined %}<div class="md:col-span-2">{{ form_row(form.user.email, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>{% endif %}
+                </div>
             </div>
-        </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Contacto de Emergencia</h2>
-            <div class="form-grid">
-                {{ form_row(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-                {{ form_row(form.contactPerson2) }}
-                {{ form_row(form.contactPhone2) }}
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Foto de Perfil</h2>
+                {{ form_row(form.profilePicture) }}
             </div>
-        </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Dirección</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">{{ form_row(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1">{{ form_row(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="province">{{ form_row(form.province, {'attr': {'data-action': 'change->dependent-fields#loadCities'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="city">{{ form_row(form.city) }}</div>
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Información de Salud</h2>
+                <div class="form-grid">
+                    {{ form_row(form.foodAllergies) }}
+                    {{ form_row(form.otherAllergies) }}
+                </div>
             </div>
-        </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Cualificaciones</h2>
-            <div class="mb-4">
-                <h3 class="font-medium text-gray-600 mb-2">Permisos de Conducción</h3>
-                <div data-form-validation-target="drivingLicenseContainer">{{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseDate'}}) }}</div>
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Contacto de Emergencia</h2>
+                <div class="form-grid">
+                    {{ form_row(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                    {{ form_row(form.contactPerson2) }}
+                    {{ form_row(form.contactPhone2) }}
+                </div>
             </div>
-             <div class="mb-4 hidden" data-form-validation-target="drivingLicenseDate">{{ form_row(form.drivingLicenseExpiryDate) }}</div>
-            <div class="mb-4">
-                <h3 class="font-medium text-gray-600 mb-2">Permisos de Navegación</h3>
-                {{ form_widget(form.navigationLicenses) }}
-            </div>
-            <div class="mb-4">
-                <h3 class="font-medium text-gray-600 mb-2">Titulaciones Específicas</h3>
-                {{ form_widget(form.specificQualifications) }}
-            </div>
-            {{ form_row(form.profession, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-            {{ form_row(form.otherQualifications) }}
-        </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Motivación e Intereses</h2>
-            {{ form_row(form.motivation, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-            {{ form_row(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
-            <div class="mt-4">
-                <h3 class="font-medium text-gray-600 mb-2">¿Has sido voluntario antes?</h3>
-                {{ form_widget(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#togglePreviousVolunteering'}}) }}
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Dirección</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1">{{ form_row(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                    <div class="md:col-span-2">{{ form_row(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                    <div class="md:col-span-1">{{ form_row(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
+                    <div class="md:col-span-1" data-dependent-fields-target="province">{{ form_row(form.province, {'attr': {'data-action': 'change->dependent-fields#loadCities'}}) }}</div>
+                    <div class="md:col-span-1" data-dependent-fields-target="city">{{ form_row(form.city) }}</div>
+                </div>
             </div>
-            <div class="hidden mt-4" data-form-validation-target="previousVolunteeringInstitutions">{{ form_row(form.previousVolunteeringInstitutions) }}</div>
-        </div>
 
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Contraseña de Acceso</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {% if form.user.password.first is defined %}{{ form_row(form.user.password.first, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
-                {% if form.user.password.second is defined %}{{ form_row(form.user.password.second, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Cualificaciones</h2>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-600 mb-2">Permisos de Conducción</h3>
+                    <div data-form-validation-target="drivingLicenseContainer">{{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#toggleDrivingLicenseDate'}}) }}</div>
+                </div>
+                 <div class="mb-4 hidden" data-form-validation-target="drivingLicenseDate">{{ form_row(form.drivingLicenseExpiryDate) }}</div>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-600 mb-2">Permisos de Navegación</h3>
+                    {{ form_widget(form.navigationLicenses) }}
+                </div>
+                <div class="mb-4">
+                    <h3 class="font-medium text-gray-600 mb-2">Titulaciones Específicas</h3>
+                    {{ form_widget(form.specificQualifications) }}
+                </div>
+                {{ form_row(form.profession, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                {{ form_row(form.otherQualifications) }}
             </div>
-        </div>
 
-        <div class="flex justify-end mt-4">
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Motivación e Intereses</h2>
+                {{ form_row(form.motivation, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                {{ form_row(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
+                <div class="mt-4">
+                    <h3 class="font-medium text-gray-600 mb-2">¿Has sido voluntario antes?</h3>
+                    {{ form_widget(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#togglePreviousVolunteering'}}) }}
+                </div>
+                <div class="hidden mt-4" data-form-validation-target="previousVolunteeringInstitutions">{{ form_row(form.previousVolunteeringInstitutions) }}</div>
+            </div>
+
+            <div class="form-card">
+                <h2 class="text-xl font-semibold mb-4 text-gray-700">Contraseña de Acceso</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {% if form.user.password.first is defined %}{{ form_row(form.user.password.first, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
+                    {% if form.user.password.second is defined %}{{ form_row(form.user.password.second, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}{% endif %}
+                </div>
+            </div>
+
+            <div class="flex justify-end mt-4">
             <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow-lg">Dar de Alta</button>
         </div>
     {{ form_end(form) }}
