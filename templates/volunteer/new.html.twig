@@ -28,14 +28,7 @@
     data-controller="form-validation age-modal dependent-fields"
     data-dependent-fields-url-value="/api/poblaciones">
 
-    <div class="flex items-center justify-between bg-blue-600 text-white p-4 rounded-lg shadow-md mb-8">
-        <div class="flex items-center">
-            <div class="bg-white rounded-full p-2 mr-4">
-                <img src="https://raw.githubusercontent.com/dlarridi/temp/main/logo-pc-vigo.png" alt="Logo Protección Civil" class="h-12 w-12">
-            </div>
-            <h1 class="text-2xl font-bold">Alta Voluntari@</h1>
-        </div>
-    </div>
+    <h1 class="text-2xl font-bold mb-8">Alta Voluntari@</h1>
 
     {{ form_start(form, {'attr': {'novalidate': 'novalidate', 'data-action': 'submit->form-validation#handleSubmit'}}) }}
         {{ form_errors(form) }}
