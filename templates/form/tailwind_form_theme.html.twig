@@ -1,22 +1,15 @@
 {% use "form_div_layout.html.twig" %}
 
-{# Widgets #}
-
 {%- block form_widget_simple -%}
-    {% set text_types = ['text', 'email', 'password', 'number', 'tel', 'search', 'url', 'date', 'time', 'datetime-local'] %}
-    {% set type = type|default('text') %}
-
-    {% if type in text_types %}
-        {% set attr = attr|merge({
-            'class': (attr.class|default('') ~ ' block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
-            'placeholder': ' '
-        }) %}
-    {% else %}
-        {# Keep original styling for other inputs like checkboxes/radios #}
-        {% set attr = attr|merge({
-            'class': (attr.class|default('') ~ ' h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500')|trim
-        }) %}
+    {% set base_class = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full' %}
+    {% if type is defined and (type == 'checkbox' or type == 'radio') %}
+        {# Use smaller, more appropriate classes for checkboxes and radios #}
+        {% set base_class = 'h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500' %}
     {% endif %}
+
+    {% set attr = attr|merge({
+        'class': (attr.class|default('') ~ ' ' ~ base_class)|trim
+    }) %}
 
     {{- parent() -}}
 {%- endblock form_widget_simple -%}
@@ -35,35 +28,8 @@
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
 
-{%- block form_row -%}
-    {% set text_types = ['text', 'email', 'password', 'number', 'tel', 'search', 'url', 'date', 'time', 'datetime-local'] %}
-    {% set type = type|default('text') %}
-
-    {% if type in text_types %}
-        <div class="relative">
-            {{- form_widget(form) -}}
-            {{- form_label(form) -}}
-            {{- form_errors(form) -}}
-        </div>
-    {% else %}
-        {# Default rendering for non-text fields #}
-        <div class="mb-5">
-             {{- form_label(form) -}}
-             {{- form_widget(form) -}}
-             {{- form_errors(form) -}}
-        </div>
-    {% endif %}
-{%- endblock form_row -%}
-
 {%- block form_label -%}
     {% if label is not same as(false) -%}
-        {% set text_types = ['text', 'email', 'password', 'number', 'tel', 'search', 'url', 'date', 'time', 'datetime-local'] %}
-        {% set type = type|default('text') %}
-
-        {% if type in text_types %}
-             {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' peer-focus:font-medium absolute text-sm text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6')|trim}) %}
-        {% endif %}
-
         {%- if not compound -%}
             {% set label_attr = label_attr|merge({'for': id}) %}
         {%- endif -%}
@@ -81,18 +47,24 @@
             {%- endif -%}
         {%- endif -%}
         <label{% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
+            {#- Remove whitespace between label and asterisk -#}
             {{- label|trans({}, translation_domain) -}}
             {%- if required -%}<span class="text-red-500">*</span>{%- endif -%}
         </label>
     {%- endif -%}
 {%- endblock form_label -%}
 
-{%- block form_errors -%}
-    {%- if errors|length > 0 -%}
-        <ul class="mt-2 text-xs text-red-600">
-            {%- for error in errors -%}
-                <li>{{ error.message }}</li>
-            {%- endfor -%}
-        </ul>
-    {%- endif -%}
-{%- endblock form_errors -%}
+{%- block form_row -%}
+    {% set text_types = ['text', 'email', 'password', 'number', 'tel', 'search', 'url', 'date', 'time', 'datetime-local'] %}
+    {% set type = type|default('text') %}
+
+    {% if type in text_types %}
+        <div class="fieldset-style">
+            {{- form_label(form) -}}
+            {{- form_widget(form) -}}
+            {{- form_errors(form) -}}
+        </div>
+    {% else %}
+        {{- parent() -}}
+    {% endif %}
+{%- endblock form_row -%}
