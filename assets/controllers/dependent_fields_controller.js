@@ -1,30 +1,17 @@
 import { Controller } from '@hotwired/stimulus';
 
-/**
- * Controller to handle dependent form fields, where the options of one field
- * (e.g., city) depend on the selected value of another (e.g., province).
- */
 export default class extends Controller {
     static targets = ["province", "city"];
     static values = {
         url: String
     };
 
-    connect() {
-        if (!this.hasUrlValue) {
-            console.error('The URL value is missing for the dependent fields controller.');
-            return;
-        }
-    }
-
-    /**
-     * Fetches and loads the cities for the selected province.
-     */
     async loadCities() {
-        const province = this.provinceTarget.value;
-        const citySelect = this.cityTarget;
+        // The event is triggered on the wrapper div, so we find the select inside.
+        const provinceSelect = this.provinceTarget.querySelector('select');
+        const citySelect = this.cityTarget.querySelector('select');
+        const province = provinceSelect.value;
 
-        // Always clear previous options and set a default state
         citySelect.innerHTML = '<option value="">Cargando...</option>';
         citySelect.disabled = true;
 
@@ -42,8 +29,12 @@ export default class extends Controller {
             }
             const cities = await response.json();
 
-            citySelect.innerHTML = ''; // Clear the "Cargando..." message
-            citySelect.add(new Option('Población', ''));
+            citySelect.innerHTML = ''; // Clear "Cargando..."
+
+            // The placeholder is already set in VolunteerType.php,
+            // but we add a default option if needed.
+            const placeholderText = citySelect.getAttribute('placeholder') || 'Selecciona una población';
+            citySelect.add(new Option(placeholderText, ''));
 
             if (cities.length > 0) {
                 cities.forEach(city => {
@@ -58,19 +49,5 @@ export default class extends Controller {
             console.error("Could not fetch cities:", error);
             citySelect.innerHTML = '<option value="">Error al cargar poblaciones</option>';
         }
-    }
-
-    _clearAndDisable(selectElement, placeholder) {
-        selectElement.innerHTML = '';
-        const defaultOption = new Option(placeholder, '');
-        selectElement.add(defaultOption);
-        selectElement.disabled = true;
-    }
-
-    _clearAndEnable(selectElement, placeholder) {
-        selectElement.innerHTML = '';
-        const defaultOption = new Option(placeholder, '');
-        selectElement.add(defaultOption);
-        selectElement.disabled = false;
     }
 }

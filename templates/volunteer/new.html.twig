@@ -18,7 +18,6 @@
         }
         .is-invalid { border-color: #dc3545 !important; }
         .invalid-feedback { color: #dc3545; font-size: 0.875em; margin-top: 0.25rem; }
-        .is-valid { border-color: #28a745 !important; }
     </style>
 {% endblock %}
 
@@ -38,7 +37,7 @@
                 <div class="md:col-span-2" data-action="input->form-validation#toUpperCase blur->form-validation#validateField">
                     {{ form_row(form.dni) }}
                 </div>
-                <div class="md:col-span-2" data-action="input->form-validation#sanitizeAlpha blur->form-validation#validateField">
+                <div class="md:col-span-2" data-action="input->form-validation#sanitizeAlphaHyphen blur->form-validation#validateField">
                     {{ form_row(form.name) }}
                 </div>
                 <div class="md:col-span-2" data-action="input->form-validation#sanitizeAlphaHyphen blur->form-validation#validateField">
@@ -55,6 +54,17 @@
                         {{ form_row(form.user.email) }}
                     </div>
                 {% endif %}
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2 class="text-xl font-semibold mb-4 text-gray-700">Dirección</h2>
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-6 items-end">
+                <div class="md:col-span-1" style="flex-grow: 0;">{{ form_row(form.streetType, {'label': false, 'attr': {'class': 'w-auto'}}) }}</div>
+                <div class="md:col-span-2">{{ form_row(form.address) }}</div>
+                <div class="md:col-span-2">{{ form_row(form.postalCode) }}</div>
+                <div class="md:col-span-5" data-dependent-fields-target="province" data-action="change->dependent-fields#loadCities">{{ form_row(form.province, {'label': false}) }}</div>
+                <div class="md:col-span-5" data-dependent-fields-target="city">{{ form_row(form.city, {'label': false}) }}</div>
             </div>
         </div>
 
@@ -78,17 +88,6 @@
                 {{ form_row(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}
                 {{ form_row(form.contactPerson2) }}
                 {{ form_row(form.contactPhone2) }}
-            </div>
-        </div>
-
-        <div class="form-card">
-            <h2 class="text-xl font-semibold mb-4 text-gray-700">Dirección</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="md:col-span-1">{{ form_row(form.streetType, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-2">{{ form_row(form.address, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1">{{ form_row(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validateField'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="province">{{ form_row(form.province, {'attr': {'data-action': 'change->dependent-fields#loadCities'}}) }}</div>
-                <div class="md:col-span-1" data-dependent-fields-target="city">{{ form_row(form.city) }}</div>
             </div>
         </div>
 

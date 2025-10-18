@@ -37,7 +37,7 @@ class VolunteerType extends AbstractType
             ->add('streetType', ChoiceType::class, [
                 'label' => 'Tipo de Vía', 'required' => true,
                 'choices' => [ 'Calle' => 'Calle', 'Avenida' => 'Avenida', 'Plaza' => 'Plaza', 'Paseo' => 'Paseo', 'Ronda' => 'Ronda', 'Vía' => 'Via', 'Carretera' => 'Carretera', 'Camino' => 'Camino', 'Bulevar' => 'Bulevar', 'Glorieta' => 'Glorieta', 'Urbanización' => 'Urbanización', 'Otro' => 'Otro' ],
-                'placeholder' => 'Selecciona un tipo',
+                'placeholder' => 'Selecciona un tipo de vía',
             ])
             ->add('address', TextType::class, ['label' => 'Dirección', 'required' => true, 'attr' => ['placeholder' => 'Ej: Gran Vía, 10, 3º A']])
             ->add('postalCode', TextType::class, ['label' => 'Código Postal', 'required' => true])
@@ -46,7 +46,7 @@ class VolunteerType extends AbstractType
                 'choices' => ['A Coruña' => 'A Coruña', 'Lugo' => 'Lugo', 'Ourense' => 'Ourense', 'Pontevedra' => 'Pontevedra'],
                 'placeholder' => 'Selecciona una provincia',
             ])
-            ->add('city', ChoiceType::class, ['label' => 'Población', 'required' => true, 'placeholder' => 'Población', 'choices' => []])
+            ->add('city', ChoiceType::class, ['label' => 'Población', 'required' => true, 'placeholder' => 'Selecciona una población', 'choices' => []])
             ->add('profilePicture', FileType::class, [
                 'label' => 'Foto de Perfil', 'mapped' => false, 'required' => false,
                 'constraints' => [new File(['maxSize' => '1024k', 'mimeTypes' => ['image/jpeg', 'image/png']])],

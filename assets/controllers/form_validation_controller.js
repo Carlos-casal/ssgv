@@ -14,21 +14,12 @@ export default class extends Controller {
     // Sanitizes DNI/NIE input in real-time
     toUpperCase(event) {
         const input = event.target;
-        // Allow numbers, letters X, Y, Z, and Ñ
         input.value = input.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
     }
 
-    // Sanitizes Name input in real-time
-    sanitizeAlpha(event) {
-        const input = event.target;
-        // Allow letters (including Spanish accents) and spaces
-        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s]/g, '');
-    }
-
-    // Sanitizes Last Name input in real-time
+    // Sanitizes Name and Last Name input in real-time
     sanitizeAlphaHyphen(event) {
         const input = event.target;
-         // Allow letters (including Spanish accents), spaces, and hyphens
         input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s-]/g, '');
     }
 
@@ -78,9 +69,8 @@ export default class extends Controller {
     }
 
     _validateInput(input) {
-        // Find the actual input/select/textarea if the action was on a wrapper div
         const field = input.matches('input, select, textarea') ? input : input.querySelector('input, select, textarea');
-        if (!field) return true; // Nothing to validate
+        if (!field) return true;
 
         const [isValid, message] = this._getValidationRules(field);
         this._updateFieldValidationUI(field, isValid, message);
@@ -94,35 +84,31 @@ export default class extends Controller {
             return [false, 'Este campo es obligatorio.'];
         }
 
-        if (value === '') return [true, ''];
-
         const inputId = input.id.toLowerCase();
 
-        if (inputId.includes('dni')) {
-            if (!this._validateDniNie(value)) return [false, 'El formato del DNI/NIE es incorrecto.'];
-        }
-
-        if (inputId.includes('name') && !inputId.includes('lastname')) {
-             if (!/^[a-zA-Z\u00C0-\u017F\s]+$/.test(value)) {
-                return [false, 'El nombre solo puede contener letras y espacios.'];
+        if (value !== '') { // Only apply format validation if the field is not empty
+            if (inputId.includes('dni')) {
+                if (!this._validateDniNie(value)) return [false, 'El formato del DNI/NIE es incorrecto.'];
             }
-        }
 
-        if (inputId.includes('lastname')) {
-             if (!/^[a-zA-Z\u00C0-\u017F\s-]+$/.test(value)) {
-                return [false, 'Los apellidos solo pueden contener letras, espacios y guiones.'];
+            if (inputId.includes('name') || inputId.includes('lastname')) {
+                 if (!/^[a-zA-Z\u00C0-\u017F\s-]+$/.test(value)) {
+                    return [false, 'Solo se permiten letras, espacios y guiones.'];
+                }
             }
-        }
 
-        if (inputId.includes('phone') || inputId.includes('contactphone')) {
-            const phoneValue = value.replace(/[\s+]/g, '');
-            if (!/^\d{9,15}$/.test(phoneValue)) {
-                 return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
+            if (inputId.includes('phone') || inputId.includes('contactphone')) {
+                const phoneValue = value.replace(/[\s+]/g, '');
+                if (!/^\d{9,15}$/.test(phoneValue)) {
+                     return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
+                }
             }
-        }
 
-        if (input.type === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-            return [false, 'El formato del correo no es válido.'];
+            if (input.type === 'email') {
+                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                    return [false, 'El formato del correo no es válido.'];
+                }
+            }
         }
 
         return [true, ''];
@@ -141,14 +127,15 @@ export default class extends Controller {
         this._removeValidationUI(input);
 
         if (isValid) {
-            input.classList.add('is-valid');
+            if(input.value.trim() !== '') {
+                input.classList.add('is-valid');
+            }
         } else {
             input.classList.add('is-invalid');
 
             const errorContainer = document.createElement('div');
             errorContainer.className = 'form-error-message';
             errorContainer.textContent = message;
-            // Insert after the input's direct parent, which is the floating label wrapper
             input.parentElement.after(errorContainer);
         }
     }
