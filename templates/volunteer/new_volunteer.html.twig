@@ -1,0 +1,234 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Alta Voluntari@{% endblock %}
+{% block page_title %}Alta Voluntari@{% endblock %}
+
+{% block content %}
+<div class="container mx-auto p-4 lg:p-6">
+    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate'}}) }}
+
+    {# --- Section: Datos Personales --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Datos Personales</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
+            {# Row 1 #}
+            <div data-controller="dni-validation">
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="w-32">{{ form_widget(form.dni, {'attr': {'data-dni-validation-target': 'input'}}) }}</div>
+                </div>
+                {{ form_errors(form.dni) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.name, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.name) }}</div>
+                </div>
+                {{ form_errors(form.name) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.lastName, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.lastName) }}</div>
+                </div>
+                {{ form_errors(form.lastName) }}
+            </div>
+
+            {# Row 2 #}
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.dateOfBirth, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="w-40">{{ form_widget(form.dateOfBirth) }}</div>
+                </div>
+                {{ form_errors(form.dateOfBirth) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.phone, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="w-40">{{ form_widget(form.phone) }}</div>
+                </div>
+                {{ form_errors(form.phone) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.email, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.email) }}</div>
+                </div>
+                {{ form_errors(form.email) }}
+            </div>
+
+            {# Row 3 #}
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.profession, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.profession) }}</div>
+                </div>
+                {{ form_errors(form.profession) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.profilePicture, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.profilePicture) }}</div>
+                </div>
+                {{ form_errors(form.profilePicture) }}
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Dirección --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Dirección</h2>
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+                <div>
+                    <div class="flex items-center gap-1">
+                        {{ form_label(form.streetType, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        <div class="flex-1">{{ form_widget(form.streetType) }}</div>
+                    </div>
+                    {{ form_errors(form.streetType) }}
+                </div>
+                <div>
+                    <div class="flex items-center gap-1">
+                        {{ form_label(form.address, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        <div class="flex-1">{{ form_widget(form.address) }}</div>
+                    </div>
+                    {{ form_errors(form.address) }}
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8">
+                <div>
+                    <div class="flex items-center gap-1">
+                        {{ form_label(form.postalCode, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        <div class="w-24">{{ form_widget(form.postalCode) }}</div>
+                    </div>
+                    {{ form_errors(form.postalCode) }}
+                </div>
+                <div>
+                    <div class="flex items-center gap-1">
+                        {{ form_label(form.city, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        <div class="flex-1">{{ form_widget(form.city) }}</div>
+                    </div>
+                    {{ form_errors(form.city) }}
+                </div>
+                <div>
+                    <div class="flex items-center gap-1">
+                        {{ form_label(form.province, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                        <div class="flex-1">{{ form_widget(form.province) }}</div>
+                    </div>
+                    {{ form_errors(form.province) }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Contacto de Emergencia --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Contacto de Emergencia</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.contactPerson1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="flex-1">{{ form_widget(form.contactPerson1) }}</div>
+                </div>
+                {{ form_errors(form.contactPerson1) }}
+            </div>
+            <div>
+                <div class="flex items-center gap-1">
+                    {{ form_label(form.contactPhone1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                    <div class="w-40">{{ form_widget(form.contactPhone1) }}</div>
+                </div>
+                {{ form_errors(form.contactPhone1) }}
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Información de Salud --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Información de Salud</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
+            <div>
+                <div class="flex items-start gap-1">
+                    {{ form_label(form.foodAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                    <div class="flex-1 h-24">{{ form_widget(form.foodAllergies) }}</div>
+                </div>
+                {{ form_errors(form.foodAllergies) }}
+            </div>
+            <div>
+                <div class="flex items-start gap-1">
+                    {{ form_label(form.otherAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                    <div class="flex-1 h-24">{{ form_widget(form.otherAllergies) }}</div>
+                </div>
+                {{ form_errors(form.otherAllergies) }}
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Cualificaciones --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Cualificaciones</h2>
+        <div class="space-y-4">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="flex items-start gap-1">
+                    {{ form_label(form.drivingLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                    <div class="flex-1">{{ form_widget(form.drivingLicenses) }}</div>
+                </div>
+                <div class="flex items-start gap-1">
+                    {{ form_label(form.navigationLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                    <div class="flex-1">{{ form_widget(form.navigationLicenses) }}</div>
+                </div>
+                <div class="flex items-start gap-1">
+                    {{ form_label(form.specificQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                    <div class="flex-1">{{ form_widget(form.specificQualifications) }}</div>
+                </div>
+            </div>
+            <div id="driving-license-expiry-wrapper" class="hidden flex items-center gap-1">
+                {{ form_label(form.drivingLicenseExpiryDate, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                <div class="w-40">{{ form_widget(form.drivingLicenseExpiryDate) }}</div>
+                {{ form_errors(form.drivingLicenseExpiryDate) }}
+            </div>
+            <div class="flex items-center gap-1">
+                 {{ form_label(form.habilitadoConducir, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                 <div class="flex-1">{{ form_widget(form.habilitadoConducir) }}</div>
+            </div>
+             <div class="flex items-start gap-1">
+                {{ form_label(form.otherQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                <div class="flex-1 h-24">{{ form_widget(form.otherQualifications) }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# --- Section: Motivación e Intereses --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+        <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Motivación e Intereses</h2>
+        <div class="space-y-4">
+            <div class="flex items-start gap-1">
+                {{ form_label(form.motivation, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                <div class="flex-1 h-24">{{ form_widget(form.motivation) }}</div>
+            </div>
+            <div class="flex items-center gap-1">
+                {{ form_label(form.howKnown, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
+                <div class="flex-1">{{ form_widget(form.howKnown) }}</div>
+            </div>
+            <div class="flex items-start gap-1">
+                {{ form_label(form.hasVolunteeredBefore, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                <div class="flex-1">{{ form_widget(form.hasVolunteeredBefore) }}</div>
+            </div>
+            <div id="previous-institutions-wrapper" class="hidden flex items-start gap-1">
+                {{ form_label(form.previousVolunteeringInstitutions, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
+                <div class="flex-1 h-24">{{ form_widget(form.previousVolunteeringInstitutions) }}</div>
+            </div>
+        </div>
+    </div>
+
+    {# --- Action Buttons --- #}
+    <div class="flex justify-end items-center pt-6 border-t mt-8">
+        <div class="flex items-center gap-3">
+            <a href="{{ path('app_volunteer_list') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors text-sm font-medium">Cancelar</a>
+            <button type="button" data-action="click->form-validation#addAnother" class="px-4 py-2 bg-blue-100 text-blue-800 rounded-lg hover:bg-blue-200 transition-colors text-sm font-medium">Añadir Otro</button>
+            <button type="submit" class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition-colors shadow-sm text-sm">Dar de Alta</button>
+        </div>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock %}

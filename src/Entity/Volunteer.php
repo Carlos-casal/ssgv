@@ -166,19 +166,16 @@ class Volunteer
     private ?string $employmentStatus = null;
 
     /**
-     * @var array An array of driving license objects, each with a 'type' and 'expiry' date.
+     * @var array|null An array of driving licenses the volunteer holds.
      */
-    #[ORM\Column(type: Types::JSON)]
-    private array $drivingLicenses = [];
-
-    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $drivingLicenses = null;
 
     /**
-     * @var bool|null Whether the volunteer is authorized to drive association vehicles.
+     * @var \DateTimeInterface|null The expiry date of the driving license.
      */
-    #[ORM\Column(type: Types::BOOLEAN, nullable: true)]
-    private ?bool $habilitadoConducir = false;
+    #[ORM\Column(type: Types::DATE_MUTABLE, nullable: true)]
+    private ?\DateTimeInterface $drivingLicenseExpiryDate = null;
 
     /**
      * @var string|null Languages spoken by the volunteer.
@@ -270,6 +267,8 @@ class Volunteer
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $indicativo = null;
 
+    #[ORM\Column]
+    private ?bool $habilitadoConducir = false;
 
     /**
      * @var Collection<int, AssistanceConfirmation> A collection of this volunteer's assistance confirmations.
@@ -665,35 +664,23 @@ class Volunteer
         return $this;
     }
 
+    /**
+     * Gets the expiry date of the driving license.
+     * @return \DateTimeInterface|null
+     */
     public function getDrivingLicenseExpiryDate(): ?\DateTimeInterface
     {
         return $this->drivingLicenseExpiryDate;
     }
 
+    /**
+     * Sets the expiry date of the driving license.
+     * @param \DateTimeInterface|null $drivingLicenseExpiryDate The expiry date.
+     * @return static
+     */
     public function setDrivingLicenseExpiryDate(?\DateTimeInterface $drivingLicenseExpiryDate): static
     {
         $this->drivingLicenseExpiryDate = $drivingLicenseExpiryDate;
-        return $this;
-    }
-
-
-    /**
-     * Gets whether the volunteer is authorized to drive association vehicles.
-     * @return bool|null
-     */
-    public function isHabilitadoConducir(): ?bool
-    {
-        return $this->habilitadoConducir;
-    }
-
-    /**
-     * Sets whether the volunteer is authorized to drive association vehicles.
-     * @param bool|null $habilitadoConducir
-     * @return static
-     */
-    public function setHabilitadoConducir(?bool $habilitadoConducir): static
-    {
-        $this->habilitadoConducir = $habilitadoConducir;
         return $this;
     }
 
@@ -1089,6 +1076,17 @@ class Volunteer
         return $this;
     }
 
+    public function isHabilitadoConducir(): ?bool
+    {
+        return $this->habilitadoConducir;
+    }
+
+    public function setHabilitadoConducir(bool $habilitadoConducir): static
+    {
+        $this->habilitadoConducir = $habilitadoConducir;
+
+        return $this;
+    }
 
     public function getVolunteerServiceForService(Service $service): ?VolunteerService
     {

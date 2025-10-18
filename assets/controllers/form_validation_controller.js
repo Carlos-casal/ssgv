@@ -1,56 +1,62 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = [
-        "drivingLicenseContainer", "drivingLicenseDate",
-        "previousVolunteeringInstitutions"
-    ];
-
     connect() {
-        this.toggleDrivingLicenseDate();
-        this.togglePreviousVolunteering();
+        this.element.setAttribute('novalidate', 'novalidate'); // Disable native browser validation popups
+        this.element.addEventListener('submit', this.handleSubmit.bind(this));
+
+        // Add blur listeners to all relevant inputs for real-time validation
+        this.element.querySelectorAll('input, select, textarea').forEach(input => {
+            input.addEventListener('blur', (event) => this.validate(event.target));
+        });
+
+        // Keep conditional logic for specific fields
+        this.element.querySelectorAll('input[name="volunteer[drivingLicenses][]"]').forEach(checkbox => {
+            checkbox.addEventListener('change', this.toggleDrivingLicenseExpiry.bind(this));
+        });
+        this.element.querySelectorAll('input[name="volunteer[hasVolunteeredBefore]"]').forEach(radio => {
+            radio.addEventListener('change', this.togglePreviousInstitutions.bind(this));
+        });
+
+        this.toggleDrivingLicenseExpiry();
+        this.togglePreviousInstitutions();
     }
 
-    // Sanitizes DNI/NIE input in real-time
-    toUpperCase(event) {
-        const input = event.target;
-        input.value = input.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
-    }
+    // --- Conditional Field Logic (Kept from original) ---
+    toggleDrivingLicenseExpiry() {
+        const drivingLicensesCheckboxes = this.element.querySelectorAll('input[name="volunteer[drivingLicenses][]"]');
+        const expiryWrapper = document.getElementById('driving-license-expiry-wrapper');
+        if (!expiryWrapper) return;
 
-    // Sanitizes Name and Last Name input in real-time
-    sanitizeAlphaHyphen(event) {
-        const input = event.target;
-        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s-]/g, '');
-    }
-
-    toggleDrivingLicenseDate() {
-        if (!this.hasDrivingLicenseContainerTarget || !this.hasDrivingLicenseDateTarget) return;
-        const drivingLicensesCheckboxes = this.drivingLicenseContainerTarget.querySelectorAll('input[type="checkbox"]');
         const anyChecked = Array.from(drivingLicensesCheckboxes).some(cb => cb.checked);
-        this.drivingLicenseDateTarget.classList.toggle('hidden', !anyChecked);
-        const expiryInput = this.drivingLicenseDateTarget.querySelector('input');
+        expiryWrapper.classList.toggle('hidden', !anyChecked);
+        const expiryInput = expiryWrapper.querySelector('input');
         if (expiryInput) {
             expiryInput.required = anyChecked;
-            if (!anyChecked) this._removeValidationUI(expiryInput);
+            if (!anyChecked) this.removeValidation(expiryInput);
         }
     }
 
-    togglePreviousVolunteering() {
-        if (!this.hasPreviousVolunteeringInstitutionsTarget) return;
-        const hasVolunteeredYes = this.element.querySelector('input[name*="[hasVolunteeredBefore]"][value="1"]');
+    togglePreviousInstitutions() {
+        const hasVolunteeredYes = this.element.querySelector('input[name="volunteer[hasVolunteeredBefore]"][value="1"]');
+        const institutionsWrapper = document.getElementById('previous-institutions-wrapper');
+        if (!institutionsWrapper) return;
+
         const isYesChecked = hasVolunteeredYes && hasVolunteeredYes.checked;
-        this.previousVolunteeringInstitutionsTarget.classList.toggle('hidden', !isYesChecked);
-        const textarea = this.previousVolunteeringInstitutionsTarget.querySelector('textarea');
+        institutionsWrapper.classList.toggle('hidden', !isYesChecked);
+        const textarea = institutionsWrapper.querySelector('textarea');
         if (textarea) {
             textarea.required = isYesChecked;
-            if (!isYesChecked) this._removeValidationUI(textarea);
+            if (!isYesChecked) this.removeValidation(textarea);
         }
     }
 
+    // --- Form Actions ---
     handleSubmit(event) {
         let isFormValid = true;
-        this.element.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
-            if (!this._validateInput(input)) {
+        // Validate all fields on submit
+        this.element.querySelectorAll('input, select, textarea').forEach(input => {
+            if (!this.validate(input)) {
                 isFormValid = false;
             }
         });
@@ -60,94 +66,87 @@ export default class extends Controller {
             const firstInvalid = this.element.querySelector('.is-invalid');
             if (firstInvalid) {
                 firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
             }
         }
     }
 
-    validateField(event) {
-        this._validateInput(event.target);
-    }
+    // --- Real-time Validation (on blur) ---
+    validate(input) {
+        // Don't validate hidden fields
+        if (input.offsetParent === null) {
+            return true;
+        }
 
-    _validateInput(input) {
-        const field = input.matches('input, select, textarea') ? input : input.querySelector('input, select, textarea');
-        if (!field) return true;
-
-        const [isValid, message] = this._getValidationRules(field);
-        this._updateFieldValidationUI(field, isValid, message);
+        const isValid = input.checkValidity();
+        const message = this.getErrorMessage(input);
+        this.updateFieldValidation(input, isValid, message);
         return isValid;
     }
 
-    _getValidationRules(input) {
-        const value = input.value.trim();
+    getErrorMessage(input) {
+        const validity = input.validity;
 
-        if (input.required && value === '') {
-            return [false, 'Este campo es obligatorio.'];
+        if (validity.valueMissing) {
+            return 'Este campo es obligatorio.';
         }
-
-        const inputId = input.id.toLowerCase();
-
-        if (value !== '') { // Only apply format validation if the field is not empty
-            if (inputId.includes('dni')) {
-                if (!this._validateDniNie(value)) return [false, 'El formato del DNI/NIE es incorrecto.'];
-            }
-
-            if (inputId.includes('name') || inputId.includes('lastname')) {
-                 if (!/^[a-zA-Z\u00C0-\u017F\s-]+$/.test(value)) {
-                    return [false, 'Solo se permiten letras, espacios y guiones.'];
-                }
-            }
-
-            if (inputId.includes('phone') || inputId.includes('contactphone')) {
-                const phoneValue = value.replace(/[\s+]/g, '');
-                if (!/^\d{9,15}$/.test(phoneValue)) {
-                     return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
-                }
-            }
-
-            if (input.type === 'email') {
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return [false, 'El formato del correo no es válido.'];
-                }
-            }
+        if (validity.typeMismatch) {
+            if (input.type === 'email') return 'Por favor, introduce una dirección de correo electrónico válida.';
+            if (input.type === 'url') return 'Por favor, introduce una URL válida.';
+            return 'El formato no es el correcto.';
         }
-
-        return [true, ''];
+        if (validity.tooShort) {
+            return `El valor es demasiado corto. Mínimo ${input.minLength} caracteres.`;
+        }
+        if (validity.tooLong) {
+            return `El valor es demasiado largo. Máximo ${input.maxLength} caracteres.`;
+        }
+        if (validity.patternMismatch) {
+            return 'El formato no es válido.';
+        }
+        if (validity.rangeUnderflow) {
+            return `El valor debe ser superior a ${input.min}.`;
+        }
+        if (validity.rangeOverflow) {
+            return `El valor debe ser inferior a ${input.max}.`;
+        }
+        if (validity.stepMismatch) {
+            return 'El valor no es válido.';
+        }
+        if (validity.badInput) {
+            return 'Por favor, introduce un número válido.';
+        }
+        return ''; // No error
     }
 
-    _validateDniNie(value) {
-        const dni = value.toUpperCase().trim();
-        if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
-        const numberPart = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
-        const letter = dni.substr(dni.length - 1, 1);
-        const controlLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart, 10) % 23];
-        return letter === controlLetter;
-    }
-
-    _updateFieldValidationUI(input, isValid, message = '') {
-        this._removeValidationUI(input);
+    // --- UI Update Helpers ---
+    updateFieldValidation(input, isValid, message) {
+        this.removeValidation(input);
+        const parent = input.parentElement; // Target the parent for floating label styles
 
         if (isValid) {
-            if(input.value.trim() !== '') {
-                input.classList.add('is-valid');
-            }
+            input.classList.add('is-valid');
+            input.classList.remove('is-invalid');
         } else {
             input.classList.add('is-invalid');
+            input.classList.remove('is-valid');
 
-            const errorContainer = document.createElement('div');
-            errorContainer.className = 'form-error-message';
-            errorContainer.textContent = message;
-            input.parentElement.after(errorContainer);
+            const errorEl = document.createElement('p');
+            errorEl.className = 'form-error-message'; // Using class from app.css
+            errorEl.textContent = message;
+            // Insert after the input, not inside the relative wrapper
+            parent.insertAdjacentElement('afterend', errorEl);
         }
     }
 
-    _removeValidationUI(input) {
-        input.classList.remove('is-valid', 'is-invalid');
+    removeValidation(input) {
         const parent = input.parentElement;
-        if (!parent) return;
+        input.classList.remove('is-valid', 'is-invalid');
 
-        const nextElement = parent.nextElementSibling;
-        if (nextElement && nextElement.classList.contains('form-error-message')) {
-            nextElement.remove();
+        // Find and remove the specific error message for this input
+        const nextSibling = parent.nextElementSibling;
+        if (nextSibling && nextSibling.classList.contains('form-error-message')) {
+            nextSibling.remove();
         }
     }
 }
