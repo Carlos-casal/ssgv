@@ -1,56 +1,27 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = [
-        "drivingLicenseContainer", "drivingLicenseDate",
-        "previousVolunteeringInstitutions"
-    ];
 
-    connect() {
-        this.toggleDrivingLicenseDate();
-        this.togglePreviousVolunteering();
+    // On blur, validate the specific field that triggered the event.
+    validateField(event) {
+        const field = event.currentTarget.querySelector('input, select, textarea');
+        if (!field) return;
+
+        const validationType = field.dataset.validate;
+        if (!validationType) return; // No specific validation for this field
+
+        const { isValid, message } = this._getValidationResult(field);
+        this._updateFieldUI(field, isValid, message);
     }
 
-    // Sanitizes DNI/NIE input in real-time
-    toUpperCase(event) {
-        const input = event.target;
-        input.value = input.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
-    }
-
-    // Sanitizes Name and Last Name input in real-time
-    sanitizeAlphaHyphen(event) {
-        const input = event.target;
-        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s-]/g, '');
-    }
-
-    toggleDrivingLicenseDate() {
-        if (!this.hasDrivingLicenseContainerTarget || !this.hasDrivingLicenseDateTarget) return;
-        const drivingLicensesCheckboxes = this.drivingLicenseContainerTarget.querySelectorAll('input[type="checkbox"]');
-        const anyChecked = Array.from(drivingLicensesCheckboxes).some(cb => cb.checked);
-        this.drivingLicenseDateTarget.classList.toggle('hidden', !anyChecked);
-        const expiryInput = this.drivingLicenseDateTarget.querySelector('input');
-        if (expiryInput) {
-            expiryInput.required = anyChecked;
-            if (!anyChecked) this._removeValidationUI(expiryInput);
-        }
-    }
-
-    togglePreviousVolunteering() {
-        if (!this.hasPreviousVolunteeringInstitutionsTarget) return;
-        const hasVolunteeredYes = this.element.querySelector('input[name*="[hasVolunteeredBefore]"][value="1"]');
-        const isYesChecked = hasVolunteeredYes && hasVolunteeredYes.checked;
-        this.previousVolunteeringInstitutionsTarget.classList.toggle('hidden', !isYesChecked);
-        const textarea = this.previousVolunteeringInstitutionsTarget.querySelector('textarea');
-        if (textarea) {
-            textarea.required = isYesChecked;
-            if (!isYesChecked) this._removeValidationUI(textarea);
-        }
-    }
-
+    // On submit, validate all required fields and prevent submission if any are invalid.
     handleSubmit(event) {
         let isFormValid = true;
-        this.element.querySelectorAll('input[required], select[required], textarea[required]').forEach(input => {
-            if (!this._validateInput(input)) {
+
+        this.element.querySelectorAll('[required]').forEach(field => {
+            const { isValid, message } = this._getValidationResult(field);
+            this._updateFieldUI(field, isValid, message);
+            if (!isValid) {
                 isFormValid = false;
             }
         });
@@ -59,95 +30,113 @@ export default class extends Controller {
             event.preventDefault();
             const firstInvalid = this.element.querySelector('.is-invalid');
             if (firstInvalid) {
-                firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstInvalid.focus();
             }
         }
     }
 
-    validateField(event) {
-        this._validateInput(event.target);
-    }
+    // Central validation logic dispatcher
+    _getValidationResult(field) {
+        const value = field.value.trim();
+        const validationType = field.dataset.validate;
 
-    _validateInput(input) {
-        const field = input.matches('input, select, textarea') ? input : input.querySelector('input, select, textarea');
-        if (!field) return true;
-
-        const [isValid, message] = this._getValidationRules(field);
-        this._updateFieldValidationUI(field, isValid, message);
-        return isValid;
-    }
-
-    _getValidationRules(input) {
-        const value = input.value.trim();
-
-        if (input.required && value === '') {
-            return [false, 'Este campo es obligatorio.'];
+        // Check for required first
+        if (field.required && value === '') {
+            return { isValid: false, message: 'Este campo es obligatorio.' };
         }
 
-        const inputId = input.id.toLowerCase();
-
-        if (value !== '') { // Only apply format validation if the field is not empty
-            if (inputId.includes('dni')) {
-                if (!this._validateDniNie(value)) return [false, 'El formato del DNI/NIE es incorrecto.'];
-            }
-
-            if (inputId.includes('name') || inputId.includes('lastname')) {
-                 if (!/^[a-zA-Z\u00C0-\u017F\s-]+$/.test(value)) {
-                    return [false, 'Solo se permiten letras, espacios y guiones.'];
-                }
-            }
-
-            if (inputId.includes('phone') || inputId.includes('contactphone')) {
-                const phoneValue = value.replace(/[\s+]/g, '');
-                if (!/^\d{9,15}$/.test(phoneValue)) {
-                     return [false, 'El teléfono debe tener entre 9 y 15 dígitos.'];
-                }
-            }
-
-            if (input.type === 'email') {
-                if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-                    return [false, 'El formato del correo no es válido.'];
-                }
-            }
+        // If not required and empty, it's valid.
+        if (!field.required && value === '') {
+             return { isValid: true, message: '' };
         }
 
-        return [true, ''];
+        // Dispatch to specific format validators
+        switch (validationType) {
+            case 'dni':
+                return this._validateDNI(value);
+            case 'email':
+                return this._validateEmail(value);
+            case 'phone':
+                 return this._validatePhone(value);
+            case 'name':
+            case 'lastName':
+                return this._validateName(value);
+            default:
+                return { isValid: true, message: '' };
+        }
     }
 
-    _validateDniNie(value) {
-        const dni = value.toUpperCase().trim();
-        if (!/^((\d{8})|([XYZ]\d{7}))[A-Z]$/.test(dni)) return false;
-        const numberPart = dni.substr(0, dni.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
-        const letter = dni.substr(dni.length - 1, 1);
-        const controlLetter = 'TRWAGMYFPDXBNJZSQVHLCKE'[parseInt(numberPart, 10) % 23];
-        return letter === controlLetter;
+    // --- Specific Validators ---
+
+    _validateDNI(value) {
+        const nifRegex = /^((\d{8})|([XYZ]\d{7}))[A-Z]$/;
+        if (!nifRegex.test(value.toUpperCase())) {
+            return { isValid: false, message: 'Formato de DNI/NIE incorrecto.' };
+        }
+        const numberPart = value.substr(0, value.length - 1).replace('X', 0).replace('Y', 1).replace('Z', 2);
+        const letter = value.substr(value.length - 1).toUpperCase();
+        const validLetters = 'TRWAGMYFPDXBNJZSQVHLCKE';
+        const calculatedLetter = validLetters.charAt(parseInt(numberPart, 10) % 23);
+
+        if (letter !== calculatedLetter) {
+            return { isValid: false, message: 'La letra del DNI/NIE no es correcta.' };
+        }
+        return { isValid: true, message: '' };
     }
 
-    _updateFieldValidationUI(input, isValid, message = '') {
-        this._removeValidationUI(input);
+    _validateEmail(value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(value)) {
+            return { isValid: false, message: 'Formato de email incorrecto.' };
+        }
+        return { isValid: true, message: '' };
+    }
+
+    _validatePhone(value) {
+        const phoneRegex = /^\+?[0-9\s]{9,15}$/;
+        if (!phoneRegex.test(value)) {
+            return { isValid: false, message: 'El teléfono debe tener entre 9 y 15 dígitos.' };
+        }
+        return { isValid: true, message: '' };
+    }
+
+    _validateName(value) {
+        const nameRegex = /^[a-zA-Z\u00C0-\u017F\s-]+$/;
+        if (!nameRegex.test(value)) {
+            return { isValid: false, message: 'Solo se admiten letras, espacios y guiones.' };
+        }
+        return { isValid: true, message: '' };
+    }
+
+    // --- UI Update ---
+
+    _updateFieldUI(field, isValid, message) {
+        const errorContainer = field.parentElement.querySelector('.form-error-message');
+
+        field.classList.remove('is-valid', 'is-invalid');
+        if (errorContainer) errorContainer.textContent = '';
 
         if (isValid) {
-            if(input.value.trim() !== '') {
-                input.classList.add('is-valid');
+            if (field.value.trim() !== '') {
+                field.classList.add('is-valid');
             }
         } else {
-            input.classList.add('is-invalid');
-
-            const errorContainer = document.createElement('div');
-            errorContainer.className = 'form-error-message';
-            errorContainer.textContent = message;
-            input.parentElement.after(errorContainer);
+            field.classList.add('is-invalid');
+            if (errorContainer) {
+                errorContainer.textContent = message;
+            }
         }
     }
 
-    _removeValidationUI(input) {
-        input.classList.remove('is-valid', 'is-invalid');
-        const parent = input.parentElement;
-        if (!parent) return;
+    // --- Real-time Sanitizers ---
 
-        const nextElement = parent.nextElementSibling;
-        if (nextElement && nextElement.classList.contains('form-error-message')) {
-            nextElement.remove();
-        }
+    sanitizeDNI(event) {
+        const input = event.currentTarget;
+        input.value = input.value.toUpperCase().replace(/[^A-Z0-9ÑXYZ]/g, '');
+    }
+
+    sanitizeAlpha(event) {
+        const input = event.currentTarget;
+        input.value = input.value.replace(/[^a-zA-Z\u00C0-\u017F\s-]/g, '');
     }
 }

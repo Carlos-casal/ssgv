@@ -33,25 +33,48 @@
 
         <div class="form-card">
             <h2 class="text-xl font-semibold mb-4 text-gray-700">Datos Personales</h2>
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
-                <div class="md:col-span-2" data-action="input->form-validation#toUpperCase blur->form-validation#validateField">
-                    {{ form_row(form.dni) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                {# DNI Field #}
+                <div class="form-group" data-controller="form-validation" data-action="blur->form-validation#validateField">
+                    {{ form_label(form.dni) }}
+                    {{ form_widget(form.dni, {'attr': {'class': 'input-line w-full', 'data-action': 'input->form-validation#sanitizeDNI', 'data-validate': 'dni'}}) }}
+                    <div class="form-error-message"></div>
                 </div>
-                <div class="md:col-span-2" data-action="input->form-validation#sanitizeAlphaHyphen blur->form-validation#validateField">
-                    {{ form_row(form.name) }}
+
+                {# Name Field #}
+                <div class="form-group" data-controller="form-validation" data-action="blur->form-validation#validateField">
+                    {{ form_label(form.name) }}
+                    {{ form_widget(form.name, {'attr': {'class': 'input-line w-full', 'data-action': 'input->form-validation#sanitizeAlpha', 'data-validate': 'name'}}) }}
+                    <div class="form-error-message"></div>
                 </div>
-                <div class="md:col-span-2" data-action="input->form-validation#sanitizeAlphaHyphen blur->form-validation#validateField">
-                    {{ form_row(form.lastName) }}
+
+                {# Last Name Field #}
+                <div class="form-group" data-controller="form-validation" data-action="blur->form-validation#validateField">
+                    {{ form_label(form.lastName) }}
+                    {{ form_widget(form.lastName, {'attr': {'class': 'input-line w-full', 'data-action': 'input->form-validation#sanitizeAlpha', 'data-validate': 'lastName'}}) }}
+                    <div class="form-error-message"></div>
                 </div>
-                <div class="md:col-span-2">
-                    {{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}
+
+                {# Date of Birth Field (no specific validation, just required) #}
+                <div class="form-group">
+                    {{ form_label(form.dateOfBirth) }}
+                    {{ form_widget(form.dateOfBirth, {'attr': {'class': 'input-line w-full', 'data-action': 'change->age-modal#open', 'data-age-modal-target': 'dateOfBirthInput'}}) }}
+                    <div class="form-error-message"></div>
                 </div>
-                <div class="md:col-span-2" data-action="blur->form-validation#validateField">
-                    {{ form_row(form.phone) }}
+
+                {# Phone Field #}
+                <div class="form-group" data-controller="form-validation" data-action="blur->form-validation#validateField">
+                    {{ form_label(form.phone) }}
+                    {{ form_widget(form.phone, {'attr': {'class': 'input-line w-full', 'data-validate': 'phone'}}) }}
+                    <div class="form-error-message"></div>
                 </div>
+
+                {# Email Field #}
                 {% if form.user.email is defined %}
-                    <div class="md:col-span-2" data-action="blur->form-validation#validateField">
-                        {{ form_row(form.user.email) }}
+                    <div class="form-group" data-controller="form-validation" data-action="blur->form-validation#validateField">
+                        {{ form_label(form.user.email) }}
+                        {{ form_widget(form.user.email, {'attr': {'class': 'input-line w-full', 'data-validate': 'email'}}) }}
+                        <div class="form-error-message"></div>
                     </div>
                 {% endif %}
             </div>

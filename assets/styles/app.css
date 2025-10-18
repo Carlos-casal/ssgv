@@ -1,78 +1,44 @@
 @import "quill/dist/quill.snow.css";
-/* assets/styles/app.css */
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-    /* Base styles can remain if they are truly global */
-}
-
 @layer components {
-    .no-scrollbar::-webkit-scrollbar {
-        display: none;
+    /* Base style for text inputs to have only a bottom border */
+    .input-line {
+        @apply border-0 border-b-2 border-gray-300 bg-transparent p-2 transition-colors duration-300;
+        /* Remove the default focus outline to rely on the border color */
+        outline: none;
     }
 
-    .no-scrollbar {
-        -ms-overflow-style: none;  /* IE and Edge */
-        scrollbar-width: none;  /* Firefox */
+    /* When focused, the bar turns blue */
+    .input-line:focus {
+        @apply border-blue-500;
     }
 
-    /*
-     * High-specificity selectors for form validation states.
-     * These are designed to reliably override base styles from Tailwind or form themes
-     * without using `!important`. They target validated fields within the validation controller's form.
-    */
-    form[data-controller="form-validation"] .is-valid,
-    form[data-controller="form-validation"] .is-valid:focus,
-    div[data-controller*="simple-validation"] .is-valid,
-    div[data-controller*="simple-validation"] .is-valid:focus {
-        border-color: #22c55e; /* Tailwind's green-500 */
-        --tw-ring-color: #22c55e; /* Ensures the focus ring is also green */
-        padding-right: 2.5rem; /* Add padding for the icon */
+    /* Style for a valid input bar */
+    .is-valid {
+        @apply border-b-green-500 !important;
     }
 
-    form[data-controller="form-validation"] .is-invalid,
-    form[data-controller="form-validation"] .is-invalid:focus,
-    div[data-controller*="simple-validation"] .is-invalid,
-    div[data-controller*="simple-validation"] .is-invalid:focus {
-        border-color: #ef4444; /* Tailwind's red-500 */
-        --tw-ring-color: #ef4444; /* Ensures the focus ring is also red */
-        padding-right: 2.5rem; /* Add padding for the icon */
+    /* Style for an invalid input bar */
+    .is-invalid {
+        @apply border-b-red-500 !important;
     }
 
+    /* Style for the error message container */
     .form-error-message {
-        @apply text-sm text-red-600 mt-1;
+        @apply text-red-600 text-sm mt-1;
+        min-height: 1.25rem; /* Reserve space to prevent layout shifts */
     }
 
-    .fieldset-style {
-        position: relative;
-        padding-top: 1.5rem; /* Make space for the label */
-    }
-
-    .fieldset-style label {
-        position: absolute;
-        top: 0.9rem;
-        left: 0.75rem;
-        background: white;
-        padding: 0 0.25rem;
-        /* Match standard label styles */
-        font-size: 0.875rem; /* text-sm */
-        font-weight: 500; /* font-medium */
-        color: #374151; /* text-gray-700 */
-    }
-
-    /* The input is now styled by the form_widget_simple block in the theme */
-
-    /* Override browser autofill styles to prevent blue background */
+    /* Override browser autofill styles */
     input:-webkit-autofill,
     input:-webkit-autofill:hover,
     input:-webkit-autofill:focus,
     input:-webkit-autofill:active {
         -webkit-box-shadow: 0 0 0 30px white inset !important;
         box-shadow: 0 0 0 30px white inset !important;
-        /* Optional: you can force the text color too if needed */
-        /* -webkit-text-fill-color: #your-text-color !important; */
     }
 }

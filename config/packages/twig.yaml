@@ -1,6 +1,5 @@
 twig:
     file_name_pattern: '*.twig'
-    form_themes: ['form/tailwind_form_theme.html.twig']
     globals:
         # Permite acceder a los parámetros de services.yaml en las plantillas Twig
         # Por ejemplo: {{ app_locales }}
