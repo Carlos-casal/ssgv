@@ -4,8 +4,8 @@
 {% block page_title %}Alta Voluntari@{% endblock %}
 
 {% block content %}
-<div class="container mx-auto p-4 lg:p-6">
-    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-controller': 'form-validation'}}) }}
+<div class="container mx-auto p-4 lg:p-6" data-controller="form-validation">
+    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate'}}) }}
 
     {# --- Section: Datos Personales --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
@@ -15,21 +15,21 @@
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-32">{{ form_widget(form.dni) }}</div>
+                    <div class="w-32">{{ form_widget(form.dni, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.dni) }}
             </div>
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.name, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.name) }}</div>
+                    <div class="flex-1">{{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.name) }}
             </div>
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.lastName, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.lastName) }}</div>
+                    <div class="flex-1">{{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.lastName) }}
             </div>
@@ -38,21 +38,21 @@
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.dateOfBirth, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-40">{{ form_widget(form.dateOfBirth) }}</div>
+                    <div class="w-40">{{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.dateOfBirth) }}
             </div>
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.phone, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-40">{{ form_widget(form.phone) }}</div>
+                    <div class="w-40">{{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.phone) }}
             </div>
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.email, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.email) }}</div>
+                    <div class="flex-1">{{ form_widget(form.email, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.email) }}
             </div>
@@ -61,7 +61,7 @@
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.profession, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.profession) }}</div>
+                    <div class="flex-1">{{ form_widget(form.profession, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.profession) }}
             </div>
@@ -83,14 +83,14 @@
                 <div>
                     <div class="flex items-center gap-1">
                         {{ form_label(form.streetType, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                        <div class="flex-1">{{ form_widget(form.streetType) }}</div>
+                        <div class="flex-1">{{ form_widget(form.streetType, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                     </div>
                     {{ form_errors(form.streetType) }}
                 </div>
                 <div>
                     <div class="flex items-center gap-1">
                         {{ form_label(form.address, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                        <div class="flex-1">{{ form_widget(form.address) }}</div>
+                        <div class="flex-1">{{ form_widget(form.address, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                     </div>
                     {{ form_errors(form.address) }}
                 </div>
@@ -99,21 +99,21 @@
                 <div>
                     <div class="flex items-center gap-1">
                         {{ form_label(form.postalCode, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                        <div class="w-24">{{ form_widget(form.postalCode) }}</div>
+                        <div class="w-24">{{ form_widget(form.postalCode, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                     </div>
                     {{ form_errors(form.postalCode) }}
                 </div>
                 <div>
                     <div class="flex items-center gap-1">
                         {{ form_label(form.city, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                        <div class="flex-1">{{ form_widget(form.city) }}</div>
+                        <div class="flex-1">{{ form_widget(form.city, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                     </div>
                     {{ form_errors(form.city) }}
                 </div>
                 <div>
                     <div class="flex items-center gap-1">
                         {{ form_label(form.province, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                        <div class="flex-1">{{ form_widget(form.province) }}</div>
+                        <div class="flex-1">{{ form_widget(form.province, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
                     </div>
                     {{ form_errors(form.province) }}
                 </div>
@@ -128,14 +128,14 @@
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.contactPerson1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.contactPerson1) }}</div>
+                    <div class="flex-1">{{ form_widget(form.contactPerson1, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.contactPerson1) }}
             </div>
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.contactPhone1, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-40">{{ form_widget(form.contactPhone1) }}</div>
+                    <div class="w-40">{{ form_widget(form.contactPhone1, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.contactPhone1) }}
             </div>
@@ -149,14 +149,14 @@
             <div>
                 <div class="flex items-start gap-1">
                     {{ form_label(form.foodAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                    <div class="flex-1 h-24">{{ form_widget(form.foodAllergies) }}</div>
+                    <div class="flex-1 h-24">{{ form_widget(form.foodAllergies, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.foodAllergies) }}
             </div>
             <div>
                 <div class="flex items-start gap-1">
                     {{ form_label(form.otherAllergies, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                    <div class="flex-1 h-24">{{ form_widget(form.otherAllergies) }}</div>
+                    <div class="flex-1 h-24">{{ form_widget(form.otherAllergies, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.otherAllergies) }}
             </div>
@@ -170,29 +170,29 @@
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div class="flex items-start gap-1">
                     {{ form_label(form.drivingLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                    <div class="flex-1">{{ form_widget(form.drivingLicenses) }}</div>
+                    <div class="flex-1">{{ form_widget(form.drivingLicenses, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
                 </div>
                 <div class="flex items-start gap-1">
                     {{ form_label(form.navigationLicenses, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                    <div class="flex-1">{{ form_widget(form.navigationLicenses) }}</div>
+                    <div class="flex-1">{{ form_widget(form.navigationLicenses, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
                 </div>
                 <div class="flex items-start gap-1">
                     {{ form_label(form.specificQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                    <div class="flex-1">{{ form_widget(form.specificQualifications) }}</div>
+                    <div class="flex-1">{{ form_widget(form.specificQualifications, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
                 </div>
             </div>
             <div id="driving-license-expiry-wrapper" class="hidden flex items-center gap-1">
                 {{ form_label(form.drivingLicenseExpiryDate, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                <div class="w-40">{{ form_widget(form.drivingLicenseExpiryDate) }}</div>
+                <div class="w-40">{{ form_widget(form.drivingLicenseExpiryDate, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 {{ form_errors(form.drivingLicenseExpiryDate) }}
             </div>
             <div class="flex items-center gap-1">
                  {{ form_label(form.habilitadoConducir, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                 <div class="flex-1">{{ form_widget(form.habilitadoConducir) }}</div>
+                 <div class="flex-1">{{ form_widget(form.habilitadoConducir, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
             </div>
              <div class="flex items-start gap-1">
                 {{ form_label(form.otherQualifications, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                <div class="flex-1 h-24">{{ form_widget(form.otherQualifications) }}</div>
+                <div class="flex-1 h-24">{{ form_widget(form.otherQualifications, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
         </div>
     </div>
@@ -203,19 +203,19 @@
         <div class="space-y-4">
             <div class="flex items-start gap-1">
                 {{ form_label(form.motivation, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                <div class="flex-1 h-24">{{ form_widget(form.motivation) }}</div>
+                <div class="flex-1 h-24">{{ form_widget(form.motivation, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
             <div class="flex items-center gap-1">
                 {{ form_label(form.howKnown, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                <div class="flex-1">{{ form_widget(form.howKnown) }}</div>
+                <div class="flex-1">{{ form_widget(form.howKnown, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
             <div class="flex items-start gap-1">
                 {{ form_label(form.hasVolunteeredBefore, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                <div class="flex-1">{{ form_widget(form.hasVolunteeredBefore) }}</div>
+                <div class="flex-1">{{ form_widget(form.hasVolunteeredBefore, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
             </div>
             <div id="previous-institutions-wrapper" class="hidden flex items-start gap-1">
                 {{ form_label(form.previousVolunteeringInstitutions, null, {'label_attr': {'class': 'w-24 shrink-0 pt-2'}}) }}
-                <div class="flex-1 h-24">{{ form_widget(form.previousVolunteeringInstitutions) }}</div>
+                <div class="flex-1 h-24">{{ form_widget(form.previousVolunteeringInstitutions, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
             </div>
         </div>
     </div>
