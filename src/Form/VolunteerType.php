@@ -68,10 +68,6 @@ class VolunteerType extends AbstractType
                 'html5' => true,
                 'required' => true,
             ])
-            ->add('profession', FloatingLabelTextType::class, [
-                'label' => 'Profesión',
-                'required' => false,
-            ])
 
             // --- Dirección ---
             ->add('streetType', ChoiceType::class, [
@@ -199,18 +195,6 @@ class VolunteerType extends AbstractType
                 'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
             ])
 
-            // --- Foto de Perfil ---
-            ->add('profilePicture', FileType::class, [
-                'label' => 'Foto de Perfil',
-                'mapped' => false,
-                'required' => false,
-                'constraints' => [
-                    new File([
-                        'maxSize' => '1024k',
-                        'mimeTypes' => ['image/jpeg', 'image/png'],
-                    ])
-                ],
-            ])
         ;
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
