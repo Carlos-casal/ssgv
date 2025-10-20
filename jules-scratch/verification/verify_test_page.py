@@ -1,10 +1,13 @@
 
 from playwright.sync_api import sync_playwright
 
-with sync_playwright() as p:
-    browser = p.chromium.launch()
-    page = browser.new_page()
-    page.goto("http://localhost:8000/pagina-de-prueba")
-    page.click('button[type="submit"]')
+def run(playwright):
+    browser = playwright.chromium.launch(headless=True)
+    context = browser.new_context()
+    page = context.new_page()
+    page.goto("http://localhost:8080/pagina-de-prueba")
     page.screenshot(path="jules-scratch/verification/verification.png")
     browser.close()
+
+with sync_playwright() as playwright:
+    run(playwright)
