@@ -39,7 +39,7 @@
 {%- endblock floating_label_row -%}
 
 {%- block floating_label_widget -%}
-    {% set widget_class = 'block py-2.5 px-0 w-full text-sm border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer text-gray-900 dark:text-white' %}
+    {% set widget_class = 'block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer text-gray-900' %}
     {% set attr = attr|merge({'style': 'border-radius: 0;'}) %}
     {# Lógica de validación #}
     {% if submitted and not valid %}
