@@ -1,0 +1,29 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Página de Prueba{% endblock %}
+
+{% form_theme form 'form/tailwind_form_theme.html.twig' %}
+
+{% block body %}
+    <div class="bg-gray-100 flex items-center justify-center h-screen">
+        <div
+            class="w-full max-w-md p-8 space-y-4 bg-white rounded-lg shadow-md"
+            data-controller="email-validation"
+        >
+            {{ form_start(form, {'attr': {'novalidate': 'novalidate'}}) }}
+
+            {# Add data-target attribute to the form row #}
+            {{ form_row(form.email, {
+                'attr': {
+                    'data-email-validation-target': 'input'
+                }
+            }) }}
+
+            <p data-email-validation-target="successMessage" class="hidden mt-2 text-sm text-green-600">¡Bien hecho!</p>
+            <p data-email-validation-target="errorMessage" class="hidden mt-2 text-sm text-red-600">Por favor, introduce un correo electrónico válido.</p>
+
+            <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Enviar</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
