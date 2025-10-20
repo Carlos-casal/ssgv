@@ -34,13 +34,24 @@
     <div class="relative z-0">
         {{ form_widget(form) }}
         {{ form_label(form) }}
-        {{ form_errors(form) }}
     </div>
+    {{ form_errors(form) }}
 {%- endblock floating_label_row -%}
 
 {%- block floating_label_widget -%}
+    {% set widget_class = 'block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 appearance-none dark:text-white focus:outline-none focus:ring-0 peer' %}
+
+    {# Lógica de validación #}
+    {% if submitted and not valid %}
+        {% set widget_class = widget_class ~ ' border-red-600 dark:border-red-500 focus:border-red-600 dark:focus:border-red-500' %}
+    {% elseif submitted and valid %}
+        {% set widget_class = widget_class ~ ' border-green-600 dark:border-green-500 focus:border-green-600 dark:focus:border-green-500' %}
+    {% else %}
+        {% set widget_class = widget_class ~ ' border-gray-300 dark:border-gray-600 focus:border-blue-600 dark:focus:border-blue-500' %}
+    {% endif %}
+
     {% set attr = attr|merge({
-        'class': (attr.class|default('') ~ ' block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
+        'class': (attr.class|default('') ~ ' ' ~ widget_class)|trim,
         'placeholder': ' '
     }) %}
     {{- block('form_widget_simple') -}}
@@ -55,18 +66,22 @@
             {% set label_attr = label_attr|merge({'class': (label_attr.class|default('') ~ ' required')|trim}) %}
         {% endif %}
         {% if label is empty %}
-            {% if label_format is not empty %}
-                {% set label = label_format|replace({
-                    '%name%': name,
-                    '%id%': id,
-                }) %}
-            {% else %}
-                {% set label = name|humanize %}
-            {% endif %}
+            {% set label = name|humanize %}
         {% endif %}
-        {% set label_attr = label_attr|merge({
-            'class': (label_attr.class|default('') ~ ' absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto')|trim
-        }) %}
+
+        {% set label_class = 'absolute text-sm duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6' %}
+
+        {# Lógica de validación #}
+        {% if submitted and not valid %}
+            {% set label_class = label_class ~ ' text-red-600 dark:text-red-500 peer-focus:text-red-600 dark:peer-focus:text-red-500' %}
+        {% elseif submitted and valid %}
+            {% set label_class = label_class ~ ' text-green-600 dark:text-green-500 peer-focus:text-green-600 dark:peer-focus:text-green-500' %}
+        {% else %}
+            {% set label_class = label_class ~ ' text-gray-500 dark:text-gray-400 peer-focus:text-blue-600 dark:peer-focus:text-blue-500' %}
+        {% endif %}
+
+        {% set label_attr = label_attr|merge({ 'class': (label_attr.class|default('') ~ ' ' ~ label_class)|trim }) %}
+
         <label {% for attrname, attrvalue in label_attr %} {{ attrname }}="{{ attrvalue }}"{% endfor %}>
             {{- label -}}
             {% if required -%}
@@ -75,3 +90,13 @@
         </label>
     {% endif %}
 {%- endblock floating_label_label -%}
+
+{%- block form_errors -%}
+    {% if errors|length > 0 %}
+        <p class="mt-2 text-xs text-red-600 dark:text-red-400">
+            {% for error in errors %}
+                <span class="font-medium">{{ error.message }}</span>
+            {% endfor %}
+        </p>
+    {% endif %}
+{%- endblock form_errors -%}
