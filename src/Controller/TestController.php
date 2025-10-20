@@ -16,8 +16,9 @@ class TestController extends AbstractController
         $form = $this->createForm(TestFormType::class);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && !$form->isValid()) {
-            // This will ensure validation errors are shown on the form
+        if ($form->isSubmitted() && $form->isValid()) {
+            // No redirigir para poder ver el estado verde
+            $this->addFlash('success', '¡Formulario enviado con éxito!');
         }
 
         return $this->render('test/test_page.html.twig', [

@@ -5,5 +5,6 @@ with sync_playwright() as p:
     browser = p.chromium.launch()
     page = browser.new_page()
     page.goto("http://localhost:8000/pagina-de-prueba")
+    page.click('button[type="submit"]')
     page.screenshot(path="jules-scratch/verification/verification.png")
     browser.close()
