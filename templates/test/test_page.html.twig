@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Página de Prueba{% endblock %}
+
+{% form_theme form 'form/tailwind_form_theme.html.twig' %}
+
+{% block body %}
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-2xl font-bold mb-4">Datos Personales</h1>
+
+        {{ form_start(form) }}
+        <div class="flex flex-wrap -mx-3">
+            <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0" data-controller="dni-validation">
+                {{ form_row(form.dni, {'attr': {'data-dni-validation-target': 'input'}}) }}
+            </div>
+            <div class="w-full md:w-1/3 px-3">
+                {{ form_row(form.nombre) }}
+            </div>
+            <div class="w-full md:w-1/3 px-3">
+                {{ form_row(form.apellidos) }}
+            </div>
+        </div>
+
+        <button type="submit" class="mt-4 px-4 py-2 bg-blue-600 text-white rounded">Enviar</button>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
