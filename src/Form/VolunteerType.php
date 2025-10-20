@@ -19,6 +19,7 @@ use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Regex;
 
 /**
  * Form type for creating and editing Volunteer profiles.
@@ -43,18 +44,42 @@ class VolunteerType extends AbstractType
             ->add('name', FloatingLabelTextType::class, [
                 'label' => 'Nombre',
                 'required' => true,
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^[\p{L}\s]+$/u',
+                        'message' => 'El nombre solo puede contener letras y espacios.',
+                    ]),
+                ],
             ])
             ->add('lastName', FloatingLabelTextType::class, [
                 'label' => 'Apellidos',
                 'required' => true,
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^[\p{L}\s]+$/u',
+                        'message' => 'Los apellidos solo pueden contener letras y espacios.',
+                    ]),
+                ],
             ])
             ->add('dni', FloatingLabelTextType::class, [
-                'label' => 'DIN/NIE',
+                'label' => 'DNI/NIE',
                 'required' => true,
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^[XYZ]?\d{5,8}[A-Z]$/i',
+                        'message' => 'El DNI/NIE no es válido.',
+                    ]),
+                ],
             ])
             ->add('phone', FloatingLabelTextType::class, [
                 'label' => 'Teléfono',
                 'required' => true,
+                'constraints' => [
+                    new Regex([
+                        'pattern' => '/^\+?[0-9]{9,15}$/',
+                        'message' => 'El teléfono no es válido.',
+                    ]),
+                ],
             ])
             ->add('email', FloatingLabelEmailType::class, [
                 'label' => 'Correo Electrónico',

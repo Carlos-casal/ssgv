@@ -3,6 +3,8 @@
 {% block title %}Alta Voluntari@{% endblock %}
 {% block page_title %}Alta Voluntari@{% endblock %}
 
+{% form_theme form 'form/tailwind_form_theme.html.twig' %}
+
 {% block content %}
 <div class="container mx-auto p-4 lg:p-6" data-controller="form-validation">
     {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate'}}) }}
@@ -10,44 +12,39 @@
     {# --- Section: Datos Personales --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Datos Personales</h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
-            {# Row 1 #}
-            <div>
-                <div class="flex items-center gap-1">
-                    {{ form_label(form.dni, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-32">{{ form_widget(form.dni, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-                </div>
-                {{ form_errors(form.dni) }}
-            </div>
-            <div>
-                <div class="flex items-center gap-1">
-                    {{ form_label(form.name, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.name, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-                </div>
-                {{ form_errors(form.name) }}
-            </div>
-            <div>
-                <div class="flex items-center gap-1">
-                    {{ form_label(form.lastName, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="flex-1">{{ form_widget(form.lastName, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
-                </div>
-                {{ form_errors(form.lastName) }}
-            </div>
 
-            {# Row 2 #}
-            <div>
+        <div class="flex flex-wrap -mx-3 mb-6">
+            <div class="w-full md:w-1/3 px-3 mb-6 md:mb-0" data-controller="validation" data-validation-type-value="dni">
+                {{ form_row(form.dni, {'attr': {'data-validation-target': 'input'}}) }}
+                <p data-validation-target="successMessage" class="hidden mt-2 text-sm text-green-600">DNI/NIE válido.</p>
+                <p data-validation-target="errorMessage" class="hidden mt-2 text-sm text-red-600">DNI/NIE no válido.</p>
+            </div>
+            <div class="w-full md:w-1/3 px-3" data-controller="validation" data-validation-type-value="not-empty">
+                {{ form_row(form.name, {'attr': {'data-validation-target': 'input'}}) }}
+                <p data-validation-target="errorMessage" class="hidden mt-2 text-sm text-red-600">El nombre no puede estar vacío.</p>
+            </div>
+            <div class="w-full md:w-1/3 px-3" data-controller="validation" data-validation-type-value="not-empty">
+                {{ form_row(form.lastName, {'attr': {'data-validation-target': 'input'}}) }}
+                <p data-validation-target="errorMessage" class="hidden mt-2 text-sm text-red-600">Los apellidos no pueden estar vacíos.</p>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-4">
+             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.dateOfBirth, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
                     <div class="w-40">{{ form_widget(form.dateOfBirth, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
                 </div>
                 {{ form_errors(form.dateOfBirth) }}
             </div>
-            <div>
+            <div data-controller="validation" data-validation-type-value="phone">
                 <div class="flex items-center gap-1">
                     {{ form_label(form.phone, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
-                    <div class="w-40">{{ form_widget(form.phone, {'attr': {'data-action': 'blur->form-validation#validate'}}) }}</div>
+                    <div class="w-40">{{ form_widget(form.phone, {'attr': {'data-validation-target': 'input'}}) }}</div>
                 </div>
                 {{ form_errors(form.phone) }}
+                <p data-validation-target="successMessage" class="hidden mt-2 text-sm text-green-600">Teléfono válido.</p>
+                <p data-validation-target="errorMessage" class="hidden mt-2 text-sm text-red-600">Teléfono no válido.</p>
             </div>
             <div>
                 <div class="flex items-center gap-1">
@@ -56,8 +53,6 @@
                 </div>
                 {{ form_errors(form.email) }}
             </div>
-
-            {# Row 3 #}
             <div>
                 <div class="flex items-center gap-1">
                     {{ form_label(form.profession, null, {'label_attr': {'class': 'w-24 shrink-0'}}) }}
@@ -75,7 +70,7 @@
         </div>
     </div>
 
-    {# --- Section: Dirección --- #}
+    {# --- Resto de las secciones del formulario --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Dirección</h2>
         <div class="space-y-4">
@@ -121,7 +116,6 @@
         </div>
     </div>
 
-    {# --- Section: Contacto de Emergencia --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Contacto de Emergencia</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -142,7 +136,6 @@
         </div>
     </div>
 
-    {# --- Section: Información de Salud --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Información de Salud</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8">
@@ -163,7 +156,6 @@
         </div>
     </div>
 
-    {# --- Section: Cualificaciones --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Cualificaciones</h2>
         <div class="space-y-4">
@@ -197,7 +189,6 @@
         </div>
     </div>
 
-    {# --- Section: Motivación e Intereses --- #}
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Motivación e Intereses</h2>
         <div class="space-y-4">
