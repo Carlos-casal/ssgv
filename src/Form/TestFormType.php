@@ -3,8 +3,6 @@
 namespace App\Form;
 
 use App\Form\Type\FloatingLabelTextType;
-use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\FormBuilderInterface;
 use App\Form\Type\FloatingLabelEmailType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
