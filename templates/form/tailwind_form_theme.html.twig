@@ -1,7 +1,7 @@
 {% use "form_div_layout.html.twig" %}
 
 {%- block form_row -%}
-    <div class="relative z-0 w-full mb-5 group">
+    <div class="relative">
         {{ form_widget(form) }}
         {{ form_label(form) }}
         {{ form_errors(form) }}
@@ -9,7 +9,7 @@
 {%- endblock form_row -%}
 
 {%- block form_widget_simple -%}
-    {% set base_class = 'block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer' %}
+    {% set base_class = 'block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-gray-50 dark:bg-gray-700 border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer' %}
 
     {% if type is defined and (type == 'checkbox' or type == 'radio') %}
         {% set base_class = 'h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500' %}
@@ -25,7 +25,7 @@
 
 {%- block textarea_widget -%}
     {% set attr = attr|merge({
-        'class': (attr.class|default('') ~ ' block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
+        'class': (attr.class|default('') ~ ' block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-gray-50 dark:bg-gray-700 border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim,
         'placeholder': attr.placeholder|default(' ')
     }) %}
     {{- parent() -}}
@@ -33,14 +33,14 @@
 
 {%- block choice_widget_collapsed -%}
     {% set attr = attr|merge({
-        'class': (attr.class|default('') ~ ' block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim
+        'class': (attr.class|default('') ~ ' block rounded-t-lg px-2.5 pb-2.5 pt-5 w-full text-sm text-gray-900 bg-gray-50 dark:bg-gray-700 border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer')|trim
     }) %}
     {{- parent() -}}
 {%- endblock choice_widget_collapsed -%}
 
 {%- block form_label -%}
     {% set label_attr = label_attr|merge({
-        'class': (label_attr.class|default('') ~ ' peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6')|trim
+        'class': (label_attr.class|default('') ~ ' absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-4 scale-75 top-4 z-10 origin-[0] start-2.5 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-4 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto')|trim
     }) %}
     {{- parent() -}}
 {%- endblock form_label -%}
