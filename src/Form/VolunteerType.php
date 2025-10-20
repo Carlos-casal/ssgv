@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Volunteer;
+use App\Form\Type\FloatingLabelDateType;
 use App\Form\Type\FloatingLabelEmailType;
 use App\Form\Type\FloatingLabelTextareaType;
 use App\Form\Type\FloatingLabelTextType;
@@ -61,7 +62,7 @@ class VolunteerType extends AbstractType
                 'mapped' => false, // No se mapea directamente a la entidad Volunteer, sino a User
                 'required' => true,
             ])
-            ->add('dateOfBirth', DateType::class, [
+            ->add('dateOfBirth', FloatingLabelDateType::class, [
                 'label' => 'Fecha de Nacimiento',
                 'widget' => 'single_text',
                 'html5' => true,
@@ -148,7 +149,7 @@ class VolunteerType extends AbstractType
                 'expanded' => true,
                 'required' => false,
             ])
-            ->add('drivingLicenseExpiryDate', DateType::class, [
+            ->add('drivingLicenseExpiryDate', FloatingLabelDateType::class, [
                 'label' => 'Fecha de Caducidad (Carnet Conducir)',
                 'widget' => 'single_text',
                 'html5' => true,
@@ -218,7 +219,7 @@ class VolunteerType extends AbstractType
 
             // Lógica para la fecha de caducidad del carnet de conducir
             if (!empty($data['drivingLicenses'])) {
-                $form->add('drivingLicenseExpiryDate', DateType::class, [
+                $form->add('drivingLicenseExpiryDate', FloatingLabelDateType::class, [
                     'label' => 'Fecha de Caducidad (Carnet Conducir)',
                     'widget' => 'single_text',
                     'html5' => true,
