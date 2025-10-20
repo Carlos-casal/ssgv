@@ -170,11 +170,17 @@ class VolunteerController extends AbstractController
             return $this->redirectToRoute('app_volunteer_list');
         }
 
+        $today = new \DateTime();
+        $maxDate = (clone $today)->modify('-16 years')->format('Y-m-d');
+        $minDate = (clone $today)->modify('-65 years')->format('Y-m-d');
+
         return $this->render('volunteer/new_volunteer.html.twig', [
             'volunteer' => $volunteer,
             'form' => $form->createView(),
             'available_indicativos' => $availableIndicativos,
-            'current_section' => 'personal-nuevo'
+            'current_section' => 'personal-nuevo',
+            'minDate' => $minDate,
+            'maxDate' => $maxDate,
         ]);
     }
 
