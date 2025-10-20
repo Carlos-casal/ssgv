@@ -2,9 +2,9 @@
 
 {# Bloques por defecto para la mayoría de los campos #}
 {%- block form_widget_simple -%}
-    {% set base_class = 'p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 w-full' %}
+    {% set base_class = 'p-2 border border-gray-300 focus:ring-blue-500 focus:border-blue-500 w-full' %}
     {% if type is defined and (type == 'checkbox' or type == 'radio') %}
-        {% set base_class = 'h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500' %}
+        {% set base_class = 'h-4 w-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500' %}
     {% endif %}
 
     {% set attr = attr|merge({
@@ -40,7 +40,7 @@
 
 {%- block floating_label_widget -%}
     {% set widget_class = 'block py-2.5 px-0 w-full text-sm bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 peer text-gray-900 dark:text-white' %}
-
+    {% set attr = attr|merge({'style': 'border-radius: 0;'}) %}
     {# Lógica de validación #}
     {% if submitted and not valid %}
         {% set widget_class = widget_class ~ ' border-red-600 dark:border-red-500 focus:border-red-600 dark:focus:border-red-500' %}
