@@ -3,10 +3,11 @@
 namespace App\Form;
 
 use App\Entity\Volunteer;
+use App\Form\Type\FloatingLabelTextareaType;
+use App\Form\Type\FloatingLabelTextType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
@@ -39,19 +40,19 @@ class VolunteerType extends AbstractType
     {
         $builder
             // --- Datos Personales ---
-            ->add('name', TextType::class, [
+            ->add('name', FloatingLabelTextType::class, [
                 'label' => 'Nombre',
                 'required' => true,
             ])
-            ->add('lastName', TextType::class, [
+            ->add('lastName', FloatingLabelTextType::class, [
                 'label' => 'Apellidos',
                 'required' => true,
             ])
-            ->add('dni', TextType::class, [
+            ->add('dni', FloatingLabelTextType::class, [
                 'label' => 'DIN/NIE',
                 'required' => true,
             ])
-            ->add('phone', TextType::class, [
+            ->add('phone', FloatingLabelTextType::class, [
                 'label' => 'Teléfono',
                 'required' => true,
             ])
@@ -66,7 +67,7 @@ class VolunteerType extends AbstractType
                 'html5' => true,
                 'required' => true,
             ])
-            ->add('profession', TextType::class, [
+            ->add('profession', FloatingLabelTextType::class, [
                 'label' => 'Profesión',
                 'required' => false,
             ])
@@ -83,41 +84,41 @@ class VolunteerType extends AbstractType
                 ],
                 'placeholder' => 'Selecciona un tipo',
             ])
-            ->add('address', TextType::class, [
+            ->add('address', FloatingLabelTextType::class, [
                 'label' => 'Dirección',
                 'required' => true,
                 'attr' => ['placeholder' => 'Ej: Gran Vía, 10, 3º A'],
             ])
-            ->add('city', TextType::class, [
+            ->add('city', FloatingLabelTextType::class, [
                 'label' => 'Población',
                 'required' => true,
             ])
-            ->add('province', TextType::class, [
+            ->add('province', FloatingLabelTextType::class, [
                 'label' => 'Provincia',
                 'required' => true,
             ])
-            ->add('postalCode', TextType::class, [
+            ->add('postalCode', FloatingLabelTextType::class, [
                 'label' => 'Código Postal',
                 'required' => true,
             ])
 
             // --- Contacto de Emergencia ---
-            ->add('contactPerson1', TextType::class, [
+            ->add('contactPerson1', FloatingLabelTextType::class, [
                 'label' => 'Nombre de Contacto de Emergencia',
                 'required' => true,
             ])
-            ->add('contactPhone1', TextType::class, [
+            ->add('contactPhone1', FloatingLabelTextType::class, [
                 'label' => 'Teléfono de Emergencia',
                 'required' => true,
             ])
 
             // --- Datos de Salud ---
-            ->add('foodAllergies', TextareaType::class, [
+            ->add('foodAllergies', FloatingLabelTextareaType::class, [
                 'label' => 'Alergias Alimentarias',
                 'required' => false,
                 'attr' => ['placeholder' => 'Indica si tiene alguna alergia alimentaria'],
             ])
-            ->add('otherAllergies', TextareaType::class, [
+            ->add('otherAllergies', FloatingLabelTextareaType::class, [
                 'label' => 'Otras Alergias (medicamentos, etc.)',
                 'required' => false,
                 'attr' => ['placeholder' => 'Indica cualquier otra alergia relevante'],
@@ -167,18 +168,18 @@ class VolunteerType extends AbstractType
                 'expanded' => true,
                 'required' => false,
             ])
-            ->add('otherQualifications', TextareaType::class, [
+            ->add('otherQualifications', FloatingLabelTextareaType::class, [
                 'label' => 'Otras Cualificaciones',
                 'required' => false,
                 'attr' => ['placeholder' => 'Otros títulos, cursos, etc.'],
             ])
 
             // --- Motivación e Intereses ---
-            ->add('motivation', TextareaType::class, [
+            ->add('motivation', FloatingLabelTextareaType::class, [
                 'label' => 'Motivación para ser voluntario',
                 'required' => true,
             ])
-            ->add('howKnown', TextType::class, [
+            ->add('howKnown', FloatingLabelTextType::class, [
                 'label' => '¿Cómo nos has conocido?',
                 'required' => true,
             ])
@@ -191,7 +192,7 @@ class VolunteerType extends AbstractType
                 'expanded' => true,
                 'required' => true,
             ])
-            ->add('previousVolunteeringInstitutions', TextareaType::class, [
+            ->add('previousVolunteeringInstitutions', FloatingLabelTextareaType::class, [
                 'label' => 'Si es así, ¿dónde?',
                 'required' => false, // Se hará obligatorio con JS y listener
                 'attr' => ['placeholder' => 'Ej: Cruz Roja, Cáritas...'],
@@ -230,7 +231,7 @@ class VolunteerType extends AbstractType
 
             // Lógica para la experiencia previa de voluntariado
             if (isset($data['hasVolunteeredBefore']) && $data['hasVolunteeredBefore'] === '1') { // '1' para 'Sí'
-                $form->add('previousVolunteeringInstitutions', TextareaType::class, [
+                $form->add('previousVolunteeringInstitutions', FloatingLabelTextareaType::class, [
                     'label' => 'Si es así, ¿dónde?',
                     'required' => true,
                     'constraints' => [
