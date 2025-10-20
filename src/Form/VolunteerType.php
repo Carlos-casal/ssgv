@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Volunteer;
+use App\Form\Type\FloatingLabelEmailType;
 use App\Form\Type\FloatingLabelTextareaType;
 use App\Form\Type\FloatingLabelTextType;
 use Symfony\Component\Form\AbstractType;
@@ -15,7 +16,6 @@ use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use App\Form\UserType;
 use Symfony\Component\Form\Extension\Core\Type\FileType; // ¡AÑADE ESTA LÍNEA!
 use Symfony\Component\Validator\Constraints\File;
-use Symfony\Component\Form\Extension\Core\Type\EmailType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
 use Symfony\Component\Validator\Constraints\NotBlank;
@@ -56,7 +56,7 @@ class VolunteerType extends AbstractType
                 'label' => 'Teléfono',
                 'required' => true,
             ])
-            ->add('email', EmailType::class, [
+            ->add('email', FloatingLabelEmailType::class, [
                 'label' => 'Correo Electrónico',
                 'mapped' => false, // No se mapea directamente a la entidad Volunteer, sino a User
                 'required' => true,
