@@ -6,6 +6,9 @@ export default class extends Controller {
 
     connect() {
         this.inputTarget.addEventListener('blur', this.validate.bind(this));
+        // Store original classes to reset to default state
+        this.originalBorderClasses = Array.from(this.inputTarget.classList).filter(c => c.startsWith('border-'));
+        this.originalLabelClasses = Array.from(this.element.querySelector('label')?.classList || []).filter(c => c.startsWith('text-'));
     }
 
     validate() {
@@ -21,39 +24,57 @@ export default class extends Controller {
                 break;
         }
 
-        if (isValid) {
+        if (value.trim() === '') {
+            this.resetValidation();
+        } else if (isValid) {
             this.setSuccess();
         } else {
             this.setError();
         }
     }
 
+    clearValidationClasses() {
+        const classesToRemove = ['border-red-600', 'border-green-600', 'border-gray-300', 'dark:border-gray-600', 'focus:border-blue-600'];
+        this.inputTarget.classList.remove(...classesToRemove);
+
+        const label = this.element.querySelector('label');
+        if (label) {
+            const labelClassesToRemove = ['text-red-600', 'text-green-600', 'text-gray-500'];
+            label.classList.remove(...labelClassesToRemove);
+        }
+    }
+
     setSuccess() {
-        this.inputTarget.classList.remove('border-red-600', 'focus:border-blue-600');
+        this.clearValidationClasses();
         this.inputTarget.classList.add('border-green-600');
 
         const label = this.element.querySelector('label');
-        if(label) {
-            label.classList.remove('text-red-600');
-            label.classList.add('text-green-600');
-        }
+        if(label) label.classList.add('text-green-600');
 
         if (this.hasSuccessMessageTarget) this.successMessageTarget.classList.remove('hidden');
         if (this.hasErrorMessageTarget) this.errorMessageTarget.classList.add('hidden');
     }
 
     setError() {
-        this.inputTarget.classList.remove('border-green-600', 'focus:border-blue-600');
+        this.clearValidationClasses();
         this.inputTarget.classList.add('border-red-600');
 
         const label = this.element.querySelector('label');
-        if(label){
-            label.classList.remove('text-green-600');
-            label.classList.add('text-red-600');
-        }
+        if(label) label.classList.add('text-red-600');
 
         if (this.hasErrorMessageTarget) this.errorMessageTarget.classList.remove('hidden');
         if (this.hasSuccessMessageTarget) this.successMessageTarget.classList.add('hidden');
+    }
+
+    resetValidation() {
+        this.clearValidationClasses();
+        this.inputTarget.classList.add(...this.originalBorderClasses);
+
+        const label = this.element.querySelector('label');
+        if(label) label.classList.add(...this.originalLabelClasses);
+
+        if (this.hasSuccessMessageTarget) this.successMessageTarget.classList.add('hidden');
+        if (this.hasErrorMessageTarget) this.errorMessageTarget.classList.add('hidden');
     }
 
     isValidDni(dni) {
