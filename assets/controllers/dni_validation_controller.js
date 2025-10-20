@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ["input"];
+    static targets = ["input", "successMessage", "errorMessage"];
 
     connect() {
         this.inputTarget.addEventListener('input', this.validate.bind(this));
@@ -11,13 +11,36 @@ export default class extends Controller {
         let value = this.inputTarget.value.toUpperCase();
         this.inputTarget.value = value;
 
-        if (this.isValidDni(value)) {
-            this.inputTarget.classList.remove('border-red-600');
-            this.inputTarget.classList.add('border-green-600');
-        } else {
-            this.inputTarget.classList.remove('border-green-600');
-            this.inputTarget.classList.add('border-red-600');
+        if (value === '') {
+            this.reset();
+            return;
         }
+
+        if (this.isValidDni(value)) {
+            this.setSuccess();
+        } else {
+            this.setError();
+        }
+    }
+
+    setSuccess() {
+        this.inputTarget.classList.remove('border-red-600');
+        this.inputTarget.classList.add('border-green-600');
+        this.successMessageTarget.classList.remove('hidden');
+        this.errorMessageTarget.classList.add('hidden');
+    }
+
+    setError() {
+        this.inputTarget.classList.remove('border-green-600');
+        this.inputTarget.classList.add('border-red-600');
+        this.errorMessageTarget.classList.remove('hidden');
+        this.successMessageTarget.classList.add('hidden');
+    }
+
+    reset() {
+        this.inputTarget.classList.remove('border-green-600', 'border-red-600');
+        this.successMessageTarget.classList.add('hidden');
+        this.errorMessageTarget.classList.add('hidden');
     }
 
     isValidDni(dni) {
