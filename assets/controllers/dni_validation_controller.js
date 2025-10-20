@@ -4,7 +4,7 @@ export default class extends Controller {
     static targets = ["input", "successMessage", "errorMessage"];
 
     connect() {
-        this.inputTarget.addEventListener('input', this.validate.bind(this));
+        this.inputTarget.addEventListener('blur', this.validate.bind(this));
     }
 
     validate() {
