@@ -206,10 +206,17 @@ class Service
     /**
      * Initializes collections.
      */
+    /**
+     * @var Collection<int, ServiceVehicle>
+     */
+    #[ORM\OneToMany(mappedBy: 'service', targetEntity: ServiceVehicle::class, orphanRemoval: true)]
+    private Collection $serviceVehicles;
+
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
         $this->volunteerServices = new ArrayCollection();
+        $this->serviceVehicles = new ArrayCollection();
     }
 
     /**
@@ -876,6 +883,36 @@ class Service
     public function setWhatsappMessage(?string $whatsappMessage): static
     {
         $this->whatsappMessage = $whatsappMessage;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceVehicle>
+     */
+    public function getServiceVehicles(): Collection
+    {
+        return $this->serviceVehicles;
+    }
+
+    public function addServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if (!$this->serviceVehicles->contains($serviceVehicle)) {
+            $this->serviceVehicles->add($serviceVehicle);
+            $serviceVehicle->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if ($this->serviceVehicles->removeElement($serviceVehicle)) {
+            // set the owning side to null (unless already changed)
+            if ($serviceVehicle->getService() === $this) {
+                $serviceVehicle->setService(null);
+            }
+        }
 
         return $this;
     }

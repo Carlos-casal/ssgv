@@ -285,10 +285,17 @@ class Volunteer
     /**
      * Initializes collections.
      */
+    /**
+     * @var Collection<int, ServiceVehicle>
+     */
+    #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: ServiceVehicle::class)]
+    private Collection $serviceVehicles;
+
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
         $this->volunteerServices = new ArrayCollection();
+        $this->serviceVehicles = new ArrayCollection();
     }
 
     /**
@@ -1096,5 +1103,35 @@ class Volunteer
             }
         }
         return null;
+    }
+
+    /**
+     * @return Collection<int, ServiceVehicle>
+     */
+    public function getServiceVehicles(): Collection
+    {
+        return $this->serviceVehicles;
+    }
+
+    public function addServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if (!$this->serviceVehicles->contains($serviceVehicle)) {
+            $this->serviceVehicles->add($serviceVehicle);
+            $serviceVehicle->setVolunteer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if ($this->serviceVehicles->removeElement($serviceVehicle)) {
+            // set the owning side to null (unless already changed)
+            if ($serviceVehicle->getVolunteer() === $this) {
+                $serviceVehicle->setVolunteer(null);
+            }
+        }
+
+        return $this;
     }
 }
