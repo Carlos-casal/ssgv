@@ -180,16 +180,6 @@ class ServiceType extends AbstractType
                 'label' => 'Mensaje de WhatsApp',
                 'required' => false,
                 'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
-            ])
-            ->add('vehicleRequest', TextareaType::class, [
-                'label' => 'Solicitud de Vehículos',
-                'required' => false,
-                'attr' => ['rows' => 4, 'placeholder' => 'Ej: 1 ambulancia SVB, 1 vehículo de apoyo logístico...'],
-            ])
-            ->add('talkieAssignment', TextareaType::class, [
-                'label' => 'Asignación de Talkies',
-                'required' => false,
-                'attr' => ['rows' => 4, 'placeholder' => 'Ej: Jefe de Unidad - T1, Equipo A - T2, T3...'],
             ]);
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {

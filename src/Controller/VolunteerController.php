@@ -179,8 +179,8 @@ class VolunteerController extends AbstractController
             'form' => $form->createView(),
             'available_indicativos' => $availableIndicativos,
             'current_section' => 'personal-nuevo',
-            'minDate' => $minDate,
-            'maxDate' => $maxDate,
+            'min_date' => $minDate,
+            'max_date' => $maxDate,
         ]);
     }
 

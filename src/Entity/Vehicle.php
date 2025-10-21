@@ -3,8 +3,6 @@
 namespace App\Entity;
 
 use App\Repository\VehicleRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -100,17 +98,6 @@ class Vehicle
      */
     #[ORM\Column(type: 'boolean')]
     private bool $isOutOfService = false;
-
-    /**
-     * @var Collection<int, ServiceVehicle>
-     */
-    #[ORM\OneToMany(mappedBy: 'vehicle', targetEntity: ServiceVehicle::class, orphanRemoval: true)]
-    private Collection $serviceVehicles;
-
-    public function __construct()
-    {
-        $this->serviceVehicles = new ArrayCollection();
-    }
 
     /**
      * Gets the unique identifier for the vehicle.
@@ -390,36 +377,6 @@ class Vehicle
     public function setOutOfService(bool $isOutOfService): static
     {
         $this->isOutOfService = $isOutOfService;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, ServiceVehicle>
-     */
-    public function getServiceVehicles(): Collection
-    {
-        return $this->serviceVehicles;
-    }
-
-    public function addServiceVehicle(ServiceVehicle $serviceVehicle): static
-    {
-        if (!$this->serviceVehicles->contains($serviceVehicle)) {
-            $this->serviceVehicles->add($serviceVehicle);
-            $serviceVehicle->setVehicle($this);
-        }
-
-        return $this;
-    }
-
-    public function removeServiceVehicle(ServiceVehicle $serviceVehicle): static
-    {
-        if ($this->serviceVehicles->removeElement($serviceVehicle)) {
-            // set the owning side to null (unless already changed)
-            if ($serviceVehicle->getVehicle() === $this) {
-                $serviceVehicle->setVehicle(null);
-            }
-        }
 
         return $this;
     }
