@@ -18,12 +18,19 @@ export default class extends Controller {
     "individualFichajeModal",
     "individualFichajeModalTitle",
     "lastClockOutTime",
+    "vehicleSuggestions",
+    "vehicleModal",
+    "vehicleSearchInput",
+    "vehicleList"
     ];
 
     connect() {
         this.initializeQuill();
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
+        }
+        if (this.hasVehicleModalTarget) {
+            this.setupVehicleModal();
         }
     }
 
@@ -427,5 +434,214 @@ renderPagination(pagination, items) {
         setTimeout(() => {
             toast.remove();
         }, 3000);
+    }
+
+    async suggestVehicles() {
+        const serviceId = this.element.dataset.serviceId;
+        if (!serviceId) {
+            // This is a new service, so we can't suggest vehicles yet.
+            // We'll need to save the service first.
+            alert('Guarda el servicio para poder sugerir vehículos.');
+            return;
+        }
+        const url = `/service/${serviceId}/suggest-vehicles`;
+
+        try {
+            const response = await fetch(url);
+            if (!response.ok) {
+                throw new Error('No se pudieron obtener las sugerencias de vehículos.');
+            }
+
+            const suggestedVehicles = await response.json();
+            const suggestedVehicleIds = suggestedVehicles.map(v => v.id);
+
+            const checkboxes = this.vehicleSuggestionsTarget.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                const vehicleId = parseInt(checkbox.value, 10);
+                checkbox.checked = suggestedVehicleIds.includes(vehicleId);
+            });
+
+        } catch (error) {
+            console.error('Error suggesting vehicles:', error);
+            alert(error.message);
+        }
+    }
+
+    setupVehicleModal() {
+        this.selectedVehicles = [];
+        this.vehicleSearchTimeout = null;
+    }
+
+    openVehicleModal() {
+        this.vehicleModalTarget.classList.remove('hidden');
+        this.vehicleModalTarget.classList.add('flex');
+        this.fetchVehicles();
+    }
+
+    closeVehicleModal() {
+        this.vehicleModalTarget.classList.add('hidden');
+        this.vehicleModalTarget.classList.remove('flex');
+    }
+
+    async fetchVehicles(search = '') {
+        const serviceId = this.element.dataset.serviceId;
+        const url = `/services/${serviceId}/vehicles?search=${encodeURIComponent(search)}`;
+        try {
+            const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            if (!response.ok) throw new Error('Network response was not ok');
+            const data = await response.json();
+            this.renderVehicles(data);
+        } catch (error) {
+            console.error('Error fetching vehicles:', error);
+            this.vehicleListTarget.innerHTML = '<p class="text-red-500">Error al cargar vehículos.</p>';
+        }
+    }
+
+    renderVehicles(vehicles) {
+        this.vehicleListTarget.innerHTML = '';
+        if (vehicles.length === 0) {
+            this.vehicleListTarget.innerHTML = '<p class="text-gray-500 p-4">No se encontraron vehículos.</p>';
+            return;
+        }
+        vehicles.forEach(vehicle => {
+            const isSelected = this.selectedVehicles.includes(vehicle.id);
+            const row = document.createElement('div');
+            row.className = `flex items-center p-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
+            row.dataset.vehicleId = vehicle.id;
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300';
+            checkbox.checked = isSelected;
+            checkbox.addEventListener('change', (e) => {
+                e.stopPropagation();
+                this.toggleVehicleSelection(vehicle.id, row);
+            });
+
+            const nameSpan = document.createElement('span');
+            nameSpan.className = 'ml-3 font-medium text-gray-700';
+            nameSpan.textContent = vehicle.name;
+
+            row.appendChild(checkbox);
+            row.appendChild(nameSpan);
+
+            row.addEventListener('click', (e) => {
+                if (e.target.type !== 'checkbox') {
+                    this.toggleVehicleSelection(vehicle.id, row);
+                }
+            });
+
+            this.vehicleListTarget.appendChild(row);
+        });
+    }
+
+    toggleVehicleSelection(vehicleId, rowElement) {
+        const checkbox = rowElement.querySelector('input[type="checkbox"]');
+        const index = this.selectedVehicles.indexOf(vehicleId);
+
+        if (index > -1) {
+            this.selectedVehicles.splice(index, 1);
+            checkbox.checked = false;
+            rowElement.classList.remove('bg-blue-100');
+        } else {
+            this.selectedVehicles.push(vehicleId);
+            checkbox.checked = true;
+            rowElement.classList.add('bg-blue-100');
+        }
+    }
+
+    searchVehicles() {
+        clearTimeout(this.vehicleSearchTimeout);
+        this.vehicleSearchTimeout = setTimeout(() => {
+            this.fetchVehicles(this.vehicleSearchInputTarget.value);
+        }, 300);
+    }
+
+    async saveVehicles() {
+        if (this.selectedVehicles.length === 0) {
+            alert('Por favor, selecciona al menos un vehículo.');
+            return;
+        }
+
+        const serviceId = this.element.dataset.serviceId;
+        const url = `/services/${serviceId}/add-vehicle`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ vehicleIds: this.selectedVehicles })
+            });
+
+            const result = await response.json();
+
+            if (response.ok && result.success) {
+                alert('Vehículos añadidos correctamente.');
+                this.closeVehicleModal();
+                location.reload(); // Or update the list dynamically
+            } else {
+                throw new Error(result.message || 'Error al guardar los vehículos.');
+            }
+        } catch (error) {
+            console.error('Error saving vehicles:', error);
+            alert(error.message);
+        }
+    }
+
+    async assignVolunteer(event) {
+        const select = event.currentTarget;
+        const serviceVehicleId = select.dataset.serviceVehicleId;
+        const volunteerId = select.value;
+        const url = `/service-vehicle/${serviceVehicleId}/assign-volunteer`;
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ volunteerId: volunteerId })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Error al asignar el voluntario.');
+            }
+        } catch (error) {
+            console.error('Error assigning volunteer:', error);
+            alert(error.message);
+        }
+    }
+
+    async assignRole(event) {
+        const input = event.currentTarget;
+        const serviceVehicleId = input.dataset.serviceVehicleId;
+        const role = input.value;
+        const url = `/service-vehicle/${serviceVehicleId}/assign-volunteer`; // Same endpoint can handle role update
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ role: role })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                throw new Error(result.message || 'Error al asignar el rol.');
+            }
+        } catch (error) {
+            console.error('Error assigning role:', error);
+            alert(error.message);
+        }
     }
 }

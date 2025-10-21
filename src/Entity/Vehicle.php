@@ -99,6 +99,12 @@ class Vehicle
     #[ORM\Column(type: 'boolean')]
     private bool $isOutOfService = false;
 
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $seats = null;
+
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $supplementarySeats = null;
+
     /**
      * Gets the unique identifier for the vehicle.
      * @return int|null
@@ -377,6 +383,30 @@ class Vehicle
     public function setOutOfService(bool $isOutOfService): static
     {
         $this->isOutOfService = $isOutOfService;
+
+        return $this;
+    }
+
+    public function getSeats(): ?int
+    {
+        return $this->seats;
+    }
+
+    public function setSeats(?int $seats): static
+    {
+        $this->seats = $seats;
+
+        return $this;
+    }
+
+    public function getSupplementarySeats(): ?int
+    {
+        return $this->supplementarySeats;
+    }
+
+    public function setSupplementarySeats(?int $supplementarySeats): static
+    {
+        $this->supplementarySeats = $supplementarySeats;
 
         return $this;
     }

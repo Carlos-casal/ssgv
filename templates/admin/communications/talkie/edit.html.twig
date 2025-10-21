@@ -1,0 +1,15 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Editar Talkie{% endblock %}
+
+{% block page_title %}Editar Talkie{% endblock %}
+
+{% block content %}
+    <h1>Editar Talkie</h1>
+
+    {{ include('admin/communications/talkie/_form.html.twig', {'button_label': 'Actualizar'}) }}
+
+    <a href="{{ path('app_admin_communications_index') }}">Volver a la lista</a>
+
+    {{ include('admin/communications/talkie/_delete_form.html.twig') }}
+{% endblock %}

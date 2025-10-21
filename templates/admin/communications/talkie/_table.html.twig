@@ -1,0 +1,38 @@
+<div class="flex justify-end mb-4">
+    <a href="{{ path('app_admin_talkie_new') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Nuevo Talkie
+    </a>
+</div>
+<table class="min-w-full divide-y divide-gray-200">
+    <thead class="bg-gray-50">
+        <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Marca</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Modelo</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Número de Serie</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipo</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estado</th>
+            <th scope="col" class="relative px-6 py-3">
+                <span class="sr-only">Editar</span>
+            </th>
+        </tr>
+    </thead>
+    <tbody class="bg-white divide-y divide-gray-200">
+        {% for talkie in talkies %}
+            <tr>
+                <td class="px-6 py-4 whitespace-nowrap">{{ talkie.brand }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ talkie.model }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ talkie.serialNumber }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ talkie.type }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">{{ talkie.status }}</td>
+                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <a href="{{ path('app_admin_talkie_edit', {'id': talkie.id}) }}" class="text-indigo-600 hover:text-indigo-900">Editar</a>
+                    {{ include('admin/communications/talkie/_delete_form.html.twig') }}
+                </td>
+            </tr>
+        {% else %}
+            <tr>
+                <td colspan="6" class="px-6 py-4 whitespace-nowrap text-center text-gray-500">No hay talkies registrados.</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

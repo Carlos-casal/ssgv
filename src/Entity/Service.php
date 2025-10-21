@@ -210,6 +210,8 @@ class Service
     {
         $this->assistanceConfirmations = new ArrayCollection();
         $this->volunteerServices = new ArrayCollection();
+        $this->requestedVehicles = new ArrayCollection();
+        $this->serviceVehicles = new ArrayCollection();
     }
 
     /**
@@ -859,6 +861,37 @@ class Service
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $whatsappMessage = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?int $numTalkiesDigitales = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numTalkiesAnalogicos = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numTalkiesBase = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numBateriasDigitales = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numBateriasAnalogicos = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $numBateriasBase = null;
+
+    /**
+     * @var Collection<int, Vehicle>
+     */
+    #[ORM\ManyToMany(targetEntity: Vehicle::class, inversedBy: 'services')]
+    private Collection $requestedVehicles;
+
+    /**
+     * @var Collection<int, ServiceVehicle>
+     */
+    #[ORM\OneToMany(mappedBy: 'service', targetEntity: ServiceVehicle::class, orphanRemoval: true)]
+    private Collection $serviceVehicles;
+
+
     /**
      * Gets the WhatsApp message.
      * @return string|null
@@ -876,6 +909,132 @@ class Service
     public function setWhatsappMessage(?string $whatsappMessage): static
     {
         $this->whatsappMessage = $whatsappMessage;
+
+        return $this;
+    }
+
+    public function getNumTalkiesDigitales(): ?int
+    {
+        return $this->numTalkiesDigitales;
+    }
+
+    public function setNumTalkiesDigitales(?int $numTalkiesDigitales): static
+    {
+        $this->numTalkiesDigitales = $numTalkiesDigitales;
+
+        return $this;
+    }
+
+    public function getNumTalkiesAnalogicos(): ?int
+    {
+        return $this->numTalkiesAnalogicos;
+    }
+
+    public function setNumTalkiesAnalogicos(?int $numTalkiesAnalogicos): static
+    {
+        $this->numTalkiesAnalogicos = $numTalkiesAnalogicos;
+
+        return $this;
+    }
+
+    public function getNumTalkiesBase(): ?int
+    {
+        return $this->numTalkiesBase;
+    }
+
+    public function setNumTalkiesBase(?int $numTalkiesBase): static
+    {
+        $this->numTalkiesBase = $numTalkiesBase;
+
+        return $this;
+    }
+
+    public function getNumBateriasDigitales(): ?int
+    {
+        return $this->numBateriasDigitales;
+    }
+
+    public function setNumBateriasDigitales(?int $numBateriasDigitales): static
+    {
+        $this->numBateriasDigitales = $numBateriasDigitales;
+
+        return $this;
+    }
+
+    public function getNumBateriasAnalogicos(): ?int
+    {
+        return $this->numBateriasAnalogicos;
+    }
+
+    public function setNumBateriasAnalogicos(?int $numBateriasAnalogicos): static
+    {
+        $this->numBateriasAnalogicos = $numBateriasAnalogicos;
+
+        return $this;
+    }
+
+    public function getNumBateriasBase(): ?int
+    {
+        return $this->numBateriasBase;
+    }
+
+    public function setNumBateriasBase(?int $numBateriasBase): static
+    {
+        $this->numBateriasBase = $numBateriasBase;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Vehicle>
+     */
+    public function getRequestedVehicles(): Collection
+    {
+        return $this->requestedVehicles;
+    }
+
+    public function addRequestedVehicle(Vehicle $vehicle): static
+    {
+        if (!$this->requestedVehicles->contains($vehicle)) {
+            $this->requestedVehicles->add($vehicle);
+        }
+
+        return $this;
+    }
+
+    public function removeRequestedVehicle(Vehicle $vehicle): static
+    {
+        $this->requestedVehicles->removeElement($vehicle);
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceVehicle>
+     */
+    public function getServiceVehicles(): Collection
+    {
+        return $this->serviceVehicles;
+    }
+
+    public function addServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if (!$this->serviceVehicles->contains($serviceVehicle)) {
+            $this->serviceVehicles->add($serviceVehicle);
+            $serviceVehicle->setService($this);
+        }
+
+        return $this;
+    }
+
+    public function removeServiceVehicle(ServiceVehicle $serviceVehicle): static
+    {
+        if ($this->serviceVehicles->removeElement($serviceVehicle)) {
+            // set the owning side to null (unless already changed)
+            if ($serviceVehicle->getService() === $this) {
+                $serviceVehicle->setService(null);
+            }
+        }
 
         return $this;
     }

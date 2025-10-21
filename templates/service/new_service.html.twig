@@ -181,6 +181,41 @@
             </div>
         </div>
 
+        <div>
+            <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Gestión Interna</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
+                <div class="form-group">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="text-lg font-semibold">Solicitud de Vehículos</label>
+                        {% if service.id is defined and service.id is not null %}
+                            <button type="button" class="bg-blue-500 text-white px-4 py-2 rounded-lg" data-action="click->service-form#suggestVehicles">Sugerir Vehículos</button>
+                        {% endif %}
+                    </div>
+                    <div data-service-form-target="vehicleSuggestions">
+                        {{ form_widget(form.requestedVehicles) }}
+                    </div>
+                    <div class="form-error">{{ form_errors(form.requestedVehicles) }}</div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Asignación de Talkies y Baterías</h4>
+                    <div class="grid grid-cols-3 gap-x-6">
+                        <div class="form-group">
+                            <label class="font-medium">Talkies</label>
+                            {{ form_widget(form.numTalkiesDigitales, {'attr': {'placeholder': 'Digitales'}}) }}
+                            {{ form_widget(form.numTalkiesAnalogicos, {'attr': {'placeholder': 'Analógicos'}}) }}
+                            {{ form_widget(form.numTalkiesBase, {'attr': {'placeholder': 'Base'}}) }}
+                        </div>
+                        <div class="form-group">
+                            <label class="font-medium">Baterías</label>
+                            {{ form_widget(form.numBateriasDigitales, {'attr': {'placeholder': 'Digitales'}}) }}
+                            {{ form_widget(form.numBateriasAnalogicos, {'attr': {'placeholder': 'Analógicas'}}) }}
+                            {{ form_widget(form.numBateriasBase, {'attr': {'placeholder': 'Base'}}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="space-y-10">
             <div class="form-group">
                 {{ form_label(form.tasks, 'Tareas 📝') }}
@@ -199,7 +234,6 @@
         <div style="display:none;">
             {{ form_row(form.recipients) }}
             {{ form_row(form.numNurses) }}
-            {{ form_row(form.whatsappMessage) }}
         </div>
 
         {{ form_rest(form) }}

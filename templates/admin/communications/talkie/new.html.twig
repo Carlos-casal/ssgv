@@ -1,0 +1,13 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Nuevo Talkie{% endblock %}
+
+{% block page_title %}Crear Nuevo Talkie{% endblock %}
+
+{% block content %}
+    <h1>Crear Nuevo Talkie</h1>
+
+    {{ include('admin/communications/talkie/_form.html.twig') }}
+
+    <a href="{{ path('app_admin_communications_index') }}">Volver a la lista</a>
+{% endblock %}

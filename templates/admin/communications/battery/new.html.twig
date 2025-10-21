@@ -1,0 +1,13 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Nueva Batería{% endblock %}
+
+{% block page_title %}Crear Nueva Batería{% endblock %}
+
+{% block content %}
+    <h1>Crear Nueva Batería</h1>
+
+    {{ include('admin/communications/battery/_form.html.twig') }}
+
+    <a href="{{ path('app_admin_communications_index') }}">Volver a la lista</a>
+{% endblock %}

@@ -47,6 +47,9 @@
             <a href="#" class="tab-link font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="asistencias">
                 <span class="mr-2">👥</span> Confirmación de Asistencia
             </a>
+            <a href="#" class="tab-link font-medium text-lg text-gray-500 hover:text-blue-600 border-b-2 border-transparent pb-3" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="vehiculos">
+                <span class="mr-2">🚑</span> Vehículos
+            </a>
         </nav>
     </div>
 
@@ -465,6 +468,70 @@
 
     {{ include('service/_fichar_modal.html.twig') }}
     {{ include('service/_individual_fichaje_modal.html.twig') }}
+
+    <div id="vehiculos" class="tab-content-panel hidden" data-service-form-target="tabContent">
+        <div class="bg-white shadow-xl rounded-2xl p-8">
+            <div class="flex justify-start items-center mb-6 space-x-4">
+                <button type="button" data-action="click->service-form#openVehicleModal" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                    <i data-lucide="plus" class="mr-2 h-5 w-5"></i> Añadir Vehículo
+                </button>
+            </div>
+            <div id="service-vehicles-list">
+                <!-- Service vehicles will be listed here -->
+                {% for sv in service.serviceVehicles %}
+                    <div class="flex items-center justify-between bg-gray-50 p-3 rounded-lg shadow-sm mb-2">
+                        <div>
+                            <span class="font-bold">{{ sv.vehicle.alias }} ({{ sv.vehicle.licensePlate }})</span>
+                            {% if sv.volunteer %}
+                                <span class="ml-4">{{ sv.volunteer.name }} {{ sv.volunteer.lastname }} - <span class="font-semibold">{{ sv.role }}</span></span>
+                            {% endif %}
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <select data-action="change->service-form#assignVolunteer" data-service-vehicle-id="{{ sv.id }}">
+                                <option value="">Asignar Voluntario</option>
+                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                    <option value="{{ confirmation.volunteer.id }}" {% if sv.volunteer and sv.volunteer.id == confirmation.volunteer.id %}selected{% endif %}>{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" value="{{ sv.role }}" data-action="change->service-form#assignRole" data-service-vehicle-id="{{ sv.id }}" placeholder="Rol" class="p-1 border rounded">
+                            <form method="post" action="{{ path('app_service_vehicle_remove', {'id': sv.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este vehículo del servicio?');">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ sv.id) }}">
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                    <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <p class="text-gray-500 italic">No hay vehículos asignados a este servicio.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Vehicle Modal -->
+    <div class="hidden fixed inset-0 bg-gray-800 bg-opacity-60 flex items-center justify-center z-50" data-service-form-target="vehicleModal">
+        <div class="modal-content bg-white rounded-2xl shadow-2xl p-8 max-w-3xl w-full mx-4">
+            <div class="flex justify-between items-center mb-6 border-b pb-4">
+                <h3 class="text-2xl font-bold text-gray-900">Añadir Vehículos al Servicio</h3>
+                <button type="button" data-action="click->service-form#closeVehicleModal" class="text-gray-400 hover:text-gray-600">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            <div class="relative mb-4">
+                <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+                    <i data-lucide="search" class="h-5 w-5 text-gray-400"></i>
+                </span>
+                <input type="text" data-service-form-target="vehicleSearchInput" data-action="keyup->service-form#searchVehicles" placeholder="Buscar por marca, modelo, matrícula o alias..." class="w-full px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 pl-10">
+            </div>
+            <div data-service-form-target="vehicleList" class="space-y-1 mb-4 border rounded-lg p-2" style="min-height: 200px; max-height: 40vh; overflow-y: auto;">
+                <!-- Vehicle list will be populated here -->
+            </div>
+            <div class="flex justify-end space-x-4 border-t pt-4">
+                <button type="button" data-action="click->service-form#saveVehicles" class="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg shadow-md hover:bg-blue-700">Añadir Seleccionados</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endblock %}

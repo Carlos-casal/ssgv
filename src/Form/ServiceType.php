@@ -14,6 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use App\Entity\Vehicle;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -176,12 +178,38 @@ class ServiceType extends AbstractType
                 'label' => 'Avituallamiento',
                 'required' => false,
             ])
-            ->add('whatsappMessage', TextareaType::class, [
-                'label' => 'Mensaje de WhatsApp',
+            ->add('requestedVehicles', EntityType::class, [
+                'class' => Vehicle::class,
+                'choice_label' => 'alias',
+                'multiple' => true,
+                'expanded' => true,
+                'label' => 'Vehículos Solicitados',
                 'required' => false,
-                'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
+            ])
+            ->add('numTalkiesDigitales', IntegerType::class, [
+                'label' => 'Talkies Digitales',
+                'required' => false,
+            ])
+            ->add('numTalkiesAnalogicos', IntegerType::class, [
+                'label' => 'Talkies Analógicos',
+                'required' => false,
+            ])
+            ->add('numTalkiesBase', IntegerType::class, [
+                'label' => 'Talkie Base',
+                'required' => false,
+            ])
+            ->add('numBateriasDigitales', IntegerType::class, [
+                'label' => 'Baterías Digitales',
+                'required' => false,
+            ])
+            ->add('numBateriasAnalogicos', IntegerType::class, [
+                'label' => 'Baterías Analógicas',
+                'required' => false,
+            ])
+            ->add('numBateriasBase', IntegerType::class, [
+                'label' => 'Batería Base',
+                'required' => false,
             ]);
-
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $data = $event->getData();
             $form = $event->getForm();

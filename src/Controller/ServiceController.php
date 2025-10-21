@@ -289,6 +289,161 @@ class ServiceController extends AbstractController
         return new JsonResponse($data);
     }
 
+    #[Route('/service/{id}/suggest-vehicles', name: 'app_service_suggest_vehicles', methods: ['GET'])]
+    public function suggestVehicles(Service $service, \App\Repository\VehicleRepository $vehicleRepository, AssistanceConfirmationRepository $assistanceConfirmationRepository): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
+
+        $requiredSeats = $assistanceConfirmationRepository->count(['service' => $service, 'status' => AssistanceConfirmation::STATUS_ATTENDING]);
+
+        if ($requiredSeats == 0) {
+            return new JsonResponse([]);
+        }
+
+        $availableVehicles = $vehicleRepository->findBy(['isOutOfService' => false], ['seats' => 'DESC']);
+
+        $suggestedVehicles = [];
+        $seatsFilled = 0;
+
+        foreach ($availableVehicles as $vehicle) {
+            if ($seatsFilled >= $requiredSeats) {
+                break;
+            }
+            $totalSeats = $vehicle->getSeats() + $vehicle->getSupplementarySeats();
+            if ($totalSeats > 0) {
+                $suggestedVehicles[] = $vehicle;
+                $seatsFilled += $totalSeats;
+            }
+        }
+
+        $data = [];
+        foreach ($suggestedVehicles as $vehicle) {
+            $data[] = [
+                'id' => $vehicle->getId(),
+                'name' => $vehicle->getAlias() ?? $vehicle->getMake() . ' ' . $vehicle->getModel(),
+                'seats' => $vehicle->getSeats(),
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    /**
+     * Provides a JSON API endpoint to fetch a list of available vehicles.
+     */
+    #[Route('/services/{id}/vehicles', name: 'app_service_get_vehicles', methods: ['GET'])]
+    public function getVehicles(Request $request, Service $service, \App\Repository\VehicleRepository $vehicleRepository): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_COORDINATOR') && !$this->isGranted('ROLE_ADMIN')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
+
+        $queryBuilder = $vehicleRepository->createQueryBuilder('v')
+            ->where('v.isOutOfService = :isOutOfService')
+            ->setParameter('isOutOfService', false);
+
+        if ($request->query->has('search')) {
+            $search = $request->query->get('search');
+            if (!empty($search)) {
+                $queryBuilder->andWhere('LOWER(v.make) LIKE LOWER(:search) OR LOWER(v.model) LIKE LOWER(:search) OR LOWER(v.licensePlate) LIKE LOWER(:search) OR LOWER(v.alias) LIKE LOWER(:search)')
+                    ->setParameter('search', '%' . $search . '%');
+            }
+        }
+
+        $vehicles = $queryBuilder->getQuery()->getResult();
+
+        $data = [];
+        foreach ($vehicles as $vehicle) {
+            $data[] = [
+                'id' => $vehicle->getId(),
+                'name' => $vehicle->getAlias() . ' (' . $vehicle->getLicensePlate() . ')',
+            ];
+        }
+
+        return new JsonResponse($data);
+    }
+
+    /**
+     * Provides a JSON API endpoint to add vehicles to a service.
+     */
+    #[Route('/services/{id}/add-vehicle', name: 'app_service_add_vehicle', methods: ['POST'])]
+    public function addVehicleToService(Request $request, Service $service, EntityManagerInterface $entityManager, \App\Repository\VehicleRepository $vehicleRepository): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_COORDINATOR')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $vehicleIds = $data['vehicleIds'] ?? [];
+
+        if (empty($vehicleIds)) {
+            return new JsonResponse(['success' => false, 'message' => 'No se han seleccionado vehículos.'], Response::HTTP_BAD_REQUEST);
+        }
+
+        foreach ($vehicleIds as $vehicleId) {
+            $vehicle = $vehicleRepository->find($vehicleId);
+            if ($vehicle) {
+                $serviceVehicle = new \App\Entity\ServiceVehicle();
+                $serviceVehicle->setService($service);
+                $serviceVehicle->setVehicle($vehicle);
+                $entityManager->persist($serviceVehicle);
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Vehículos añadidos correctamente.']);
+    }
+
+    /**
+     * Provides a JSON API endpoint to assign a volunteer and role to a service vehicle.
+     */
+    #[Route('/service-vehicle/{id}/assign-volunteer', name: 'app_service_assign_volunteer_to_vehicle', methods: ['POST'])]
+    public function assignVolunteerToServiceVehicle(Request $request, \App\Entity\ServiceVehicle $serviceVehicle, EntityManagerInterface $entityManager, VolunteerRepository $volunteerRepository): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_COORDINATOR')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        if (array_key_exists('volunteerId', $data)) {
+            $volunteerId = $data['volunteerId'];
+            $volunteer = $volunteerId ? $volunteerRepository->find($volunteerId) : null;
+            $serviceVehicle->setVolunteer($volunteer);
+        }
+
+        if (array_key_exists('role', $data)) {
+            $role = $data['role'];
+            $serviceVehicle->setRole($role);
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true, 'message' => 'Asignación actualizada correctamente.']);
+    }
+
+    /**
+     * Handles the removal of a vehicle from a service.
+     */
+    #[Route('/service-vehicle/{id}/remove', name: 'app_service_vehicle_remove', methods: ['POST'])]
+    public function removeVehicleFromService(Request $request, \App\Entity\ServiceVehicle $serviceVehicle, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isGranted('ROLE_ADMIN') && !$this->isGranted('ROLE_COORDINATOR')) {
+            throw $this->createAccessDeniedException('No tienes permiso para realizar esta acción.');
+        }
+
+        if ($this->isCsrfTokenValid('delete'.$serviceVehicle->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($serviceVehicle);
+            $entityManager->flush();
+            $this->addFlash('success', 'Vehículo eliminado del servicio.');
+        }
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $serviceVehicle->getService()->getId(), '_fragment' => 'vehiculos']);
+    }
+
     /**
      * Provides a JSON API endpoint to update the attendance status for multiple volunteers in a service.
      *

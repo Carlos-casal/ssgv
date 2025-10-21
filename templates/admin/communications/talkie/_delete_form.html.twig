@@ -1,0 +1,4 @@
+<form method="post" action="{{ path('app_admin_talkie_delete', {'id': talkie.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este talkie?');">
+    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ talkie.id) }}">
+    <button class="text-red-600 hover:text-red-900">Eliminar</button>
+</form>

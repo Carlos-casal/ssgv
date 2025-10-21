@@ -1,0 +1,30 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Inventario de Comunicaciones{% endblock %}
+
+{% block page_title %}Inventario de Comunicaciones{% endblock %}
+
+{% block content %}
+    <div data-controller="tabs">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-action="click->tabs#change" data-tabs-target="tab">
+                    Talkies
+                </a>
+                <a href="#" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm" data-action="click->tabs#change" data-tabs-target="tab">
+                    Baterías
+                </a>
+            </nav>
+        </div>
+
+        <div class="mt-8">
+            <div data-tabs-target="panel">
+                {% include 'admin/communications/talkie/_table.html.twig' with {'talkies': talkies} %}
+            </div>
+
+            <div data-tabs-target="panel" class="hidden">
+                {% include 'admin/communications/battery/_table.html.twig' with {'batteries': batteries} %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

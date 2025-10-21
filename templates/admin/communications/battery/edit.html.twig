@@ -1,0 +1,15 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Editar Batería{% endblock %}
+
+{% block page_title %}Editar Batería{% endblock %}
+
+{% block content %}
+    <h1>Editar Batería</h1>
+
+    {{ include('admin/communications/battery/_form.html.twig', {'button_label': 'Actualizar'}) }}
+
+    <a href="{{ path('app_admin_communications_index') }}">Volver a la lista</a>
+
+    {{ include('admin/communications/battery/_delete_form.html.twig') }}
+{% endblock %}
