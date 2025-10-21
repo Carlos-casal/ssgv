@@ -428,13 +428,17 @@ class ServiceController extends AbstractController
         }
 
         $data = json_decode($request->getContent(), true);
-        $volunteerId = $data['volunteerId'] ?? null;
-        $role = $data['role'] ?? null;
 
-        $volunteer = $volunteerId ? $volunteerRepository->find($volunteerId) : null;
+        if (array_key_exists('volunteerId', $data)) {
+            $volunteerId = $data['volunteerId'];
+            $volunteer = $volunteerId ? $volunteerRepository->find($volunteerId) : null;
+            $serviceVehicle->setVolunteer($volunteer);
+        }
 
-        $serviceVehicle->setVolunteer($volunteer);
-        $serviceVehicle->setRole($role);
+        if (array_key_exists('role', $data)) {
+            $role = $data['role'];
+            $serviceVehicle->setRole($role);
+        }
 
         $entityManager->flush();
 

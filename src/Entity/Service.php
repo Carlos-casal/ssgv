@@ -866,6 +866,12 @@ class Service
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $whatsappMessage = null;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $vehicleRequest = null;
+
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $talkieAssignment = null;
+
     /**
      * Gets the WhatsApp message.
      * @return string|null
@@ -913,6 +919,30 @@ class Service
                 $serviceVehicle->setService(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getVehicleRequest(): ?string
+    {
+        return $this->vehicleRequest;
+    }
+
+    public function setVehicleRequest(?string $vehicleRequest): static
+    {
+        $this->vehicleRequest = $vehicleRequest;
+
+        return $this;
+    }
+
+    public function getTalkieAssignment(): ?string
+    {
+        return $this->talkieAssignment;
+    }
+
+    public function setTalkieAssignment(?string $talkieAssignment): static
+    {
+        $this->talkieAssignment = $talkieAssignment;
 
         return $this;
     }
