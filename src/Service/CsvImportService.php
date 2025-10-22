@@ -58,27 +58,31 @@ class CsvImportService
                 continue;
             }
 
-            for ($i = 1; $i <= 31; $i++) {
+            for ($i = 1; $i <= 60; $i++) {
                 $hoursKey = "HORAS_{$i}";
                 $dateKey = "FECHA_{$i}";
-                $conceptKey = "CONCEPTO_{$i}";
+                $conceptKey = "COMENTARIO_{$i}";
 
                 if (!empty($rowData[$hoursKey]) && !empty($rowData[$dateKey]) && !empty($rowData[$conceptKey])) {
-                    $serviceName = str_replace('Comentario: ', '', $rowData[$conceptKey]);
-                    $service = $this->entityManager->getRepository(Service::class)->findOneBy(['name' => $serviceName]);
-
-                    if (!$service) {
-                        $service = new Service();
-                        $service->setName($serviceName);
-                        $this->entityManager->persist($service);
-                    }
-
+                    $serviceName = $rowData[$conceptKey];
                     $dateString = $rowData[$dateKey];
                     $date = $this->parseDate($dateString);
 
                     if ($date === false) {
                         $report['errors'][] = "Fila {$rowNumber}: Formato de fecha inválido para '{$dateString}'.";
                         continue;
+                    }
+
+                    $service = $this->entityManager->getRepository(Service::class)->findOneBy(['title' => $serviceName]);
+
+                    if (!$service) {
+                        $service = new Service();
+                        $service->setTitle($serviceName);
+                        $service->setStartDate($date);
+                        $hours = (float)str_replace(',', '.', $rowData[$hoursKey]);
+                        $endsAt = (clone $date)->modify('+' . round($hours * 3600) . ' seconds');
+                        $service->setEndDate($endsAt);
+                        $this->entityManager->persist($service);
                     }
 
                     $fichaje = new Fichaje();
