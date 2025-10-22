@@ -23,14 +23,15 @@ class ImportController extends AbstractController
             if ($csvFile) {
                 $report = $csvImportService->import($csvFile);
 
-                if ($report['success'] > 0) {
-                    $this->addFlash('success', "Se importaron {$report['success']} registros de horas con éxito.");
-                }
-
-                if (!empty($report['errors'])) {
+                if (empty($report['errors']) && $report['success'] > 0) {
+                    $this->addFlash('success', "¡Importación completada! Se han añadido {$report['success']} registros de horas.");
+                } elseif (!empty($report['errors'])) {
+                    $this->addFlash('danger', 'La importación ha fallado. Por favor, revisa los siguientes errores:');
                     foreach ($report['errors'] as $error) {
                         $this->addFlash('danger', $error);
                     }
+                } else {
+                    $this->addFlash('warning', 'El archivo ha sido procesado, pero no se ha importado ningún registro. Revisa el formato del archivo o que no esté vacío.');
                 }
             }
 

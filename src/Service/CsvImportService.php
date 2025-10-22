@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Fichaje;
 use App\Entity\Service;
 use App\Entity\Volunteer;
+use App\Entity\VolunteerService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -48,6 +49,10 @@ class CsvImportService
                 $row = array_slice($row, 0, count($header));
             }
 
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
             $rowData = array_combine($header, $row);
             $volunteerName = $rowData['VOLUNTARIO'];
 
@@ -85,13 +90,24 @@ class CsvImportService
                         $this->entityManager->persist($service);
                     }
 
+                    $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
+                        'volunteer' => $volunteer,
+                        'service' => $service,
+                    ]);
+
+                    if (!$volunteerService) {
+                        $volunteerService = new VolunteerService();
+                        $volunteerService->setVolunteer($volunteer);
+                        $volunteerService->setService($service);
+                        $this->entityManager->persist($volunteerService);
+                    }
+
                     $fichaje = new Fichaje();
-                    $fichaje->setVolunteer($volunteer);
-                    $fichaje->setService($service);
-                    $fichaje->setStartsAt($date);
+                    $fichaje->setVolunteerService($volunteerService);
+                    $fichaje->setStartTime($date);
                     $hours = (float)str_replace(',', '.', $rowData[$hoursKey]);
                     $endsAt = (clone $date)->modify('+' . round($hours * 3600) . ' seconds');
-                    $fichaje->setEndsAt($endsAt);
+                    $fichaje->setEndTime($endsAt);
 
                     $this->entityManager->persist($fichaje);
                     $report['success']++;
@@ -112,7 +128,8 @@ class CsvImportService
             $day = $matches[1];
             $month = $matches[3];
             $year = date('Y');
-            return \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
+            $date = \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
+            return $date ? $date->setTime(0, 0) : false;
         }
 
         // Handle dates like "04/12"
@@ -120,10 +137,12 @@ class CsvImportService
             $day = $matches[1];
             $month = $matches[2];
             $year = date('Y');
-            return \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
+            $date = \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
+            return $date ? $date->setTime(0, 0) : false;
         }
 
         // Handle dates like "DD/MM/YYYY"
-        return \DateTime::createFromFormat('d/m/Y', $dateString);
+        $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+        return $date ? $date->setTime(0, 0) : false;
     }
 }
