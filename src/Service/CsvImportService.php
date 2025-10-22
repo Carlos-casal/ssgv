@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Fichaje;
 use App\Entity\Service;
 use App\Entity\Volunteer;
@@ -89,6 +90,21 @@ class CsvImportService
                         $service->setEndDate($endsAt);
                         $this->entityManager->persist($service);
                     }
+
+                    // Create AssistanceConfirmation to mark the volunteer as an attendee
+                    $assistance = $this->entityManager->getRepository(AssistanceConfirmation::class)->findOneBy([
+                        'volunteer' => $volunteer,
+                        'service' => $service,
+                    ]);
+
+                    if (!$assistance) {
+                        $assistance = new AssistanceConfirmation();
+                        $assistance->setVolunteer($volunteer);
+                        $assistance->setService($service);
+                        $this->entityManager->persist($assistance);
+                    }
+                    $assistance->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+
 
                     $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
                         'volunteer' => $volunteer,
