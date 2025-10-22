@@ -12,7 +12,7 @@ def run(playwright):
     page.click('button[type="submit"]')
 
     # Go to communications page
-    page.goto("http://localhost:8000/admin/communications")
+    page.goto("http://localhost:8000/admin/communications/talkies")
 
     # Take screenshot
     page.screenshot(path="jules-scratch/verification/communications.png")
