@@ -89,6 +89,7 @@ class CsvImportService
                         $endsAt = (clone $date)->modify('+' . round($hours * 3600) . ' seconds');
                         $service->setEndDate($endsAt);
                         $this->entityManager->persist($service);
+                        $this->entityManager->flush(); // Flush to get service ID
                     }
 
                     // Create AssistanceConfirmation to mark the volunteer as an attendee
