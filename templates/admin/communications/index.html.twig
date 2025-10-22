@@ -1,0 +1,49 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Comunicaciones{% endblock %}
+
+{% block page_title %}Inventario de Comunicaciones{% endblock %}
+
+{% block content %}
+    <div x-data="{ activeTab: 'talkies' }">
+        <!-- Tabs -->
+        <div class="mb-4 border-b border-gray-200">
+            <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="myTab" data-tabs-toggle="#myTabContent" role="tablist">
+                <li class="mr-2" role="presentation">
+                    <button @click="activeTab = 'talkies'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'talkies' }" class="inline-block p-4 border-b-2 rounded-t-lg" type="button">Talkies</button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button @click="activeTab = 'batteries'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'batteries' }" class="inline-block p-4 border-b-2 rounded-t-lg" type="button">Baterías</button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button @click="activeTab = 'ptts'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'ptts' }" class="inline-block p-4 border-b-2 rounded-t-lg" type="button">PTT</button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button @click="activeTab = 'mobiles'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'mobiles' }" class="inline-block p-4 border-b-2 rounded-t-lg" type="button">Móviles</button>
+                </li>
+                <li class="mr-2" role="presentation">
+                    <button @click="activeTab = 'phone_models'" :class="{ 'border-blue-500 text-blue-600': activeTab === 'phone_models' }" class="inline-block p-4 border-b-2 rounded-t-lg" type="button">Modelos de Teléfono</button>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Tab Content -->
+        <div id="myTabContent">
+            <div x-show="activeTab === 'talkies'">
+                {{ include('admin/communications/talkie/_table.html.twig', { talkies: talkies }) }}
+            </div>
+            <div x-show="activeTab === 'batteries'">
+                {{ include('admin/communications/battery/_table.html.twig', { batteries: batteries }) }}
+            </div>
+            <div x-show="activeTab === 'ptts'">
+                {{ include('admin/communications/ptt/_table.html.twig', { ptts: ptts }) }}
+            </div>
+            <div x-show="activeTab === 'mobiles'">
+                {{ include('admin/communications/mobile/_table.html.twig', { mobiles: mobiles }) }}
+            </div>
+            <div x-show="activeTab === 'phone_models'">
+                {{ include('admin/communications/phone_model/_table.html.twig', { phone_models: phone_models }) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}

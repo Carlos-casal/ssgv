@@ -1,0 +1,11 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Editar Talkie{% endblock %}
+
+{% block page_title %}Editar Talkie{% endblock %}
+
+{% block content %}
+    {{ include('admin/communications/talkie/_form.html.twig', {'button_label': 'Actualizar'}) }}
+
+    {{ include('admin/communications/talkie/_delete_form.html.twig') }}
+{% endblock %}
