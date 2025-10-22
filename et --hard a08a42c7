@@ -1,0 +1,616 @@
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{0}: reset: moving to 9497719e
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{1}: reset: moving to 9497719e
+[33m1da72175[m[33m ([m[1;31morigin/feat/js-form-validation[m[33m)[m HEAD@{2}: reset: moving to 1da72175
+[33m1da72175[m[33m ([m[1;31morigin/feat/js-form-validation[m[33m)[m HEAD@{3}: checkout: moving from feature/blue-header-new-volunteer to feat/js-form-validation
+[33ma08a42c7[m[33m ([m[1;32mfeature/blue-header-new-volunteer[m[33m)[m HEAD@{4}: reset: moving to a08a42c7
+[33mef1312ed[m[33m ([m[1;31morigin/feature/blue-header-new-volunteer[m[33m)[m HEAD@{5}: pull: Fast-forward
+[33ma08a42c7[m[33m ([m[1;32mfeature/blue-header-new-volunteer[m[33m)[m HEAD@{6}: pull: Fast-forward
+[33m3e9e2450[m HEAD@{7}: pull: Fast-forward
+[33m208f8bc4[m HEAD@{8}: pull: Fast-forward
+[33mce5abcd5[m HEAD@{9}: pull: Fast-forward
+[33m6ad9b9bf[m HEAD@{10}: pull: Fast-forward
+[33m4dc9fbc3[m HEAD@{11}: pull: Fast-forward
+[33mf0b556b1[m HEAD@{12}: pull: Fast-forward
+[33m72d6b9f3[m HEAD@{13}: pull: Fast-forward
+[33m3ff91a13[m HEAD@{14}: pull: Fast-forward
+[33mbc0e11d7[m HEAD@{15}: pull: Fast-forward
+[33m33449234[m HEAD@{16}: checkout: moving from feature/blue-header-new-volunteer to feature/blue-header-new-volunteer
+[33m33449234[m HEAD@{17}: checkout: moving from feature/blue-header-new-volunteer to feature/blue-header-new-volunteer
+[33m33449234[m HEAD@{18}: checkout: moving from feature/blue-header-new-volunteer to feature/blue-header-new-volunteer
+[33m33449234[m HEAD@{19}: pull: Fast-forward
+[33mb8482287[m HEAD@{20}: pull: Fast-forward
+[33m2b857682[m HEAD@{21}: pull: Fast-forward
+[33me9795cfc[m HEAD@{22}: pull: Fast-forward
+[33mc0221fa2[m HEAD@{23}: pull: Fast-forward
+[33me4a82917[m HEAD@{24}: pull: Fast-forward
+[33me0d570c7[m HEAD@{25}: pull: Fast-forward
+[33m147c6618[m HEAD@{26}: pull: Fast-forward
+[33m099f5665[m HEAD@{27}: pull: Fast-forward
+[33meb787e8e[m HEAD@{28}: pull: Fast-forward
+[33mb1133c08[m HEAD@{29}: checkout: moving from feature/floating-label-dni to feature/blue-header-new-volunteer
+[33m37b0942c[m[33m ([m[1;31morigin/feature/floating-label-dni[m[33m, [m[1;32mfeature/floating-label-dni[m[33m)[m HEAD@{30}: pull: Fast-forward
+[33mc74e6b93[m HEAD@{31}: pull: Fast-forward
+[33mbbd013bd[m HEAD@{32}: pull: Fast-forward
+[33me36f2beb[m HEAD@{33}: pull: Fast-forward
+[33m6dc5c6bb[m HEAD@{34}: pull: Fast-forward
+[33meeae94d2[m HEAD@{35}: checkout: moving from feature/floating-label-dni to feature/floating-label-dni
+[33meeae94d2[m HEAD@{36}: pull: Fast-forward
+[33m28b95a04[m HEAD@{37}: pull: Fast-forward
+[33m4ca04f8f[m HEAD@{38}: pull: Fast-forward
+[33m0a1c957e[m HEAD@{39}: pull: Fast-forward
+[33mfc5d1812[m HEAD@{40}: pull: Fast-forward
+[33m195260e7[m HEAD@{41}: pull: Fast-forward
+[33m01587428[m HEAD@{42}: pull: Fast-forward
+[33m7a7acd1d[m HEAD@{43}: pull: Fast-forward
+[33me5b7626b[m HEAD@{44}: pull: Fast-forward
+[33m9c38557f[m HEAD@{45}: checkout: moving from feature/floating-label-dni to feature/floating-label-dni
+[33m9c38557f[m HEAD@{46}: pull: Fast-forward
+[33me658cb86[m HEAD@{47}: checkout: moving from feature/new-volunteer-form to feature/floating-label-dni
+[33m82950a8e[m[33m ([m[1;31morigin/feature/new-volunteer-form[m[33m, [m[1;32mfeature/new-volunteer-form[m[33m)[m HEAD@{48}: pull: Fast-forward
+[33m7f836f8e[m HEAD@{49}: pull: Fast-forward
+[33maf45a6ee[m HEAD@{50}: pull: Fast-forward
+[33mbfdcf70a[m[33m ([m[1;31morigin/feature/refactor-new-volunteer-form-layout[m[33m, [m[1;32mfeature/refactor-new-volunteer-form-layout[m[33m)[m HEAD@{51}: reset: moving to bfdcf70a
+[33m96a802f2[m HEAD@{52}: reset: moving to 96a802f26775a2d4b95a58d4e05628d13407033a
+[33mb317d053[m HEAD@{53}: pull: Fast-forward
+[33mc2066f19[m HEAD@{54}: pull: Fast-forward
+[33m910de5c4[m HEAD@{55}: pull: Fast-forward
+[33m4238f161[m HEAD@{56}: pull: Fast-forward
+[33m62771842[m HEAD@{57}: pull: Fast-forward
+[33m09cddabe[m HEAD@{58}: pull: Fast-forward
+[33m65741d84[m HEAD@{59}: checkout: moving from feature/refactor-new-volunteer-form-layout to feature/new-volunteer-form
+[33mbfdcf70a[m[33m ([m[1;31morigin/feature/refactor-new-volunteer-form-layout[m[33m, [m[1;32mfeature/refactor-new-volunteer-form-layout[m[33m)[m HEAD@{60}: pull: Fast-forward
+[33med381565[m HEAD@{61}: pull: Fast-forward
+[33m08ba774c[m HEAD@{62}: pull: Fast-forward
+[33m9fdb0365[m HEAD@{63}: pull: Fast-forward
+[33mda66b715[m HEAD@{64}: pull: Fast-forward
+[33m863f5ee0[m HEAD@{65}: checkout: moving from fix/date-modal-trigger to feature/refactor-new-volunteer-form-layout
+[33meeda911b[m[33m ([m[1;31morigin/fix/date-modal-trigger[m[33m, [m[1;32mfix/date-modal-trigger[m[33m)[m HEAD@{66}: pull: Fast-forward
+[33mc1423ecc[m HEAD@{67}: pull: Fast-forward
+[33m17a83eae[m HEAD@{68}: pull: Fast-forward
+[33mb83cae34[m HEAD@{69}: pull: Fast-forward
+[33m964c057d[m HEAD@{70}: pull: Fast-forward
+[33m858bb25c[m HEAD@{71}: pull: Fast-forward
+[33mcd29adfc[m HEAD@{72}: pull: Fast-forward
+[33m8bea3679[m HEAD@{73}: pull: Fast-forward
+[33m98f534a3[m HEAD@{74}: pull: Fast-forward
+[33m1568f7a9[m HEAD@{75}: pull: Fast-forward
+[33m7d45f4f4[m HEAD@{76}: pull: Fast-forward
+[33mf34e4400[m HEAD@{77}: pull: Fast-forward
+[33mae6c17a2[m HEAD@{78}: pull: Fast-forward
+[33mada2c15f[m HEAD@{79}: pull: Fast-forward
+[33med815211[m HEAD@{80}: pull: Fast-forward
+[33mc4d37a94[m HEAD@{81}: pull: Fast-forward
+[33m7dc7c393[m HEAD@{82}: pull: Fast-forward
+[33m1dff4a2e[m HEAD@{83}: pull: Fast-forward
+[33m508f04bb[m HEAD@{84}: pull: Fast-forward
+[33mab69499c[m HEAD@{85}: pull: Fast-forward
+[33m89dbfd3c[m HEAD@{86}: pull: Fast-forward
+[33m773e35e1[m HEAD@{87}: pull: Fast-forward
+[33mf62e5a88[m HEAD@{88}: pull: Fast-forward
+[33m13cbcb0a[m HEAD@{89}: pull: Fast-forward
+[33m8ecb56e7[m HEAD@{90}: pull: Fast-forward
+[33mbf0002b1[m HEAD@{91}: pull: Fast-forward
+[33m0d03f267[m HEAD@{92}: pull: Fast-forward
+[33m31898641[m HEAD@{93}: pull: Fast-forward
+[33m7c9580f5[m HEAD@{94}: pull: Fast-forward
+[33m3d103923[m HEAD@{95}: checkout: moving from fix/date-modal-trigger to fix/date-modal-trigger
+[33m3d103923[m HEAD@{96}: pull: Fast-forward
+[33med69d2d4[m HEAD@{97}: pull: Fast-forward
+[33m3e3e93b2[m HEAD@{98}: pull: Fast-forward
+[33mb537c995[m HEAD@{99}: pull: Fast-forward
+[33m1f49e2d3[m HEAD@{100}: checkout: moving from fix/date-modal-trigger to fix/date-modal-trigger
+[33m1f49e2d3[m HEAD@{101}: checkout: moving from feature/dob-validation-fix to fix/date-modal-trigger
+[33mdfd10c34[m[33m ([m[1;31morigin/feature/dob-validation-fix[m[33m, [m[1;32mfeature/dob-validation-fix[m[33m)[m HEAD@{102}: pull: Fast-forward
+[33md97209da[m HEAD@{103}: checkout: moving from feature/dob-validation-fix to feature/dob-validation-fix
+[33md97209da[m HEAD@{104}: pull: Fast-forward
+[33me6ab75db[m HEAD@{105}: pull: Fast-forward
+[33m7703fac1[m HEAD@{106}: pull: Fast-forward
+[33mb2abfd59[m HEAD@{107}: pull: Fast-forward
+[33m0e80e6b0[m HEAD@{108}: pull: Fast-forward
+[33m334edaaa[m HEAD@{109}: pull: Fast-forward
+[33m0986388e[m HEAD@{110}: checkout: moving from feature/refactor-registration-form to feature/dob-validation-fix
+[33mf13c9b60[m[33m ([m[1;31morigin/feature/refactor-registration-form[m[33m, [m[1;32mfeature/refactor-registration-form[m[33m)[m HEAD@{111}: pull: Fast-forward
+[33m57a7576c[m HEAD@{112}: pull: Fast-forward
+[33ma493321c[m HEAD@{113}: pull: Fast-forward
+[33md84e97e1[m HEAD@{114}: pull: Fast-forward
+[33m76c6b2b2[m HEAD@{115}: pull: Fast-forward
+[33mb5cdc245[m HEAD@{116}: pull: Fast-forward
+[33m4abb4d3f[m HEAD@{117}: pull: Fast-forward
+[33med976eb1[m HEAD@{118}: pull: Fast-forward
+[33m2608e52e[m HEAD@{119}: pull: Fast-forward
+[33mc3f49a6b[m HEAD@{120}: pull: Fast-forward
+[33m60d7dad3[m HEAD@{121}: pull: Fast-forward
+[33m4a2be022[m HEAD@{122}: checkout: moving from feat/under-18-modal to feature/refactor-registration-form
+[33m20617ec7[m[33m ([m[1;31morigin/feat/under-18-modal[m[33m, [m[1;32mfeat/under-18-modal[m[33m)[m HEAD@{123}: pull: Fast-forward
+[33m149f06ad[m HEAD@{124}: checkout: moving from global-form-styling to feat/under-18-modal
+[33m846c2a88[m[33m ([m[1;31morigin/global-form-styling[m[33m, [m[1;32mglobal-form-styling[m[33m)[m HEAD@{125}: pull: Fast-forward
+[33m40254f3c[m HEAD@{126}: pull: Fast-forward
+[33md797b64b[m HEAD@{127}: pull: Fast-forward
+[33mf928b4d8[m HEAD@{128}: pull: Fast-forward
+[33me1ce72e1[m HEAD@{129}: pull: Fast-forward
+[33m1aecc7a0[m HEAD@{130}: pull: Fast-forward
+[33m8d4807b2[m HEAD@{131}: pull: Fast-forward
+[33m7c2df699[m HEAD@{132}: pull: Fast-forward
+[33mfb0f8a19[m HEAD@{133}: pull: Fast-forward
+[33mecd002fa[m HEAD@{134}: pull: Fast-forward
+[33mcfa80302[m HEAD@{135}: pull: Fast-forward
+[33m6db7a46e[m HEAD@{136}: pull: Fast-forward
+[33maf720b77[m HEAD@{137}: pull: Fast-forward
+[33m608b58d3[m HEAD@{138}: checkout: moving from fix/form-rendering-errors to global-form-styling
+[33mff57f35f[m[33m ([m[1;31morigin/fix/form-rendering-errors[m[33m, [m[1;32mfix/form-rendering-errors[m[33m)[m HEAD@{139}: checkout: moving from global-form-styling to fix/form-rendering-errors
+[33m608b58d3[m HEAD@{140}: pull: Fast-forward
+[33md6337696[m HEAD@{141}: checkout: moving from global-form-styling to global-form-styling
+[33md6337696[m HEAD@{142}: checkout: moving from global-form-styling to global-form-styling
+[33md6337696[m HEAD@{143}: checkout: moving from fix/form-rendering-errors to global-form-styling
+[33mff57f35f[m[33m ([m[1;31morigin/fix/form-rendering-errors[m[33m, [m[1;32mfix/form-rendering-errors[m[33m)[m HEAD@{144}: pull: Fast-forward
+[33ma403de92[m HEAD@{145}: checkout: moving from global-form-styling to fix/form-rendering-errors
+[33md6337696[m HEAD@{146}: pull: Merge made by the 'ort' strategy.
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{147}: checkout: moving from fix/form-rendering-errors to global-form-styling
+[33ma403de92[m HEAD@{148}: checkout: moving from fix/form-rendering-errors to fix/form-rendering-errors
+[33ma403de92[m HEAD@{149}: checkout: moving from main to fix/form-rendering-errors
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{150}: checkout: moving from main to main
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{151}: checkout: moving from main to main
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{152}: checkout: moving from main to main
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{153}: checkout: moving from main to main
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{154}: merge global-form-styling: Fast-forward
+[33m49b5ae8e[m HEAD@{155}: checkout: moving from global-form-styling to main
+[33m9497719e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfeat/js-form-validation[m[33m, [m[1;32mmain[m[33m)[m HEAD@{156}: pull origin main: Merge made by the 'ort' strategy.
+[33m75ce4135[m HEAD@{157}: pull: Fast-forward
+[33m22982915[m[33m ([m[1;31morigin/respaldo-limpio[m[33m, [m[1;32mrespaldo-limpio[m[33m)[m HEAD@{158}: checkout: moving from main to global-form-styling
+[33m49b5ae8e[m HEAD@{159}: checkout: moving from respaldo-limpio to main
+[33m22982915[m[33m ([m[1;31morigin/respaldo-limpio[m[33m, [m[1;32mrespaldo-limpio[m[33m)[m HEAD@{160}: merge global-form-styling: Fast-forward
+[33m2622d368[m HEAD@{161}: checkout: moving from global-form-styling to respaldo-limpio
+[33m22982915[m[33m ([m[1;31morigin/respaldo-limpio[m[33m, [m[1;32mrespaldo-limpio[m[33m)[m HEAD@{162}: commit: Cambios finales de estilos de formulario, listos para respaldo y limpieza.
+[33ma1d5de34[m HEAD@{163}: pull: Fast-forward
+[33mbe6aacaa[m HEAD@{164}: pull: Fast-forward
+[33m9c5c2d5d[m HEAD@{165}: pull: Fast-forward
+[33m7b34133e[m HEAD@{166}: pull: Fast-forward
+[33m357331ef[m HEAD@{167}: pull: Fast-forward
+[33mf863da35[m HEAD@{168}: pull: Fast-forward
+[33m03d422a5[m HEAD@{169}: pull: Fast-forward
+[33mc088b4c6[m HEAD@{170}: pull: Fast-forward
+[33m889cd36b[m HEAD@{171}: checkout: moving from feature/style-form-inputs to global-form-styling
+[33m12cf8e73[m HEAD@{172}: pull: Fast-forward
+[33m72f86364[m HEAD@{173}: pull: Fast-forward
+[33m439dc62d[m HEAD@{174}: pull: Fast-forward
+[33m1839fc4d[m HEAD@{175}: pull: Fast-forward
+[33mf957b449[m HEAD@{176}: pull: Fast-forward
+[33m0f6110de[m HEAD@{177}: checkout: moving from feature/style-form-inputs to feature/style-form-inputs
+[33m0f6110de[m HEAD@{178}: pull: Fast-forward
+[33m3e8de0ef[m HEAD@{179}: pull: Fast-forward
+[33madd2f688[m HEAD@{180}: pull: Fast-forward
+[33m1ba3fbbf[m HEAD@{181}: pull: Fast-forward
+[33m2d042790[m HEAD@{182}: pull: Fast-forward
+[33m1b1c2967[m HEAD@{183}: pull: Fast-forward
+[33m7aebb389[m HEAD@{184}: pull: Fast-forward
+[33m22ec8b66[m HEAD@{185}: pull: Fast-forward
+[33m4d0d4bd4[m HEAD@{186}: pull: Fast-forward
+[33mf1bd9e83[m HEAD@{187}: checkout: moving from feature/style-form-inputs to feature/style-form-inputs
+[33mf1bd9e83[m HEAD@{188}: pull: Fast-forward
+[33m5cbe7c3e[m HEAD@{189}: pull: Fast-forward
+[33md40eb299[m HEAD@{190}: checkout: moving from feature/modernize-form-styling to feature/style-form-inputs
+[33m6260eb65[m HEAD@{191}: pull: Fast-forward
+[33m9382d91c[m HEAD@{192}: checkout: moving from feature/update-volunteer-registration-route to feature/modernize-form-styling
+[33md997a4b6[m HEAD@{193}: pull: Fast-forward
+[33mdd3f3299[m HEAD@{194}: pull: Fast-forward
+[33m2318599a[m HEAD@{195}: pull: Fast-forward
+[33mccb73583[m HEAD@{196}: pull: Fast-forward
+[33mc38f40d4[m HEAD@{197}: pull: Fast-forward
+[33m45bc3694[m HEAD@{198}: pull: Fast-forward
+[33m574d4630[m HEAD@{199}: pull: Fast-forward
+[33m557bba92[m HEAD@{200}: pull: Fast-forward
+[33ma21f7b21[m HEAD@{201}: pull: Fast-forward
+[33m79ae8292[m HEAD@{202}: pull: Fast-forward
+[33mf4765ed8[m HEAD@{203}: checkout: moving from feat/dashboard-indicativo-login-updates to feature/update-volunteer-registration-route
+[33m55936197[m HEAD@{204}: pull: Fast-forward
+[33mf09ab7c5[m HEAD@{205}: pull: Fast-forward
+[33ma8d3793f[m HEAD@{206}: pull: Fast-forward
+[33m44639bba[m HEAD@{207}: pull: Fast-forward
+[33mcc559a1c[m HEAD@{208}: pull: Fast-forward
+[33mca94a459[m HEAD@{209}: pull: Fast-forward
+[33md8d18c71[m HEAD@{210}: pull: Fast-forward
+[33m46181ac1[m HEAD@{211}: pull: Fast-forward
+[33m7ec25ee5[m HEAD@{212}: pull: Fast-forward
+[33mff46f3fd[m HEAD@{213}: pull: Fast-forward
+[33m20e65528[m HEAD@{214}: pull: Fast-forward
+[33md209d7ba[m HEAD@{215}: pull: Fast-forward
+[33m41c10309[m HEAD@{216}: pull: Fast-forward
+[33m1f96befd[m HEAD@{217}: pull: Fast-forward
+[33md05d147e[m HEAD@{218}: pull: Fast-forward
+[33ma27f06c3[m HEAD@{219}: pull: Fast-forward
+[33mfc52a487[m HEAD@{220}: pull: Fast-forward
+[33m77c12d60[m HEAD@{221}: checkout: moving from fix-user-creation-bug to feat/dashboard-indicativo-login-updates
+[33me838563a[m HEAD@{222}: pull: Fast-forward
+[33m2fee6259[m HEAD@{223}: pull: Fast-forward
+[33m22688428[m HEAD@{224}: pull: Fast-forward
+[33m40ef94bb[m HEAD@{225}: pull: Fast-forward
+[33me681209f[m HEAD@{226}: pull: Fast-forward
+[33m723e2ae3[m HEAD@{227}: pull: Fast-forward
+[33mc09570c2[m HEAD@{228}: checkout: moving from fix/public-registration-layout to fix-user-creation-bug
+[33m08404b4b[m HEAD@{229}: pull: Fast-forward
+[33mfa5cb442[m HEAD@{230}: pull: Fast-forward
+[33m860a4710[m HEAD@{231}: pull: Fast-forward
+[33m5ed62505[m HEAD@{232}: pull: Fast-forward
+[33mf33b3132[m HEAD@{233}: checkout: moving from fix/public-registration-layout to fix/public-registration-layout
+[33mf33b3132[m HEAD@{234}: pull: Fast-forward
+[33m5dfaf31e[m HEAD@{235}: pull: Fast-forward
+[33maa483167[m HEAD@{236}: checkout: moving from main to fix/public-registration-layout
+[33m49b5ae8e[m HEAD@{237}: checkout: moving from main to main
+[33m49b5ae8e[m HEAD@{238}: reset: moving to respaldo-funcional
+[33m08ff46ce[m HEAD@{239}: checkout: moving from respaldo-funcional to main
+[33m49b5ae8e[m HEAD@{240}: checkout: moving from main to respaldo-funcional
+[33m08ff46ce[m HEAD@{241}: checkout: moving from main to main
+[33m08ff46ce[m HEAD@{242}: checkout: moving from respaldo-funcional to main
+[33m49b5ae8e[m HEAD@{243}: checkout: moving from respaldo-funcional to respaldo-funcional
+[33m49b5ae8e[m HEAD@{244}: checkout: moving from main to respaldo-funcional
+[33m08ff46ce[m HEAD@{245}: reset: moving to origin/main
+[33m49b5ae8e[m HEAD@{246}: checkout: moving from main to main
+[33m49b5ae8e[m HEAD@{247}: checkout: moving from fix-authenticator-namespace to main
+[33ma669f372[m HEAD@{248}: checkout: moving from fix-authenticator-namespace to fix-authenticator-namespace
+[33ma669f372[m HEAD@{249}: pull: Fast-forward
+[33mb5624bec[m HEAD@{250}: checkout: moving from respaldo-funcional to fix-authenticator-namespace
+[33m49b5ae8e[m HEAD@{251}: checkout: moving from main to respaldo-funcional
+[33m49b5ae8e[m HEAD@{252}: checkout: moving from fix-authenticator-namespace to main
+[33mb5624bec[m HEAD@{253}: pull: Fast-forward
+[33mead4558f[m HEAD@{254}: checkout: moving from fix-authenticator-namespace to fix-authenticator-namespace
+[33mead4558f[m HEAD@{255}: pull: Fast-forward
+[33maf5bda52[m HEAD@{256}: checkout: moving from main to fix-authenticator-namespace
+[33m49b5ae8e[m HEAD@{257}: reset: moving to respaldo-funcional
+[33m95049e89[m HEAD@{258}: checkout: moving from respaldo-funcional to main
+[33m49b5ae8e[m HEAD@{259}: commit: Reemplazo del logo.png con nueva versión local
+[33m51346158[m[33m ([m[1;33mtag: [m[1;33mv1.0-backup-limpio[m[33m)[m HEAD@{260}: commit: Backup limpio sin dependencias ni archivos temporales
+[33maf5bda52[m HEAD@{261}: checkout: moving from fix-authenticator-namespace to respaldo-funcional
+[33maf5bda52[m HEAD@{262}: pull: Fast-forward
+[33m6fa0ca8a[m HEAD@{263}: pull: Fast-forward
+[33m99fcaa5d[m HEAD@{264}: pull: Fast-forward
+[33m59c7182c[m HEAD@{265}: checkout: moving from fix/configure-mailer-from-address to fix-authenticator-namespace
+[33m09589f38[m HEAD@{266}: checkout: moving from fix/configure-mailer-from-address to fix/configure-mailer-from-address
+[33m09589f38[m HEAD@{267}: checkout: moving from fix/configure-mailer-from-address to fix/configure-mailer-from-address
+[33m09589f38[m HEAD@{268}: pull: Fast-forward
+[33m60da479d[m HEAD@{269}: pull: Fast-forward
+[33mb5174dbd[m HEAD@{270}: pull: Fast-forward
+[33m0e26491d[m HEAD@{271}: pull: Fast-forward
+[33m87f6e459[m HEAD@{272}: pull: Fast-forward
+[33mb083787c[m HEAD@{273}: checkout: moving from feature/enable-real-email-sending to fix/configure-mailer-from-address
+[33med823cd3[m HEAD@{274}: pull: Fast-forward
+[33mf58bc7ee[m HEAD@{275}: checkout: moving from feat/dev-email-preview to feature/enable-real-email-sending
+[33m51a08560[m HEAD@{276}: pull: Fast-forward
+[33mfb25ebea[m HEAD@{277}: pull: Fast-forward
+[33m730d40ed[m HEAD@{278}: checkout: moving from feat/dev-email-preview to feat/dev-email-preview
+[33m730d40ed[m HEAD@{279}: pull: Fast-forward
+[33md1269a8a[m HEAD@{280}: checkout: moving from feat/dev-email-preview to feat/dev-email-preview
+[33md1269a8a[m HEAD@{281}: pull: Fast-forward
+[33me7cff863[m HEAD@{282}: checkout: moving from feat/dev-email-preview to feat/dev-email-preview
+[33me7cff863[m HEAD@{283}: checkout: moving from feat/dev-email-preview to feat/dev-email-preview
+[33me7cff863[m HEAD@{284}: pull: Fast-forward
+[33m7555e53b[m HEAD@{285}: pull: Fast-forward
+[33m489b85fd[m HEAD@{286}: pull: Fast-forward
+[33m0d4ce9ef[m HEAD@{287}: pull: Fast-forward
+[33mbdfc2ffb[m HEAD@{288}: pull: Fast-forward
+[33m3be0409d[m HEAD@{289}: pull: Fast-forward
+[33m88cfe2eb[m HEAD@{290}: pull: Fast-forward
+[33m64096b49[m HEAD@{291}: checkout: moving from feat/recent-activity-feed to feat/dev-email-preview
+[33m48bde135[m HEAD@{292}: checkout: moving from feat/recent-activity-feed to feat/recent-activity-feed
+[33m48bde135[m HEAD@{293}: pull: Merge made by the 'ort' strategy.
+[33maad96403[m HEAD@{294}: pull: Merge made by the 'ort' strategy.
+[33m7c5fc841[m HEAD@{295}: checkout: moving from feat/recent-activity-feed to feat/recent-activity-feed
+[33m7c5fc841[m HEAD@{296}: pull: Merge made by the 'ort' strategy.
+[33m3aa0f073[m HEAD@{297}: checkout: moving from feat/recent-activity-feed to feat/recent-activity-feed
+[33m3aa0f073[m HEAD@{298}: pull: Merge made by the 'ort' strategy.
+[33m3bfe4bd0[m HEAD@{299}: pull: Merge made by the 'ort' strategy.
+[33me161288c[m HEAD@{300}: checkout: moving from feat/recent-activity-feed to feat/recent-activity-feed
+[33me161288c[m HEAD@{301}: pull origin feat/recent-activity-feed: Merge made by the 'ort' strategy.
+[33m38275136[m HEAD@{302}: checkout: moving from main to feat/recent-activity-feed
+[33m95049e89[m HEAD@{303}: commit: Eliminada carpeta migrations completamente
+[33ma1570c15[m HEAD@{304}: checkout: moving from feat/recent-activity-feed to main
+[33m38275136[m HEAD@{305}: commit (merge): Resueltos conflictos tras pull
+[33m5d54324f[m HEAD@{306}: commit: Actualizados los archivos en public/images
+[33mc103d58d[m HEAD@{307}: checkout: moving from feature/sidebar-redesign to feat/recent-activity-feed
+[33mac14b944[m HEAD@{308}: pull: Fast-forward
+[33m0c1d4e1f[m HEAD@{309}: pull: Fast-forward
+[33m1f5cecb9[m HEAD@{310}: pull: Fast-forward
+[33m1b43f9c5[m HEAD@{311}: checkout: moving from feat/sidebar-redesign to feature/sidebar-redesign
+[33m0a716034[m HEAD@{312}: pull: Fast-forward
+[33ma1570c15[m HEAD@{313}: checkout: moving from main to feat/sidebar-redesign
+[33ma1570c15[m HEAD@{314}: merge feat/sidebar-redesign: Fast-forward
+[33m5946af94[m HEAD@{315}: checkout: moving from feat/sidebar-redesign to main
+[33ma1570c15[m HEAD@{316}: checkout: moving from feat/update-login-page-text to feat/sidebar-redesign
+[33m23621b72[m HEAD@{317}: pull origin feat/update-login-page-text: Fast-forward
+[33m4249bab0[m HEAD@{318}: checkout: moving from main to feat/update-login-page-text
+[33m5946af94[m HEAD@{319}: pull origin main --rebase (finish): returning to refs/heads/main
+[33m5946af94[m HEAD@{320}: pull origin main --rebase (pick): Añadir carpeta imagen en public
+[33m4f877dcd[m HEAD@{321}: pull origin main --rebase (start): checkout 4f877dcdeed1d12821ad27318d697ddd2f86e443
+[33m4249bab0[m HEAD@{322}: merge feat/update-login-page-text: Fast-forward
+[33m2622d368[m HEAD@{323}: checkout: moving from feat/update-login-page-text to main
+[33m4249bab0[m HEAD@{324}: commit: Añadir carpeta imagen en public
+[33mff27fe9d[m HEAD@{325}: checkout: moving from feat/update-login-page-text to feat/update-login-page-text
+[33mff27fe9d[m HEAD@{326}: pull: Fast-forward
+[33m5a947aa3[m HEAD@{327}: pull: Fast-forward
+[33m3a082655[m HEAD@{328}: checkout: moving from main to feat/update-login-page-text
+[33m2622d368[m HEAD@{329}: checkout: moving from update-app-name to main
+[33m78d03f28[m[33m ([m[1;31morigin/update-app-name[m[33m)[m HEAD@{330}: checkout: moving from main to update-app-name
+[33m2622d368[m HEAD@{331}: reset: moving to respaldo-limpio
+[33m2622d368[m HEAD@{332}: checkout: moving from main to main
+[33m2622d368[m HEAD@{333}: reset: moving to respaldo-limpio
+[33m2622d368[m HEAD@{334}: checkout: moving from update-app-name to main
+[33m78d03f28[m[33m ([m[1;31morigin/update-app-name[m[33m)[m HEAD@{335}: checkout: moving from main to update-app-name
+[33m2622d368[m HEAD@{336}: reset: moving to respaldo-limpio
+[33m2622d368[m HEAD@{337}: checkout: moving from feat/login-page-customization to main
+[33mbb73a7e7[m[33m ([m[1;31morigin/feat/login-page-customization[m[33m)[m HEAD@{338}: checkout: moving from respaldo-limpio to feat/login-page-customization
+[33m2622d368[m HEAD@{339}: checkout: moving from main to respaldo-limpio
+[33m2622d368[m HEAD@{340}: checkout: moving from feature/update-color-scheme to main
+[33me3a6b5ad[m[33m ([m[1;31morigin/feature/update-color-scheme[m[33m)[m HEAD@{341}: pull: Fast-forward
+[33m184e6f2d[m HEAD@{342}: checkout: moving from main to feature/update-color-scheme
+[33m2622d368[m HEAD@{343}: reset: moving to respaldo-limpio
+[33m0db6ebe4[m HEAD@{344}: checkout: moving from main to main
+[33m0db6ebe4[m HEAD@{345}: checkout: moving from respaldo-limpio to main
+[33m2622d368[m HEAD@{346}: checkout: moving from feature/redesign-youthful-look to respaldo-limpio
+[33mb49eac41[m[33m ([m[1;31morigin/feature/redesign-youthful-look[m[33m)[m HEAD@{347}: pull: Fast-forward
+[33m5c3fe4d4[m HEAD@{348}: pull: Fast-forward
+[33mae6782f5[m HEAD@{349}: pull: Fast-forward
+[33m97d7a56d[m HEAD@{350}: pull: Fast-forward
+[33mf7f86a26[m HEAD@{351}: checkout: moving from feature/redesign-youthful-look to feature/redesign-youthful-look
+[33mf7f86a26[m HEAD@{352}: checkout: moving from main to feature/redesign-youthful-look
+[33m0db6ebe4[m HEAD@{353}: checkout: moving from main to main
+[33m0db6ebe4[m HEAD@{354}: Branch: renamed refs/heads/main to refs/heads/main
+[33m0db6ebe4[m HEAD@{356}: Branch: renamed refs/heads/limpieza to refs/heads/main
+[33m0db6ebe4[m HEAD@{358}: commit (initial): Estado limpio del proyecto
+[33m10e5868d[m HEAD@{359}: commit: Estado limpio del proyecto
+[33m2622d368[m HEAD@{360}: checkout: moving from main to main
+[33m2622d368[m HEAD@{361}: checkout: moving from main to main
+[33m2622d368[m HEAD@{362}: checkout: moving from respaldo-limpio to main
+[33m2622d368[m HEAD@{363}: checkout: moving from feat/vehicle-crud to respaldo-limpio
+[33ma744056b[m[33m ([m[1;31morigin/feat/vehicle-crud[m[33m)[m HEAD@{364}: pull: Fast-forward
+[33m558205f4[m HEAD@{365}: checkout: moving from respaldo-limpio to feat/vehicle-crud
+[33m2622d368[m HEAD@{366}: checkout: moving from main to respaldo-limpio
+[33m2622d368[m HEAD@{367}: checkout: moving from main to main
+[33m2622d368[m HEAD@{368}: checkout: moving from main to main
+[33m2622d368[m HEAD@{369}: merge feat/vehicle-crud: Merge made by the 'ort' strategy.
+[33mdefe385a[m HEAD@{370}: checkout: moving from feat/vehicle-crud to main
+[33m558205f4[m HEAD@{371}: pull: Fast-forward
+[33m0f5fe514[m HEAD@{372}: pull: Fast-forward
+[33mcd55a27f[m HEAD@{373}: pull: Fast-forward
+[33m346f84bc[m HEAD@{374}: checkout: moving from main to feat/vehicle-crud
+[33mdefe385a[m HEAD@{375}: reset: moving to respaldo-limpio
+[33mdefe385a[m HEAD@{376}: checkout: moving from respaldo-limpio to main
+[33mdefe385a[m HEAD@{377}: reset: moving to respaldo-limpio
+[33mdefe385a[m HEAD@{378}: checkout: moving from feature/individual-clock-in-modal to respaldo-limpio
+[33md6359e1d[m HEAD@{379}: checkout: moving from respaldo-limpio to feature/individual-clock-in-modal
+[33mdefe385a[m HEAD@{380}: reset: moving to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{381}: checkout: moving from respaldo-limpio to respaldo-limpio
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{382}: checkout: moving from main to respaldo-limpio
+[33mdefe385a[m HEAD@{383}: commit: Backup limpio del proyecto
+[33m17bcbfe0[m HEAD@{384}: checkout: moving from main to main
+[33m17bcbfe0[m HEAD@{385}: checkout: moving from main to main
+[33m17bcbfe0[m HEAD@{386}: pull origin main: Fast-forward
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{387}: checkout: moving from main to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{388}: checkout: moving from main to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{389}: checkout: moving from feat/fichaje-improvements-and-responsive-views to main
+[33mdfc161c2[m HEAD@{390}: pull: Fast-forward
+[33maf1b7967[m HEAD@{391}: pull: Fast-forward
+[33m7ed221c5[m HEAD@{392}: pull: Fast-forward
+[33m0652f6c4[m HEAD@{393}: pull: Fast-forward
+[33md00734d5[m HEAD@{394}: pull: Fast-forward
+[33m70dbfc34[m HEAD@{395}: pull: Fast-forward
+[33md6359e1d[m HEAD@{396}: checkout: moving from feature/individual-clock-in-modal to feat/fichaje-improvements-and-responsive-views
+[33md6359e1d[m HEAD@{397}: pull origin feat/fichaje-improvements-and-responsive-views: Fast-forward
+[33m31371488[m[33m ([m[1;31morigin/feature/individual-clock-in-modal[m[33m)[m HEAD@{398}: pull: Fast-forward
+[33m63be4754[m HEAD@{399}: checkout: moving from respaldo-limpio-1 to feature/individual-clock-in-modal
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{400}: checkout: moving from respaldo-final-limpio to respaldo-limpio-1
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{401}: checkout: moving from main to respaldo-final-limpio
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{402}: checkout: moving from feature/individual-clock-in-modal to main
+[33m63be4754[m HEAD@{403}: pull: Fast-forward
+[33m7463dc4a[m HEAD@{404}: pull: Fast-forward
+[33m7c98aac0[m HEAD@{405}: checkout: moving from main to feature/individual-clock-in-modal
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{406}: reset: moving to respaldo-limpio
+[33me2e3eba2[m HEAD@{407}: checkout: moving from respaldo-limpio to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{408}: checkout: moving from main to respaldo-limpio
+[33me2e3eba2[m HEAD@{409}: merge origin/feature/sort-fichajes-chronologically: Merge made by the 'ort' strategy.
+[33m999663a8[m HEAD@{410}: checkout: moving from main to main
+[33m999663a8[m HEAD@{411}: checkout: moving from main to main
+[33m999663a8[m HEAD@{412}: checkout: moving from main to main
+[33m999663a8[m HEAD@{413}: checkout: moving from feature/mejoras-informe-fichaje-permisos to main
+[33m58e2de6e[m HEAD@{414}: checkout: moving from main to feature/mejoras-informe-fichaje-permisos
+[33m999663a8[m HEAD@{415}: checkout: moving from main to main
+[33m999663a8[m HEAD@{416}: pull: Merge made by the 'ort' strategy.
+[33mfa076a8a[m HEAD@{417}: merge origin/feature/mejoras-informe-fichaje-permisos: Merge made by the 'ort' strategy.
+[33me1d836e6[m HEAD@{418}: checkout: moving from main to main
+[33me1d836e6[m HEAD@{419}: pull origin main: Merge made by the 'ort' strategy.
+[33m7c7b89a0[m HEAD@{420}: commit: Finaliza merge pendiente con cambios en edit_service.html.twig y nueva migración
+[33m3bbe1e4a[m HEAD@{421}: commit: Finaliza merge pendiente con cambios en edit_service.html.twig
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{422}: merge origin/fix/twig-template-errors: updating HEAD
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{423}: checkout: moving from main to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{424}: checkout: moving from respaldo-limpio to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{425}: checkout: moving from main to respaldo-limpio
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{426}: checkout: moving from main to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{427}: checkout: moving from main to main
+[33mf845d928[m[33m ([m[1;31morigin/respaldo-limpio-1[m[33m)[m HEAD@{428}: pull: Fast-forward
+[33md4796b12[m HEAD@{429}: reset: moving to HEAD
+[33md4796b12[m HEAD@{430}: checkout: moving from fix-undefined-method-isHasAttended to main
+[33m84d86598[m HEAD@{431}: reset: moving to origin/main
+[33m5efe21a7[m HEAD@{432}: commit (merge): Merge branch 'fix-undefined-method-isHasAttended' of https://github.com/Carlos-casal/ssgv into fix-undefined-method-isHasAttended
+[33m71a8ffba[m HEAD@{433}: checkout: moving from main to fix-undefined-method-isHasAttended
+[33md4796b12[m HEAD@{434}: checkout: moving from main to main
+[33md4796b12[m HEAD@{435}: checkout: moving from fix-undefined-method-isHasAttended to main
+[33m71a8ffba[m HEAD@{436}: checkout: moving from main to fix-undefined-method-isHasAttended
+[33md4796b12[m HEAD@{437}: pull: Fast-forward
+[33m7fbada8a[m HEAD@{438}: merge fix/undefined-method-getVolunteerServices: Fast-forward
+[33m90644285[m HEAD@{439}: checkout: moving from fix/undefined-method-getVolunteerServices to main
+[33m7fbada8a[m HEAD@{440}: checkout: moving from feature/volunteer-attendance-improvements to fix/undefined-method-getVolunteerServices
+[33m17555207[m HEAD@{441}: pull: Fast-forward
+[33m321251c3[m HEAD@{442}: pull: Fast-forward
+[33m20cf46aa[m HEAD@{443}: pull: Fast-forward
+[33me8715f3a[m HEAD@{444}: checkout: moving from main to feature/volunteer-attendance-improvements
+[33m90644285[m HEAD@{445}: reset: moving to respaldo-limpio
+[33m26c8a8b2[m HEAD@{446}: checkout: moving from respaldo-limpio to main
+[33m90644285[m HEAD@{447}: checkout: moving from respaldo-inicial-limpio to respaldo-limpio
+[33m32a9ae04[m HEAD@{448}: checkout: moving from respaldo-inicial-limpio to respaldo-inicial-limpio
+[33m32a9ae04[m HEAD@{449}: checkout: moving from respaldo-inicial-limpio to respaldo-inicial-limpio
+[33m32a9ae04[m HEAD@{450}: checkout: moving from respaldo-inicial-limpio to respaldo-inicial-limpio
+[33m32a9ae04[m HEAD@{451}: checkout: moving from feature/enhanced-attendance-fichaje-system to respaldo-inicial-limpio
+[33mfe778f34[m HEAD@{452}: reset: moving to origin/main
+[33mac1c55b8[m HEAD@{453}: checkout: moving from feature/enhanced-attendance-fichaje-system to feature/enhanced-attendance-fichaje-system
+[33mac1c55b8[m HEAD@{454}: pull: Fast-forward
+[33m5bbb9a2d[m HEAD@{455}: checkout: moving from main to feature/enhanced-attendance-fichaje-system
+[33m26c8a8b2[m HEAD@{456}: merge origin/feature/attendance-system-enhancements: Fast-forward
+[33m90644285[m HEAD@{457}: checkout: moving from prueba-attendance to main
+[33m26c8a8b2[m HEAD@{458}: checkout: moving from main to prueba-attendance
+[33m90644285[m HEAD@{459}: reset: moving to respaldo-limpio
+[33m90644285[m HEAD@{460}: checkout: moving from respaldo-limpio to main
+[33m90644285[m HEAD@{461}: checkout: moving from feature/attendance-system-enhancements to respaldo-limpio
+[33m26c8a8b2[m HEAD@{462}: checkout: moving from respaldo-limpio-2025-09-20_1808 to feature/attendance-system-enhancements
+[33m90644285[m HEAD@{463}: checkout: moving from main to respaldo-limpio-2025-09-20_1808
+[33m90644285[m HEAD@{464}: checkout: moving from fix-undefined-method-isHasAttended to main
+[33m71a8ffba[m HEAD@{465}: commit (merge): Merge branch 'main' into fix-undefined-method-isHasAttended
+[33mb9c293bc[m HEAD@{466}: checkout: moving from fix-undefined-method-isHasAttended to fix-undefined-method-isHasAttended
+[33mb9c293bc[m HEAD@{467}: checkout: moving from respaldo-limpio-2025-09-20_1744 to fix-undefined-method-isHasAttended
+[33m90644285[m HEAD@{468}: checkout: moving from main to respaldo-limpio-2025-09-20_1744
+[33m90644285[m HEAD@{469}: checkout: moving from respaldo-limpio to main
+[33m90644285[m HEAD@{470}: checkout: moving from main to respaldo-limpio
+[33m90644285[m HEAD@{471}: checkout: moving from main to main
+[33m90644285[m HEAD@{472}: pull: Fast-forward
+[33m3f7b6345[m HEAD@{473}: pull: Fast-forward
+[33meb10ee74[m HEAD@{474}: pull: Fast-forward
+[33mf4958e29[m HEAD@{475}: pull: Fast-forward
+[33md5c1d39f[m HEAD@{476}: checkout: moving from main to main
+[33md5c1d39f[m HEAD@{477}: pull: Fast-forward
+[33m19bae8ca[m HEAD@{478}: pull: Fast-forward
+[33m755a7236[m HEAD@{479}: pull: Fast-forward
+[33m0e726763[m HEAD@{480}: checkout: moving from main to main
+[33m0e726763[m HEAD@{481}: pull: Fast-forward
+[33m807f5815[m HEAD@{482}: merge feature/update-attendance-confirmation-view: Fast-forward
+[33m32a9ae04[m HEAD@{483}: checkout: moving from main to main
+[33m32a9ae04[m HEAD@{484}: checkout: moving from main to main
+[33m32a9ae04[m HEAD@{485}: checkout: moving from feature/clock-in-all-modal to main
+[33m32a9ae04[m HEAD@{486}: reset: moving to respaldo-inicial-limpio
+[33m77cfc1a0[m HEAD@{487}: checkout: moving from main to feature/clock-in-all-modal
+[33m32a9ae04[m HEAD@{488}: checkout: moving from main to main
+[33m32a9ae04[m HEAD@{489}: checkout: moving from main to main
+[33m32a9ae04[m HEAD@{490}: reset: moving to respaldo-inicial-limpio
+[33m32a9ae04[m HEAD@{491}: checkout: moving from respaldo-inicial-limpio to main
+[33m32a9ae04[m HEAD@{492}: checkout: moving from feature/clock-in-all-modal to respaldo-inicial-limpio
+[33m77cfc1a0[m HEAD@{493}: checkout: moving from respaldo-inicial-limpio to feature/clock-in-all-modal
+[33m32a9ae04[m HEAD@{494}: checkout: moving from respaldo-inicial to respaldo-inicial-limpio
+[33m32a9ae04[m HEAD@{495}: reset: moving to main
+[33m32a9ae04[m HEAD@{496}: reset: moving to main
+[33mbcae6390[m HEAD@{497}: checkout: moving from main to respaldo-inicial
+[33m32a9ae04[m HEAD@{498}: commit (merge): Finaliza merge pendiente en main
+[33mbcae6390[m HEAD@{499}: reset: moving to respaldo-inicial
+[33m85ccaa22[m HEAD@{500}: checkout: moving from respaldo-inicial to main
+[33mbcae6390[m HEAD@{501}: checkout: moving from feature/remove-volunteer-from-attendance-list to respaldo-inicial
+[33m2bb694bb[m HEAD@{502}: pull: Fast-forward
+[33m7b08a303[m HEAD@{503}: checkout: moving from feature/remove-volunteer-from-attendance-list to feature/remove-volunteer-from-attendance-list
+[33m7b08a303[m HEAD@{504}: checkout: moving from feature/remove-volunteer-from-attendance-list to feature/remove-volunteer-from-attendance-list
+[33m7b08a303[m HEAD@{505}: checkout: moving from respaldo-inicial to feature/remove-volunteer-from-attendance-list
+[33mbcae6390[m HEAD@{506}: reset: moving to HEAD
+[33mbcae6390[m HEAD@{507}: reset: moving to respaldo-inicial
+[33mbcae6390[m HEAD@{508}: checkout: moving from respaldo-inicial to respaldo-inicial
+[33mbcae6390[m HEAD@{509}: checkout: moving from feature/asistencia-listado to respaldo-inicial
+[33m24f373da[m HEAD@{510}: reset: moving to origin/main
+[33m0cdeb9da[m HEAD@{511}: checkout: moving from respaldo-inicial to feature/asistencia-listado
+[33mbcae6390[m HEAD@{512}: merge feature/volunteer-list-modal: Fast-forward
+[33m85ccaa22[m HEAD@{513}: checkout: moving from feature/volunteer-list-modal to respaldo-inicial
+[33mbcae6390[m HEAD@{514}: commit: Actualización de dependencias y controlador de servicios
+[33m6cb008c9[m HEAD@{515}: pull: Fast-forward
+[33m9c04b603[m HEAD@{516}: pull: Fast-forward
+[33m9ab2527b[m HEAD@{517}: pull: Fast-forward
+[33m9514d6a0[m HEAD@{518}: pull: Fast-forward
+[33m91decb9b[m HEAD@{519}: pull: Fast-forward
+[33md94a8c13[m HEAD@{520}: pull: Fast-forward
+[33m40c2a812[m HEAD@{521}: pull: Fast-forward
+[33mfafbab64[m HEAD@{522}: pull: Fast-forward
+[33me64c9aaf[m HEAD@{523}: pull: Fast-forward
+[33m7073ce62[m HEAD@{524}: pull: Fast-forward
+[33mbb113c90[m HEAD@{525}: pull: Fast-forward
+[33md0e11a1f[m HEAD@{526}: pull: Fast-forward
+[33m9f46ea79[m HEAD@{527}: checkout: moving from main to feature/volunteer-list-modal
+[33m85ccaa22[m HEAD@{528}: reset: moving to respaldo-inicial
+[33m79fad452[m HEAD@{529}: checkout: moving from confirmacion-asistenca to main
+[33md187120f[m HEAD@{530}: checkout: moving from respaldo-inicial to confirmacion-asistenca
+[33m85ccaa22[m HEAD@{531}: reset: moving to HEAD
+[33m85ccaa22[m HEAD@{532}: checkout: moving from fix/unregistered-volunteers-list to respaldo-inicial
+[33m2f8fc687[m HEAD@{533}: reset: moving to HEAD
+[33m2f8fc687[m HEAD@{534}: checkout: moving from fix/unregistered-volunteers-list to fix/unregistered-volunteers-list
+[33m2f8fc687[m HEAD@{535}: checkout: moving from fix/volunteer-search to fix/unregistered-volunteers-list
+[33m9771074c[m HEAD@{536}: pull: Fast-forward
+[33m068bf6fa[m HEAD@{537}: pull: Fast-forward
+[33m999292c3[m HEAD@{538}: checkout: moving from dev-auto-login to fix/volunteer-search
+[33m1582bdc9[m HEAD@{539}: checkout: moving from fix/volunteer-list-permissions to dev-auto-login
+[33m2f8fb96f[m HEAD@{540}: checkout: moving from dev-auto-login to fix/volunteer-list-permissions
+[33m1582bdc9[m HEAD@{541}: pull origin dev-auto-login: Fast-forward
+[33mb631ab13[m HEAD@{542}: checkout: moving from main to dev-auto-login
+[33m79fad452[m HEAD@{543}: checkout: moving from main to main
+[33m79fad452[m HEAD@{544}: checkout: moving from main to main
+[33m79fad452[m HEAD@{545}: checkout: moving from respaldo-inicial-local to main
+[33m85ccaa22[m HEAD@{546}: checkout: moving from copia-main to respaldo-inicial-local
+[33m85ccaa22[m HEAD@{547}: checkout: moving from respaldo-inicial to copia-main
+[33m85ccaa22[m HEAD@{548}: reset: moving to HEAD
+[33m85ccaa22[m HEAD@{549}: checkout: moving from respaldo-inicial to respaldo-inicial
+[33m85ccaa22[m HEAD@{550}: checkout: moving from dev-auto-login to respaldo-inicial
+[33mb631ab13[m HEAD@{551}: pull origin dev-auto-login: Fast-forward
+[33m64fa6e14[m HEAD@{552}: checkout: moving from respaldo-inicial to dev-auto-login
+[33m85ccaa22[m HEAD@{553}: checkout: moving from dev-auto-login to respaldo-inicial
+[33m64fa6e14[m HEAD@{554}: pull: Fast-forward
+[33m4814da65[m HEAD@{555}: pull: Fast-forward
+[33m7aee934f[m HEAD@{556}: pull: Fast-forward
+[33mb2e06f28[m HEAD@{557}: checkout: moving from dev-auto-login to dev-auto-login
+[33mb2e06f28[m HEAD@{558}: pull: Fast-forward
+[33m8a391723[m HEAD@{559}: checkout: moving from feature/admin-auto-login to dev-auto-login
+[33maef09791[m HEAD@{560}: checkout: moving from feature/admin-auto-login to feature/admin-auto-login
+[33maef09791[m HEAD@{561}: pull origin feature/admin-auto-login: Fast-forward
+[33m2350637b[m HEAD@{562}: checkout: moving from feature/admin-auto-login to feature/admin-auto-login
+[33m2350637b[m HEAD@{563}: checkout: moving from main to feature/admin-auto-login
+[33m79fad452[m HEAD@{564}: reset: moving to origin/main
+[33m85ccaa22[m HEAD@{565}: checkout: moving from respaldo-inicial to main
+[33m85ccaa22[m HEAD@{566}: checkout: moving from main to respaldo-inicial
+[33m85ccaa22[m HEAD@{567}: reset: moving to 85ccaa22
+[33m3984ef2b[m HEAD@{568}: checkout: moving from feature/auto-login-test-env to main
+[33m85ccaa22[m HEAD@{569}: reset: moving to 85ccaa22
+[33m85ccaa22[m HEAD@{570}: reset: moving to 85ccaa22
+[33m728ffe7f[m HEAD@{571}: pull: Fast-forward
+[33m42a8fdda[m HEAD@{572}: pull: Fast-forward
+[33m08d9c883[m HEAD@{573}: checkout: moving from fix/volunteer-loading-and-admin-autologin to feature/auto-login-test-env
+[33m85ccaa22[m HEAD@{574}: reset: moving to 85ccaa22
+[33m8bd3054b[m HEAD@{575}: reset: moving to 8bd3054b
+[33m5de9f929[m HEAD@{576}: pull: Fast-forward
+[33m8bd3054b[m HEAD@{577}: reset: moving to 8bd3054b
+[33m5de9f929[m HEAD@{578}: pull: Fast-forward
+[33m91fc7798[m HEAD@{579}: checkout: moving from fix/volunteer-loading-and-admin-autologin to fix/volunteer-loading-and-admin-autologin
+[33m91fc7798[m HEAD@{580}: pull: Fast-forward
+[33m8bd3054b[m HEAD@{581}: checkout: moving from fix/volunteer-loading-and-admin-autologin to fix/volunteer-loading-and-admin-autologin
+[33m8bd3054b[m HEAD@{582}: reset: moving to 8bd3054b
+[33m91fc7798[m HEAD@{583}: checkout: moving from feature/add-volunteer-modal to fix/volunteer-loading-and-admin-autologin
+[33m9a1af4fa[m HEAD@{584}: pull: Fast-forward
+[33m85ccaa22[m HEAD@{585}: reset: moving to 85ccaa22
+[33m9a1af4fa[m HEAD@{586}: pull origin feature/add-volunteer-modal: Fast-forward
+[33m85ccaa22[m HEAD@{587}: checkout: moving from feature/add-volunteer-modal to feature/add-volunteer-modal
+[33m85ccaa22[m HEAD@{588}: reset: moving to 85ccaa22
+[33m9a1af4fa[m HEAD@{589}: reset: moving to origin/feature/add-volunteer-modal
+[33m9a1af4fa[m HEAD@{590}: pull: Fast-forward
+[33m85ccaa22[m HEAD@{591}: pull: Fast-forward
+[33m3d1bff27[m HEAD@{592}: checkout: moving from feature/add-volunteer-modal to feature/add-volunteer-modal
+[33m3d1bff27[m HEAD@{593}: checkout: moving from feature/add-volunteer-modal to feature/add-volunteer-modal
+[33m3d1bff27[m HEAD@{594}: checkout: moving from fix-tasks-field to feature/add-volunteer-modal
+[33m7bf95bbd[m HEAD@{595}: reset: moving to origin/fix-tasks-field
+[33m4f71656e[m HEAD@{596}: pull: Merge made by the 'ort' strategy.
+[33mfdd2f764[m HEAD@{597}: pull: Merge made by the 'ort' strategy.
+[33m5d85fa8c[m HEAD@{598}: pull origin main: Merge made by the 'ort' strategy.
+[33md69d8808[m HEAD@{599}: checkout: moving from c38b2403abd1afd44010818ca34d9458f3d4f74d to fix-tasks-field
+[33mc38b2403[m HEAD@{600}: checkout: moving from fix-tasks-field to origin/feature/update-service-form-styles
+[33md69d8808[m HEAD@{601}: pull: Merge made by the 'ort' strategy.
+[33mb9738899[m HEAD@{602}: reset: moving to HEAD
+[33mb9738899[m HEAD@{603}: merge main: Merge made by the 'ort' strategy.
+[33m2b263569[m HEAD@{604}: checkout: moving from fix-tasks-field to fix-tasks-field
+[33m2b263569[m HEAD@{605}: pull: Fast-forward
+[33m48f62fa6[m HEAD@{606}: reset: moving to origin/fix-tasks-field
+[33mcc0ead89[m HEAD@{607}: reset: moving to HEAD
+[33mcc0ead89[m HEAD@{608}: reset: moving to origin/main
+[33mb5395171[m HEAD@{609}: pull: Fast-forward
+[33m050b321b[m HEAD@{610}: checkout: moving from main to fix-tasks-field
+[33m3984ef2b[m HEAD@{611}: pull --ff-only: Fast-forward
+[33m628ae35e[m HEAD@{612}: checkout: moving from main to main
+[33m628ae35e[m HEAD@{613}: Branch: renamed refs/heads/master to refs/heads/main
+[33m628ae35e[m HEAD@{615}: reset: moving to origin/main
+[33m628ae35e[m HEAD@{616}: reset: moving to origin/main
+[33m628ae35e[m HEAD@{617}: reset: moving to origin/main
+[33m79a1a838[m HEAD@{618}: reset: moving to origin/main
