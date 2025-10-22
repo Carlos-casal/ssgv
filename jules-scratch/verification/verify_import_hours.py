@@ -11,11 +11,11 @@ def run(playwright):
     page.fill('input[name="password"]', 'admin')
     page.click('button[type="submit"]')
 
-    # Go to communications page
-    page.goto("http://localhost:8000/admin/communications/talkies")
+    # Go to import hours page
+    page.goto("http://localhost:8000/admin/import-hours")
 
     # Take screenshot
-    page.screenshot(path="jules-scratch/verification/communications.png")
+    page.screenshot(path="jules-scratch/verification/import-hours.png")
 
     browser.close()
 

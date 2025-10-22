@@ -27,18 +27,47 @@ use Symfony\Component\Routing\Annotation\Route;
 class CommunicationsController extends AbstractController
 {
     #[Route('/', name: 'app_admin_communications_index', methods: ['GET'])]
-    public function index(
-        TalkieRepository $talkieRepository,
-        BatteryRepository $batteryRepository,
-        PttRepository $pttRepository,
-        MobileRepository $mobileRepository,
-        PhoneModelRepository $phoneModelRepository
-    ): Response {
-        return $this->render('admin/communications/index.html.twig', [
+    public function index(): Response
+    {
+        return $this->redirectToRoute('app_admin_communications_talkies');
+    }
+
+    #[Route('/talkies', name: 'app_admin_communications_talkies', methods: ['GET'])]
+    public function indexTalkies(TalkieRepository $talkieRepository): Response
+    {
+        return $this->render('admin/communications/talkie/index.html.twig', [
             'talkies' => $talkieRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/batteries', name: 'app_admin_communications_batteries', methods: ['GET'])]
+    public function indexBatteries(BatteryRepository $batteryRepository): Response
+    {
+        return $this->render('admin/communications/battery/index.html.twig', [
             'batteries' => $batteryRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/ptts', name: 'app_admin_communications_ptts', methods: ['GET'])]
+    public function indexPtts(PttRepository $pttRepository): Response
+    {
+        return $this->render('admin/communications/ptt/index.html.twig', [
             'ptts' => $pttRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/mobiles', name: 'app_admin_communications_mobiles', methods: ['GET'])]
+    public function indexMobiles(MobileRepository $mobileRepository): Response
+    {
+        return $this->render('admin/communications/mobile/index.html.twig', [
             'mobiles' => $mobileRepository->findAll(),
+        ]);
+    }
+
+    #[Route('/phone-models', name: 'app_admin_communications_phone_models', methods: ['GET'])]
+    public function indexPhoneModels(PhoneModelRepository $phoneModelRepository): Response
+    {
+        return $this->render('admin/communications/phone_model/index.html.twig', [
             'phone_models' => $phoneModelRepository->findAll(),
         ]);
     }
@@ -56,7 +85,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Talkie creado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_talkies', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/talkie/new.html.twig', [
@@ -76,7 +105,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Talkie actualizado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_talkies', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/talkie/edit.html.twig', [
@@ -95,7 +124,7 @@ class CommunicationsController extends AbstractController
             $this->addFlash('success', 'Talkie eliminado con éxito.');
         }
 
-        return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_communications_talkies', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/battery/new', name: 'app_admin_battery_new', methods: ['GET', 'POST'])]
@@ -111,7 +140,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Batería creada con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_batteries', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/battery/new.html.twig', [
@@ -131,7 +160,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Batería actualizada con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_batteries', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/battery/edit.html.twig', [
@@ -150,7 +179,7 @@ class CommunicationsController extends AbstractController
             $this->addFlash('success', 'Batería eliminada con éxito.');
         }
 
-        return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_communications_batteries', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/ptt/new', name: 'app_admin_ptt_new', methods: ['GET', 'POST'])]
@@ -166,7 +195,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'PTT creado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_ptts', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/ptt/new.html.twig', [
@@ -186,7 +215,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'PTT actualizado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_ptts', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/ptt/edit.html.twig', [
@@ -205,7 +234,7 @@ class CommunicationsController extends AbstractController
             $this->addFlash('success', 'PTT eliminado con éxito.');
         }
 
-        return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_communications_ptts', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/mobile/new', name: 'app_admin_mobile_new', methods: ['GET', 'POST'])]
@@ -221,7 +250,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Móvil creado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_mobiles', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/mobile/new.html.twig', [
@@ -241,7 +270,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Móvil actualizado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_mobiles', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/mobile/edit.html.twig', [
@@ -260,7 +289,7 @@ class CommunicationsController extends AbstractController
             $this->addFlash('success', 'Móvil eliminado con éxito.');
         }
 
-        return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_communications_mobiles', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/phone-model/new', name: 'app_admin_phone_model_new', methods: ['GET', 'POST'])]
@@ -276,7 +305,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Modelo de teléfono creado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_phone_models', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/phone_model/new.html.twig', [
@@ -296,7 +325,7 @@ class CommunicationsController extends AbstractController
 
             $this->addFlash('success', 'Modelo de teléfono actualizado con éxito.');
 
-            return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_admin_communications_phone_models', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('admin/communications/phone_model/edit.html.twig', [
@@ -315,6 +344,6 @@ class CommunicationsController extends AbstractController
             $this->addFlash('success', 'Modelo de teléfono eliminado con éxito.');
         }
 
-        return $this->redirectToRoute('app_admin_communications_index', [], Response::HTTP_SEE_OTHER);
+        return $this->redirectToRoute('app_admin_communications_phone_models', [], Response::HTTP_SEE_OTHER);
     }
 }
