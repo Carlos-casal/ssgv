@@ -2,12 +2,9 @@
 
 {% block title %}Detalles del Servicio: {{ service.title }}{% endblock %}
 
-{% block page_title %}{{ service.title }}{% endblock %}
-
-{% block main_class %}py-0{% endblock %}
-
 {% block content %}
-    <div class="container mx-auto px-4">
+<div class="container mx-auto px-4 py-8">
+
     {# Flash Messages #}
     {% for label, messages in app.flashes %}
         {% for message in messages %}

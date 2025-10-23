@@ -24,8 +24,8 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-4 border-b border-gray-200">
             <ul class="flex gap-6">
-                <li><a href="#" class="pb-2 border-b-2 border-blue-600 text-blue-600 font-semibold">Abiertos</a></li>
-                <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Archivados</a></li>
+                <li><a href="{{ path('app_services_list', {'status': 'abiertos'}) }}" class="pb-2 {{ status == 'abiertos' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600' }}">Abiertos</a></li>
+                <li><a href="{{ path('app_services_list', {'status': 'archivados'}) }}" class="pb-2 {{ status == 'archivados' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600' }}">Archivados</a></li>
                 <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Ayuda</a></li>
             </ul>
         </div>
@@ -55,7 +55,7 @@
                                 <td class="p-2 text-sm">{{ service.type ?? 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.category ?? 'N/A' }}</td>
                                 <td class="p-2 text-sm">
-                                    {% if is_granted('ROLE_VOLUNTEER') %}
+                                    {% if is_granted('ROLE_VOLUNTEER') and not service.isArchived %}
                                         {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
                                             <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
                                                 No Asistir
@@ -65,13 +65,28 @@
                                                 Asistir
                                             </a>
                                         {% endif %}
-                                    {% else %}
-                                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
-                                            <i data-lucide="edit" class="w-4 h-4"></i>
-                                        </a>
-                                        <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
-                                            <i data-lucide="users" class="w-4 h-4"></i>
-                                        </a>
+                                    {% elseif is_granted('ROLE_ADMIN') %}
+                                        <div class="relative inline-block text-left group">
+                                            <button type="button" class="inline-flex justify-center w-full rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" id="options-menu" aria-haspopup="true" aria-expanded="true">
+                                                <i data-lucide="more-vertical" class="w-4 h-4"></i>
+                                            </button>
+                                            <div class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10 hidden group-hover:block" role="menu" aria-orientation="vertical" aria-labelledby="options-menu">
+                                                <div class="py-1" role="none">
+                                                    <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Editar</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Imprimir</a>
+                                                    {% if not service.isArchived %}
+                                                    <form action="{{ path('app_service_archive', {'id': service.id}) }}" method="post" class="w-full">
+                                                        <input type="hidden" name="_token" value="{{ csrf_token('archive' ~ service.id) }}">
+                                                        <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">
+                                                            Archivar
+                                                        </button>
+                                                    </form>
+                                                    {% endif %}
+                                                    <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100" role="menuitem">Duplicar</a>
+                                                    <a href="#" class="block px-4 py-2 text-sm text-red-700 hover:bg-red-50" role="menuitem">Eliminar</a>
+                                                </div>
+                                            </div>
+                                        </div>
                                     {% endif %}
                                 </td>
                             </tr>
