@@ -30,6 +30,15 @@
             <div class="relative">{{ form_row(form.dateOfBirth, {'attr': {'data-action': 'change->form-validation#validate'}}) }}</div>
             <div class="relative">{{ form_row(form.phone, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
             <div class="relative">{{ form_row(form.email, {'attr': {'data-action': 'input->form-validation#validate'}}) }}</div>
+            <div class="relative">
+                {{ form_label(form.indicativo) }}
+                {{ form_widget(form.indicativo) }}
+                <datalist id="indicativos-list">
+                    {% for indicativo in available_indicativos %}
+                        <option value="{{ indicativo }}">
+                    {% endfor %}
+                </datalist>
+            </div>
         </div>
     </div>
 
