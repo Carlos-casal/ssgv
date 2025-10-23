@@ -30,19 +30,23 @@ class ServiceController extends AbstractController
      *
      * @param ServiceRepository $serviceRepository The repository for services.
      * @param \Symfony\Bundle\SecurityBundle\Security $security The security component to get the current user.
+     * @param string $status The status of services to display ('abiertos' or 'archivados').
      * @return Response The response object, rendering the service list page.
      */
-    #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
-    public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
+    #[Route('/servicios/{status}', name: 'app_services_list', methods: ['GET'], defaults: ['status' => 'abiertos'])]
+    public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security, string $status): Response
     {
         $user = $security->getUser();
-        $services = $serviceRepository->findAll();
+
+        $isArchived = ($status === 'archivados');
+        $services = $serviceRepository->findBy(['isArchived' => $isArchived]);
 
         if (empty($services)) {
             return $this->render('service/list_service.html.twig', [
                 'services' => [],
                 'attendeesByService' => [],
                 'assistanceByService' => [],
+                'status' => $status,
             ]);
         }
 
@@ -73,6 +77,7 @@ class ServiceController extends AbstractController
             'services' => $services,
             'attendeesByService' => $attendeesByService,
             'assistanceByService' => $assistanceByService,
+            'status' => $status,
         ]);
     }
 
@@ -215,6 +220,28 @@ class ServiceController extends AbstractController
             'form' => $form->createView(),
             'fichajes' => $fichajesByVolunteer,
         ]);
+    }
+
+    /**
+     * Archives a service.
+     *
+     * @param Request $request The request object.
+     * @param Service $service The service to archive.
+     * @param EntityManagerInterface $entityManager The entity manager.
+     * @return Response A redirection to the service list.
+     */
+    #[Route('/servicios/{id}/archivar', name: 'app_service_archive', methods: ['POST'])]
+    public function archive(Request $request, Service $service, EntityManagerInterface $entityManager): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        if ($this->isCsrfTokenValid('archive'.$service->getId(), $request->request->get('_token'))) {
+            $service->setArchived(true);
+            $entityManager->flush();
+            $this->addFlash('success', 'El servicio ha sido archivado.');
+        }
+
+        return $this->redirectToRoute('app_services_list');
     }
 
     /**
@@ -625,7 +652,6 @@ class ServiceController extends AbstractController
 
         return $this->render('service/my_services.html.twig', [
             'servicesByYear' => $servicesByYear,
-            'totalDurationByYear' => $totalDurationByYear,
             'totalDurationCurrentYear' => $totalDurationCurrentYear,
             'lastService' => $lastService,
         ]);

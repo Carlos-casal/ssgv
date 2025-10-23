@@ -119,6 +119,12 @@ class Service
     private ?\DateTimeImmutable $updatedAt = null;
 
     /**
+     * @var bool Indicates if the service is archived and should not appear in the main list.
+     */
+    #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
+    private bool $isArchived = false;
+
+    /**
      * @var bool Indicates if this service is in collaboration with other entities.
      */
     #[ORM\Column(type: Types::BOOLEAN, options: ['default' => false])]
@@ -559,6 +565,27 @@ class Service
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+        return $this;
+    }
+
+    /**
+     * Checks if the service is archived.
+     * @return bool
+     */
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    /**
+     * Sets whether the service is archived.
+     * @param bool $isArchived True if the service is archived.
+     * @return static
+     */
+    public function setArchived(bool $isArchived): static
+    {
+        $this->isArchived = $isArchived;
+
         return $this;
     }
 

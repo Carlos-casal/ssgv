@@ -54,7 +54,7 @@
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
         <div>
             <h2 class="text-2xl font-bold text-gray-900">Mis Servicios Realizados</h2>
-            {% if totalDurationCurrentYear is defined and totalDurationCurrentYear > 0 %}
+            {% if totalDurationCurrentYear is defined %}
                 {% set hours = (totalDurationCurrentYear / 60)|round(0, 'floor') %}
                 {% set minutes = totalDurationCurrentYear % 60 %}
                 <p class="text-gray-600">Total de horas realizadas este año: <span class="font-semibold text-blue-600">{{ hours ~ 'h ' ~ minutes ~ 'm' }}</span></p>
@@ -82,11 +82,6 @@
         <div class="bg-white rounded-xl shadow-md border border-gray-200">
             <div class="p-4 border-b border-gray-200">
                 <h3 class="text-xl font-semibold text-gray-800">{{ year }}</h3>
-                {% if totalDurationByYear[year] is defined %}
-                    {% set hours = (totalDurationByYear[year] / 60)|round(0, 'floor') %}
-                    {% set minutes = totalDurationByYear[year] % 60 %}
-                    <p class="text-sm text-gray-600 mt-1">Total de horas realizadas en {{ year }}: <span class="font-semibold text-blue-600">{{ hours ~ 'h ' ~ minutes ~ 'm' }}</span></p>
-                {% endif %}
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full responsive-table">
