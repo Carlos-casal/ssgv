@@ -21,7 +21,7 @@ class CsvImportService
 
     public function import(UploadedFile $file): array
     {
-        $report = ['success' => 0, 'errors' => []];
+        $report = ['success' => 0, 'errors' => [], 'skipped' => 0];
 
         $fileHandle = fopen($file->getRealPath(), 'r');
         if ($fileHandle === false) {
@@ -55,7 +55,7 @@ class CsvImportService
             }
 
             $rowData = array_combine($header, $row);
-            $volunteerName = $rowData['VOLUNTARIO'];
+            $volunteerName = trim($rowData['VOLUNTARIO']);
 
             $volunteer = $this->entityManager->getRepository(Volunteer::class)->findOneBy(['name' => $volunteerName]);
 
@@ -69,9 +69,9 @@ class CsvImportService
                 $dateKey = "FECHA_{$i}";
                 $conceptKey = "COMENTARIO_{$i}";
 
-                if (!empty($rowData[$hoursKey]) && !empty($rowData[$dateKey]) && !empty($rowData[$conceptKey])) {
-                    $serviceName = $rowData[$conceptKey];
-                    $dateString = $rowData[$dateKey];
+                if (isset($rowData[$hoursKey]) && isset($rowData[$dateKey]) && isset($rowData[$conceptKey]) && !empty($rowData[$hoursKey]) && !empty($rowData[$dateKey]) && !empty($rowData[$conceptKey])) {
+                    $serviceName = trim($rowData[$conceptKey]);
+                    $dateString = trim($rowData[$dateKey]);
                     $date = $this->parseDate($dateString);
 
                     if ($date === false) {
@@ -89,23 +89,8 @@ class CsvImportService
                         $endsAt = (clone $date)->modify('+' . round($hours * 3600) . ' seconds');
                         $service->setEndDate($endsAt);
                         $this->entityManager->persist($service);
-                        $this->entityManager->flush(); // Flush to get service ID
+                        $this->entityManager->flush();
                     }
-
-                    // Create AssistanceConfirmation to mark the volunteer as an attendee
-                    $assistance = $this->entityManager->getRepository(AssistanceConfirmation::class)->findOneBy([
-                        'volunteer' => $volunteer,
-                        'service' => $service,
-                    ]);
-
-                    if (!$assistance) {
-                        $assistance = new AssistanceConfirmation();
-                        $assistance->setVolunteer($volunteer);
-                        $assistance->setService($service);
-                        $this->entityManager->persist($assistance);
-                    }
-                    $assistance->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
-
 
                     $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
                         'volunteer' => $volunteer,
@@ -118,6 +103,29 @@ class CsvImportService
                         $volunteerService->setService($service);
                         $this->entityManager->persist($volunteerService);
                     }
+
+                    $existingFichaje = $this->entityManager->getRepository(Fichaje::class)->findOneBy([
+                        'volunteerService' => $volunteerService,
+                        'startTime' => $date,
+                    ]);
+
+                    if ($existingFichaje) {
+                        $report['skipped']++;
+                        continue;
+                    }
+
+                    $assistance = $this->entityManager->getRepository(AssistanceConfirmation::class)->findOneBy([
+                        'volunteer' => $volunteer,
+                        'service' => $service,
+                    ]);
+
+                    if (!$assistance) {
+                        $assistance = new AssistanceConfirmation();
+                        $assistance->setVolunteer($volunteer);
+                        $assistance->setService($service);
+                        $this->entityManager->persist($assistance);
+                    }
+                    $assistance->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
 
                     $fichaje = new Fichaje();
                     $fichaje->setVolunteerService($volunteerService);
@@ -140,6 +148,12 @@ class CsvImportService
 
     private function parseDate(string $dateString): \DateTime|false
     {
+        // Handle DD/MM/YYYY format
+        $date = \DateTime::createFromFormat('d/m/Y', $dateString);
+        if ($date && $date->format('d/m/Y') === $dateString) {
+            return $date->setTime(0, 0);
+        }
+
         // Handle date ranges like "01-31/12"
         if (preg_match('/^(\d{1,2})-(\d{1,2})\/(\d{1,2})$/', $dateString, $matches)) {
             $day = $matches[1];
@@ -158,8 +172,6 @@ class CsvImportService
             return $date ? $date->setTime(0, 0) : false;
         }
 
-        // Handle dates like "DD/MM/YYYY"
-        $date = \DateTime::createFromFormat('d/m/Y', $dateString);
-        return $date ? $date->setTime(0, 0) : false;
+        return false;
     }
 }

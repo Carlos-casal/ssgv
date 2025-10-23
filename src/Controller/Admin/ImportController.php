@@ -23,15 +23,23 @@ class ImportController extends AbstractController
             if ($csvFile) {
                 $report = $csvImportService->import($csvFile);
 
-                if (empty($report['errors']) && $report['success'] > 0) {
-                    $this->addFlash('success', "¡Importación completada! Se han añadido {$report['success']} registros de horas.");
-                } elseif (!empty($report['errors'])) {
-                    $this->addFlash('danger', 'La importación ha fallado. Por favor, revisa los siguientes errores:');
+                if ($report['success'] > 0) {
+                    $this->addFlash('success', "¡Importación completada! Se han añadido {$report['success']} nuevos registros de horas.");
+                }
+
+                if ($report['skipped'] > 0) {
+                    $this->addFlash('info', "Se omitieron {$report['skipped']} registros porque ya existían.");
+                }
+
+                if (!empty($report['errors'])) {
+                    $this->addFlash('danger', 'La importación ha fallado para algunos registros. Por favor, revisa los siguientes errores:');
                     foreach ($report['errors'] as $error) {
                         $this->addFlash('danger', $error);
                     }
-                } else {
-                    $this->addFlash('warning', 'El archivo ha sido procesado, pero no se ha importado ningún registro. Revisa el formato del archivo o que no esté vacío.');
+                }
+
+                if ($report['success'] == 0 && empty($report['errors']) && $report['skipped'] == 0) {
+                    $this->addFlash('warning', 'El archivo ha sido procesado, pero no se ha importado ningún registro nuevo. Revisa el formato del archivo o que no esté vacío.');
                 }
             }
 
