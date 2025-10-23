@@ -6,13 +6,9 @@ use App\Service\CsvImportService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 
 class ImportController extends AbstractController
 {
-    /**
-     * @Route("/admin/import-hours", name="admin_import_hours")
-     */
     public function index(Request $request, CsvImportService $csvImportService): Response
     {
         if ($request->isMethod('POST')) {
