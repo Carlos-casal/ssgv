@@ -19,7 +19,7 @@ class CsvImportService
         $this->entityManager = $entityManager;
     }
 
-    public function import(UploadedFile $file): array
+    public function import(UploadedFile $file, string $year): array
     {
         $report = ['success' => 0, 'errors' => [], 'skipped' => 0];
 
@@ -72,14 +72,21 @@ class CsvImportService
                 if (isset($rowData[$hoursKey]) && isset($rowData[$dateKey]) && isset($rowData[$conceptKey]) && !empty($rowData[$hoursKey]) && !empty($rowData[$dateKey]) && !empty($rowData[$conceptKey])) {
                     $serviceName = trim($rowData[$conceptKey]);
                     $dateString = trim($rowData[$dateKey]);
-                    $date = $this->parseDate($dateString);
+                    $date = $this->parseDate($dateString, $year);
 
                     if ($date === false) {
                         $report['errors'][] = "Fila {$rowNumber}: Formato de fecha inválido para '{$dateString}'.";
                         continue;
                     }
 
-                    $service = $this->entityManager->getRepository(Service::class)->findOneBy(['title' => $serviceName]);
+                    $serviceRepo = $this->entityManager->getRepository(Service::class);
+                    $service = $serviceRepo->createQueryBuilder('s')
+                        ->where('s.title = :title')
+                        ->andWhere('s.startDate = :date')
+                        ->setParameter('title', $serviceName)
+                        ->setParameter('date', $date)
+                        ->getQuery()
+                        ->getOneOrNullResult();
 
                     if (!$service) {
                         $service = new Service();
@@ -146,9 +153,9 @@ class CsvImportService
         return $report;
     }
 
-    private function parseDate(string $dateString): \DateTime|false
+    private function parseDate(string $dateString, string $year): \DateTime|false
     {
-        // Handle DD/MM/YYYY format
+        // Handle DD/MM/YYYY format first
         $date = \DateTime::createFromFormat('d/m/Y', $dateString);
         if ($date && $date->format('d/m/Y') === $dateString) {
             return $date->setTime(0, 0);
@@ -158,7 +165,6 @@ class CsvImportService
         if (preg_match('/^(\d{1,2})-(\d{1,2})\/(\d{1,2})$/', $dateString, $matches)) {
             $day = $matches[1];
             $month = $matches[3];
-            $year = date('Y');
             $date = \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
             return $date ? $date->setTime(0, 0) : false;
         }
@@ -167,7 +173,6 @@ class CsvImportService
         if (preg_match('/^(\d{1,2})\/(\d{1,2})$/', $dateString, $matches)) {
             $day = $matches[1];
             $month = $matches[2];
-            $year = date('Y');
             $date = \DateTime::createFromFormat('d/m/Y', "$day/$month/$year");
             return $date ? $date->setTime(0, 0) : false;
         }
