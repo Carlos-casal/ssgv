@@ -7,8 +7,6 @@ use App\Entity\Service;
 use App\Entity\Volunteer;
 use App\Entity\VolunteerService;
 use Doctrine\ORM\EntityManagerInterface;
-use League\Csv\Reader;
-use League\Csv\Statement;
 
 class CsvImportService
 {
@@ -21,20 +19,31 @@ class CsvImportService
 
     public function import(string $filePath, int $year): array
     {
-        $csv = Reader::createFromPath($filePath, 'r');
-        $csv->setDelimiter(';');
-        $csv->setHeaderOffset(0);
-
-        $stmt = (new Statement());
-        $records = $stmt->process($csv);
-
         $successfulImports = 0;
         $errors = [];
+
+        if (($handle = fopen($filePath, 'r')) === false) {
+            $errors[] = "No se pudo abrir el archivo CSV.";
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
+
+        // Leer la cabecera
+        $header = fgetcsv($handle, 1000, ';');
+        if ($header === false) {
+            $errors[] = "No se pudo leer la cabecera del archivo CSV.";
+            fclose($handle);
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
 
         $volunteerRepo = $this->entityManager->getRepository(Volunteer::class);
         $serviceRepo = $this->entityManager->getRepository(Service::class);
 
-        foreach ($records as $record) {
+        while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+            if (count($header) !== count($data)) {
+                continue; // O manejar el error de una fila con un número incorrecto de columnas
+            }
+            $record = array_combine($header, $data);
+
             $indicativo = $record['N° VOLUNTARIO'];
             $volunteer = $volunteerRepo->findOneBy(['indicativo' => $indicativo]);
 
@@ -111,6 +120,7 @@ class CsvImportService
             }
         }
 
+        fclose($handle);
         $this->entityManager->flush();
 
         return [
