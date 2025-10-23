@@ -51,8 +51,6 @@ class VolunteerController extends AbstractController
     ): Response {
         $searchTerm = $request->query->get('search', '');
         $filterStatus = $request->query->get('status', 'all');
-        $sort = $request->query->get('sort', 'name');
-        $direction = $request->query->get('direction', 'asc');
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
             ->leftJoin('v.user', 'u')
@@ -72,14 +70,6 @@ class VolunteerController extends AbstractController
         if ($filterStatus !== 'all') {
             $queryBuilder->andWhere('v.status = :status')
                          ->setParameter('status', $filterStatus);
-        }
-
-        $allowedSortFields = ['name', 'phone', 'indicativo'];
-        if (in_array($sort, $allowedSortFields)) {
-            $direction = strtolower($direction) === 'desc' ? 'DESC' : 'ASC';
-            $queryBuilder->orderBy('v.' . $sort, $direction);
-        } else {
-            $queryBuilder->orderBy('v.name', 'ASC');
         }
 
         $pagination = $paginator->paginate(
