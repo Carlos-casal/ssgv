@@ -1,20 +1,9 @@
-{% extends 'base.html.twig' %}
+{% extends 'layout/app.html.twig' %}
 
 {% block page_title %}Importar Horas desde CSV{% endblock %}
-{% block page_header %}
-    <h1 class="text-2xl font-bold text-gray-900">Importar Horas desde CSV</h1>
-{% endblock %}
 
-{% block main %}
+{% block content %}
     <div class="bg-white p-6 rounded-lg shadow-md">
-        {% for label, messages in app.flashes %}
-            {% for message in messages %}
-                <div class="alert alert-{{ label }} mb-4 p-4 rounded-md {% if label == 'success' %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                    {{ message }}
-                </div>
-            {% endfor %}
-        {% endfor %}
-
         <p class="mb-4 text-gray-700">
             Sube un archivo CSV para importar las horas de los voluntarios. El archivo debe tener las siguientes columnas:
             <code class="bg-gray-200 p-1 rounded">N° VOLUNTARIO</code>,
