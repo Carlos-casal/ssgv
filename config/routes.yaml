@@ -1,3 +1,5 @@
-admin_import_hours:
-    path: /admin/import-hours
-    controller: App\Controller\Admin\ImportController::index
+controllers:
+    resource:
+        path: ../src/Controller/
+        namespace: App\Controller
+    type: attribute
