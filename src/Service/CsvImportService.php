@@ -47,17 +47,30 @@ class CsvImportService
             $volunteerMap[$fullName] = $vol;
         }
 
+        $rowNumber = 1;
         while (($data = fgetcsv($handle, 1000, ';')) !== false) {
-            if (count($header) !== count($data)) {
-                continue; // O manejar el error de una fila con un número incorrecto de columnas
+            $rowNumber++;
+
+            if (count($header) > count($data)) {
+                $errors[] = "Fila {$rowNumber}: La fila tiene menos columnas que la cabecera, se omite.";
+                continue;
             }
+
+            if (count($header) < count($data)) {
+                $data = array_slice($data, 0, count($header));
+            }
+
             $record = array_combine($header, $data);
 
-            // Use the 'VOLUNTARIO' column and normalize the name
-            $csvVolunteerName = strtolower(trim(preg_replace('/\s+/', ' ', $record['VOLUNTARIO'])));
+            $volunteerName = trim($record['VOLUNTARIO']);
+            if (empty($volunteerName)) {
+                continue;
+            }
+
+            $csvVolunteerName = strtolower(trim(preg_replace('/\s+/', ' ', $volunteerName)));
 
             if (!isset($volunteerMap[$csvVolunteerName])) {
-                $errors[] = "Voluntario con nombre '{$record['VOLUNTARIO']}' no encontrado.";
+                $errors[] = "Fila {$rowNumber}: Voluntario con nombre '{$volunteerName}' no encontrado.";
                 continue;
             }
             $volunteer = $volunteerMap[$csvVolunteerName];
@@ -67,9 +80,19 @@ class CsvImportService
                 $dateStr = $record['FECHA_' . $i];
                 $title = $record['COMENTARIO_' . $i];
 
+                if (empty($hoursStr) && empty($dateStr) && empty($title)) {
+                    continue; // Skip empty service entries at the end of a row
+                }
+
                 if (empty($hoursStr) || empty($dateStr) || empty($title)) {
+                    $missing = [];
+                    if (empty($hoursStr)) $missing[] = 'HORAS_' . $i;
+                    if (empty($dateStr)) $missing[] = 'FECHA_' . $i;
+                    if (empty($title)) $missing[] = 'COMENTARIO_' . $i;
+                    $errors[] = "Fila {$rowNumber}: Faltan datos para la entrada de servicio {$i} ('" . implode(', ', $missing) . "'). Se omite esta entrada.";
                     continue;
                 }
+
 
                 try {
                     // Handle date ranges like "01-02/01"
@@ -85,7 +108,7 @@ class CsvImportService
                        if ($startDate !== false) {
                            $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
                        } else {
-                            $errors[] = "Formato de fecha inválido para '{$dateStr}' en la fila del voluntario {$volunteer->getName()} {$volunteer->getLastName()}.";
+                            $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para '{$volunteerName}'.";
                             continue;
                        }
                     }
@@ -125,7 +148,7 @@ class CsvImportService
 
                     $successfulImports++;
                 } catch (\Exception $e) {
-                    $errors[] = "Error procesando registro para voluntario {$indicativo} y servicio '{$title}': " . $e->getMessage();
+                    $errors[] = "Fila {$rowNumber}, Servicio {$i}: Error procesando registro para '{$volunteerName}' y servicio '{$title}': " . $e->getMessage();
                 }
             }
         }
