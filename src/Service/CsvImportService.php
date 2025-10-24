@@ -63,9 +63,9 @@ class CsvImportService
         while (($data = fgetcsv($handle, 1000, ';')) !== false) {
             $rowNumber++;
 
-            // Convert all data in the row to UTF-8
+            // Convert all data in the row to UTF-8 from ISO-8859-1 (common in Windows-generated CSVs)
             $data = array_map(function($d) {
-                return mb_convert_encoding($d, 'UTF-8', 'auto');
+                return mb_convert_encoding($d, 'UTF-8', 'ISO-8859-1');
             }, $data);
 
             if (count($header) > count($data)) {
