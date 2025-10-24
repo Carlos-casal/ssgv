@@ -203,9 +203,14 @@
 </style>
 
 <script>
-    function setupSidebarHover() {
+    function setupSidebar() {
         const nav = document.getElementById('main-nav');
         if (!nav) return;
+
+        // Re-render Lucide icons on Turbo navigation
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
 
         const closeSubmenu = (submenu) => {
             // Recursively close all descendant submenus that are open
@@ -267,6 +272,6 @@
         });
     }
 
-    document.addEventListener('turbo:load', setupSidebarHover);
-    document.addEventListener('DOMContentLoaded', setupSidebarHover);
+    document.addEventListener('turbo:load', setupSidebar);
+    document.addEventListener('DOMContentLoaded', setupSidebar);
 </script>
