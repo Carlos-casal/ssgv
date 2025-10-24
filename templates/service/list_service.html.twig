@@ -46,7 +46,14 @@
                             <tr class="border-b border-gray-200">
                                 <td class="p-2 text-sm">{{ service.numeration ?? 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.title }}</td>
-                                <td class="p-2 text-sm">{{ attendeesByService[service.id] | default(0) }}</td>
+                                <td class="p-2 text-sm">
+                                    {% set attendees = service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                    {% if attendees|length > 0 %}
+                                        {{ attendees|map(c => c.volunteer.name)|join(', ') }}
+                                    {% else %}
+                                        0
+                                    {% endif %}
+                                </td>
                                 <td class="p-2 text-sm">{{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.type ?? 'N/A' }}</td>
