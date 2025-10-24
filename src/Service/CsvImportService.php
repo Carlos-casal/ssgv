@@ -38,19 +38,29 @@ class CsvImportService
         $volunteerRepo = $this->entityManager->getRepository(Volunteer::class);
         $serviceRepo = $this->entityManager->getRepository(Service::class);
 
+        // Pre-cache all volunteers for faster lookup
+        $allVolunteers = $volunteerRepo->findAll();
+        $volunteerMap = [];
+        foreach ($allVolunteers as $vol) {
+            // Normalize the name for consistent matching
+            $fullName = strtolower(trim(preg_replace('/\s+/', ' ', $vol->getFullName())));
+            $volunteerMap[$fullName] = $vol;
+        }
+
         while (($data = fgetcsv($handle, 1000, ';')) !== false) {
             if (count($header) !== count($data)) {
                 continue; // O manejar el error de una fila con un número incorrecto de columnas
             }
             $record = array_combine($header, $data);
 
-            $indicativo = $record['N° VOLUNTARIO'];
-            $volunteer = $volunteerRepo->findOneBy(['indicativo' => $indicativo]);
+            // Use the 'VOLUNTARIO' column and normalize the name
+            $csvVolunteerName = strtolower(trim(preg_replace('/\s+/', ' ', $record['VOLUNTARIO'])));
 
-            if (!$volunteer) {
-                $errors[] = "Voluntario con indicativo '{$indicativo}' no encontrado.";
+            if (!isset($volunteerMap[$csvVolunteerName])) {
+                $errors[] = "Voluntario con nombre '{$record['VOLUNTARIO']}' no encontrado.";
                 continue;
             }
+            $volunteer = $volunteerMap[$csvVolunteerName];
 
             for ($i = 1; isset($record['HORAS_' . $i]); $i++) {
                 $hoursStr = $record['HORAS_' . $i];
@@ -75,7 +85,7 @@ class CsvImportService
                        if ($startDate !== false) {
                            $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
                        } else {
-                            $errors[] = "Formato de fecha inválido para '{$dateStr}' en la fila del voluntario {$indicativo}.";
+                            $errors[] = "Formato de fecha inválido para '{$dateStr}' en la fila del voluntario {$volunteer->getFullName()}.";
                             continue;
                        }
                     }
