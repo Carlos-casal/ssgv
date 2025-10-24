@@ -120,13 +120,15 @@ class CsvImportService
                     $dateStr = trim($startDay) . '/' . trim($month);
                 }
 
-                $startDate = \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr . '/' . $year . ' 00:00:00');
+                $startDate = \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr . ' 00:00:00');
+
                 if ($startDate === false) {
+                    // Try d/m format and add the year from the form
                     $startDate = \DateTime::createFromFormat('d/m H:i:s', $dateStr . ' 00:00:00');
                     if ($startDate !== false) {
                         $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
                     } else {
-                        $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para el voluntario con N° '{$indicativo}'.";
+                        $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para el voluntario con N° '{$indicativo}'. Se esperaba 'd/m/Y' o 'd/m'.";
                         continue;
                     }
                 }
