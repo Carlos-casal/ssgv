@@ -11,9 +11,10 @@
         <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
         {{ importmap('app') }}
     </head>
-    <body class="bg-gray-50">
+    <body class="bg-gray-50" data-controller="icon">
         {% block body %}{% endblock %}
         
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
         {% block javascripts %}{% endblock %}
     </body>
 </html>
