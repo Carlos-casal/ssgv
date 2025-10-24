@@ -1,0 +1,237 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Crear Nuevo Servicio{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+        }
+        .form-group .form-error {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        #quill-editor, #tasks-editor {
+            height: 300px;
+        }
+    </style>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" data-controller="service-form">
+    <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
+    <div class="bg-white shadow-xl rounded-2xl p-8">
+        {{ form_start(form, {
+            'attr': {
+                'class': 'space-y-10',
+                'name': 'service',
+                'id': 'service-form',
+                'data-service-form-target': 'form',
+                'data-redirect-url': path('app_services_list')
+            }
+        }) }}
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(form.numeration, 'Numeración') }}
+                {{ form_widget(form.numeration) }}
+                <div class="form-error">{{ form_errors(form.numeration) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.title, 'Título') }}
+                {{ form_widget(form.title) }}
+                <div class="form-error">{{ form_errors(form.title) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.locality, 'Lugar') }}
+                {{ form_widget(form.locality) }}
+                <div class="form-error">{{ form_errors(form.locality) }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(form.startDate, 'Inicio') }}
+                {{ form_widget(form.startDate) }}
+                <div class="form-error">{{ form_errors(form.startDate) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.timeAtBase, 'Base') }}
+                {{ form_widget(form.timeAtBase) }}
+                <div class="form-error">{{ form_errors(form.timeAtBase) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.departureTime, 'Salida') }}
+                {{ form_widget(form.departureTime) }}
+                <div class="form-error">{{ form_errors(form.departureTime) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.endDate, 'Fin') }}
+                {{ form_widget(form.endDate) }}
+                <div class="form-error">{{ form_errors(form.endDate) }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-x-8 gap-y-6">
+            <div class="form-group">
+                {{ form_label(form.registrationLimitDate, 'Límite') }}
+                {{ form_widget(form.registrationLimitDate) }}
+                <div class="form-error">{{ form_errors(form.registrationLimitDate) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.maxAttendees, 'Asistentes') }}
+                {{ form_widget(form.maxAttendees) }}
+                <div class="form-error">{{ form_errors(form.maxAttendees) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.type, 'Tipo') }}
+                {{ form_widget(form.type) }}
+                <div class="form-error">{{ form_errors(form.type) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.category, 'Categoría') }}
+                {{ form_widget(form.category) }}
+                <div class="form-error">{{ form_errors(form.category) }}</div>
+            </div>
+        </div>
+
+        <div>
+            <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Recursos</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Ambulancia 🚑</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            {{ form_label(form.numSvb, 'SVB') }}
+                            {{ form_widget(form.numSvb) }}
+                            <div class="form-error">{{ form_errors(form.numSvb) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numSva, 'SVA') }}
+                            {{ form_widget(form.numSva) }}
+                            <div class="form-error">{{ form_errors(form.numSva) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numSvae, 'SVAE') }}
+                            {{ form_widget(form.numSvae) }}
+                            <div class="form-error">{{ form_errors(form.numSvae) }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Personal Sanitario 🥼🩺</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            {{ form_label(form.numDoctors, 'Medico') }}
+                            {{ form_widget(form.numDoctors) }}
+                            <div class="form-error">{{ form_errors(form.numDoctors) }}</div>
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numDues, 'Enfermeria') }}
+                            <div class="grid grid-cols-2 gap-4">
+                                {{ form_widget(form.numDues, {'attr': {'placeholder': 'DUE'}}) }}
+                                {{ form_widget(form.numTecnicos, {'attr': {'placeholder': 'Técnicos'}}) }}
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="form-error">{{ form_errors(form.numDues) }}</div>
+                                <div class="form-error">{{ form_errors(form.numTecnicos) }}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold mb-4">Otros</h4>
+                    <div class="space-y-4">
+                        <div class="form-group">
+                            {{ form_label(form.afluencia, 'Afluencia 📈') }}
+                            {{ form_widget(form.afluencia) }}
+                            <div class="form-error">{{ form_errors(form.afluencia) }}</div>
+                        </div>
+                        <div class="flex items-center pt-3">
+                            {{ form_widget(form.hasFieldHospital) }}
+                            {{ form_label(form.hasFieldHospital, 'Hospital de Campaña 🏥', {'label_attr': {'class': 'ml-3'}}) }}
+                            <div class="form-error">{{ form_errors(form.hasFieldHospital) }}</div>
+                        </div>
+                        <div class="flex items-center">
+                            {{ form_widget(form.hasProvisions) }}
+                            {{ form_label(form.hasProvisions, 'Avituallamiento 🥪', {'label_attr': {'class': 'ml-3'}}) }}
+                            <div class="form-error">{{ form_errors(form.hasProvisions) }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-10">
+            <div class="form-group">
+                {{ form_label(form.tasks, 'Tareas 📝') }}
+                <div data-service-form-target="quillTasks" style="height: 300px;"></div>
+                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-service-form-target': 'tasks'}}) }}
+                <div class="form-error">{{ form_errors(form.tasks) }}</div>
+            </div>
+            <div class="form-group">
+                {{ form_label(form.description, 'Descripción ℹ️') }}
+                <div data-service-form-target="quillDescription" style="height: 300px;"></div>
+                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-service-form-target': 'description'}}) }}
+                <div class="form-error">{{ form_errors(form.description) }}</div>
+            </div>
+        </div>
+
+        <div style="display:none;">
+            {{ form_row(form.recipients) }}
+            {{ form_row(form.numNurses) }}
+            {{ form_row(form.whatsappMessage) }}
+        </div>
+
+        {{ form_rest(form) }}
+
+        <div class="flex items-center justify-end mt-10 pt-6 border-t border-gray-200">
+            <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
+                Volver a la Lista
+            </a>
+            <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 ml-4">
+                Guardar Servicio
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+</div>
+<!-- WhatsApp Share Modal -->
+<div data-service-form-target="whatsappModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <h3 class="text-3xl font-bold text-gray-900 text-center mb-4">Servicio Guardado con Éxito</h3>
+        <p class="text-gray-600 text-center mb-6">
+            Revisa y edita el mensaje antes de compartirlo en WhatsApp.
+        </p>
+        <textarea data-service-form-target="whatsappMessageTextarea" class="w-full h-56 p-4 border border-gray-300 rounded-lg shadow-inner focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+        <div class="flex justify-center items-center mt-6 space-x-4">
+            <button data-service-form-target="shareWhatsappButton" class="px-6 py-3 bg-green-500 text-white font-semibold rounded-lg shadow-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-transform transform hover:scale-105">
+                Compartir en WhatsApp
+            </button>
+            <button data-service-form-target="closeModalButton" class="px-6 py-3 bg-gray-300 text-gray-800 font-semibold rounded-lg shadow-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-transform transform hover:scale-105">
+                Cerrar
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}

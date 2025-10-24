@@ -1,0 +1,67 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Detalles del Servicio: {{ service.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8">
+
+    {# Flash Messages #}
+    {% for label, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="bg-{{ label == 'success' ? 'green' : 'blue' }}-100 border-l-4 border-{{ label == 'success' ? 'green' : 'blue' }}-500 text-{{ label == 'success' ? 'green' : 'blue' }}-700 p-4 mb-6" role="alert">
+                <p class="font-bold">{{ label == 'success' ? 'Éxito' : 'Información' }}</p>
+                <p>{{ message }}</p>
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="flex justify-between items-center border-b pb-4 mb-6">
+            <h1 class="text-3xl font-bold text-gray-800">{{ service.title }}</h1>
+            <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors">
+                &larr; Volver a la Lista
+            </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">Detalles</h3>
+                <p><strong>Lugar:</strong> {{ service.locality }}</p>
+                <p><strong>Inicio:</strong> {{ service.startDate|date('d/m/Y H:i') }}</p>
+                <p><strong>Fin:</strong> {{ service.endDate|date('d/m/Y H:i') }}</p>
+                <p><strong>Hora en Base:</strong> {{ service.timeAtBase|date('H:i') }}</p>
+                <p><strong>Hora de Salida:</strong> {{ service.departureTime|date('H:i') }}</p>
+            </div>
+            <div>
+                <h3 class="text-lg font-semibold text-gray-700">Recursos</h3>
+                <p><strong>Ambulancias:</strong> {{ service.numSvb|default(0) }} SVB, {{ service.numSva|default(0) }} SVA, {{ service.numSvae|default(0) }} SVAE</p>
+                <p><strong>Personal:</strong> {{ service.numDoctors|default(0) }} Médicos, {{ service.numNurses|default(0) }} Enfermeros</p>
+                <p><strong>Afluencia:</strong> {{ service.afluencia|capitalize }}</p>
+                <p><strong>Hospital de Campaña:</strong> {{ service.hasFieldHospital ? 'Sí' : 'No' }}</p>
+                <p><strong>Avituallamiento:</strong> {{ service.hasProvisions ? 'Sí' : 'No' }}</p>
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700">Tareas</h3>
+            <div class="prose max-w-none bg-gray-50 p-4 rounded-md mt-2">
+                {{ service.tasks|raw }}
+            </div>
+        </div>
+
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold text-gray-700">Decisión</h3>
+            <div class="prose max-w-none bg-gray-50 p-4 rounded-md mt-2">
+                {{ service.description|raw }}
+            </div>
+        </div>
+
+        <div class="mt-8 pt-6 border-t text-center">
+            <a href="{{ whatsappLink }}" target="_blank" class="inline-flex items-center bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg text-lg shadow-lg transition-transform transform hover:scale-105">
+                <svg class="w-6 h-6 mr-3" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.894 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.886-.001 2.267.651 4.383 1.873 6.223l.225.341-1.251 4.605 4.753-1.241.332.194z"/></svg>
+                Compartir en WhatsApp
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

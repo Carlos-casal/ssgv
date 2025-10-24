@@ -1,0 +1,14 @@
+twig:
+    file_name_pattern: '*.twig'
+    form_themes: ['bootstrap_5_layout.html.twig']
+    globals:
+        # Permite acceder a los parámetros de services.yaml en las plantillas Twig
+        # Por ejemplo: {{ app_locales }}
+        locales: '%app.locales%'
+
+when@test:
+    twig:
+        strict_variables: true
+services:
+    # Asegúrate de que esta línea exista para registrar la extensión de Twig
+    Twig\Extra\Intl\IntlExtension: ~
