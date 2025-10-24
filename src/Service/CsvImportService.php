@@ -22,9 +22,6 @@ class CsvImportService
         $successfulImports = 0;
         $errors = [];
 
-        // Set locale to handle UTF-8 characters correctly
-        setlocale(LC_ALL, 'en_US.UTF-8');
-
         if (($handle = fopen($filePath, 'r')) === false) {
             $errors[] = "No se pudo abrir el archivo CSV.";
             return ['successful_imports' => 0, 'errors' => $errors];
@@ -65,6 +62,11 @@ class CsvImportService
         $rowNumber = 1;
         while (($data = fgetcsv($handle, 1000, ';')) !== false) {
             $rowNumber++;
+
+            // Convert all data in the row to UTF-8
+            $data = array_map(function($d) {
+                return mb_convert_encoding($d, 'UTF-8', 'auto');
+            }, $data);
 
             if (count($header) > count($data)) {
                 $errors[] = "Fila {$rowNumber}: La fila tiene menos columnas que la cabecera, se omite.";
