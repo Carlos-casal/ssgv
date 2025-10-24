@@ -43,7 +43,7 @@ class CsvImportService
         $volunteerMap = [];
         foreach ($allVolunteers as $vol) {
             // Normalize the name for consistent matching
-            $fullName = strtolower(trim(preg_replace('/\s+/', ' ', $vol->getFullName())));
+            $fullName = strtolower(trim(preg_replace('/\s+/', ' ', $vol->getName() . ' ' . $vol->getLastName())));
             $volunteerMap[$fullName] = $vol;
         }
 
@@ -85,7 +85,7 @@ class CsvImportService
                        if ($startDate !== false) {
                            $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
                        } else {
-                            $errors[] = "Formato de fecha inválido para '{$dateStr}' en la fila del voluntario {$volunteer->getFullName()}.";
+                            $errors[] = "Formato de fecha inválido para '{$dateStr}' en la fila del voluntario {$volunteer->getName()} {$volunteer->getLastName()}.";
                             continue;
                        }
                     }
