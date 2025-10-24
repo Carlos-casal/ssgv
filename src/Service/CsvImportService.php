@@ -85,13 +85,23 @@ class CsvImportService
             }
             $volunteer = $volunteerMap[$indicativo];
 
-            for ($i = 1; isset($record['HORAS_' . $i]); $i++) {
-                $hoursStr = $record['HORAS_' . $i];
-                $dateStr = $record['FECHA_' . $i];
-                $title = $record['COMENTARIO_' . $i];
+            for ($i = 1; $i < 100; $i++) { // Limit to 99 service entries per row for safety
+                if (!isset($record['HORAS_' . $i])) {
+                    break; // No more service columns in this row
+                }
+
+                // Ensure all parts of the service entry exist
+                if (!isset($record['FECHA_' . $i]) || !isset($record['COMENTARIO_' . $i])) {
+                    $errors[] = "Fila {$rowNumber}: Entrada de servicio {$i} incompleta (faltan FECHA o COMENTARIO). Se omite.";
+                    continue;
+                }
+
+                $hoursStr = trim($record['HORAS_' . $i]);
+                $dateStr = trim($record['FECHA_' . $i]);
+                $title = trim($record['COMENTARIO_' . $i]);
 
                 if (empty($hoursStr) && empty($dateStr) && empty($title)) {
-                    continue; // Skip empty service entries at the end of a row
+                    continue; // Skip completely empty service entries
                 }
 
                 if (empty($hoursStr) || empty($dateStr) || empty($title)) {
