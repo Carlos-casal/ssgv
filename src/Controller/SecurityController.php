@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -12,7 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Psr\Container\ContainerInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -42,31 +43,39 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Automatically logs in a user, intended for development environments only.
-     * This method bypasses the standard password authentication for quick access during development.
+     * Automatically logs in a user based on their ID. Intended for development environments only.
      *
      * @param Request $request The request object.
-     * @param User $user The user to log in.
-     * @param KernelInterface $kernel The application kernel to check the environment.
-     * @param ContainerInterface $container The service container to dispatch events.
+     * @param int $id The ID of the user to log in.
+     * @param KernelInterface $kernel The application kernel.
+     * @param UserRepository $userRepository The user repository.
+     * @param EventDispatcherInterface $eventDispatcher The event dispatcher.
      * @return Response A redirection to the dashboard.
-     * @throws AccessDeniedHttpException If not in 'dev' environment or user is not an admin.
      */
-    public function autoLogin(Request $request, User $user, KernelInterface $kernel, ContainerInterface $container): Response
-    {
+    #[Route('/auto-login/{id}', name: 'app_auto_login', requirements: ['id' => '\d+'])]
+    public function autoLogin(
+        Request $request,
+        int $id,
+        KernelInterface $kernel,
+        UserRepository $userRepository,
+        EventDispatcherInterface $eventDispatcher
+    ): Response {
         if ('dev' !== $kernel->getEnvironment()) {
             throw new AccessDeniedHttpException('This action is only available in the dev environment.');
         }
 
-        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            throw new AccessDeniedHttpException('Auto-login is only available for admins.');
+        $user = $userRepository->find($id);
+
+        if (!$user) {
+            throw $this->createNotFoundException('User not found');
         }
 
+        // Manually create and dispatch the login event
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        $container->get('security.token_storage')->setToken($token);
+        $this->container->get('security.token_storage')->setToken($token);
 
         $event = new InteractiveLoginEvent($request, $token);
-        $container->get('event_dispatcher')->dispatch($event);
+        $eventDispatcher->dispatch($event);
 
         return $this->redirectToRoute('app_dashboard');
     }
