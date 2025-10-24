@@ -22,6 +22,9 @@ class CsvImportService
         $successfulImports = 0;
         $errors = [];
 
+        // Set locale to handle UTF-8 characters correctly
+        setlocale(LC_ALL, 'en_US.UTF-8');
+
         if (($handle = fopen($filePath, 'r')) === false) {
             $errors[] = "No se pudo abrir el archivo CSV.";
             return ['successful_imports' => 0, 'errors' => $errors];
