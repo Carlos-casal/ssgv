@@ -27,10 +27,22 @@ class CsvImportService
             return ['successful_imports' => 0, 'errors' => $errors];
         }
 
+        // Check for UTF-8 BOM
+        $bom = fread($handle, 3);
+        if ($bom !== "\xef\xbb\xbf") {
+            rewind($handle);
+        }
+
         // Leer la cabecera
         $header = fgetcsv($handle, 1000, ';');
         if ($header === false) {
             $errors[] = "No se pudo leer la cabecera del archivo CSV.";
+            fclose($handle);
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
+
+        if (!in_array('VOLUNTARIO', $header)) {
+            $errors[] = "La cabecera del CSV debe contener una columna llamada 'VOLUNTARIO'.";
             fclose($handle);
             return ['successful_imports' => 0, 'errors' => $errors];
         }
@@ -93,63 +105,58 @@ class CsvImportService
                     continue;
                 }
 
-
-                try {
-                    // Handle date ranges like "01-02/01"
-                    if (strpos($dateStr, '-') !== false && strpos($dateStr, '/') !== false) {
-                        list($startDay, $endDayMonth) = explode('-', $dateStr);
-                        list($endDay, $month) = explode('/', $endDayMonth);
-                        $dateStr = trim($startDay) . '/' . trim($month);
-                    }
-
-                    $startDate = \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr . '/' . $year . ' 00:00:00');
-                    if ($startDate === false) {
-                       $startDate = \DateTime::createFromFormat('d/m H:i:s', $dateStr . ' 00:00:00');
-                       if ($startDate !== false) {
-                           $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
-                       } else {
-                            $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para '{$volunteerName}'.";
-                            continue;
-                       }
-                    }
-
-                    // Convert hours (e.g., "7,5") to interval
-                    $hours = (float)str_replace(',', '.', $hoursStr);
-                    $interval = new \DateInterval('PT' . (int)$hours . 'H' . (int)(($hours * 60) % 60) . 'M');
-                    $endDate = (clone $startDate)->add($interval);
-
-                    $service = $serviceRepo->findOneBy(['title' => $title, 'startDate' => $startDate]);
-
-                    if (!$service) {
-                        $service = new Service();
-                        $service->setTitle($title);
-                        $service->setStartDate($startDate);
-                        $service->setEndDate($endDate); // Assume service duration is the first entry's duration
-                        $this->entityManager->persist($service);
-                    }
-
-                    $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
-                        'volunteer' => $volunteer,
-                        'service' => $service,
-                    ]);
-
-                    if (!$volunteerService) {
-                        $volunteerService = new VolunteerService();
-                        $volunteerService->setVolunteer($volunteer);
-                        $volunteerService->setService($service);
-                        $this->entityManager->persist($volunteerService);
-                    }
-
-                    $fichaje = new Fichaje();
-                    $fichaje->setVolunteerService($volunteerService);
-                    $fichaje->setClockIn(clone $startDate);
-                    $fichaje->setClockOut($endDate);
-                    $this->entityManager->persist($fichaje);
-
-                    $successfulImports++;
-                } catch (\Exception $e) {
-                    $errors[] = "Fila {$rowNumber}, Servicio {$i}: Error procesando registro para '{$volunteerName}' y servicio '{$title}': " . $e->getMessage();
+                // Handle date ranges like "01-02/01"
+                if (strpos($dateStr, '-') !== false && strpos($dateStr, '/') !== false) {
+                    list($startDay, $endDayMonth) = explode('-', $dateStr);
+                    list($endDay, $month) = explode('/', $endDayMonth);
+                    $dateStr = trim($startDay) . '/' . trim($month);
                 }
+
+                $startDate = \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr . '/' . $year . ' 00:00:00');
+                if ($startDate === false) {
+                    $startDate = \DateTime::createFromFormat('d/m H:i:s', $dateStr . ' 00:00:00');
+                    if ($startDate !== false) {
+                        $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
+                    } else {
+                        $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para '{$volunteerName}'.";
+                        continue;
+                    }
+                }
+
+                // Convert hours (e.g., "7,5") to interval
+                $hours = (float)str_replace(',', '.', $hoursStr);
+                $interval = new \DateInterval('PT' . (int)$hours . 'H' . (int)(($hours * 60) % 60) . 'M');
+                $endDate = (clone $startDate)->add($interval);
+
+                $service = $serviceRepo->findOneBy(['title' => $title, 'startDate' => $startDate]);
+
+                if (!$service) {
+                    $service = new Service();
+                    $service->setTitle($title);
+                    $service->setStartDate($startDate);
+                    $service->setEndDate($endDate); // Assume service duration is the first entry's duration
+                    $this->entityManager->persist($service);
+                }
+
+                $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
+                    'volunteer' => $volunteer,
+                    'service' => $service,
+                ]);
+
+                if (!$volunteerService) {
+                    $volunteerService = new VolunteerService();
+                    $volunteerService->setVolunteer($volunteer);
+                    $volunteerService->setService($service);
+                    $this->entityManager->persist($volunteerService);
+                }
+
+                $fichaje = new Fichaje();
+                $fichaje->setVolunteerService($volunteerService);
+                $fichaje->setClockIn(clone $startDate);
+                $fichaje->setClockOut($endDate);
+                $this->entityManager->persist($fichaje);
+
+                $successfulImports++;
             }
         }
 
