@@ -50,17 +50,6 @@ class ServiceController extends AbstractController
             ]);
         }
 
-        $attendeesByService = [];
-        foreach ($services as $service) {
-            $attendees = 0;
-            foreach ($service->getAssistanceConfirmations() as $confirmation) {
-                if ($confirmation->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
-                    $attendees++;
-                }
-            }
-            $attendeesByService[$service->getId()] = $attendees;
-        }
-
         $assistanceByService = [];
         if ($this->isGranted('ROLE_VOLUNTEER')) {
             foreach ($services as $service) {
@@ -75,7 +64,6 @@ class ServiceController extends AbstractController
 
         return $this->render('service/list_service.html.twig', [
             'services' => $services,
-            'attendeesByService' => $attendeesByService,
             'assistanceByService' => $assistanceByService,
             'status' => $status,
         ]);
