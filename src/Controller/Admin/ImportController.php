@@ -86,6 +86,14 @@ class ImportController extends AbstractController
         $rowCount = 1;
         $batchCount = 0;
 
+        $volunteersRepo = $em->getRepository(Volunteer::class);
+        $allVolunteers = $volunteersRepo->findAll();
+        $volunteerMap = [];
+        foreach ($allVolunteers as $volunteer) {
+            $normalizedName = strtolower(trim(preg_replace('/[[:space:]]+/', ' ', $volunteer->getName() . ' ' . $volunteer->getLastName())));
+            $volunteerMap[$normalizedName] = $volunteer;
+        }
+
         while (($row = fgetcsv($handle, 0, ';')) !== false) {
             $rowCount++;
             $row = array_pad($row, \count($headers), null);
@@ -96,12 +104,8 @@ class ImportController extends AbstractController
                 continue;
             }
 
-            $volunteer = $em->getRepository(Volunteer::class)
-                ->createQueryBuilder('v')
-                ->where('LOWER(TRIM(REGEXP_REPLACE(CONCAT(v.name, \' \', v.lastName), \'[[:space:]]+\', \' \'))) = LOWER(TRIM(REGEXP_REPLACE(:volunteerName, \'[[:space:]]+\', \' \')))')
-                ->setParameter('volunteerName', $volunteerName)
-                ->getQuery()
-                ->getOneOrNullResult();
+            $normalizedCsvName = strtolower(trim(preg_replace('/[[:space:]]+/', ' ', $volunteerName)));
+            $volunteer = $volunteerMap[$normalizedCsvName] ?? null;
 
             if (!$volunteer) {
                 $results['errors'][] = sprintf('Fila %d: No se encontró al voluntario "%s".', $rowCount, $volunteerName);
