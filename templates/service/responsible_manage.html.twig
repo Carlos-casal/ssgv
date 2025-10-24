@@ -1,0 +1,153 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Gestionar Fichajes de {{ service.title }}{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-8" data-controller="service-form" data-service-id="{{ service.id }}">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-800">Gestionar Fichajes</h1>
+            <p class="text-lg text-gray-600">{{ service.title }}</p>
+        </div>
+        <a href="{{ path('app_responsible_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition-colors duration-300">
+            <i data-lucide="arrow-left" class="inline-block mr-2 h-5 w-5"></i> Volver a la lista
+        </a>
+    </div>
+
+    <div class="bg-white shadow-xl rounded-2xl p-8">
+        <div class="flex justify-start items-center mb-6 space-x-4">
+            <button type="button" id="fichar-todos-btn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg shadow-md transition-transform transform hover:scale-105 flex items-center">
+                <i data-lucide="check-square" class="mr-2 h-5 w-5"></i> Fichar todos
+            </button>
+        </div>
+
+        <div>
+            <h4 class="text-lg font-semibold mb-3 p-3 bg-green-100 text-green-800 rounded-lg flex justify-between items-center">
+                <span>Asisten</span>
+                <span class="bg-green-200 text-green-800 text-sm font-bold px-2 py-1 rounded-full">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
+            </h4>
+            <ul class="list-group space-y-2">
+                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                    <li class="list-group-item bg-gray-50 p-3 rounded-lg shadow-sm">
+                        {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <span class="font-bold">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                {% if vs %}
+                                    {% set totalMinutes = vs.calculateTotalDuration() %}
+                                    {% if totalMinutes > 0 %}
+                                        {% set hours = (totalMinutes / 60)|round(0, 'floor') %}
+                                        {% set minutes = totalMinutes % 60 %}
+                                        <span class="ml-2 text-sm font-semibold text-gray-600 bg-gray-200 px-2 py-1 rounded-full" title="Total: {{ totalMinutes }} minutos">{{ hours }}h {{ minutes }}m</span>
+                                    {% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                {% if vs %}
+                                    {% set last_end_time = null %}
+                                    {% for fichaje_item in vs.fichajes %}
+                                        {% if fichaje_item.endTime is not null %}
+                                            {% if last_end_time is null or fichaje_item.endTime > last_end_time %}
+                                                {% set last_end_time = fichaje_item.endTime %}
+                                            {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                    <button type="button"
+                                            class="text-blue-600 hover:text-blue-800 p-1"
+                                            title="Añadir fichaje manual"
+                                            data-action="click->service-form#openIndividualFichajeModal"
+                                            data-volunteer-service-id="{{ vs.id }}"
+                                            data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}"
+                                            data-last-clock-out="{{ last_end_time ? last_end_time|date('Y-m-d H:i:s') : '' }}">
+                                        <i data-lucide="clock" class="h-5 w-5"></i>
+                                    </button>
+                                {% endif %}
+                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                        <i data-lucide="trash-2" class="h-5 w-5"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                        {% if vs and vs.fichajes|length > 0 %}
+                            <div class="mt-3 text-sm">
+                                <h5 class="font-semibold text-gray-700">Historial de Fichajes:</h5>
+                                <ul class="list-disc pl-5 mt-1 space-y-1 text-gray-600">
+                                    {% for fichaje_item in vs.fichajes|sort((a, b) => a.startTime <=> b.startTime) %}
+                                        <li class="flex justify-between items-center group">
+                                            <span>
+                                                {{ fichaje_item.startTime|date('d/m H:i') }} -
+                                                {% if fichaje_item.endTime %}
+                                                    {{ fichaje_item.endTime|date('H:i') }}
+                                                {% else %}
+                                                    <span class="font-semibold text-blue-600">Abierto</span>
+                                                {% endif %}
+                                                {% if fichaje_item.notes %}
+                                                    <em class="text-gray-500 ml-2" title="{{ fichaje_item.notes }}">"{{ fichaje_item.notes|length > 30 ? fichaje_item.notes|slice(0, 30) ~ '...' : fichaje_item.notes }}"</em>
+                                                {% endif %}
+                                            </span>
+                                            <div class="hidden group-hover:flex items-center space-x-2">
+                                                <button type="button"
+                                                        class="text-gray-500 hover:text-blue-600 p-1"
+                                                        title="Editar Fichaje"
+                                                        data-action="click->service-form#openEditFichajeModal"
+                                                        data-fichaje-id="{{ fichaje_item.id }}"
+                                                        data-start-time="{{ fichaje_item.startTime|date('Y-m-d\\TH:i') }}"
+                                                        data-end-time="{{ fichaje_item.endTime ? fichaje_item.endTime|date('Y-m-d\\TH:i') : '' }}"
+                                                        data-notes="{{ fichaje_item.notes }}">
+                                                    <i data-lucide="pencil" class="h-4 w-4"></i>
+                                                </button>
+                                                <form method="post" action="{{ path('app_fichaje_delete', {'id': fichaje_item.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro de fichaje?');" class="inline-block">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichaje_item.id) }}">
+                                                    <button type="submit" class="text-gray-500 hover:text-red-600 p-1" title="Eliminar Fichaje">
+                                                        <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% else %}
+                            <div class="mt-2 text-sm text-gray-500 italic">
+                                Aún no hay registros de fichaje.
+                            </div>
+                        {% endif %}
+                    </li>
+                {% else %}
+                    <li class="list-group-item text-gray-500 italic">Nadie asiste todavía.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    {{ include('service/_fichar_modal.html.twig') }}
+    {{ include('service/_individual_fichaje_modal.html.twig') }}
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('turbo:load', () => {
+            const ficharTodosBtn = document.getElementById('fichar-todos-btn');
+            const ficharModal = document.getElementById('fichar-modal');
+
+            if (ficharTodosBtn) {
+                ficharTodosBtn.addEventListener('click', () => {
+                    const startDate = new Date("{{ service.startDate|date('Y-m-d H:i:s') }}");
+                    const endDate = new Date("{{ service.endDate|date('Y-m-d H:i:s') }}");
+
+                    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
+                    document.getElementById('start-time').value = startDate.toTimeString().substring(0, 5);
+                    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
+                    document.getElementById('end-time').value = endDate.toTimeString().substring(0, 5);
+
+                    ficharModal.classList.remove('hidden');
+                });
+            }
+        });
+    </script>
+{% endblock %}

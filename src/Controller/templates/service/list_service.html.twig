@@ -1,0 +1,89 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Listado de sercicos{% endblock %}
+
+
+{% block content %}
+<div class="p-6 space-y-6">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Listado de Servicios</h2>
+            <p class="text-gray-600">Gestiona todos los servicios programados</p>
+        </div>
+        {% if is_granted('ROLE_ADMIN') %}
+        <div class="flex gap-3">
+            <a href="{{ path('app_service_new') }}"
+               class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+                Nuevo Servicio
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-4 border-b border-gray-200">
+            <ul class="flex gap-6">
+                <li><a href="#" class="pb-2 border-b-2 border-blue-600 text-blue-600 font-semibold">Abiertos</a></li>
+                <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Archivados</a></li>
+                <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Ayuda</a></li>
+            </ul>
+        </div>
+        <div class="p-4">
+            <table class="w-full">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Nº</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Título</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Asistentes</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Fecha</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Limite inscripción</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Tipo</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Categoría</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600"></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if services is defined and services is not empty %}
+                        {% for service in services %}
+                            <tr class="border-b border-gray-200">
+                                <td class="p-2 text-sm">{{ service.numeration ?? 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ service.title }}</td>
+                                <td class="p-2 text-sm">{{ attendeesByService[service.id] | default(0) }}</td>
+                                <td class="p-2 text-sm">{{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ service.type ?? 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ service.category ?? 'N/A' }}</td>
+                                <td class="p-2 text-sm">
+                                    {% if is_granted('ROLE_VOLUNTEER') %}
+                                        {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}
+                                            <a href="{{ path('app_service_unattend', {'id': service.id}) }}" class="px-3 py-1 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors">
+                                                No Asistir
+                                            </a>
+                                        {% else %}
+                                            <a href="{{ path('app_service_attend', {'id': service.id}) }}" class="px-3 py-1 bg-green-600 text-white rounded-md hover:bg-green-700 transition-colors">
+                                                Asistir
+                                            </a>
+                                        {% endif %}
+                                    {% else %}
+                                        <a href="{{ path('app_service_edit', {'id': service.id}) }}" class="p-1 text-green-600 hover:bg-green-50 rounded" title="Editar">
+                                            <i data-lucide="edit" class="w-4 h-4"></i>
+                                        </a>
+                                        <a href="{{ path('app_service_attendance', {'id': service.id}) }}" class="p-1 text-purple-600 hover:bg-purple-50 rounded" title="Asistencia">
+                                            <i data-lucide="users" class="w-4 h-4"></i>
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="p-4 text-center text-gray-500">No se encontraron servicios.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

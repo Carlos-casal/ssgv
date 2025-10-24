@@ -1,0 +1,17 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Nuevo Vehículo{% endblock %}
+
+{% block page_title %}Crear Nuevo Vehículo{% endblock %}
+
+{% block content %}
+    <div class="bg-white shadow-md rounded-lg p-6">
+        {{ include('vehicle/_form.html.twig') }}
+    </div>
+
+    <div class="mt-4">
+        <a href="{{ path('app_vehicle_index') }}" class="text-blue-500 hover:text-blue-800">
+            Volver a la lista
+        </a>
+    </div>
+{% endblock %}
