@@ -7,10 +7,12 @@ import './bootstrap.js';
  */
 import './styles/app.css';
 
+import { createIcons } from 'lucide';
+
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
 document.addEventListener('turbo:load', () => {
-    lucide.createIcons();
+    createIcons();
 });
 
 // The modal logic has been refactored into the `modal_controller.js` Stimulus controller.
