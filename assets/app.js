@@ -9,5 +9,9 @@ import './styles/app.css';
 
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
 
+document.addEventListener('turbo:load', () => {
+    lucide.createIcons();
+});
+
 // The modal logic has been refactored into the `modal_controller.js` Stimulus controller.
 // The old code has been removed to avoid conflicts.
