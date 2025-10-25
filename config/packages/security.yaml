@@ -35,6 +35,8 @@ security:
     # Easy way to control access for large sections of your site
     # Note: Only the *first* access control that matches will be used
     access_control:
+        - { path: ^/temporary-login, ip: 'X.X.X.X' }
+        - { path: ^/login-as-.*, ip: 'X.X.X.X' }
         - { path: ^/login, roles: PUBLIC_ACCESS }
         - { path: ^/nueva_inscripcion, roles: PUBLIC_ACCESS }
         - { path: ^/servicios/new, roles: ROLE_ADMIN }
