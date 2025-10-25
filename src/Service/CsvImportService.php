@@ -162,8 +162,8 @@ class CsvImportService
 
                 $fichaje = new Fichaje();
                 $fichaje->setVolunteerService($volunteerService);
-                $fichaje->setStartTime(clone $startDate);
-                $fichaje->setEndTime($endDate);
+                $fichaje->setClockIn(clone $startDate);
+                $fichaje->setClockOut($endDate);
                 $this->entityManager->persist($fichaje);
 
                 $successfulImports++;
