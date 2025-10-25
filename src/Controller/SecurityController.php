@@ -37,8 +37,8 @@ class SecurityController extends AbstractController
         $volunteerUser = null;
 
         if ('dev' === $kernel->getEnvironment()) {
-            $adminUser = $userRepository->findOneByRole('ROLE_ADMIN');
-            $volunteerUser = $userRepository->findOneByRole('ROLE_VOLUNTEER');
+            $adminUser = $userRepository->findOneBy(['email' => 'admin@example.com']);
+            $volunteerUser = $userRepository->findOneBy(['email' => 'voluntario1@example.com']);
         }
 
 
