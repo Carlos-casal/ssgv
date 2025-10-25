@@ -1,0 +1,181 @@
+<?php
+
+namespace App\Service;
+
+use App\Entity\Fichaje;
+use App\Entity\Service;
+use App\Entity\Volunteer;
+use App\Entity\VolunteerService;
+use Doctrine\ORM\EntityManagerInterface;
+
+class CsvImportService
+{
+    private $entityManager;
+
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+
+    public function import(string $filePath, int $year): array
+    {
+        $successfulImports = 0;
+        $errors = [];
+
+        if (($handle = fopen($filePath, 'r')) === false) {
+            $errors[] = "No se pudo abrir el archivo CSV.";
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
+
+        // Check for UTF-8 BOM
+        $bom = fread($handle, 3);
+        if ($bom !== "\xef\xbb\xbf") {
+            rewind($handle);
+        }
+
+        // Leer la cabecera
+        $header = fgetcsv($handle, 1000, ';');
+        if ($header === false) {
+            $errors[] = "No se pudo leer la cabecera del archivo CSV.";
+            fclose($handle);
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
+
+        if (!in_array('N°', $header)) {
+            $errors[] = "La cabecera del CSV debe contener una columna llamada 'N°'.";
+            fclose($handle);
+            return ['successful_imports' => 0, 'errors' => $errors];
+        }
+
+        $volunteerRepo = $this->entityManager->getRepository(Volunteer::class);
+        $serviceRepo = $this->entityManager->getRepository(Service::class);
+
+        // Pre-cache all volunteers by their indicativo for faster lookup
+        $allVolunteers = $volunteerRepo->findAll();
+        $volunteerMap = [];
+        foreach ($allVolunteers as $vol) {
+            if ($vol->getIndicativo()) {
+                $volunteerMap[$vol->getIndicativo()] = $vol;
+            }
+        }
+
+        $rowNumber = 1;
+        while (($data = fgetcsv($handle, 1000, ';')) !== false) {
+            $rowNumber++;
+
+            if (count($header) > count($data)) {
+                $errors[] = "Fila {$rowNumber}: La fila tiene menos columnas que la cabecera, se omite.";
+                continue;
+            }
+
+            if (count($header) < count($data)) {
+                $data = array_slice($data, 0, count($header));
+            }
+
+            $record = array_combine($header, $data);
+
+            $indicativo = trim($record['N°']);
+            if (empty($indicativo)) {
+                continue;
+            }
+
+            if (!isset($volunteerMap[$indicativo])) {
+                $errors[] = "Fila {$rowNumber}: Voluntario con N° '{$indicativo}' no encontrado.";
+                continue;
+            }
+            $volunteer = $volunteerMap[$indicativo];
+
+            for ($i = 1; $i < 100; $i++) { // Limit to 99 service entries per row for safety
+                if (!isset($record['HORAS_' . $i])) {
+                    break; // No more service columns in this row
+                }
+
+                // Ensure all parts of the service entry exist
+                if (!isset($record['FECHA_' . $i]) || !isset($record['COMENTARIO_' . $i])) {
+                    $errors[] = "Fila {$rowNumber}: Entrada de servicio {$i} incompleta (faltan FECHA o COMENTARIO). Se omite.";
+                    continue;
+                }
+
+                $hoursStr = trim($record['HORAS_' . $i]);
+                $dateStr = trim($record['FECHA_' . $i]);
+                $title = trim($record['COMENTARIO_' . $i]);
+
+                if (empty($hoursStr) && empty($dateStr) && empty($title)) {
+                    continue; // Skip completely empty service entries
+                }
+
+                if (empty($hoursStr) || empty($dateStr) || empty($title)) {
+                    $missing = [];
+                    if (empty($hoursStr)) $missing[] = 'HORAS_' . $i;
+                    if (empty($dateStr)) $missing[] = 'FECHA_' . $i;
+                    if (empty($title)) $missing[] = 'COMENTARIO_' . $i;
+                    $errors[] = "Fila {$rowNumber}: Faltan datos para la entrada de servicio {$i} ('" . implode(', ', $missing) . "'). Se omite esta entrada.";
+                    continue;
+                }
+
+                // Handle date ranges like "01-02/01"
+                if (strpos($dateStr, '-') !== false && strpos($dateStr, '/') !== false) {
+                    list($startDay, $endDayMonth) = explode('-', $dateStr);
+                    list($endDay, $month) = explode('/', $endDayMonth);
+                    $dateStr = trim($startDay) . '/' . trim($month);
+                }
+
+                $startDate = \DateTime::createFromFormat('d/m/Y H:i:s', $dateStr . ' 00:00:00');
+
+                if ($startDate === false) {
+                    // Try d/m format and add the year from the form
+                    $startDate = \DateTime::createFromFormat('d/m H:i:s', $dateStr . ' 00:00:00');
+                    if ($startDate !== false) {
+                        $startDate->setDate($year, $startDate->format('m'), $startDate->format('d'));
+                    } else {
+                        $errors[] = "Fila {$rowNumber}, Servicio {$i}: Formato de fecha inválido ('{$dateStr}') para el voluntario con N° '{$indicativo}'. Se esperaba 'd/m/Y' o 'd/m'.";
+                        continue;
+                    }
+                }
+
+                // Convert hours (e.g., "7,5") to interval
+                $hours = (float)str_replace(',', '.', $hoursStr);
+                $interval = new \DateInterval('PT' . (int)$hours . 'H' . (int)(($hours * 60) % 60) . 'M');
+                $endDate = (clone $startDate)->add($interval);
+
+                $service = $serviceRepo->findOneBy(['title' => $title, 'startDate' => $startDate]);
+
+                if (!$service) {
+                    $service = new Service();
+                    $service->setTitle($title);
+                    $service->setStartDate($startDate);
+                    $service->setEndDate($endDate); // Assume service duration is the first entry's duration
+                    $this->entityManager->persist($service);
+                }
+
+                $volunteerService = $this->entityManager->getRepository(VolunteerService::class)->findOneBy([
+                    'volunteer' => $volunteer,
+                    'service' => $service,
+                ]);
+
+                if (!$volunteerService) {
+                    $volunteerService = new VolunteerService();
+                    $volunteerService->setVolunteer($volunteer);
+                    $volunteerService->setService($service);
+                    $this->entityManager->persist($volunteerService);
+                }
+
+                $fichaje = new Fichaje();
+                $fichaje->setVolunteerService($volunteerService);
+                $fichaje->setStartTime(clone $startDate);
+                $fichaje->setEndTime($endDate);
+                $this->entityManager->persist($fichaje);
+
+                $successfulImports++;
+            }
+        }
+
+        fclose($handle);
+        $this->entityManager->flush();
+
+        return [
+            'successful_imports' => $successfulImports,
+            'errors' => $errors,
+        ];
+    }
+}

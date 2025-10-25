@@ -1,0 +1,107 @@
+<!-- Fichar Modal -->
+<div id="fichar-modal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center hidden z-50">
+    <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-2xl">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-bold">Fichar a todos</h3>
+            <button id="cancel-fichar-btn" class="text-gray-500 hover:text-gray-700">&times;</button>
+        </div>
+        <form id="fichar-form" action="{{ path('app_fichaje', {'id': service.id}) }}" method="post">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <label for="start-date" class="block text-sm font-medium text-gray-700">Fecha Entrada <span class="text-red-500">*</span></label>
+                    <input type="date" id="start-date" name="start-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="start-date">Limpiar campo</a>
+                </div>
+                <div>
+                    <label for="start-time" class="block text-sm font-medium text-gray-700">Hora Entrada <span class="text-red-500">*</span></label>
+                    <input type="time" id="start-time" name="start-time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="start-time">Limpiar campo</a>
+                </div>
+                <div>
+                    <label for="end-date" class="block text-sm font-medium text-gray-700">Fecha salida <span class="text-red-500">*</span></label>
+                    <input type="date" id="end-date" name="end-date" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="end-date">Limpiar campo</a>
+                </div>
+                <div>
+                    <label for="end-time" class="block text-sm font-medium text-gray-700">Hora salida <span class="text-red-500">*</span></label>
+                    <input type="time" id="end-time" name="end-time" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <a href="#" class="text-blue-600 text-sm clear-field-btn" data-target="end-time">Limpiar campo</a>
+                </div>
+            </div>
+            <div class="mb-4">
+                <h4 class="text-lg font-medium mb-2">Personal</h4>
+                <div class="flex items-center mb-2">
+                    <input type="checkbox" id="select-all-volunteers" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                    <label for="select-all-volunteers" class="ml-2 block text-sm text-gray-900">Todos</label>
+                </div>
+                <div class="space-y-2 border rounded-md p-2 max-h-48 overflow-y-auto">
+                    {% set attendees = service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                    {% if attendees is not empty %}
+                        {% for confirmation in attendees %}
+                            <div class="flex items-center">
+                                <input id="volunteer-{{ confirmation.volunteer.id }}" name="volunteers[]" value="{{ confirmation.volunteer.id }}" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded volunteer-checkbox">
+                                <label for="volunteer-{{ confirmation.volunteer.id }}" class="ml-2 block text-sm text-gray-900">
+                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastName }}
+                                </label>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-sm text-gray-500">No hay asistentes confirmados.</p>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="flex justify-end gap-4">
+                <button type="button" id="cancel-fichar-btn-bottom" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
+                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('turbo:load', () => {
+        const ficharModal = document.getElementById('fichar-modal');
+        const cancelFicharBtn = document.getElementById('cancel-fichar-btn');
+        const cancelFicharBtnBottom = document.getElementById('cancel-fichar-btn-bottom');
+
+        function openModal() {
+            ficharModal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            ficharModal.classList.add('hidden');
+        }
+
+        // This script assumes that the buttons to open the modal will be handled by the parent templates.
+        // Example: document.getElementById('fichar-btn').addEventListener('click', openModal);
+
+        if (cancelFicharBtn) {
+            cancelFicharBtn.addEventListener('click', closeModal);
+        }
+        if (cancelFicharBtnBottom) {
+            cancelFicharBtnBottom.addEventListener('click', closeModal);
+        }
+
+        const clearFieldBtns = document.querySelectorAll('.clear-field-btn');
+        clearFieldBtns.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetInput = document.getElementById(e.currentTarget.dataset.target);
+                if (targetInput) {
+                    targetInput.value = '';
+                }
+            });
+        });
+
+        const selectAllCheckbox = document.getElementById('select-all-volunteers');
+        const volunteerCheckboxes = document.querySelectorAll('.volunteer-checkbox');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', (e) => {
+                volunteerCheckboxes.forEach(checkbox => {
+                    checkbox.checked = e.currentTarget.checked;
+                });
+            });
+        }
+    });
+</script>
