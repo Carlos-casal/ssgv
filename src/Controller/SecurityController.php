@@ -27,20 +27,11 @@ class SecurityController extends AbstractController
      * @return Response The response object, rendering the login page.
      */
     #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils, UserRepository $userRepository, KernelInterface $kernel): Response
+    public function login(AuthenticationUtils $authenticationUtils): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
-
-        $adminUser = null;
-        $volunteerUser = null;
-
-        if ('dev' === $kernel->getEnvironment()) {
-            $adminUser = $userRepository->findOneBy(['email' => 'admin@example.com']);
-            $volunteerUser = $userRepository->findOneBy(['email' => 'voluntario1@example.com']);
-        }
-
 
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -48,8 +39,6 @@ class SecurityController extends AbstractController
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
-            'admin_user' => $adminUser,
-            'volunteer_user' => $volunteerUser,
         ]);
     }
 
@@ -88,11 +77,7 @@ class SecurityController extends AbstractController
         $event = new InteractiveLoginEvent($request, $token);
         $eventDispatcher->dispatch($event);
 
-        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            return $this->redirectToRoute('app_admin_dashboard');
-        }
-
-        return $this->redirectToRoute('app_volunteer_dashboard');
+        return $this->redirectToRoute('app_dashboard');
     }
 
     /**
