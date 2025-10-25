@@ -19,10 +19,17 @@
         <nav class="space-y-1" id="main-nav">
             <ul class="space-y-1">
                 <li>
-                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
-                        <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
-                        <span class="text-sm font-medium">INICIO</span>
-                    </a>
+                    {% if is_granted('ROLE_ADMIN') %}
+                        <a href="{{ path('app_admin_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
+                            <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="text-sm font-medium">INICIO</span>
+                        </a>
+                    {% else %}
+                        <a href="{{ path('app_volunteer_dashboard') }}" class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-blue-700">
+                            <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="text-sm font-medium">INICIO</span>
+                        </a>
+                    {% endif %}
                 </li>
 
                 {% if is_granted('ROLE_ADMIN') %}
