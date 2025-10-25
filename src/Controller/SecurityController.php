@@ -88,7 +88,11 @@ class SecurityController extends AbstractController
         $event = new InteractiveLoginEvent($request, $token);
         $eventDispatcher->dispatch($event);
 
-        return $this->redirectToRoute('app_dashboard');
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return $this->redirectToRoute('app_admin_dashboard');
+        }
+
+        return $this->redirectToRoute('app_volunteer_dashboard');
     }
 
     /**
