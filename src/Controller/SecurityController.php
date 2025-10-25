@@ -27,11 +27,20 @@ class SecurityController extends AbstractController
      * @return Response The response object, rendering the login page.
      */
     #[Route(path: '/login', name: 'app_login')]
-    public function login(AuthenticationUtils $authenticationUtils): Response
+    public function login(AuthenticationUtils $authenticationUtils, UserRepository $userRepository, KernelInterface $kernel): Response
     {
         if ($this->getUser()) {
             return $this->redirectToRoute('app_dashboard');
         }
+
+        $adminUser = null;
+        $volunteerUser = null;
+
+        if ('dev' === $kernel->getEnvironment()) {
+            $adminUser = $userRepository->findOneByRole('ROLE_ADMIN');
+            $volunteerUser = $userRepository->findOneByRole('ROLE_VOLUNTEER');
+        }
+
 
         $error = $authenticationUtils->getLastAuthenticationError();
         $lastUsername = $authenticationUtils->getLastUsername();
@@ -39,6 +48,8 @@ class SecurityController extends AbstractController
         return $this->render('security/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
+            'admin_user' => $adminUser,
+            'volunteer_user' => $volunteerUser,
         ]);
     }
 
