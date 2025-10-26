@@ -2,11 +2,15 @@
 
 namespace App\Service;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Fichaje;
 use App\Entity\Service;
 use App\Entity\Volunteer;
+use App\Entity\VolunteerService;
+use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VolunteerRepository;
+use App\Repository\VolunteerServiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -15,15 +19,21 @@ class CsvImportService
     private $entityManager;
     private $volunteerRepository;
     private $serviceRepository;
+    private $volunteerServiceRepository;
+    private $assistanceConfirmationRepository;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         VolunteerRepository $volunteerRepository,
-        ServiceRepository $serviceRepository
+        ServiceRepository $serviceRepository,
+        VolunteerServiceRepository $volunteerServiceRepository,
+        AssistanceConfirmationRepository $assistanceConfirmationRepository
     ) {
         $this->entityManager = $entityManager;
         $this->volunteerRepository = $volunteerRepository;
         $this->serviceRepository = $serviceRepository;
+        $this->volunteerServiceRepository = $volunteerServiceRepository;
+        $this->assistanceConfirmationRepository = $assistanceConfirmationRepository;
     }
 
     public function import(UploadedFile $file): array
@@ -31,13 +41,9 @@ class CsvImportService
         $results = ['success' => 0, 'errors' => []];
         $handle = fopen($file->getRealPath(), 'r');
 
-        // Read the header row and ignore it
-        fgetcsv($handle, 0, ';');
+        fgetcsv($handle, 0, ';'); // Skip header
 
         while (($data = fgetcsv($handle, 0, ';')) !== false) {
-            // Your CSV: Nº;VOLUNTARIO;TOTAL;HORAS_x;FECHA_x;COMENTARIO_x;...
-            // Column mapping: 0=>Nº, 1=>VOLUNTARIO, 2=>TOTAL (ignored)
-
             $volunteerId = $data[0];
             $volunteer = $this->volunteerRepository->findOneBy(['indicativo' => $volunteerId]);
 
@@ -46,62 +52,67 @@ class CsvImportService
                 continue;
             }
 
-            // Loop through the dynamic service columns
             for ($i = 3; $i < count($data); $i += 3) {
                 $hours = $data[$i];
                 $date = $data[$i + 1];
                 $serviceName = $data[$i + 2];
 
                 if (empty($hours) || empty($date) || empty($serviceName)) {
-                    continue; // Skip incomplete service entries
+                    continue;
                 }
 
                 try {
-                    // Find or create the service
-                    $serviceDate = \DateTime::createFromFormat('d/m/y', $date);
+                    $serviceDate = \DateTime::createFromFormat('d/m/y', $date) ?: \DateTime::createFromFormat('d/m/Y', $date);
                     if ($serviceDate === false) {
-                         $serviceDate = \DateTime::createFromFormat('d/m/Y', $date);
-                    }
-                     if ($serviceDate === false) {
                         throw new \Exception("Invalid date format: {$date}");
                     }
                     $serviceDate->setTime(0, 0);
 
-
                     $service = $this->serviceRepository->findOneBy(['title' => $serviceName, 'startDate' => $serviceDate]);
-
                     if (!$service) {
                         $service = new Service();
                         $service->setTitle($serviceName);
                         $service->setStartDate($serviceDate);
-
-                        // Set a default end date (e.g., same day)
-                        $endDate = clone $serviceDate;
-                        $service->setEndDate($endDate);
-
+                        $service->setEndDate(clone $serviceDate);
                         $this->entityManager->persist($service);
+                        $this->entityManager->flush(); // Flush to get service ID
                     }
 
-                    // Create Fichaje (clock-in/out record)
-                    $startTime = clone $serviceDate; // Assuming work starts at the beginning of the service day for simplicity
+                    // Find or create VolunteerService
+                    $volunteerService = $this->volunteerServiceRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+                    if (!$volunteerService) {
+                        $volunteerService = new VolunteerService();
+                        $volunteerService->setVolunteer($volunteer);
+                        $volunteerService->setService($service);
+                        $this->entityManager->persist($volunteerService);
+                    }
 
-                    // Calculate end time based on hours
-                    // The hours can be in format 'HH:mm' or a decimal number
+                    // Ensure AssistanceConfirmation exists and is set to 'attending'
+                    $assistance = $this->assistanceConfirmationRepository->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+                    if (!$assistance) {
+                        $assistance = new AssistanceConfirmation();
+                        $assistance->setVolunteer($volunteer);
+                        $assistance->setService($service);
+                        $this->entityManager->persist($assistance);
+                    }
+                    $assistance->setStatus('attending');
+
+
+                    // Create Fichaje
+                    $startTime = clone $serviceDate;
                     $endTime = clone $startTime;
                     if (str_contains($hours, ':')) {
                         list($h, $m) = explode(':', $hours);
                         $endTime->add(new \DateInterval("PT{$h}H{$m}M"));
                     } else {
-                        $minutes = (float)$hours * 60;
+                        $minutes = (int)((float)$hours * 60);
                         $endTime->add(new \DateInterval("PT{$minutes}M"));
                     }
 
                     $fichaje = new Fichaje();
-                    $fichaje->setVolunteer($volunteer);
-                    $fichaje->setService($service);
+                    $fichaje->setVolunteerService($volunteerService); // Corrected method
                     $fichaje->setStartTime($startTime);
                     $fichaje->setEndTime($endTime);
-
                     $this->entityManager->persist($fichaje);
 
                     $results['success']++;
