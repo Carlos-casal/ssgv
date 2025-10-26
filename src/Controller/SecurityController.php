@@ -58,9 +58,6 @@ class SecurityController extends AbstractController
             throw new AccessDeniedHttpException('This action is only available in the dev environment.');
         }
 
-        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
-            throw new AccessDeniedHttpException('Auto-login is only available for admins.');
-        }
 
         $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
         $container->get('security.token_storage')->setToken($token);
