@@ -1,71 +1,13 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulated Login</title>
-    <style>
-        body {
-            font-family: sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f0f0f0;
-        }
-        .login-container {
-            background-color: white;
-            padding: 2rem;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        button {
-            display: block;
-            width: 100%;
-            padding: 0.75rem;
-            margin-top: 1rem;
-            border: none;
-            border-radius: 3px;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-        }
-        button:hover {
-            background-color: #0056b3;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="login-container">
-        <h2>Simulated Login</h2>
-        <button id="adminLoginBtn">Log in as Administrator</button>
-        <button id="volunteerLoginBtn">Log in as Volunteer</button>
-    </div>
-
-    <script>
-        document.getElementById('adminLoginBtn').addEventListener('click', function() {
-            const user = 'admin@example.com';
-            const roles = 'ROLE_ADMIN';
-            const message = `Successful Login. User: ${user}, Roles: ${roles}`;
-
-            alert(message);
-            console.log(message);
-            // Example of redirection
-            // window.location.href = '/admin-dashboard';
-        });
-
-        document.getElementById('volunteerLoginBtn').addEventListener('click', function() {
-            const user = 'voluntario1@example.com';
-            const roles = 'ROLE_VOLUNTEER';
-            const message = `Successful Login. User: ${user}, Roles: ${roles}`;
-
-            alert(message);
-            console.log(message);
-            // Example of redirection
-            // window.location.href = '/volunteer-panel';
-        });
-    </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sistema de Gestión de Voluntarios</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
 </html>
