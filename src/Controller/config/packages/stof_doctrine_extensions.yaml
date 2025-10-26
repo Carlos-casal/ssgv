@@ -1,6 +1,0 @@
-stof_doctrine_extensions:
-    default_locale: es_ES # Puedes cambiar esto si tu idioma principal es otro
-    orm:
-        default:
-            sluggable: true # Habilita la extensión Sluggable
-            timestampable: true # Habilita la extensión Timestampable
