@@ -4,12 +4,15 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
+use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
+use Psr\Container\ContainerInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -39,36 +42,33 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Automatically logs in a user using a secure login link.
-     * Intended for development environments only.
+     * Automatically logs in a user, intended for development environments only.
+     * This method bypasses the standard password authentication for quick access during development.
      *
+     * @param Request $request The request object.
      * @param User $user The user to log in.
      * @param KernelInterface $kernel The application kernel to check the environment.
-     * @param LoginLinkHandlerInterface $loginLinkHandler The handler to create the login link.
-     * @return Response A redirection to the login link, which will authenticate and redirect to the dashboard.
-     * @throws AccessDeniedHttpException If not in 'dev' environment.
+     * @param ContainerInterface $container The service container to dispatch events.
+     * @return Response A redirection to the dashboard.
+     * @throws AccessDeniedHttpException If not in 'dev' environment or user is not an admin.
      */
-    public function autoLogin(User $user, KernelInterface $kernel, LoginLinkHandlerInterface $loginLinkHandler): Response
+    public function autoLogin(Request $request, User $user, KernelInterface $kernel, ContainerInterface $container): Response
     {
         if ('dev' !== $kernel->getEnvironment()) {
             throw new AccessDeniedHttpException('This action is only available in the dev environment.');
         }
 
-        // Create a secure, one-time login link for the user.
-        $loginLink = $loginLinkHandler->createLoginLink($user);
+        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            throw new AccessDeniedHttpException('Auto-login is only available for admins.');
+        }
 
-        // Redirect to the login link. Symfony will handle the authentication and subsequent redirection.
-        return $this->redirect($loginLink->getUrl());
-    }
+        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
+        $container->get('security.token_storage')->setToken($token);
 
-    /**
-     * This route is used by the login link authenticator to process the login.
-     * It should never be reached, as the authenticator will intercept the request.
-     */
-    #[Route('/login_check', name: 'login_check')]
-    public function check(): void
-    {
-        throw new \LogicException('This code should never be reached, as the login link authenticator handles this route.');
+        $event = new InteractiveLoginEvent($request, $token);
+        $container->get('event_dispatcher')->dispatch($event);
+
+        return $this->redirectToRoute('app_dashboard');
     }
 
     /**
