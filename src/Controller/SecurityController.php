@@ -9,10 +9,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
-use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
-use Psr\Container\ContainerInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -45,25 +43,21 @@ class SecurityController extends AbstractController
      * Automatically logs in a user, intended for development environments only.
      * This method bypasses the standard password authentication for quick access during development.
      *
-     * @param Request $request The request object.
      * @param User $user The user to log in.
      * @param KernelInterface $kernel The application kernel to check the environment.
-     * @param ContainerInterface $container The service container to dispatch events.
+     * @param Security $security The security helper service.
      * @return Response A redirection to the dashboard.
-     * @throws AccessDeniedHttpException If not in 'dev' environment or user is not an admin.
+     * @throws AccessDeniedHttpException If not in 'dev' environment.
      */
-    public function autoLogin(Request $request, User $user, KernelInterface $kernel, ContainerInterface $container): Response
+    public function autoLogin(User $user, KernelInterface $kernel, Security $security): Response
     {
         if ('dev' !== $kernel->getEnvironment()) {
             throw new AccessDeniedHttpException('This action is only available in the dev environment.');
         }
 
-
-        $token = new UsernamePasswordToken($user, 'main', $user->getRoles());
-        $container->get('security.token_storage')->setToken($token);
-
-        $event = new InteractiveLoginEvent($request, $token);
-        $container->get('event_dispatcher')->dispatch($event);
+        // Use the security helper to login the user.
+        // This handles token creation, session management, and events correctly.
+        $security->login($user, 'form_login', 'main');
 
         return $this->redirectToRoute('app_dashboard');
     }
