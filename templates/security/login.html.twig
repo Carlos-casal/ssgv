@@ -20,20 +20,6 @@
                 </div>
             {% endif %}
 
-            {% if app.environment == 'dev' %}
-                <div class="my-4 p-4 bg-yellow-100 border border-yellow-300 rounded-lg text-center">
-                    <p class="font-bold mb-2">Acceso rápido (Solo Desarrollo)</p>
-                    <div class="flex flex-col space-y-2">
-                        <a href="{{ path('app_auto_login', {'id': 1}) }}" class="block w-full px-4 py-2 text-center text-white bg-blue-500 rounded-lg hover:bg-blue-700">
-                            Log in as Administrator
-                        </a>
-                        <a href="{{ path('app_auto_login', {'id': 7}) }}" class="block w-full px-4 py-2 text-center text-white bg-green-500 rounded-lg hover:bg-green-700">
-                            Log in as Volunteer
-                        </a>
-                    </div>
-                </div>
-            {% endif %}
-
             <form method="post" action="{{ path('app_login') }}">
                 <div class="space-y-6">
                     <div>
@@ -56,7 +42,8 @@
                             <i data-lucide="lock" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
                             <input type="password" name="_password" id="inputPassword"
                                    class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                   placeholder="••••••••" autocomplete="current-password" required>
+                                   placeholder="••••••••" autocomplete="current-password" required
+                                   {% if app.environment == 'dev' %}value="admin123"{% endif %}>
                         </div>
                     </div>
 
