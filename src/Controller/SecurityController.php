@@ -4,13 +4,12 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Http\LoginLink\LoginLinkHandlerInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -40,26 +39,26 @@ class SecurityController extends AbstractController
     }
 
     /**
-     * Automatically logs in a user, intended for development environments only.
-     * This method bypasses the standard password authentication for quick access during development.
+     * Automatically logs in a user using a secure login link.
+     * Intended for development environments only.
      *
      * @param User $user The user to log in.
      * @param KernelInterface $kernel The application kernel to check the environment.
-     * @param Security $security The security helper service.
-     * @return Response A redirection to the dashboard.
+     * @param LoginLinkHandlerInterface $loginLinkHandler The handler to create the login link.
+     * @return Response A redirection to the login link, which will authenticate and redirect to the dashboard.
      * @throws AccessDeniedHttpException If not in 'dev' environment.
      */
-    public function autoLogin(User $user, KernelInterface $kernel, Security $security): Response
+    public function autoLogin(User $user, KernelInterface $kernel, LoginLinkHandlerInterface $loginLinkHandler): Response
     {
         if ('dev' !== $kernel->getEnvironment()) {
             throw new AccessDeniedHttpException('This action is only available in the dev environment.');
         }
 
-        // Use the security helper to login the user.
-        // This handles token creation, session management, and events correctly.
-        $security->login($user, 'form_login', 'main');
+        // Create a secure, one-time login link for the user.
+        $loginLink = $loginLinkHandler->createLoginLink($user);
 
-        return $this->redirectToRoute('app_dashboard');
+        // Redirect to the login link. Symfony will handle the authentication and subsequent redirection.
+        return $this->redirect($loginLink->getUrl());
     }
 
     /**
