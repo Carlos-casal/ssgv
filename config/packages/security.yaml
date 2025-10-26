@@ -24,7 +24,7 @@ security:
                 default_target_path: app_dashboard
                 always_use_default_target_path: true
             login_link:
-                check_route: app_login
+                check_route: login_check
                 signature_properties: ['id']
                 lifetime: 600
             logout:

@@ -62,6 +62,16 @@ class SecurityController extends AbstractController
     }
 
     /**
+     * This route is used by the login link authenticator to process the login.
+     * It should never be reached, as the authenticator will intercept the request.
+     */
+    #[Route('/login_check', name: 'login_check')]
+    public function check(): void
+    {
+        throw new \LogicException('This code should never be reached, as the login link authenticator handles this route.');
+    }
+
+    /**
      * Handles the logout process.
      * This method is left blank as the logout functionality is intercepted by Symfony's security firewall.
      *
