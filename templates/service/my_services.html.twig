@@ -82,6 +82,11 @@
         <div class="bg-white rounded-xl shadow-md border border-gray-200">
             <div class="p-4 border-b border-gray-200">
                 <h3 class="text-xl font-semibold text-gray-800">{{ year }}</h3>
+                {% if totalDurationByYear[year] is defined %}
+                    {% set hours = (totalDurationByYear[year] / 60)|round(0, 'floor') %}
+                    {% set minutes = totalDurationByYear[year] % 60 %}
+                    <p class="text-sm text-gray-500 mt-1">Total Anual: <span class="font-semibold text-gray-700">{{ hours ~ 'h ' ~ minutes ~ 'm' }}</span></p>
+                {% endif %}
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full responsive-table">
