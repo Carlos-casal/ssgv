@@ -92,6 +92,9 @@
                             Carnet de conducir
                         </th>
                         <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
+                            Habilitado
+                        </th>
+                        <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
                             Titulacion Sanitaria
                         </th>
                         <th class="text-center px-6 py-3 text-sm font-medium text-gray-900">
@@ -126,6 +129,11 @@
                                         N/A
                                     {% endif %}
                                 </p>
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                <div class="flex justify-center">
+                                    <input type="checkbox" class="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500" disabled {% if volunteer.isHabilitadoConducir %}checked{% endif %}>
+                                </div>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-900 text-center">
                                 <p class="font-medium text-gray-900">
