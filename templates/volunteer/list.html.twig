@@ -23,145 +23,146 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 w-full">
-        <form method="GET" class="flex flex-col lg:flex-row gap-4">
-            <div class="flex-1">
-                <div class="relative">
-                    <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
-                    <input
-                        type="text"
-                        name="search"
-                        value="{{ searchTerm }}"
-                        placeholder="Buscar por nombre o email..."
-                        class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    />
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
+        <div class="p-6 space-y-6">
+            <form method="GET" class="flex flex-col lg:flex-row gap-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+                        <input
+                            type="text"
+                            name="search"
+                            value="{{ searchTerm }}"
+                            placeholder="Buscar por nombre o email..."
+                            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        />
+                    </div>
+                </div>
+                <div class="flex gap-3">
+                    <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="all" {{ filterStatus == 'all' ? 'selected' : '' }}>Todos los estados</option>
+                        <option value="Activo" {{ filterStatus == 'Activo' ? 'selected' : '' }}>Activos</option> {# Asegúrate de que los valores coincidan con los de tu entidad #}
+                        <option value="Suspensión" {{ filterStatus == 'Suspensión' ? 'selected' : '' }}>En Suspensión</option> {# Actualizado para reflejar mejor los estados #}
+                        <option value="Baja" {{ filterStatus == 'Baja' ? 'selected' : '' }}>De Baja</option> {# Actualizado para reflejar mejor los estados #}
+                    </select>
+                    <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                        <i data-lucide="filter" class="w-4 h-4"></i>
+                        Filtrar
+                    </button>
+                </div>
+            </form>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-600">Total Voluntarios</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-600">Activos</p>
+                    <p class="text-2xl font-bold text-green-600">{{ stats.Activo }}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-600">En Suspensión</p> {# Actualizado #}
+                    <p class="text-2xl font-bold text-orange-600">{{ stats.Suspensión }}</p>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4 shadow-sm border border-gray-200">
+                    <p class="text-sm text-gray-600">De Baja</p> {# Actualizado #}
+                    <p class="text-2xl font-bold text-red-600">{{ stats.Baja }}</p>
                 </div>
             </div>
-            <div class="flex gap-3">
-                <select name="status" class="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <option value="all" {{ filterStatus == 'all' ? 'selected' : '' }}>Todos los estados</option>
-                    <option value="Activo" {{ filterStatus == 'Activo' ? 'selected' : '' }}>Activos</option> {# Asegúrate de que los valores coincidan con los de tu entidad #}
-                    <option value="Suspensión" {{ filterStatus == 'Suspensión' ? 'selected' : '' }}>En Suspensión</option> {# Actualizado para reflejar mejor los estados #}
-                    <option value="Baja" {{ filterStatus == 'Baja' ? 'selected' : '' }}>De Baja</option> {# Actualizado para reflejar mejor los estados #}
-                </select>
-                <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                    <i data-lucide="filter" class="w-4 h-4"></i>
-                    Filtrar
-                </button>
+
+            <div class="overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Contacto</th>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Carnet de conducir</th>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Titulacion Sanitaria</th>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Permiso de Navegación</th>
+                                <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {# CAMBIO CLAVE AQUÍ: Iterar sobre 'pagination' en lugar de 'volunteers' #}
+                            {% for volunteer in pagination %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+                                                <span class="text-blue-600 font-medium">
+                                                    {{ volunteer.name|split(' ')|map(name => name|first)|join('')|slice(0, 2)|upper }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <p class="font-medium text-gray-900"> {{ volunteer.name }}</p>
+                                                <p class="text-sm text-gray-500">ID: {{ volunteer.id }}</p>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div>
+                                            <p class="text-sm text-gray-900">{{ volunteer.phone }}</p>
+                                            {# Asegúrate de que volunteer.user.email esté disponible si user puede ser null #}
+                                            <p class="text-sm text-gray-500">{{ volunteer.user ? volunteer.user.email : 'N/A' }}</p>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-900">
+                                            {% if volunteer.drivingLicenses is not empty %}
+                                                {{ volunteer.drivingLicenses|join(', ') }}
+                                            {% else %}
+                                                N/A {# Puedes poner un guión, "Ninguno", etc. #}
+                                            {% endif %}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">
+                                        <p class="font-medium text-gray-900">
+                                            {% if volunteer.specificQualifications is not empty %}
+                                                {{ volunteer.specificQualifications|join(', ') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <p class="font-medium text-gray-900">
+                                            {% if volunteer.navigationLicenses is not empty %}
+                                                {{ volunteer.navigationLicenses|join(', ') }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </p>
+                                    </td>
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            <button class="p-1 text-blue-600 hover:bg-blue-50 rounded">
+                                                <i data-lucide="eye" class="w-4 h-4"></i>
+                                            </button>
+                                            <a href="{{ path('app_volunteer_edit', {'id': volunteer.id}) }}"
+                                            class="p-1 text-green-600 hover:bg-green-50 rounded">
+                                                <i data-lucide="edit" class="w-4 h-4"></i>
+                                            </a>
+                                            <button class="p-1 text-red-600 hover:bg-red-50 rounded">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                                        No se encontraron voluntarios
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </form>
-    </div>
-
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 w-full">
-        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">Total Voluntarios</p>
-            <p class="text-2xl font-bold text-gray-900">{{ stats.total }}</p>
-        </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">Activos</p>
-            <p class="text-2xl font-bold text-green-600">{{ stats.Activo }}</p>
-        </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">En Suspensión</p> {# Actualizado #}
-            <p class="text-2xl font-bold text-orange-600">{{ stats.Suspensión }}</p>
-        </div>
-        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-            <p class="text-sm text-gray-600">De Baja</p> {# Actualizado #}
-            <p class="text-2xl font-bold text-red-600">{{ stats.Baja }}</p>
-        </div>
-    </div>
-
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden w-full">
-        <div class="overflow-x-auto">
-            <table class="w-full">
-                <thead class="bg-gray-50">
-                    <tr>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Voluntario</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Contacto</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Carnet de conducir</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Titulacion Sanitaria</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Permiso de Navegación</th>
-                        <th class="text-left px-6 py-3 text-sm font-medium text-gray-900">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {# CAMBIO CLAVE AQUÍ: Iterar sobre 'pagination' en lugar de 'volunteers' #}
-                    {% for volunteer in pagination %} 
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                                        <span class="text-blue-600 font-medium">
-                                            {{ volunteer.name|split(' ')|map(name => name|first)|join('')|slice(0, 2)|upper }}
-                                        </span>
-                                    </div>
-                                    <div>
-                                        <p class="font-medium text-gray-900"> {{ volunteer.name }}</p>
-                                        <p class="text-sm text-gray-500">ID: {{ volunteer.id }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div>
-                                    <p class="text-sm text-gray-900">{{ volunteer.phone }}</p>
-                                    {# Asegúrate de que volunteer.user.email esté disponible si user puede ser null #}
-                                    <p class="text-sm text-gray-500">{{ volunteer.user ? volunteer.user.email : 'N/A' }}</p> 
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <p class="font-medium text-gray-900">
-                                    {% if volunteer.drivingLicenses is not empty %}
-                                        {{ volunteer.drivingLicenses|join(', ') }}
-                                    {% else %}
-                                        N/A {# Puedes poner un guión, "Ninguno", etc. #}
-                                    {% endif %}
-                                </p>
-                            </td>
-                            <td class="px-6 py-4 text-sm text-gray-900">
-                                <p class="font-medium text-gray-900">
-                                    {% if volunteer.specificQualifications is not empty %}
-                                        {{ volunteer.specificQualifications|join(', ') }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <p class="font-medium text-gray-900">
-                                    {% if volunteer.navigationLicenses is not empty %}
-                                        {{ volunteer.navigationLicenses|join(', ') }}
-                                    {% else %}
-                                        N/A
-                                    {% endif %}
-                                </p>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <button class="p-1 text-blue-600 hover:bg-blue-50 rounded">
-                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                    </button>
-                                    <a href="{{ path('app_volunteer_edit', {'id': volunteer.id}) }}"
-                                    class="p-1 text-green-600 hover:bg-green-50 rounded">
-                                        <i data-lucide="edit" class="w-4 h-4"></i>
-                                    </a>
-                                    <button class="p-1 text-red-600 hover:bg-red-50 rounded">
-                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="7" class="px-6 py-8 text-center text-gray-500">
-                                No se encontraron voluntarios
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
         </div>
 
-        {# CAMBIO CLAVE AQUÍ: Renderizar los controles de paginación #}
         <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
             {{ knp_pagination_render(pagination) }}
         </div>
