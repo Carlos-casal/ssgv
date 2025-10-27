@@ -2,6 +2,7 @@
 
 namespace App\Service;
 
+use App\Entity\AssistanceConfirmation;
 use App\Entity\Fichaje;
 use App\Entity\Service;
 use App\Entity\Volunteer;
@@ -107,6 +108,12 @@ class CsvImportService
                     }
                     continue;
                 }
+
+                $assistanceConfirmation = new AssistanceConfirmation();
+                $assistanceConfirmation->setVolunteer($volunteer);
+                $assistanceConfirmation->setService($service);
+                $assistanceConfirmation->setStatus(AssistanceConfirmation::STATUS_ATTENDING);
+                $this->entityManager->persist($assistanceConfirmation);
 
                 $volunteerService = new VolunteerService();
                 $volunteerService->setVolunteer($volunteer);
