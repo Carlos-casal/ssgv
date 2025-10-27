@@ -625,7 +625,6 @@ class ServiceController extends AbstractController
 
         return $this->render('service/my_services.html.twig', [
             'servicesByYear' => $servicesByYear,
-            'totalDurationByYear' => $totalDurationByYear,
             'totalDurationCurrentYear' => $totalDurationCurrentYear,
             'lastService' => $lastService,
         ]);
