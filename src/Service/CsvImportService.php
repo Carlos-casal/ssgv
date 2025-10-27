@@ -80,6 +80,8 @@ class CsvImportService
         $service->setStartDate((clone $minDate)->setTime(0, 0));
         $service->setEndDate((clone $maxDate)->setTime(23, 59, 59));
         $service->setDescription('Servicio generado automáticamente para la importación de horas desde CSV.');
+        $service->setType('evento');
+        $service->setCategory('asistencia_social');
 
         $this->entityManager->persist($service);
 
