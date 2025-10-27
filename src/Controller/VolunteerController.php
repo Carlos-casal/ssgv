@@ -51,7 +51,7 @@ class VolunteerController extends AbstractController
     ): Response {
         $searchTerm = $request->query->get('search', '');
         $filterStatus = $request->query->get('status', 'all');
-        $sort = $request->query->get('sort', 'name');
+        $sort = $request->query->get('sort', 'indicativo');
         $direction = $request->query->get('direction', 'asc');
 
         $queryBuilder = $volunteerRepository->createQueryBuilder('v')
