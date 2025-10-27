@@ -1,0 +1,23 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block page_title %}Importar Horas de Voluntarios desde CSV{% endblock %}
+
+{% block content %}
+    <div class="p-6">
+        <div class="bg-white p-6 rounded-lg shadow-md">
+            <h1 class="text-xl font-semibold mb-4">Importar Horas desde CSV</h1>
+
+            <p class="mb-4 text-gray-600">
+                Seleccione un archivo CSV para importar las horas de los voluntarios. El archivo debe tener las siguientes columnas:
+                <code>Nº;VOLUNTARIO;TOTAL;HORAS_1;FECHA_1;COMENTARIO_1;HORAS_2;FECHA_2;COMENTARIO_2;...</code>
+            </p>
+
+            {{ form_start(form) }}
+            <div class="mb-4">
+                {{ form_row(form.file) }}
+            </div>
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">Importar</button>
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}
