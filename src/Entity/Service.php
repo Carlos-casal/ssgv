@@ -859,6 +859,9 @@ class Service
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $whatsappMessage = null;
 
+    #[ORM\Column(type: 'boolean')]
+    private bool $isArchived = false;
+
     /**
      * Gets the WhatsApp message.
      * @return string|null
@@ -876,6 +879,18 @@ class Service
     public function setWhatsappMessage(?string $whatsappMessage): static
     {
         $this->whatsappMessage = $whatsappMessage;
+
+        return $this;
+    }
+
+    public function isArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setArchived(bool $isArchived): static
+    {
+        $this->isArchived = $isArchived;
 
         return $this;
     }
