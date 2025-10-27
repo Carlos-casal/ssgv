@@ -206,4 +206,24 @@ class ServiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    public function findOpen(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.isArchived = :isArchived')
+            ->setParameter('isArchived', false)
+            ->orderBy('s.startDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function findArchived(): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.isArchived = :isArchived')
+            ->setParameter('isArchived', true)
+            ->orderBy('s.startDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }

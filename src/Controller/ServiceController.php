@@ -32,17 +32,23 @@ class ServiceController extends AbstractController
      * @param \Symfony\Bundle\SecurityBundle\Security $security The security component to get the current user.
      * @return Response The response object, rendering the service list page.
      */
-    #[Route('/servicios', name: 'app_services_list', methods: ['GET'])]
-    public function listServices(ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
+    #[Route('/servicios/{status}', name: 'app_services_list', methods: ['GET'], defaults: ['status' => 'abiertos'])]
+    public function listServices(string $status, ServiceRepository $serviceRepository, \Symfony\Bundle\SecurityBundle\Security $security): Response
     {
         $user = $security->getUser();
-        $services = $serviceRepository->findAll();
+
+        if ($status === 'archivados') {
+            $services = $serviceRepository->findArchived();
+        } else {
+            $services = $serviceRepository->findOpen();
+        }
 
         if (empty($services)) {
             return $this->render('service/list_service.html.twig', [
                 'services' => [],
                 'attendeesByService' => [],
                 'assistanceByService' => [],
+                'status' => $status,
             ]);
         }
 
@@ -73,6 +79,7 @@ class ServiceController extends AbstractController
             'services' => $services,
             'attendeesByService' => $attendeesByService,
             'assistanceByService' => $assistanceByService,
+            'status' => $status,
         ]);
     }
 
