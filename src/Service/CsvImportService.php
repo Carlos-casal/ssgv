@@ -6,6 +6,7 @@ use App\Entity\Fichaje;
 use App\Entity\Service;
 use App\Entity\Volunteer;
 use App\Entity\VolunteerService;
+use App\Repository\FichajeRepository;
 use App\Repository\VolunteerRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Psr\Log\LoggerInterface;
@@ -15,15 +16,18 @@ class CsvImportService
 {
     private EntityManagerInterface $entityManager;
     private VolunteerRepository $volunteerRepository;
+    private FichajeRepository $fichajeRepository;
     private LoggerInterface $logger;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         VolunteerRepository $volunteerRepository,
+        FichajeRepository $fichajeRepository,
         LoggerInterface $logger
     ) {
         $this->entityManager = $entityManager;
         $this->volunteerRepository = $volunteerRepository;
+        $this->fichajeRepository = $fichajeRepository;
         $this->logger = $logger;
     }
 
@@ -31,12 +35,12 @@ class CsvImportService
      * Imports volunteer hours from a CSV file.
      *
      * @param UploadedFile $file The uploaded CSV file.
-     * @return array An array containing success_count, error_count, and errors.
+     * @return array An array containing success_count, error_count, skipped_count, and errors.
      * @throws \Exception
      */
     public function importVolunteerHours(UploadedFile $file): array
     {
-        $results = ['success_count' => 0, 'error_count' => 0, 'errors' => []];
+        $results = ['success_count' => 0, 'error_count' => 0, 'skipped_count' => 0, 'errors' => []];
         $fileHandle = fopen($file->getPathname(), 'r');
 
         if ($fileHandle === false) {
@@ -131,6 +135,12 @@ class CsvImportService
                     $startTime = (clone $date)->setTime(0, 0, 0);
                     $seconds = (int)($horas * 3600);
                     $endTime = (clone $startTime)->add(new \DateInterval('PT'.$seconds.'S'));
+
+                    // Check for duplicates before creating a new Fichaje
+                    if ($this->fichajeRepository->existsForVolunteerInDateRange($volunteer, $startTime, $endTime)) {
+                        $results['skipped_count']++;
+                        continue;
+                    }
 
                     $fichaje = new Fichaje();
                     $fichaje->setVolunteerService($volunteerService);

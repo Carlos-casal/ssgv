@@ -30,9 +30,10 @@ class ImportController extends AbstractController
                 try {
                     $results = $csvImportService->importVolunteerHours($file);
                     $this->addFlash('success', sprintf(
-                        'Importación completada. %d registros procesados, %d errores.',
+                        'Importación completada. %d registros procesados, %d errores, %d omitidos (duplicados).',
                         $results['success_count'],
-                        $results['error_count']
+                        $results['error_count'],
+                        $results['skipped_count'] ?? 0
                     ));
 
                     if (!empty($results['errors'])) {

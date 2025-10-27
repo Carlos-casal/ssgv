@@ -44,4 +44,30 @@ class FichajeRepository extends ServiceEntityRepository
             ->getOneOrNullResult()
         ;
     }
+
+    /**
+     * Checks if a Fichaje record already exists for a given volunteer and exact date range.
+     *
+     * @param \App\Entity\Volunteer $volunteer
+     * @param \DateTimeInterface $startTime
+     * @param \DateTimeInterface $endTime
+     * @return bool
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function existsForVolunteerInDateRange(\App\Entity\Volunteer $volunteer, \DateTimeInterface $startTime, \DateTimeInterface $endTime): bool
+    {
+        $count = $this->createQueryBuilder('f')
+            ->select('count(f.id)')
+            ->innerJoin('f.volunteerService', 'vs')
+            ->andWhere('vs.volunteer = :volunteer')
+            ->andWhere('f.startTime = :startTime')
+            ->andWhere('f.endTime = :endTime')
+            ->setParameter('volunteer', $volunteer)
+            ->setParameter('startTime', $startTime)
+            ->setParameter('endTime', $endTime)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count > 0;
+    }
 }
