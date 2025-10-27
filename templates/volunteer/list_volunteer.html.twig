@@ -3,9 +3,11 @@
 {% block title %}Listado de Personal{% endblock %}
 {% block page_title %}Listado de Personal{% endblock %}
 
+{% block main_class %}px-6 pb-6 flex-1 flex flex-col{% endblock %}
+
 {% block content %}
-<div class="p-6 space-y-6">
-    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+<div class="space-y-6 flex flex-col flex-grow">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 flex-shrink-0">
         <div></div>
         <div class="flex gap-3">
             <a href="{{ path('app_volunteer_export_csv') }}"
@@ -21,7 +23,7 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200 flex-shrink-0">
         <form method="GET" action="{{ path('app_volunteer_list') }}" class="flex flex-col lg:flex-row gap-4">
             <div class="flex-1">
                 <div class="relative">
@@ -50,7 +52,7 @@
         </form>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 flex-shrink-0">
         <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
             <p class="text-sm text-gray-600">Total Voluntarios</p>
             <p class="text-2xl font-bold text-gray-900">{{ stats.total}}</p>
@@ -69,8 +71,8 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col" style="height: calc(100vh - 24rem);">
-        <div class="overflow-auto flex-grow">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden flex flex-col flex-grow min-h-0">
+        <div class="overflow-y-auto">
             <table class="w-full">
                 <thead class="bg-gray-50">
                     <tr>
@@ -169,7 +171,7 @@
             </table>
         </div>
 
-        <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200">
+        <div class="navigation flex justify-center py-4 bg-gray-50 border-t border-gray-200 flex-shrink-0">
             {{ knp_pagination_render(pagination) }}
         </div>
     </div>
