@@ -22,8 +22,18 @@
     <div class="bg-white rounded-xl shadow-sm border border-gray-200">
         <div class="p-4 border-b border-gray-200">
             <ul class="flex gap-6">
-                <li><a href="#" class="pb-2 border-b-2 border-blue-600 text-blue-600 font-semibold">Abiertos</a></li>
-                <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Archivados</a></li>
+                <li>
+                    <a href="{{ path('app_services_list', {'status': 'abiertos'}) }}"
+                       class="pb-2 {{ status == 'abiertos' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600' }}">
+                        Abiertos
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ path('app_services_list', {'status': 'archivados'}) }}"
+                       class="pb-2 {{ status == 'archivados' ? 'border-b-2 border-blue-600 text-blue-600 font-semibold' : 'text-gray-600 hover:text-blue-600' }}">
+                        Archivados
+                    </a>
+                </li>
                 <li><a href="#" class="pb-2 text-gray-600 hover:text-blue-600">Ayuda</a></li>
             </ul>
         </div>
