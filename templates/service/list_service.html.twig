@@ -1,14 +1,12 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Listado de sercicos{% endblock %}
+{% block page_title %}Listado de Servicios{% endblock %}
 
 
 {% block content %}
-<div class="p-6 space-y-6">
+<div class="space-y-6">
     <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Listado de Servicios</h1>
-        </div>
+        <div></div>
         {% if is_granted('ROLE_ADMIN') %}
         <div class="flex gap-3">
             <a href="{{ path('app_service_new') }}"
