@@ -103,6 +103,8 @@ class CsvImportService
         // === PASS 2: Process aggregated data and create entities ===
         $this->entityManager->beginTransaction();
         try {
+            $notFoundIndicativos = [];
+
             foreach ($servicesData as $serviceKey => $data) {
                 if (empty($data['volunteers'])) {
                     continue;
@@ -114,7 +116,12 @@ class CsvImportService
 
                 if ($serviceDate === false) {
                     $results['errors'][] = sprintf('Formato de fecha no válido "%s" para el servicio "%s". Se omitieron todas las entradas para este servicio.', $serviceDateStr, $serviceTitle);
-                    $results['error_count'] += count($data['volunteers']);
+                    // Sum up all volunteer entries for this invalid service
+                    $totalEntriesInService = 0;
+                    foreach ($data['volunteers'] as $indicativo => $entries) {
+                        $totalEntriesInService += count($entries);
+                    }
+                    $results['error_count'] += $totalEntriesInService;
                     continue;
                 }
 
@@ -138,7 +145,7 @@ class CsvImportService
                     $volunteer = $this->volunteerRepository->findOneBy(['indicativo' => $indicativo]);
 
                     if (!$volunteer) {
-                        $results['errors'][] = sprintf('No se encontró al voluntario con indicativo "%s" para el servicio "%s" en la fecha %s. Se omitieron %d fichajes.', $indicativo, $serviceTitle, $serviceDateStr, count($entries));
+                        $notFoundIndicativos[$indicativo] = true; // Collect unique not found indicativos
                         $results['error_count'] += count($entries);
                         continue;
                     }
@@ -165,7 +172,7 @@ class CsvImportService
                         }
 
                         // Use the service's date for the fichaje
-                        $startTime = (clone $serviceDate)->setTime(0, 0, 0);
+                        $startTime = (clone $serviceStartDate); // Already zeroed out
                         $seconds = (int)($horas * 3600);
                         $endTime = (clone $startTime)->add(new \DateInterval('PT' . $seconds . 'S'));
 
@@ -185,6 +192,13 @@ class CsvImportService
                         $results['success_count']++;
                     }
                 }
+            }
+
+            if (!empty($notFoundIndicativos)) {
+                $results['errors'][] = sprintf(
+                    'No se encontraron los siguientes indicativos de voluntario en la base de datos: %s. No se importó ningún fichaje para ellos.',
+                    implode(', ', array_keys($notFoundIndicativos))
+                );
             }
 
             $this->entityManager->flush();
