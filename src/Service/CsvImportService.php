@@ -75,28 +75,25 @@ class CsvImportService
                 $dateStr = trim($row[$i + 1]);
                 $hoursStr = trim(str_replace(',', '.', $row[$i]));
 
-                if (!isset($servicesData[$serviceTitle])) {
-                    $servicesData[$serviceTitle] = ['min_date' => null, 'max_date' => null, 'volunteers' => []];
+                // Use a composite key to uniquely identify a service instance
+                $serviceKey = $serviceTitle . '|' . $dateStr;
+
+                if (!isset($servicesData[$serviceKey])) {
+                    $servicesData[$serviceKey] = [
+                        'title' => $serviceTitle,
+                        'date_str' => $dateStr,
+                        'volunteers' => []
+                    ];
                 }
 
-                $date = \DateTime::createFromFormat('d/m/Y', $dateStr);
-                if ($date) {
-                    if ($servicesData[$serviceTitle]['min_date'] === null || $date < $servicesData[$serviceTitle]['min_date']) {
-                        $servicesData[$serviceTitle]['min_date'] = clone $date;
-                    }
-                    if ($servicesData[$serviceTitle]['max_date'] === null || $date > $servicesData[$serviceTitle]['max_date']) {
-                        $servicesData[$serviceTitle]['max_date'] = clone $date;
-                    }
+                if (!isset($servicesData[$serviceKey]['volunteers'][$indicativo])) {
+                    $servicesData[$serviceKey]['volunteers'][$indicativo] = [];
                 }
 
-                if (!isset($servicesData[$serviceTitle]['volunteers'][$indicativo])) {
-                    $servicesData[$serviceTitle]['volunteers'][$indicativo] = [];
-                }
-
-                $servicesData[$serviceTitle]['volunteers'][$indicativo][] = [
+                // Append hours and line number, date is already part of the service instance
+                $servicesData[$serviceKey]['volunteers'][$indicativo][] = [
                     'line' => $lineNumber,
                     'hours' => $hoursStr,
-                    'date' => $dateStr,
                 ];
             }
         }
@@ -106,35 +103,42 @@ class CsvImportService
         // === PASS 2: Process aggregated data and create entities ===
         $this->entityManager->beginTransaction();
         try {
-            foreach ($servicesData as $serviceTitle => $data) {
+            foreach ($servicesData as $serviceKey => $data) {
                 if (empty($data['volunteers'])) {
                     continue;
                 }
 
-                // Find or create the Service
-                $service = $this->serviceRepository->findOneBy(['title' => $serviceTitle]);
+                $serviceTitle = $data['title'];
+                $serviceDateStr = $data['date_str'];
+                $serviceDate = \DateTime::createFromFormat('d/m/Y', $serviceDateStr);
+
+                if ($serviceDate === false) {
+                    $results['errors'][] = sprintf('Formato de fecha no válido "%s" para el servicio "%s". Se omitieron todas las entradas para este servicio.', $serviceDateStr, $serviceTitle);
+                    $results['error_count'] += count($data['volunteers']);
+                    continue;
+                }
+
+                $serviceStartDate = (clone $serviceDate)->setTime(0, 0, 0);
+
+                // Find or create the Service based on title AND exact start date
+                $service = $this->serviceRepository->findOneBy(['title' => $serviceTitle, 'startDate' => $serviceStartDate]);
+
                 if (!$service) {
                     $service = new Service();
                     $service->setTitle($serviceTitle);
                     $service->setDescription('Servicio generado automáticamente desde la importación de CSV.');
                     $service->setType('evento'); // Default values
                     $service->setCategory('asistencia_social'); // Default values
+                    $service->setStartDate($serviceStartDate);
+                    $service->setEndDate((clone $serviceDate)->setTime(23, 59, 59)); // Service is for a single day
+                    $this->entityManager->persist($service);
                 }
-                // Update dates to encompass all entries for this service
-                if ($data['min_date']) {
-                    $service->setStartDate((clone $data['min_date'])->setTime(0, 0));
-                }
-                if ($data['max_date']) {
-                    $service->setEndDate((clone $data['max_date'])->setTime(23, 59, 59));
-                }
-                $this->entityManager->persist($service);
-
 
                 foreach ($data['volunteers'] as $indicativo => $entries) {
                     $volunteer = $this->volunteerRepository->findOneBy(['indicativo' => $indicativo]);
 
                     if (!$volunteer) {
-                        $results['errors'][] = sprintf('No se encontró al voluntario con indicativo "%s" para el servicio "%s". Se omitieron %d horas.', $indicativo, $serviceTitle, count($entries));
+                        $results['errors'][] = sprintf('No se encontró al voluntario con indicativo "%s" para el servicio "%s" en la fecha %s. Se omitieron %d fichajes.', $indicativo, $serviceTitle, $serviceDateStr, count($entries));
                         $results['error_count'] += count($entries);
                         continue;
                     }
@@ -153,15 +157,15 @@ class CsvImportService
 
                     foreach ($entries as $entry) {
                         $horas = filter_var($entry['hours'], FILTER_VALIDATE_FLOAT);
-                        $date = \DateTime::createFromFormat('d/m/Y', $entry['date']);
 
-                        if ($horas === false || $horas <= 0 || $date === false) {
-                            $results['errors'][] = sprintf('Línea %d: Datos de fichaje no válidos para el voluntario %s en servicio "%s" (fecha: "%s", horas: "%s").', $entry['line'], $indicativo, $serviceTitle, $entry['date'], $entry['hours']);
+                        if ($horas === false || $horas <= 0) {
+                            $results['errors'][] = sprintf('Línea %d: Dato de horas no válido para el voluntario %s en servicio "%s" (fecha: "%s", horas: "%s").', $entry['line'], $indicativo, $serviceTitle, $serviceDateStr, $entry['hours']);
                             $results['error_count']++;
                             continue;
                         }
 
-                        $startTime = (clone $date)->setTime(0, 0, 0);
+                        // Use the service's date for the fichaje
+                        $startTime = (clone $serviceDate)->setTime(0, 0, 0);
                         $seconds = (int)($horas * 3600);
                         $endTime = (clone $startTime)->add(new \DateInterval('PT' . $seconds . 'S'));
 
@@ -175,7 +179,7 @@ class CsvImportService
                         $fichaje->setVolunteerService($volunteerService);
                         $fichaje->setStartTime($startTime);
                         $fichaje->setEndTime($endTime);
-                        // The note is the service title itself, no need to set it again.
+                        // Note is not needed as it's implicit in the service title
                         $this->entityManager->persist($fichaje);
 
                         $results['success_count']++;
