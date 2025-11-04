@@ -60,20 +60,23 @@ class CsvImportService
 
         while (($row = fgetcsv($fileHandle, 2000, ';')) !== false) {
             $lineNumber++;
-            if (empty($row) || empty($row[0])) {
-                continue; // Skip empty rows
+            if (empty($row) || empty(trim($row[0]))) {
+                continue; // Skip empty rows or rows without a volunteer number
             }
 
             $indicativo = trim($row[0]);
 
             for ($i = 3; $i < count($row); $i += 3) {
-                if (!isset($row[$i], $row[$i + 1], $row[$i + 2]) || empty($row[$i]) || empty($row[$i + 1]) || empty($row[$i + 2])) {
-                    continue; // Not enough data for a valid entry
+                // Per instructions, the service name (COMENTARIO_X) is the trigger.
+                // If it's missing or empty, we assume no more valid data exists in this row for the volunteer.
+                if (!isset($row[$i + 2]) || empty(trim($row[$i + 2]))) {
+                    break; // Stop processing this volunteer's row
                 }
 
                 $serviceTitle = trim($row[$i + 2]);
-                $dateStr = trim($row[$i + 1]);
-                $hoursStr = trim(str_replace(',', '.', $row[$i]));
+                $dateStr = isset($row[$i + 1]) ? trim($row[$i + 1]) : '';
+                $hoursStr = isset($row[$i]) ? trim(str_replace(',', '.', $row[$i])) : '';
+
 
                 // Use a composite key to uniquely identify a service instance
                 $serviceKey = $serviceTitle . '|' . $dateStr;
@@ -112,6 +115,13 @@ class CsvImportService
 
                 $serviceTitle = $data['title'];
                 $serviceDateStr = $data['date_str'];
+
+                if (empty($serviceDateStr)) {
+                    $results['errors'][] = sprintf('Falta la fecha para el servicio "%s". Se omitieron las entradas de %d voluntarios.', $serviceTitle, count($data['volunteers']));
+                    $results['error_count']++;
+                    continue;
+                }
+
                 $serviceDate = \DateTime::createFromFormat('d/m/Y', $serviceDateStr);
 
                 if ($serviceDate === false) {
@@ -163,6 +173,12 @@ class CsvImportService
                     $this->entityManager->persist($volunteerService);
 
                     foreach ($entries as $entry) {
+                        if (empty($entry['hours'])) {
+                            $results['errors'][] = sprintf('Línea %d: Faltan las horas para el voluntario %s en servicio "%s" (fecha: "%s").', $entry['line'], $indicativo, $serviceTitle, $serviceDateStr);
+                            $results['error_count']++;
+                            continue;
+                        }
+
                         $horas = filter_var($entry['hours'], FILTER_VALIDATE_FLOAT);
 
                         if ($horas === false || $horas <= 0) {
