@@ -34,29 +34,23 @@ export default class extends Controller {
     }
 
     closeModal(event) {
-        // This can be triggered by a button click (event is a click event)
-        // or after a successful form submission (event is a submit event)
         event.preventDefault();
-        const form = event.currentTarget.tagName === 'FORM' ? event.currentTarget : event.currentTarget.closest('form');
-        const modal = form ? form.closest('[data-modal-form-target="modal"]') : event.currentTarget.closest('[data-modal-form-target="modal"]');
-
+        const modal = event.currentTarget.closest('[data-modal-form-target="modal"]');
         if (modal) {
             modal.classList.add('hidden');
         }
     }
 
     async handleFormSubmit(event) {
-        // 1. Critical Prevention: Guarantee the default form submission is halted.
         event.preventDefault();
-
         const form = event.currentTarget;
+        const modal = form.closest('[data-modal-form-target="modal"]');
         const url = form.dataset.url;
         const selectTargetId = form.dataset.selectTarget;
         const formName = form.dataset.formName;
         const nameInput = form.querySelector('[data-modal-form-target="nameInput"]');
         const name = nameInput.value;
 
-        // 2. Asynchronous Flow: Construct and send the POST request.
         const payload = {
             [formName]: {
                 name: name
@@ -81,7 +75,9 @@ export default class extends Controller {
                     selectElement.add(option);
                     selectElement.dispatchEvent(new Event('change'));
                 }
-                this.closeModal(event);
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
             } else {
                 const data = await response.json();
                 alert(data.errors || 'An unknown error occurred.');
