@@ -23,6 +23,7 @@ class ServiceCategoryType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => ServiceCategory::class,
+            'csrf_protection' => false,
         ]);
     }
 }
