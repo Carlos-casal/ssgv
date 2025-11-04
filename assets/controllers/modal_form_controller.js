@@ -46,7 +46,7 @@ export default class extends Controller {
                 'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         });
 
         if (response.ok) {
