@@ -29,19 +29,24 @@ export default class extends Controller {
         const form = event.currentTarget;
         const url = form.dataset.url;
         const selectTargetId = form.dataset.selectTarget;
-        const formName = form.dataset.formName;
-        const name = form.querySelector('[data-modal-form-target="nameInput"]').value;
+        const formName = form.dataset.formName; // This is 'service_type' or 'service_category'
+        const nameInput = form.querySelector('[data-modal-form-target="nameInput"]');
+        const name = nameInput.value;
 
-        const payload = {};
-        payload[`${formName}[name]`] = name;
+        // Create the correct JSON payload structure, e.g., { "service_type": { "name": "New Value" } }
+        const payload = {
+            [formName]: {
+                name: name
+            }
+        };
 
         const response = await fetch(url, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
+                'Content-Type': 'application/json',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: new URLSearchParams(payload)
+            body: JSON.stringify(data)
         });
 
         if (response.ok) {

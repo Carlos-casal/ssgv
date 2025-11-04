@@ -18,7 +18,13 @@ class ServiceCategoryController extends AbstractController
     {
         $serviceCategory = new ServiceCategory();
         $form = $this->createForm(ServiceCategoryType::class, $serviceCategory);
-        $form->handleRequest($request);
+
+        // Decode the JSON request body
+        $data = json_decode($request->getContent(), true);
+
+        // The second parameter `false` tells the form to not clear missing fields,
+        // which is important for PATCH-like updates and APIs.
+        $form->submit($data['service_category'] ?? $data, false);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($serviceCategory);
