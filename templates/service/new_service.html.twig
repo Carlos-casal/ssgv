@@ -155,26 +155,41 @@
             </div>
         </div>
 
-        <div>
+        <div data-controller="conditional-resource-form">
             <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Recursos</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
                 <div>
                     <h4 class="text-lg font-semibold mb-4">Ambulancia 🚑</h4>
                     <div class="space-y-4">
                         <div class="form-group">
-                            {{ form_label(form.numSvb, 'SVB') }}
-                            {{ form_widget(form.numSvb) }}
-                            <div class="form-error">{{ form_errors(form.numSvb) }}</div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="svb-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">SVB</span>
+                            </label>
+                            <div id="svb-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numSvb) }}
+                                <div class="form-error">{{ form_errors(form.numSvb) }}</div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            {{ form_label(form.numSva, 'SVA') }}
-                            {{ form_widget(form.numSva) }}
-                            <div class="form-error">{{ form_errors(form.numSva) }}</div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="sva-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">SVA</span>
+                            </label>
+                            <div id="sva-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numSva) }}
+                                <div class="form-error">{{ form_errors(form.numSva) }}</div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            {{ form_label(form.numSvae, 'SVAE') }}
-                            {{ form_widget(form.numSvae) }}
-                            <div class="form-error">{{ form_errors(form.numSvae) }}</div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="svae-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">SVAE</span>
+                            </label>
+                            <div id="svae-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numSvae) }}
+                                <div class="form-error">{{ form_errors(form.numSvae) }}</div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -183,19 +198,33 @@
                     <h4 class="text-lg font-semibold mb-4">Personal Sanitario 🥼🩺</h4>
                     <div class="space-y-4">
                         <div class="form-group">
-                            {{ form_label(form.numDoctors, 'Medico') }}
-                            {{ form_widget(form.numDoctors) }}
-                            <div class="form-error">{{ form_errors(form.numDoctors) }}</div>
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="tecnicos-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">Técnicos</span>
+                            </label>
+                            <div id="tecnicos-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numTecnicos, {'attr': {'required': 'required'}}) }}
+                                <div class="form-error">{{ form_errors(form.numTecnicos) }}</div>
+                            </div>
                         </div>
                         <div class="form-group">
-                            {{ form_label(form.numDues, 'Enfermeria') }}
-                            <div class="grid grid-cols-2 gap-4">
-                                {{ form_widget(form.numDues, {'attr': {'placeholder': 'DUE'}}) }}
-                                {{ form_widget(form.numTecnicos, {'attr': {'placeholder': 'Técnicos'}}) }}
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="dues-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">Enfermería</span>
+                            </label>
+                            <div id="dues-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numDues) }}
                                 <div class="form-error">{{ form_errors(form.numDues) }}</div>
-                                <div class="form-error">{{ form_errors(form.numTecnicos) }}</div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="flex items-center space-x-3">
+                                <input type="checkbox" data-action="change->conditional-resource-form#toggleInput" data-target-id="doctors-input-wrapper" class="form-checkbox h-5 w-5 text-blue-600">
+                                <span class="text-gray-700">Médico</span>
+                            </label>
+                            <div id="doctors-input-wrapper" class="hidden mt-2" data-conditional-resource-form-target="inputWrapper">
+                                {{ form_widget(form.numDoctors) }}
+                                <div class="form-error">{{ form_errors(form.numDoctors) }}</div>
                             </div>
                         </div>
                     </div>
@@ -206,7 +235,7 @@
                     <div class="space-y-4">
                         <div class="form-group">
                             {{ form_label(form.afluencia, 'Afluencia 📈') }}
-                            {{ form_widget(form.afluencia) }}
+                            {{ form_widget(form.afluencia, {'attr': {'data-action': 'change->conditional-resource-form#updateAfluenciaColor', 'data-conditional-resource-form-target': 'afluencia'}}) }}
                             <div class="form-error">{{ form_errors(form.afluencia) }}</div>
                         </div>
                         <div class="flex items-center pt-3">
