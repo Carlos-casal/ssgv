@@ -81,16 +81,16 @@ class Service
     private ?int $maxAttendees = null;
 
     /**
-     * @var string|null The type of service (e.g., "Preventivo", "Emergencia").
+     * @var ServiceType|null The type of service.
      */
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $type = null;
+    #[ORM\ManyToOne(inversedBy: 'services')]
+    private ?ServiceType $type = null;
 
     /**
-     * @var string|null The category of the service (e.g., "Deportivo", "Cultural").
+     * @var ServiceCategory|null The category of the service.
      */
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $category = null;
+    #[ORM\ManyToOne(inversedBy: 'services')]
+    private ?ServiceCategory $category = null;
 
     /**
      * @var string|null A detailed description of the service.
@@ -444,19 +444,19 @@ class Service
 
     /**
      * Gets the type of service.
-     * @return string|null
+     * @return ServiceType|null
      */
-    public function getType(): ?string
+    public function getType(): ?ServiceType
     {
         return $this->type;
     }
 
     /**
      * Sets the type of service.
-     * @param string|null $type The service type.
+     * @param ServiceType|null $type The service type.
      * @return static
      */
-    public function setType(?string $type): static
+    public function setType(?ServiceType $type): static
     {
         $this->type = $type;
         return $this;
@@ -464,19 +464,19 @@ class Service
 
     /**
      * Gets the category of the service.
-     * @return string|null
+     * @return ServiceCategory|null
      */
-    public function getCategory(): ?string
+    public function getCategory(): ?ServiceCategory
     {
         return $this->category;
     }
 
     /**
      * Sets the category of the service.
-     * @param string|null $category The service category.
+     * @param ServiceCategory|null $category The service category.
      * @return static
      */
-    public function setCategory(?string $category): static
+    public function setCategory(?ServiceCategory $category): static
     {
         $this->category = $category;
         return $this;

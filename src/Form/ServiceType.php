@@ -12,8 +12,11 @@ use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use App\Entity\ServiceCategory;
+use App\Entity\ServiceType as EntityServiceType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
@@ -82,24 +85,17 @@ class ServiceType extends AbstractType
                 'required' => false,
                 'attr' => ['min' => 1, 'placeholder' => 'Ej: 50'],
             ])
-            ->add('type', ChoiceType::class, [
+            ->add('type', EntityType::class, [
+                'class' => EntityServiceType::class,
+                'choice_label' => 'name',
                 'label' => 'Tipo',
-                'choices' => [
-                    'Evento' => 'evento',
-                    'Formación' => 'formacion',
-                    'Campaña' => 'campana',
-                ],
                 'placeholder' => 'Selecciona un tipo',
                 'required' => true,
             ])
-            ->add('category', ChoiceType::class, [
+            ->add('category', EntityType::class, [
+                'class' => ServiceCategory::class,
+                'choice_label' => 'name',
                 'label' => 'Categoría',
-                'choices' => [
-                    'Asistencia Social' => 'asistencia_social',
-                    'Medio Ambiente' => 'medio_ambiente',
-                    'Rescate' => 'rescate',
-                    'Educación' => 'educacion',
-                ],
                 'placeholder' => 'Selecciona una categoría',
                 'required' => true,
             ])
