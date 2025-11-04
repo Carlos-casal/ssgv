@@ -30,6 +30,36 @@
     </style>
 {% endblock %}
 
+{% block modals %}
+<!-- Type Modal -->
+<div id="typeModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden" data-modal-form-target="modal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Añadir Nuevo Tipo de Servicio</h3>
+        <form data-action="submit->modal-form#submit" data-url="{{ path('api_service_type_new') }}" data-select-target="#service_type">
+            <input type="text" name="name" class="form-input w-full" placeholder="Nombre del tipo" data-modal-form-target="nameInput">
+            <div class="mt-4 flex justify-end space-x-2">
+                <button type="button" data-action="click->modal-form#closeModal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Category Modal -->
+<div id="categoryModal" class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden" data-modal-form-target="modal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Añadir Nueva Categoría de Servicio</h3>
+        <form data-action="submit->modal-form#submit" data-url="{{ path('api_service_category_new') }}" data-select-target="#service_category">
+            <input type="text" name="name" class="form-input w-full" placeholder="Nombre de la categoría" data-modal-form-target="nameInput">
+            <div class="mt-4 flex justify-end space-x-2">
+                <button type="button" data-action="click->modal-form#closeModal" class="btn btn-secondary">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
 {% block javascripts %}
     {{ parent() }}
 {% endblock %}
@@ -101,12 +131,18 @@
                 <div class="form-error">{{ form_errors(form.maxAttendees) }}</div>
             </div>
             <div class="form-group">
-                {{ form_label(form.type, 'Tipo') }}
+                <div class="flex items-center justify-between">
+                    {{ form_label(form.type, 'Tipo') }}
+                    <button type="button" data-action="click->modal-form#openModal" data-modal-id="typeModal" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">+ Nuevo Tipo</button>
+                </div>
                 {{ form_widget(form.type) }}
                 <div class="form-error">{{ form_errors(form.type) }}</div>
             </div>
             <div class="form-group">
-                {{ form_label(form.category, 'Categoría') }}
+                <div class="flex items-center justify-between">
+                    {{ form_label(form.category, 'Categoría') }}
+                    <button type="button" data-action="click->modal-form#openModal" data-modal-id="categoryModal" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">+ Nueva Categoría</button>
+                </div>
                 {{ form_widget(form.category) }}
                 <div class="form-error">{{ form_errors(form.category) }}</div>
             </div>
