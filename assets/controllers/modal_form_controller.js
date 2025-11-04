@@ -30,11 +30,11 @@ export default class extends Controller {
         const form = event.currentTarget;
         const url = form.dataset.url;
         const selectTargetId = form.dataset.selectTarget;
+        const formName = form.dataset.formName;
         const name = form.querySelector('[data-modal-form-target="nameInput"]').value;
 
-        // Use the form's name attribute to build the payload key
-        const formName = form.closest('div.bg-white').querySelector('form').name;
-        const payloadKey = `${formName}[name]`;
+        const payload = {};
+        payload[`${formName}[name]`] = name;
 
         const response = await fetch(url, {
             method: 'POST',
@@ -42,7 +42,7 @@ export default class extends Controller {
                 'Content-Type': 'application/x-www-form-urlencoded',
                 'X-Requested-With': 'XMLHttpRequest',
             },
-            body: new URLSearchParams({ [payloadKey]: name })
+            body: new URLSearchParams(payload)
         });
 
         if (response.ok) {
