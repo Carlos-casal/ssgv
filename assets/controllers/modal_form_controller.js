@@ -4,8 +4,7 @@ export default class extends Controller {
     static targets = ["modal", "nameInput"];
 
     connect() {
-        // Automatically find all modals within the controller's scope
-        this.modalTargets = this.element.querySelectorAll('[data-modal-form-target="modal"]');
+        // No need to manually find targets, Stimulus does this automatically.
     }
 
     openModal(event) {
