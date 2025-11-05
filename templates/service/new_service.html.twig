@@ -162,15 +162,15 @@
                     <h4 class="text-lg font-semibold mb-4">Ambulancia 🚑</h4>
                     <div class="space-y-4">
                         <div class="form-group flex justify-between items-center">
-                            <span>SVB</span>
-                            {{ form_widget(form.numSvb, {'attr': {'class': 'form-input-short'}}) }}
+                             {{ form_label(form.numSvb, 'SVB', {'label_attr': {'class': 'form-resource-label'}}) }}
+                             {{ form_widget(form.numSvb, {'attr': {'class': 'form-input-short'}}) }}
                         </div>
                         <div class="form-group flex justify-between items-center">
-                            <span>SVA</span>
+                            {{ form_label(form.numSva, 'SVA', {'label_attr': {'class': 'form-resource-label'}}) }}
                             {{ form_widget(form.numSva, {'attr': {'class': 'form-input-short'}}) }}
                         </div>
                         <div class="form-group flex justify-between items-center">
-                            <span>SVAE</span>
+                            {{ form_label(form.numSvae, 'SVAE', {'label_attr': {'class': 'form-resource-label'}}) }}
                             {{ form_widget(form.numSvae, {'attr': {'class': 'form-input-short'}}) }}
                         </div>
                     </div>
@@ -180,15 +180,15 @@
                     <h4 class="text-lg font-semibold mb-4">Personal Sanitario 🥼🩺</h4>
                     <div class="space-y-4">
                         <div class="form-group flex justify-between items-center">
-                            <span>Técnicos</span>
+                            {{ form_label(form.numTecnicos, 'Técnicos', {'label_attr': {'class': 'form-resource-label'}}) }}
                             {{ form_widget(form.numTecnicos, {'attr': {'required': 'required', 'class': 'form-input-short'}}) }}
                         </div>
                         <div class="form-group flex justify-between items-center">
-                            <span>Enfermería</span>
+                            {{ form_label(form.numDues, 'Enfermería', {'label_attr': {'class': 'form-resource-label'}}) }}
                             {{ form_widget(form.numDues, {'attr': {'class': 'form-input-short'}}) }}
                         </div>
                         <div class="form-group flex justify-between items-center">
-                            <span>Médico</span>
+                            {{ form_label(form.numDoctors, 'Médico', {'label_attr': {'class': 'form-resource-label'}}) }}
                             {{ form_widget(form.numDoctors, {'attr': {'class': 'form-input-short'}}) }}
                         </div>
                     </div>
