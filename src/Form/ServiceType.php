@@ -185,7 +185,8 @@ class ServiceType extends AbstractType
             $numDues = $data['numDues'] ?? 0;
             $numTecnicos = $data['numTecnicos'] ?? 0;
 
-            $data['numNurses'] = $numDues + $numTecnicos;
+            // Cast to integers to prevent TypeError if the values are empty strings
+            $data['numNurses'] = (int)$numDues + (int)$numTecnicos;
 
             $event->setData($data);
         });
