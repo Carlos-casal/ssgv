@@ -1,33 +1,10 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ["inputWrapper", "afluencia"];
+    static targets = ["afluencia"];
 
     connect() {
-        // Set initial state on page load
-        this.inputWrapperTargets.forEach(wrapper => {
-            const checkbox = this.element.querySelector(`[data-target-id="${wrapper.id}"]`);
-            if (checkbox && !checkbox.checked) {
-                wrapper.classList.add('hidden');
-            } else if (checkbox && checkbox.checked) {
-                wrapper.classList.remove('hidden');
-            }
-        });
         this.updateAfluenciaColor();
-    }
-
-    toggleInput(event) {
-        const checkbox = event.currentTarget;
-        const targetId = checkbox.dataset.targetId;
-        const wrapper = this.element.querySelector(`#${targetId}`);
-
-        if (wrapper) {
-            wrapper.classList.toggle('hidden', !checkbox.checked);
-            const input = wrapper.querySelector('input[type="number"]');
-            if (input && !checkbox.checked) {
-                input.value = ''; // Clear value when hiding
-            }
-        }
     }
 
     updateAfluenciaColor() {

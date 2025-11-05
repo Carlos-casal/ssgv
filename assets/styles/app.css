@@ -42,14 +42,6 @@
         @apply text-sm text-red-600 mt-1;
     }
 
-    .form-checkbox-label {
-        @apply flex items-center;
-    }
-
-    .form-checkbox-label input[type="checkbox"] {
-        @apply mr-2;
-    }
-
     .form-input-short {
         width: 6ch;
     }
