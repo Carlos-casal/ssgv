@@ -41,4 +41,12 @@
     .form-error-message {
         @apply text-sm text-red-600 mt-1;
     }
+
+    .form-checkbox-label {
+        @apply flex items-center space-x-2;
+    }
+
+    .form-input-short {
+        width: 6ch;
+    }
 }
