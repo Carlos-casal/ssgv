@@ -42,7 +42,15 @@
         @apply text-sm text-red-600 mt-1;
     }
 
+    .form-resource-item {
+        @apply flex justify-between items-center;
+    }
+
+    .form-resource-label {
+        width: 10ch; /* Provides enough space for "Enfermería" and aligns the inputs vertically */
+    }
+
     .form-input-short {
-        width: 6ch;
+        width: 4ch;
     }
 }
