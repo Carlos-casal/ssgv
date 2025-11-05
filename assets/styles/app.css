@@ -43,7 +43,11 @@
     }
 
     .form-checkbox-label {
-        @apply flex items-center space-x-2;
+        @apply flex items-center;
+    }
+
+    .form-checkbox-label input[type="checkbox"] {
+        @apply mr-2;
     }
 
     .form-input-short {
