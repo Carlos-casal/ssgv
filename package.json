@@ -17,9 +17,9 @@
     "@symfony/stimulus-bridge": "^4.0.1",
     "@symfony/ux-turbo": "^2.31.0",
     "lucide-react": "^0.344.0",
-    "quill": "2.0.2",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "tinymce": "^8.2.1"
   },
   "devDependencies": {
     "@babel/plugin-proposal-decorators": "^7.28.0",
@@ -32,6 +32,7 @@
     "eslint": "^9.9.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",
     "eslint-plugin-react-refresh": "^0.4.11",
+    "file-loader": "^6.2.0",
     "globals": "^15.9.0",
     "postcss": "^8.4.35",
     "postcss-loader": "^8.2.0",

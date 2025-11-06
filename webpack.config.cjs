@@ -28,6 +28,12 @@ Encore
 
     // Si estás usando Stimulus y el paquete StimulusBridge
     .enableStimulusBridge('./assets/controllers.json')
+
+    // Copia los assets de TinyMCE
+    .copyFiles({
+        from: './node_modules/tinymce/skins',
+        to: 'skins/[path][name].[ext]'
+    })
 ;
 
 module.exports = Encore.getWebpackConfig();

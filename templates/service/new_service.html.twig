@@ -170,14 +170,12 @@
         <div class="space-y-10">
             <div class="form-group">
                 {{ form_label(form.tasks, 'Tareas 📝') }}
-                <div data-service-form-target="quillTasks" style="height: 300px;"></div>
-                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'style': 'display:none;', 'data-service-form-target': 'tasks'}}) }}
+                {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'data-service-form-target': 'tasks'}}) }}
                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
             </div>
             <div class="form-group">
                 {{ form_label(form.description, 'Descripción ℹ️') }}
-                <div data-service-form-target="quillDescription" style="height: 300px;"></div>
-                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'style': 'display:none;', 'data-service-form-target': 'description'}}) }}
+                {{ form_widget(form.description, {'id': 'service_description', 'attr': {'data-service-form-target': 'description'}}) }}
                 <div class="form-error">{{ form_errors(form.description) }}</div>
             </div>
         </div>

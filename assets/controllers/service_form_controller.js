@@ -1,5 +1,9 @@
 import { Controller } from '@hotwired/stimulus';
-import Quill from 'quill';
+import tinymce from 'tinymce';
+import 'tinymce/themes/silver';
+import 'tinymce/skins/ui/oxide/skin.min.css';
+import 'tinymce/skins/ui/oxide/content.min.css';
+import 'tinymce/skins/content/default/content.min.css';
 
 export default class extends Controller {
     static targets = [
@@ -22,64 +26,22 @@ export default class extends Controller {
     ];
 
     connect() {
-        this.initializeQuill();
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
         }
+        tinymce.init({
+            selector: 'textarea#service_tasks, textarea#service_description',
+            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            toolbar_mode: 'floating',
+            promotion: false,
+            skin_url: '/build/skins/ui/oxide',
+            content_css: '/build/skins/content/default/content.css'
+        });
     }
 
     disconnect() {
-        if (this.quillDescriptionInstance) {
-            this.quillDescriptionInstance = null;
-        }
-        if (this.quillTasksInstance) {
-            this.quillTasksInstance = null;
-        }
-    }
-
-    initializeQuill() {
-        this.quillDescriptionInstance = this.setupQuill(this.quillDescriptionTarget, this.descriptionTarget);
-        this.quillTasksInstance = this.setupQuill(this.quillTasksTarget, this.tasksTarget);
-    }
-
-    setupQuill(container, textarea) {
-        if (!container || !textarea) return null;
-        if (container.quill) return container.quill;
-
-        const toolbarOptions = [
-            [{ 'header': [1, 2, 3, false] }],
-            ['bold', 'italic', 'strike', 'underline'],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-            [{ 'align': [] }],
-            ['link'],
-            ['clean']
-        ];
-
-        const Link = Quill.import('formats/link');
-        class CustomLink extends Link {
-            static sanitize(url) {
-                const sanitizedUrl = super.sanitize(url);
-                if (sanitizedUrl && sanitizedUrl !== 'about:blank' && !/^(https?:\/\/|mailto:|tel:)/.test(sanitizedUrl)) {
-                    return 'https://' + sanitizedUrl;
-                }
-                return sanitizedUrl;
-            }
-        }
-        Quill.register(CustomLink, true);
-
-        const quill = new Quill(container, {
-            modules: { toolbar: toolbarOptions },
-            theme: 'snow'
-        });
-
-        quill.root.innerHTML = textarea.value;
-
-        quill.on('text-change', () => {
-            textarea.value = quill.root.innerHTML;
-        });
-
-        return quill;
+        tinymce.remove('textarea#service_tasks');
+        tinymce.remove('textarea#service_description');
     }
 
     switchTab(event) {
