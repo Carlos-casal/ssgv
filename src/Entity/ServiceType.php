@@ -74,4 +74,14 @@ class ServiceType
 
         return $this;
     }
+
+    /**
+     * Returns the name of the service type when the object is converted to a string.
+     *
+     * @return string
+     */
+    public function __toString(): string
+    {
+        return $this->name ?? '';
+    }
 }
