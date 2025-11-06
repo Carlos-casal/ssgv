@@ -32,7 +32,19 @@ Encore
     // Copia los assets de TinyMCE
     .copyFiles({
         from: './node_modules/tinymce/skins',
-        to: 'skins/[path][name].[ext]'
+        to: 'tinymce/skins/[path][name].[ext]'
+    })
+    .copyFiles({
+        from: './node_modules/tinymce/icons',
+        to: 'tinymce/icons/[path][name].[ext]'
+    })
+    .copyFiles({
+        from: './node_modules/tinymce/plugins',
+        to: 'tinymce/plugins/[path][name].[ext]'
+    })
+    .copyFiles({
+        from: './node_modules/tinymce/themes',
+        to: 'tinymce/themes/[path][name].[ext]'
     })
 ;
 

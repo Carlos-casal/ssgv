@@ -34,8 +34,8 @@ export default class extends Controller {
             plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
             toolbar_mode: 'floating',
             promotion: false,
-            skin_url: '/build/skins/ui/oxide',
-            content_css: '/build/skins/content/default/content.css'
+            skin_url: '/build/tinymce/skins/ui/oxide',
+            content_css: '/build/tinymce/skins/content/default/content.css'
         });
     }
 
