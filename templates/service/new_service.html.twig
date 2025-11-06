@@ -4,7 +4,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <style>
         .form-group {
             margin-bottom: 1.5rem;
@@ -70,21 +69,12 @@
 
 {% block javascripts %}
     {{ parent() }}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 {% endblock %}
 
 {% block content %}
 <div class="container mx-auto px-4 py-8" data-controller="service-form modal-form">
     <h1 class="text-4xl font-bold mb-8 text-gray-900">Crear Nuevo Servicio</h1>
     <div class="bg-white shadow-xl rounded-2xl p-8">
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="home-tab" data-bs-toggle="tab" data-bs-target="#home-tab-pane" type="button" role="tab" aria-controls="home-tab-pane" aria-selected="true">Datos Básicos</button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="profile-tab" data-bs-toggle="tab" data-bs-target="#profile-tab-pane" type="button" role="tab" aria-controls="profile-tab-pane" aria-selected="false">Logística</button>
-            </li>
-        </ul>
         {{ form_start(form, {
             'attr': {
                 'class': 'space-y-10',
@@ -94,10 +84,20 @@
                 'data-redirect-url': path('app_services_list')
             }
         }) }}
+        <div data-controller="tabs">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button type="button" data-action="tabs#change" data-tabs-target="button" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-indigo-600 border-indigo-500">
+                        Datos Básicos
+                    </button>
+                    <button type="button" data-action="tabs#change" data-tabs-target="button" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm text-gray-500 hover:text-gray-700 hover:border-gray-300 border-transparent">
+                        Logística
+                    </button>
+                </nav>
+            </div>
 
-        <div class="tab-content" id="myTabContent">
-            <div class="tab-pane fade show active p-4" id="home-tab-pane" role="tabpanel" aria-labelledby="home-tab" tabindex="0">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
+            <div data-tabs-target="panel">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
             <div class="form-group">
                 {{ form_label(form.numeration, 'Numeración') }}
                 {{ form_widget(form.numeration) }}
@@ -160,6 +160,7 @@
             <div class="form-group">
                 {{ form_label(form.category, 'Categoría') }}
                 {{ form_widget(form.category) }}
+.
                 <div class="text-right mt-1">
                     <button type="button" data-action="click->modal-form#openModal" data-modal-id="categoryModal" class="text-sm font-medium text-blue-600 hover:text-blue-800 transition duration-150 ease-in-out">+ Nueva Categoría</button>
                 </div>
@@ -181,8 +182,9 @@
                 <div class="form-error">{{ form_errors(form.description) }}</div>
             </div>
         </div>
+
             </div>
-        <div class="tab-pane fade p-4" id="profile-tab-pane" role="tabpanel" aria-labelledby="profile-tab" tabindex="0">
+            <div data-tabs-target="panel" class="hidden">
         <div data-controller="resource-form">
             <h3 class="text-xl font-bold mb-6 border-b-2 border-gray-200 pb-3">Recursos</h3>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-x-8 gap-y-6">
@@ -191,15 +193,15 @@
                     <div class="space-y-4">
                         <div class="form-group flex items-center">
                              {{ form_label(form.numSvb, 'SVB', {'label_attr': {'class': 'form-resource-label'}}) }}
-                             {{ form_widget(form.numSvb, {'attr': {'class': 'form-input-short'}}) }}
+                             {{ form_widget(form.numSvb, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                         <div class="form-group flex items-center">
                             {{ form_label(form.numSva, 'SVA', {'label_attr': {'class': 'form-resource-label'}}) }}
-                            {{ form_widget(form.numSva, {'attr': {'class': 'form-input-short'}}) }}
+                            {{ form_widget(form.numSva, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                         <div class="form-group flex items-center">
                             {{ form_label(form.numSvae, 'SVAE', {'label_attr': {'class': 'form-resource-label'}}) }}
-                            {{ form_widget(form.numSvae, {'attr': {'class': 'form-input-short'}}) }}
+                            {{ form_widget(form.numSvae, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                     </div>
                 </div>
@@ -209,15 +211,15 @@
                     <div class="space-y-4">
                         <div class="form-group flex items-center">
                             {{ form_label(form.numTecnicos, 'Técnicos', {'label_attr': {'class': 'form-resource-label'}}) }}
-                            {{ form_widget(form.numTecnicos, {'attr': {'class': 'form-input-short'}}) }}
+                            {{ form_widget(form.numTecnicos, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                         <div class="form-group flex items-center">
                             {{ form_label(form.numDues, 'Enfermería', {'label_attr': {'class': 'form-resource-label'}}) }}
-                            {{ form_widget(form.numDues, {'attr': {'class': 'form-input-short'}}) }}
+                            {{ form_widget(form.numDues, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                         <div class="form-group flex items-center">
                             {{ form_label(form.numDoctors, 'Médico', {'label_attr': {'class': 'form-resource-label'}}) }}
-                            {{ form_widget(form.numDoctors, {'attr': {'class': 'form-input-short'}}) }}
+                            {{ form_widget(form.numDoctors, {'attr': {'class': 'form-input-short w-20'}}) }}
                         </div>
                     </div>
                 </div>
@@ -251,10 +253,9 @@
             {{ form_row(form.whatsappMessage) }}
         </div>
 
+            </div>
+        </div>
         {{ form_rest(form) }}
-
-        </div>
-        </div>
         <div class="flex items-center justify-end mt-10 pt-6 border-t border-gray-200">
             <a href="{{ path('app_services_list') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-3 px-6 rounded-lg transition-colors duration-300">
                 Volver a la Lista
