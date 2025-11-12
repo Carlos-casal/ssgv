@@ -3,33 +3,21 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ["modal", "invitationForm", "emailPreview", "emailBody", "emailInput"];
 
-    connect() {
-        this.boundClose = this.close.bind(this);
-    }
-
     open() {
+        console.log("Opening modal...");
         this.modalTarget.classList.remove('hidden');
     }
 
-    close(event) {
-        // If the click is outside the modal content, close it
-        if (event && event.target !== this.modalTarget) {
-            return;
-        }
-        this.resetModal();
+    doNothing(event) {
+        event.stopPropagation();
+    }
+
+    close() {
+        this.modalTarget.classList.add('hidden');
     }
 
     closeButton() {
-        this.resetModal();
-    }
-
-    resetModal() {
-        this.modalTarget.classList.add('hidden');
-        this.invitationFormTarget.classList.remove('hidden');
-        this.emailPreviewTarget.classList.add('hidden');
-        if (this.hasEmailInputTarget) {
-            this.emailInputTarget.value = '';
-        }
+        this.close();
     }
 
     sendInvitation() {
@@ -56,16 +44,16 @@ export default class extends Controller {
                 this.emailBodyTarget.innerHTML = data.email_body;
             } else if (data.message) {
                 alert('Invitación enviada correctamente a ' + email);
-                this.resetModal();
+                this.close();
             } else {
                 alert('Error al enviar la invitación.');
-                this.resetModal();
+                this.close();
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Error al enviar la invitación.');
-            this.resetModal();
+            this.close();
         });
     }
 }
