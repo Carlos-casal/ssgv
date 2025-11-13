@@ -15,6 +15,10 @@ export default class extends Controller {
         this.modalTarget.classList.add('hidden');
     }
 
+    stopPropagation(event) {
+        event.stopPropagation();
+    }
+
     sendInvitation() {
         const email = this.emailInputTarget.value.trim();
 
