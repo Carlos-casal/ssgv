@@ -8,16 +8,11 @@ export default class extends Controller {
 
     open(event) {
         event.preventDefault();
-        event.stopPropagation();
         this.modalTarget.classList.remove('hidden');
     }
 
     close() {
         this.modalTarget.classList.add('hidden');
-    }
-
-    stopPropagation(event) {
-        event.stopPropagation();
     }
 
     sendInvitation() {
