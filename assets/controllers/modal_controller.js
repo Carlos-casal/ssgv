@@ -3,7 +3,12 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ["modal", "invitationForm", "emailPreview", "emailBody", "emailInput"];
 
-    open() {
+    connect() {
+        console.log("Modal controller connected.");
+    }
+
+    open(event) {
+        event.preventDefault();
         console.log("Opening modal...");
         this.modalTarget.classList.remove('hidden');
     }
