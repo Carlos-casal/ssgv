@@ -1,15 +1,8 @@
-// Force asset refresh
 import { startStimulusApp } from '@symfony/stimulus-bridge';
-import ModalController from './controllers/modal_controller.js';
-import ModalFormController from './controllers/modal_form_controller.js';
-import ResourceFormController from './controllers/resource_form_controller.js';
-import ServiceFormController from './controllers/service_form_controller.js';
-import TabsController from './controllers/tabs_controller.js';
 
-const app = startStimulusApp();
-
-app.register('modal', ModalController);
-app.register('modal-form', ModalFormController);
-app.register('resource-form', ResourceFormController);
-app.register('service-form', ServiceFormController);
-app.register('tabs', TabsController);
+// Registers Stimulus controllers from controllers.json and in the controllers/ directory
+export const app = startStimulusApp(require.context(
+    '@symfony/stimulus-bridge/lazy-controller-loader!./controllers',
+    true,
+    /\.(j|t)sx?$/
+));
