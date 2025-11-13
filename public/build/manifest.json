@@ -2,6 +2,7 @@
   "build/app.css": "/build/app.css",
   "build/app.js": "/build/app.js",
   "build/runtime.js": "/build/runtime.js",
+  "build/assets_controllers_csrf_protection_controller_js.js": "/build/assets_controllers_csrf_protection_controller_js.js",
   "build/tinymce/themes/silver/theme.js": "/build/tinymce/themes/silver/theme.js",
   "build/tinymce/themes/silver/theme.min.js": "/build/tinymce/themes/silver/theme.min.js",
   "build/tinymce/plugins/emoticons/js/emojiimages.min.js": "/build/tinymce/plugins/emoticons/js/emojiimages.min.js",
