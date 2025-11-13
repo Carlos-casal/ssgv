@@ -11,16 +11,8 @@ export default class extends Controller {
         this.modalTarget.classList.remove('hidden');
     }
 
-    doNothing(event) {
-        event.stopPropagation();
-    }
-
     close() {
         this.modalTarget.classList.add('hidden');
-    }
-
-    closeButton() {
-        this.close();
     }
 
     sendInvitation() {
