@@ -6,6 +6,17 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     connect() {
-        lucide.createIcons();
+        this.renderIcons();
+    }
+
+    renderIcons() {
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        } else {
+            // If lucide is not yet available, wait a bit and try again.
+            // This handles race conditions with the CDN script loading,
+            // especially with Turbo navigations.
+            setTimeout(() => this.renderIcons(), 50);
+        }
     }
 }
