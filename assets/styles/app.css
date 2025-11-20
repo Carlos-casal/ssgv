@@ -1,4 +1,5 @@
 /* assets/styles/app.css */
+@import 'quill/dist/quill.snow.css';
 
 @tailwind base;
 @tailwind components;
