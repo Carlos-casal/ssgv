@@ -27,6 +27,7 @@ export default class extends Controller {
     }
 
     render() {
+        console.log('Icon controller is rendering icons...');
         // createIcons is now imported directly from the lucide package.
         createIcons({
             attrs: {
@@ -34,5 +35,6 @@ export default class extends Controller {
                 // For example: 'stroke-width': 1.5
             }
         });
+        console.log('Icon rendering finished.');
     }
 }
