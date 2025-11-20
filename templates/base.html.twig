@@ -5,19 +5,16 @@
         <title>{% block title %}Sistema de Gestión de Voluntarios{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="https://raw.githubusercontent.com/Carlos-casal/ssgv/main/public/images/logo.png" type="image/png">
-        <script src="https://cdn.tailwindcss.com"></script>
-        {% block stylesheets %}{% endblock %}
-        <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
-        <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
-        {{ importmap('app') }}
+
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
     </head>
     <body class="bg-gray-50" data-controller="icon">
         {% block body %}{% endblock %}
         
-        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
-        <script>
-            lucide.createIcons();
-        </script>
-        {% block javascripts %}{% endblock %}
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
     </body>
 </html>
