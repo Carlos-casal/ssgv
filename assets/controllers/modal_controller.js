@@ -3,17 +3,16 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ["modal", "invitationForm", "emailPreview", "emailBody", "emailInput"];
 
-    connect() {
-        this.boundClose = this.close.bind(this);
-    }
-
-    open() {
+    open(event) {
+        // Detener la propagación para evitar que el mismo clic active el listener de cierre en la ventana
+        event.stopPropagation();
         this.modalTarget.classList.remove('hidden');
     }
 
     close(event) {
-        // If the click is outside the modal content, close it
-        if (event && event.target !== this.modalTarget) {
+        // Esta lógica cierra el modal solo si el clic es en el fondo (this.modalTarget),
+        // no en el contenido del modal.
+        if (event.target !== this.modalTarget) {
             return;
         }
         this.resetModal();
