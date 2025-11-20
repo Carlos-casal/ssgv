@@ -1,4 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
+import { createIcons } from 'lucide';
 
 /*
  * This controller is responsible for rendering Lucide icons.
@@ -6,17 +7,32 @@ import { Controller } from '@hotwired/stimulus';
  */
 export default class extends Controller {
     connect() {
-        this.renderIcons();
+        // On initial page load or Turbo visit, render all icons.
+        this.render();
+
+        // If the DOM changes (e.g., a Turbo stream update), re-render icons.
+        // This is more robust than just listening to turbo:load.
+        this.observer = new MutationObserver(() => this.render());
+        this.observer.observe(this.element, {
+            childList: true,
+            subtree: true,
+        });
     }
 
-    renderIcons() {
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        } else {
-            // If lucide is not yet available, wait a bit and try again.
-            // This handles race conditions with the CDN script loading,
-            // especially with Turbo navigations.
-            setTimeout(() => this.renderIcons(), 50);
+    disconnect() {
+        // Clean up the observer when the controller is disconnected.
+        if (this.observer) {
+            this.observer.disconnect();
         }
+    }
+
+    render() {
+        // createIcons is now imported directly from the lucide package.
+        createIcons({
+            attrs: {
+                // Add any default attributes here if needed.
+                // For example: 'stroke-width': 1.5
+            }
+        });
     }
 }
