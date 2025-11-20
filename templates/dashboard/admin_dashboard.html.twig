@@ -144,10 +144,10 @@
     <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200" data-controller="modal">
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="#" data-action="click->modal#open" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button data-action="click->modal#open" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
                 <span class="font-medium">Añadir Voluntario</span>
-            </a>
+            </button>
             <a href="{{ path('app_service_new') }}" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                 <i data-lucide="calendar" class="w-5 h-5 text-green-600"></i>
                 <span class="font-medium">Programar Servicio</span>
@@ -159,14 +159,12 @@
         </div>
 
         <!-- Add Volunteer Modal -->
-        <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
-            <div class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg" data-action="click->modal#stopPropagation">
+        <div data-modal-target="modal" data-action="click@window->modal#close" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
+            <div class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg" @click.stop>
                 <div data-modal-target="invitationForm">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold">Añadir Voluntario</h2>
-                        <button data-action="click->modal#close" class="p-1 rounded-full hover:bg-gray-200">
-                            <i data-lucide="x" class="w-5 h-5 text-gray-600"></i>
-                        </button>
+                        <button data-action="click->modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
                     </div>
                     <div class="space-y-6">
                         <div>
@@ -192,9 +190,7 @@
                 <div data-modal-target="emailPreview" class="hidden">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-semibold">Contenido del Correo (Entorno de Pruebas)</h2>
-                        <button data-action="click->modal#close" class="p-1 rounded-full hover:bg-gray-200">
-                            <i data-lucide="x" class="w-5 h-5 text-gray-600"></i>
-                        </button>
+                        <button data-action="click->modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
                     </div>
                     <div data-modal-target="emailBody" class="prose max-w-none"></div>
                 </div>

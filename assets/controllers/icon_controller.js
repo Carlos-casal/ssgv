@@ -1,11 +1,25 @@
 import { Controller } from '@hotwired/stimulus';
+import { createIcons } from 'lucide';
 
-/*
- * This controller is responsible for rendering Lucide icons.
- * It should be attached to the <body> element.
+/**
+ * Controller to render Lucide icons.
+ * Attach to the <body> tag.
  */
 export default class extends Controller {
     connect() {
-        lucide.createIcons();
+        this.render();
+    }
+
+    render() {
+        try {
+            console.log('Attempting to render icons...');
+            // Find all elements with the data-lucide attribute and render them.
+            createIcons({
+                // You can add default attributes here if needed
+            });
+            console.log('Successfully rendered icons.');
+        } catch (error) {
+            console.error('Error rendering icons:', error);
+        }
     }
 }
