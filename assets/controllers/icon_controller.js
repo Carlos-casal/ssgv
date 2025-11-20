@@ -1,5 +1,46 @@
 import { Controller } from '@hotwired/stimulus';
-import { createIcons } from 'lucide';
+import {
+    createIcons,
+    Home,
+    ChevronRight,
+    Users,
+    Briefcase,
+    Megaphone,
+    Archive,
+    Truck,
+    Boxes,
+    Puzzle,
+    FireHydrant,
+    UserPlus,
+    Landmark,
+    CheckSquare,
+    FileArchive,
+    PhoneForwarded,
+    BarChart2,
+    Settings,
+    UserCog,
+    Star,
+    ShieldCheck,
+    LogOut,
+    CheckCircle,
+    AlertCircle,
+    Download,
+    Plus,
+    Search,
+    Filter,
+    Eye,
+    Edit,
+    Trash2,
+    ArrowUpDown,
+    Pencil,
+    Mail,
+    Lock,
+    Construction,
+    Calendar,
+    Car,
+    Clock,
+    TrendingUp
+} from 'lucide';
 
 /**
  * Controller to render Lucide icons.
@@ -12,12 +53,49 @@ export default class extends Controller {
 
     render() {
         try {
-            console.log('Attempting to render icons...');
-            // Find all elements with the data-lucide attribute and render them.
             createIcons({
-                // You can add default attributes here if needed
+                icons: {
+                    Home,
+                    ChevronRight,
+                    Users,
+                    Briefcase,
+                    Megaphone,
+                    Archive,
+                    Truck,
+                    Boxes,
+                    Puzzle,
+                    FireHydrant,
+                    UserPlus,
+                    Landmark,
+                    CheckSquare,
+                    FileArchive,
+                    PhoneForwarded,
+                    BarChart2,
+                    Settings,
+                    UserCog,
+                    Star,
+                    ShieldCheck,
+                    LogOut,
+                    CheckCircle,
+                    AlertCircle,
+                    Download,
+                    Plus,
+                    Search,
+                    Filter,
+                    Eye,
+                    Edit,
+                    Trash2,
+                    ArrowUpDown,
+                    Pencil,
+                    Mail,
+                    Lock,
+                    Construction,
+                    Calendar,
+                    Car,
+                    Clock,
+                    TrendingUp
+                }
             });
-            console.log('Successfully rendered icons.');
         } catch (error) {
             console.error('Error rendering icons:', error);
         }
