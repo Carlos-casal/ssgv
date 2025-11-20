@@ -1,13 +1,42 @@
 import './bootstrap.js';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
 import './styles/app.css';
+import { createIcons } from 'lucide';
 
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+// Log to confirm the file is loaded
+console.log('This log comes from assets/app.js');
 
-// The modal logic has been refactored into the `modal_controller.js` Stimulus controller.
-// The old code has been removed to avoid conflicts.
+/**
+ * Renders all Lucide icons on the page.
+ * This function is designed to be called safely multiple times.
+ */
+const renderIcons = () => {
+    try {
+        console.log('app.js: Attempting to render icons...');
+        createIcons();
+        console.log('app.js: Successfully rendered icons.');
+    } catch (error) {
+        console.error('app.js: Error rendering icons:', error);
+    }
+};
+
+// --- Primary Icon Rendering Logic ---
+
+// 1. Render icons when the DOM is fully loaded for the first time.
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded event fired.');
+    renderIcons();
+});
+
+// 2. Render icons after every Turbo navigation.
+// This is crucial for ensuring icons appear on subsequent page views.
+document.addEventListener('turbo:load', () => {
+    console.log('turbo:load event fired.');
+    renderIcons();
+});
+
+// 3. As a fallback, render icons when the Stimulus app connects.
+// This can help in scenarios where initial load timing is tricky.
+document.addEventListener('stimulus:connect', () => {
+    console.log('stimulus:connect event fired.');
+    renderIcons();
+});
