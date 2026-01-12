@@ -1,10 +1,10 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ["modal", "invitationForm", "emailPreview", "emailBody", "emailInput"];
+    static targets = ["modal", "content", "invitationForm", "emailPreview", "emailBody", "emailInput"];
 
     connect() {
-        this.boundClose = this.close.bind(this);
+        // No need to bind 'close' anymore as we're not using it with window events
     }
 
     open() {
@@ -12,11 +12,11 @@ export default class extends Controller {
     }
 
     close(event) {
-        // If the click is outside the modal content, close it
-        if (event && event.target !== this.modalTarget) {
-            return;
+        // If the click is on the modal overlay (the target of the action)
+        // and NOT on the modal content, then close the modal.
+        if (event.target === this.modalTarget && !this.contentTarget.contains(event.target)) {
+            this.resetModal();
         }
-        this.resetModal();
     }
 
     closeButton() {
