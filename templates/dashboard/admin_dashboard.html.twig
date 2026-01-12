@@ -7,7 +7,7 @@
 <div class="p-6 space-y-6">
     <!-- Stats cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <a href="{{ path('app_volunteer_list') }}" class="block bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Voluntarios Activos</p>
@@ -21,9 +21,9 @@
                     <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <a href="{{ path('app_services_list') }}" class="block bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Servicios del Mes</p>
@@ -36,9 +36,9 @@
                     <i data-lucide="calendar" class="w-6 h-6 text-green-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <a href="{{ path('app_vehicle_index') }}" class="block bg-white rounded-xl p-6 shadow-sm border border-gray-200 hover:bg-gray-50 transition-colors">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="text-sm font-medium text-gray-600">Vehículos Disponibles</p>
@@ -51,7 +51,7 @@
                     <i data-lucide="car" class="w-6 h-6 text-purple-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <div class="flex items-center justify-between">
