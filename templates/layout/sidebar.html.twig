@@ -2,16 +2,43 @@
 <div class="bg-blue-600 text-white w-64 flex flex-col h-full" id="sidebar">
 
     <!-- Header -->
-    <div class="p-4 border-b border-blue-700 flex items-center justify-between">
-        <p class="font-semibold">{{ now|format_spanish_date }}</p>
-        <div class="relative">
-            <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
-                <i data-lucide="bell" class="w-5 h-5"></i>
-            </button>
-            {% if pending_volunteer_count > 0 %}
-                <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
-            {% endif %}
+<div class="p-4 border-b border-blue-700">
+    {% if app.user %}
+        <div class="flex items-start justify-between">
+            <div class="flex items-center gap-3">
+                <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
+                <div class="flex-1">
+                    <p class="font-medium text-sm">{{ app.user.volunteer.name|default('Usuario') }}</p>
+                    <p class="text-xs text-blue-300">{{ app.user.email }}</p>
+                </div>
+            </div>
+            <div class="relative">
+                <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                {% if pending_volunteer_count > 0 %}
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                {% endif %}
+            </div>
         </div>
+        <div class="mt-3">
+            <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors">
+                <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
+                <span class="text-sm">Cerrar Sesión</span>
+            </a>
+        </div>
+    {% else %}
+        <div class="flex items-center justify-end h-16"> {# Set a fixed height to avoid layout shift #}
+            <div class="relative">
+                <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                </button>
+                {% if pending_volunteer_count > 0 %}
+                    <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                {% endif %}
+            </div>
+        </div>
+    {% endif %}
     </div>
 
     <!-- Navegación Principal -->
@@ -163,22 +190,6 @@
         </nav>
     </div>
 
-    <!-- Perfil de Usuario y Cerrar Sesión -->
-    {% if app.user %}
-    <div class="p-4 border-t border-blue-700">
-        <div class="flex items-center gap-3 mb-3">
-            <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}" alt="Foto de perfil" class="w-8 h-8 rounded-full object-cover flex-shrink-0">
-            <div class="flex-1">
-                <p class="font-medium text-sm">{{ app.user.volunteer.name|default('Usuario') }}</p>
-                <p class="text-xs text-blue-300">{{ app.user.email }}</p>
-            </div>
-        </div>
-        <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-3 px-3 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-colors">
-            <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
-            <span class="text-sm">Cerrar Sesión</span>
-        </a>
-    </div>
-    {% endif %}
 </div>
 
 <style>
