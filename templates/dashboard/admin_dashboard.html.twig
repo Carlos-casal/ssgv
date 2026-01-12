@@ -74,7 +74,7 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
             <div class="space-y-4">
-                {% for activity in recent_activities %}
+                {% for activity in recent_activities|slice(0, 5) %}
                     <div class="flex items-start gap-3">
                         {% if attribute(activity, 'joinDate') is defined %}
                             {# It's a Volunteer entity #}
@@ -124,7 +124,7 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Eventos</h3>
             <div class="space-y-4">
-                {% for service in upcoming_services %}
+                {% for service in upcoming_services|slice(0, 5) %}
                     <div class="border border-gray-200 rounded-lg p-4">
                         <h4 class="font-medium text-gray-900">{{ service.title }}</h4>
                         <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
