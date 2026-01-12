@@ -7,14 +7,12 @@ export default class extends Controller {
         // No need to bind 'close' anymore as we're not using it with window events
     }
 
-    open(event) {
-        // Stop the event from bubbling up and immediately closing the modal.
-        event.stopPropagation();
+    open() {
+        alert('Button clicked!');
         this.modalTarget.classList.remove('hidden');
     }
 
     close(event) {
-        // Close the modal if the click is directly on the overlay background.
         if (event.target === this.modalTarget) {
             this.resetModal();
         }
