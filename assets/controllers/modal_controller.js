@@ -8,7 +8,6 @@ export default class extends Controller {
     }
 
     open() {
-        alert('Button clicked!');
         this.modalTarget.classList.remove('hidden');
     }
 
