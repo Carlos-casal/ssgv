@@ -7,14 +7,10 @@ import './bootstrap.js';
 // Import and initialize Lucide icons
 import { createIcons } from 'lucide';
 
-document.addEventListener('turbo:load', () => {
+const initializeIcons = () => {
     createIcons();
-});
+};
 
-document.addEventListener('DOMContentLoaded', () => {
-    createIcons();
-});
-
-document.addEventListener('turbo:render', () => {
-    createIcons();
-});
+document.addEventListener('turbo:load', initializeIcons);
+document.addEventListener('DOMContentLoaded', initializeIcons);
+document.addEventListener('turbo:render', initializeIcons);
