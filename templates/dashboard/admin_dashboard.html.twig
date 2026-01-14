@@ -74,7 +74,7 @@
         <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
             <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
             <div class="space-y-4">
-                {% for activity in recent_activities %}
+                {% for activity in recent_activities|slice(0, 10) %}
                     <div class="flex items-start gap-3">
                         {% if attribute(activity, 'joinDate') is defined %}
                             {# It's a Volunteer entity #}
@@ -145,17 +145,17 @@
         <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
         <div class="flex items-center gap-4">
             <!-- Test Modal Controller -->
-            <div data-controller="modal">
-                <button data-action="click->modal#open" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <div data-controller="hello-modal">
+                <button data-action="click->hello-modal#open" class="flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
                     <i data-lucide="alert-triangle" class="w-5 h-5 text-red-600"></i>
                     <span class="font-medium">Abrir Modal de Prueba</span>
                 </button>
                 <!-- Test Modal -->
-                <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
-                    <div data-modal-target="content" class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg">
+                <div data-hello-modal-target="modal" data-action="click->hello-modal#close" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
+                    <div class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-xl font-semibold">Modal de Prueba</h2>
-                            <button data-action="click->modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
+                            <button data-action="click->hello-modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
                         </div>
                         <p>Hola mundo</p>
                     </div>

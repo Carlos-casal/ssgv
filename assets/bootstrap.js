@@ -5,9 +5,11 @@ import ModalFormController from './controllers/modal_form_controller.js';
 import ResourceFormController from './controllers/resource_form_controller.js';
 import ServiceFormController from './controllers/service_form_controller.js';
 import TabsController from './controllers/tabs_controller.js';
+import HelloModalController from './controllers/hello_modal_controller.js';
 
 const app = startStimulusApp();
 
+app.register('hello-modal', HelloModalController);
 app.register('modal', ModalController);
 app.register('modal-form', ModalFormController);
 app.register('resource-form', ResourceFormController);
