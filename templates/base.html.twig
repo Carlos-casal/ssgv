@@ -5,14 +5,16 @@
         <title>{% block title %}Sistema de Gestión de Voluntarios{% endblock %}</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <link rel="icon" href="https://raw.githubusercontent.com/Carlos-casal/ssgv/main/public/images/logo.png" type="image/png">
+        {# Eliminar Tailwind CDN y usar la versión compilada por Encore #}
         {% block stylesheets %}
             {{ encore_entry_link_tags('app') }}
-        {% endblock %}
-        {% block javascripts %}
-            {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
     <body class="bg-gray-50">
         {% block body %}{% endblock %}
+
+        {% block javascripts %}
+            {{ encore_entry_script_tags('app') }}
+        {% endblock %}
     </body>
 </html>
