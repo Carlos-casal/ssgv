@@ -1,13 +1,27 @@
 import './bootstrap.js';
-/*
- * Welcome to your app's main JavaScript file!
- *
- * This file will be included onto the page via the importmap() Twig function,
- * which should already be in your base.html.twig.
- */
+
+// Import our custom CSS
 import './styles/app.css';
 
-console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');
+// Import and initialize Lucide icons
+import { createIcons, icons } from 'lucide';
 
-// The modal logic has been refactored into the `modal_controller.js` Stimulus controller.
-// The old code has been removed to avoid conflicts.
+// Function to create icons
+const createLucideIcons = () => {
+  createIcons({ icons });
+};
+
+// Create icons on initial page load
+document.addEventListener('DOMContentLoaded', () => {
+  createLucideIcons();
+});
+
+// Re-create icons when Turbo navigates
+document.addEventListener('turbo:load', () => {
+  createLucideIcons();
+});
+
+// Re-create icons after a Turbo stream render
+document.addEventListener('turbo:render', () => {
+    createLucideIcons();
+});
