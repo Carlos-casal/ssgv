@@ -7,6 +7,7 @@
 @layer base {
     body {
         margin: 0;
+        padding: 0;
     }
     /* Base styles can remain if they are truly global */
 }
