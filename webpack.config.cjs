@@ -23,6 +23,9 @@ Encore
     // Habilita un único runtime chunk (¡NECESARIO AHORA!)
     .enableSingleRuntimeChunk()
 
+    // Habilita el versionado de assets en producción para romper la caché
+    .enableVersioning(Encore.isProduction())
+
     // PostCSS es necesario para Tailwind CSS
     .enablePostCssLoader()
 
