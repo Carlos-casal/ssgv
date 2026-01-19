@@ -5,13 +5,15 @@
 @tailwind utilities;
 
 @layer base {
-    html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-    }
     /* Base styles can remain if they are truly global */
+}
+
+/* Explicit reset outside of @layer for maximum precedence */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
 }
 
 @layer components {
