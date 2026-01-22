@@ -17,11 +17,8 @@ html, body {
     overflow: hidden;
 }
 
-/* Sidebar fija */
+/* Sidebar */
 .sidebar {
-    position: fixed !important;
-    top: 0 !important;
-    left: 0 !important;
     height: 100vh !important;
     width: 260px !important;
     margin: 0 !important;
@@ -31,9 +28,6 @@ html, body {
 
 /* Contenido principal expandido */
 .main-content {
-    margin-left: 260px !important;
-    width: calc(100% - 260px) !important;
-    overflow-y: auto;
     height: 100vh;
 }
 
