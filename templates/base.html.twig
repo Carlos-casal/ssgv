@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" class="m-0 p-0 h-screen overflow-hidden">
+<html lang="es" class="m-0 p-0 h-screen overflow-x-hidden">
     <head>
         <meta charset="UTF-8">
         <title>{% block title %}Sistema de Gestión de Voluntarios{% endblock %}</title>
@@ -13,7 +13,7 @@
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
     </head>
-    <body class="{% block body_class %}bg-gray-50{% endblock %} antialiased m-0 p-0 h-screen overflow-hidden">
+    <body class="{% block body_class %}bg-gray-50{% endblock %} antialiased m-0 p-0 h-screen overflow-x-hidden">
         {% block body %}{% endblock %}
     </body>
 </html>
