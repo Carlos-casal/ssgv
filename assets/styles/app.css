@@ -32,18 +32,11 @@ html, body {
 /* Contenido principal expandido */
 .main-content {
     margin-left: 260px !important;
-    width: auto !important; /* Let it be pushed by margin-left and take remaining width */
-    flex: 1;
+    width: calc(100% - 260px) !important;
     overflow-y: auto;
     height: 100vh;
 }
 
-/* Grid adaptable solicitado */
-.responsive-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
 
 @layer components {
     .no-scrollbar::-webkit-scrollbar {
