@@ -37,12 +37,6 @@ html, body {
     height: 100vh;
 }
 
-/* Grid adaptable solicitado */
-.responsive-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-}
 
 @layer components {
     .no-scrollbar::-webkit-scrollbar {
