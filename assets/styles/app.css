@@ -31,8 +31,9 @@ html, body {
 
 /* Contenido principal expandido */
 .main-content {
-    margin-left: 260px;
-    width: calc(100% - 260px);
+    margin-left: 260px !important;
+    width: auto !important; /* Let it be pushed by margin-left and take remaining width */
+    flex: 1;
     overflow-y: auto;
     height: 100vh;
 }
