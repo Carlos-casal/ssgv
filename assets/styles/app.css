@@ -17,18 +17,9 @@ html, body {
     overflow: hidden;
 }
 
-/* Sidebar */
+/* Sidebar - Clases de utilidad se encargan del layout */
 .sidebar {
-    height: 100vh !important;
     width: 260px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    z-index: 50;
-}
-
-/* Contenido principal expandido */
-.main-content {
-    height: 100vh;
 }
 
 
