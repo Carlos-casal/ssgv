@@ -12,8 +12,17 @@
         {% block javascripts %}
             {{ encore_entry_script_tags('app') }}
         {% endblock %}
+        <style>
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                height: 100vh !important;
+                width: 100% !important;
+                overflow: hidden !important;
+            }
+        </style>
     </head>
-    <body class="{% block body_class %}bg-gray-50{% endblock %} antialiased">
+    <body class="{% block body_class %}bg-gray-50{% endblock %} antialiased m-0 p-0">
         {% block body %}{% endblock %}
     </body>
 </html>
