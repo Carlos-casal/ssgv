@@ -22,6 +22,11 @@ html, body {
     width: 260px !important;
 }
 
+/* Reset global obligatorio para asegurar cero márgenes */
+* {
+    box-sizing: border-box;
+}
+
 
 @layer components {
     .no-scrollbar::-webkit-scrollbar {
