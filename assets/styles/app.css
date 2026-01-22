@@ -8,7 +8,7 @@
     /* Base styles can remain if they are truly global */
 }
 
-/* Explicit reset outside of @layer for maximum precedence */
+/* Reset global obligatorio */
 html, body {
     margin: 0 !important;
     padding: 0 !important;
@@ -17,22 +17,31 @@ html, body {
     overflow: hidden;
 }
 
+/* Sidebar fija */
 .sidebar {
     position: fixed;
     top: 0;
     left: 0;
     height: 100vh;
-    width: 16rem; /* matches w-64 */
+    width: 260px;
     margin: 0;
     padding: 0;
     z-index: 50;
 }
 
+/* Contenido principal expandido */
 .main-content {
-    margin-left: 16rem; /* matches sidebar width */
-    width: calc(100% - 16rem);
+    margin-left: 260px;
+    width: calc(100% - 260px);
     overflow-y: auto;
     height: 100vh;
+}
+
+/* Grid adaptable solicitado */
+.responsive-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
 }
 
 @layer components {
