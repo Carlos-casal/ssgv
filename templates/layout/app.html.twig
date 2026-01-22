@@ -1,12 +1,12 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-<div class="flex flex-row w-full h-screen overflow-hidden m-0 p-0">
+<div class="flex h-screen w-full m-0 p-0">
     <!-- Sidebar -->
     {% include 'layout/sidebar.html.twig' %}
     
     <!-- Main content -->
-    <div class="main-content flex-1 h-screen overflow-y-auto bg-gray-50">
+    <div class="main-content flex-1 h-full overflow-y-auto bg-gray-50">
         <header class="p-6">
             <h1 class="text-2xl font-bold text-gray-900">{% block page_title %}{% endblock %}</h1>
         </header>
