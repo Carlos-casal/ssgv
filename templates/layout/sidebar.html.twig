@@ -2,10 +2,10 @@
 <div class="w-[260px] h-full bg-blue-600 text-white flex flex-col flex-shrink-0 m-0 p-0 overflow-y-auto" id="sidebar">
 
     <!-- Header -->
-<div class="p-6 border-b border-blue-700">
+<div class="px-4 pt-4 pb-4 border-b border-blue-700">
     {% if app.user %}
-        <div class="mb-6">
-            <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-x-4 px-5 py-3 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
+        <div class="mb-4">
+            <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-x-4 px-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
                 <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="text-sm font-medium">Cerrar Sesión</span>
             </a>
@@ -14,8 +14,8 @@
             <div class="flex items-center gap-x-4">
                 <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}"
                      alt="Foto de perfil"
-                     class="w-12 h-12 rounded-full object-cover flex-shrink-0 border-2 border-blue-400/30"
-                     style="image-rendering: -webkit-optimize-contrast;">
+                     class="w-10 h-10 rounded-full object-cover flex-shrink-0 border-2 border-blue-400/30"
+                     style="image-rendering: crisp-edges;">
                 <div class="flex-1 min-w-0">
                     <p class="font-semibold text-white text-sm truncate">{{ app.user.volunteer.name|default('Usuario') }}</p>
                     <p class="text-xs text-blue-200 truncate">{{ app.user.email }}</p>
@@ -46,10 +46,10 @@
 
     <!-- Navegación Principal -->
     <div class="flex-1 no-scrollbar overflow-y-auto px-4 py-2">
-        <nav class="space-y-1.5" id="main-nav">
-            <ul class="space-y-1.5">
+        <nav class="space-y-0.5" id="main-nav">
+            <ul class="space-y-0.5">
                 <li>
-                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200">
+                    <a href="{{ path('app_dashboard') }}" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200">
                         <i data-lucide="home" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="text-sm font-medium">INICIO</span>
                     </a>
@@ -58,114 +58,114 @@
                 {% if is_granted('ROLE_ADMIN') %}
                 <!-- GESTIÓN -->
                 <li class="has-submenu">
-                    <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                    <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="folder-kanban" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-left text-sm font-medium">GESTIÓN</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </button>
-                    <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
+                    <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
                         <!-- PERSONAL -->
                         <li class="has-submenu">
-                            <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                            <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="users" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-left text-sm font-medium">PERSONAL</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </button>
-                            <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                                <li><a href="{{ path('app_volunteer_list') }}" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LISTADO</a></li>
-                                <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
+                            <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                                <li><a href="{{ path('app_volunteer_list') }}" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LISTADO</a></li>
+                                <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
                             </ul>
                         </li>
                         <!-- SERVICIOS -->
                         <li class="has-submenu">
-                            <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                            <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-left text-sm font-medium">SERVICIOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </button>
-                            <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                                <li><a href="{{ path('app_services_list') }}" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LISTADO</a></li>
-                                <li><a href="{{ path('app_admin_import_hours') }}" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">IMPORTAR HORAS</a></li>
-                                <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
-                                <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">CUADRANTE</a></li>
+                            <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                                <li><a href="{{ path('app_services_list') }}" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LISTADO</a></li>
+                                <li><a href="{{ path('app_admin_import_hours') }}" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">IMPORTAR HORAS</a></li>
+                                <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
+                                <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">CUADRANTE</a></li>
                             </ul>
                         </li>
-                        <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
+                        <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="megaphone" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">COMUNICADO Y ALERTAS</span></a></li>
                         <!-- RECURSOS -->
                         <li class="has-submenu">
-                            <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                            <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                                 <i data-lucide="archive" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="flex-1 text-left text-sm font-medium">RECURSOS</span>
                                 <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                             </button>
-                            <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                                <li><a href="{{ path('app_vehicle_index') }}" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">VEHICULO</span></a></li>
+                            <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                                <li><a href="{{ path('app_vehicle_index') }}" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">VEHICULO</span></a></li>
                                 <!-- INVENTARIO -->
                                 <li class="has-submenu">
-                                    <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                                    <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-left text-sm font-medium">INVENTARIO</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </button>
-                                    <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ARTICULOS</a></li>
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ALMACENES</a></li>
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">PROVEEDORES</a></li>
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ENTRADAS-SALIDAS</a></li>
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">TRASPASO</a></li>
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LOTE</a></li>
+                                    <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ARTICULOS</a></li>
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ALMACENES</a></li>
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">PROVEEDORES</a></li>
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">ENTRADAS-SALIDAS</a></li>
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">TRASPASO</a></li>
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">LOTE</a></li>
                                     </ul>
                                 </li>
                                 <!-- ARCE -->
                                 <li class="has-submenu">
-                                    <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                                    <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                                         <i data-lucide="puzzle" class="w-5 h-5 flex-shrink-0"></i>
                                         <span class="flex-1 text-left text-sm font-medium">ARCE</span>
                                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                                     </button>
-                                    <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
+                                    <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200">INFORMES</a></li>
                                     </ul>
                                 </li>
                             </ul>
                         </li>
-                        <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="fire-hydrant" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">HIDRANTES</span></a></li>
-                        <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="user-plus" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">FILIACIONES</span></a></li>
-                        <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TESORERIA</span></a></li>
-                        <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="check-square" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TAREAS</span></a></li>
+                        <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="fire-hydrant" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">HIDRANTES</span></a></li>
+                        <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="user-plus" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">FILIACIONES</span></a></li>
+                        <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="landmark" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TESORERIA</span></a></li>
+                        <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="check-square" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">TAREAS</span></a></li>
                     </ul>
                 </li>
-                <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">GESDOC</span></a></li>
-                <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">CENTRAL</span></a></li>
-                <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">ESTADISTICAS</span></a></li>
+                <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">GESDOC</span></a></li>
+                <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">CENTRAL</span></a></li>
+                <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">ESTADISTICAS</span></a></li>
 
                 <!-- CONFIGURACION -->
                 <li class="has-submenu">
-                    <button class="w-full flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
+                    <button class="w-full flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200" aria-haspopup="true" aria-expanded="false">
                         <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
                         <span class="flex-1 text-left text-sm font-medium">CONFIGURACION</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </button>
-                    <ul class="mt-1 ml-4 space-y-1 border-l border-white/10">
-                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">SISTEMAS</a></li>
-                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">UTILIDADES</a></li>
-                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">ADMINISTRACION</a></li>
-                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">ENTIDAD</a></li>
-                        <li><a href="#" class="block px-5 py-3.5 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">SUSCRIPCION</a></li>
+                    <ul class="mt-0.5 ml-4 space-y-0.5 border-l border-white/10">
+                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">SISTEMAS</a></li>
+                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">UTILIDADES</a></li>
+                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">ADMINISTRACION</a></li>
+                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">ENTIDAD</a></li>
+                        <li><a href="#" class="block px-4 py-1 text-sm rounded-xl hover:bg-white/10 transition-all duration-200 font-medium">SUSCRIPCION</a></li>
                     </ul>
                 </li>
 
-                <li><a href="#" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">USUARIO</span></a></li>
+                <li><a href="#" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i><span class="text-sm font-medium">USUARIO</span></a></li>
                 {% else %}
                     {# Simplified menu for non-admins, e.g., ROLE_VOLUNTEER #}
                      <li>
-                        <a href="{{ path('app_services_list') }}" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200">
+                        <a href="{{ path('app_services_list') }}" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
                             <span class="text-sm font-medium">Servicios</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ path('app_my_services') }}" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl hover:bg-white/10 transition-all duration-200">
+                        <a href="{{ path('app_my_services') }}" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl hover:bg-white/10 transition-all duration-200">
                             <i data-lucide="star" class="w-5 h-5 flex-shrink-0"></i>
                             <span class="text-sm font-medium">Mis servicios</span>
                         </a>
@@ -182,7 +182,7 @@
 
                     {% if is_responsible_for_any_service %}
                         <li>
-                            <a href="{{ path('app_responsible_services_list') }}" class="flex items-center gap-x-4 px-5 py-3.5 rounded-xl text-yellow-400 bg-white/5 hover:bg-white/10 transition-all duration-200">
+                            <a href="{{ path('app_responsible_services_list') }}" class="flex items-center gap-x-4 px-4 py-1.5 rounded-xl text-yellow-400 bg-white/5 hover:bg-white/10 transition-all duration-200">
                                 <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0"></i>
                                 <span class="text-sm font-medium">Servicios Responsable</span>
                             </a>
