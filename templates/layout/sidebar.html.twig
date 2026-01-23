@@ -11,11 +11,13 @@
             </a>
         </div>
         <div class="flex items-center justify-between">
-            <div class="flex items-center">
-                <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}"
-                     alt="Foto de perfil"
-                     class="w-14 h-14 rounded-full object-cover flex-shrink-0 border border-white/20"
-                     style="image-rendering: crisp-edges;">
+            <div class="flex items-center min-w-0">
+                <div class="w-14 h-14 flex-shrink-0">
+                    <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}"
+                         alt="Foto de perfil"
+                         class="w-full h-full rounded-full object-cover border border-white/20"
+                         style="image-rendering: crisp-edges;">
+                </div>
                 <div class="flex-1 min-w-0 ml-3">
                     <p class="font-semibold text-white text-sm truncate">{{ app.user.volunteer.name|default('Usuario') }}</p>
                     <p class="text-xs text-blue-200 truncate">{{ app.user.email }}</p>
