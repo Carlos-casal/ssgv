@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Iniciar Sesión{% endblock %}
+{% block title %}Iniciar Sesión - Protección Civil{% endblock %}
 
 {% block body_class %}{% endblock %}
 
@@ -16,12 +16,11 @@
             <!-- Contenedor Unificado (Card) -->
             <div class="bg-white rounded-2xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-8">
-                    <!-- El logo debe ir dentro de la tarjeta blanca -->
+                    <!-- Logo dentro de la tarjeta -->
                     <img src="https://raw.githubusercontent.com/Carlos-casal/ssgv/main/public/images/logo.png"
                          alt="Logo Protección Civil"
                          class="mx-auto h-32 w-auto mb-6">
 
-                    <!-- Jerarquía Visual -->
                     <h1 class="text-2xl font-bold text-slate-800 mb-1">Protección Civil</h1>
                     <p class="text-slate-500 font-medium">Sistema de Gestión de Voluntarios</p>
                 </div>
@@ -42,28 +41,34 @@
                             </label>
                             <div class="relative">
                                 <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
-                                <!-- Campos de Formulario (Inputs): más altos (h-12), anillo de luz azul -->
                                 <input type="email" value="{{ last_username|default(app.environment == 'dev' ? 'admin@example.com' : '') }}" name="_username" id="inputEmail"
                                        class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                                        placeholder="admin@voluntarios.org" autocomplete="email" required autofocus>
                             </div>
                         </div>
 
-                        <div>
+                        <div data-controller="password-visibility">
                             <label for="inputPassword" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">
                                 Contraseña
                             </label>
                             <div class="relative">
                                 <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                                 <input type="password" name="_password" id="inputPassword" value="{{ app.environment == 'dev' ? 'admin123' : '' }}"
-                                       class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                       data-password-visibility-target="input"
+                                       class="w-full pl-12 pr-12 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
                                        placeholder="••••••••" autocomplete="current-password" required>
+
+                                <button type="button"
+                                        data-action="password-visibility#toggle"
+                                        class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors">
+                                    <i data-lucide="eye" data-password-visibility-target="icon" class="w-5 h-5"></i>
+                                </button>
                             </div>
                         </div>
 
                         <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-                        <!-- Botón de Acción -->
+                        <!-- Botón Institucional -->
                         <div class="pt-2">
                             <button class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12 rounded-xl transition-all shadow-lg hover:shadow-blue-500/30 active:transform active:scale-[0.98]" type="submit">
                                 Iniciar Sesión
