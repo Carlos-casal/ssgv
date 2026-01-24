@@ -38,6 +38,10 @@ Encore
         to: 'tinymce/skins/[path][name].[ext]'
     })
     .copyFiles({
+        from: './assets/images',
+        to: 'images/[path][name].[ext]'
+    })
+    .copyFiles({
         from: './node_modules/tinymce/icons',
         to: 'tinymce/icons/[path][name].[ext]'
     })
