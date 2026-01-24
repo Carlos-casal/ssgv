@@ -1,202 +1,262 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Panel Inicio{% endblock %}
-{% block page_title %}Panel Inicio{% endblock %}
+{% block title %}Panel de Control{% endblock %}
+{% block page_title %}Panel de Control{% endblock %}
 
 {% block content %}
-<div class="p-6 space-y-6 w-full max-w-none">
-    <!-- Stats cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+<div class="p-8 space-y-10 w-full max-w-none">
+    <!-- Stats cards (KPIs) -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
+        <!-- Voluntarios Activos -->
+        <a href="{{ path('app_volunteer_list') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Voluntarios Activos</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ active_volunteers_count }}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm font-medium text-green-600">+{{ new_volunteers_this_month }}</span>
-                        <span class="text-sm text-gray-500 ml-1">este mes</span>
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Voluntarios Activos</p>
+                    <p class="text-4xl font-bold text-slate-900">{{ active_volunteers_count }}</p>
+                    <div class="flex items-center pt-1">
+                        <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+{{ new_volunteers_this_month }}</span>
+                        <span class="text-[10px] text-slate-400 ml-2 font-medium">este mes</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="users" class="w-6 h-6 text-blue-600"></i>
+                <div class="p-4 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="users" class="w-8 h-8 text-blue-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <!-- Servicios del Mes -->
+        <a href="{{ path('app_services_list') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Servicios del Mes</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ services_this_month }}</p>
-                    <div class="flex items-center mt-2">
-                        {# You can add a comparison to the previous month if needed #}
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Servicios del Mes</p>
+                    <p class="text-4xl font-bold text-slate-900">{{ services_this_month }}</p>
+                    <div class="flex items-center pt-1">
+                        <span class="text-[10px] text-slate-400 font-medium italic">Actividad mensual</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="calendar" class="w-6 h-6 text-green-600"></i>
+                <div class="p-4 bg-green-50 rounded-full group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="calendar-days" class="w-8 h-8 text-green-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <!-- Vehículos Disponibles -->
+        <a href="{{ path('app_vehicle_index') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Vehículos Disponibles</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ available_vehicles_count }}</p>
-                     <div class="flex items-center mt-2">
-                        {# You can add more details if needed #}
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vehículos Disp.</p>
+                    <p class="text-4xl font-bold text-slate-900">{{ available_vehicles_count }}</p>
+                     <div class="flex items-center pt-1">
+                        <span class="text-[10px] text-slate-400 font-medium">Flota operativa</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="car" class="w-6 h-6 text-purple-600"></i>
+                <div class="p-4 bg-purple-50 rounded-full group-hover:scale-110 transition-transform duration-300">
+                    <i data-lucide="truck" class="w-8 h-8 text-purple-600"></i>
                 </div>
             </div>
-        </div>
+        </a>
 
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
+        <!-- Horas anuales -->
+        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 transition-all duration-300">
             <div class="flex items-center justify-between">
-                <div>
-                    <p class="text-sm font-medium text-gray-600">Horas anuales</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ total_annual_service_hours }}</p>
-                    <div class="flex items-center mt-2">
-                        <span class="text-sm text-gray-500">{{ completed_services_count }} servicios completados</span>
+                <div class="space-y-1">
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Horas Anuales</p>
+                    <p class="text-4xl font-bold text-slate-900">{{ total_annual_service_hours }}</p>
+                    <div class="flex items-center pt-1">
+                        <span class="text-[10px] text-slate-400 font-medium">{{ completed_services_count }} servicios finalizados</span>
                     </div>
                 </div>
-                <div class="p-3 bg-gray-50 rounded-lg">
-                    <i data-lucide="clock" class="w-6 h-6 text-orange-600"></i>
+                <div class="p-4 bg-orange-50 rounded-full transition-transform duration-300">
+                    <i data-lucide="clock-3" class="w-8 h-8 text-orange-600"></i>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Recent activities -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Actividad Reciente</h3>
-            <div class="space-y-4">
-                {% for activity in recent_activities|slice(0, 5) %}
-                    <div class="flex items-start gap-3">
-                        {% if attribute(activity, 'joinDate') is defined %}
-                            {# It's a Volunteer entity #}
-                            {% set joinDate = activity.joinDate %}
-                            {% set statusChangeDate = attribute(activity, 'statusChangeDate') %}
-                            {% set event_date = (statusChangeDate and statusChangeDate > joinDate) ? statusChangeDate : joinDate %}
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        <!-- Recent activities (Vertical Timeline) -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-lg font-bold text-slate-800">Actividad Reciente</h3>
+                <i data-lucide="history" class="w-5 h-5 text-slate-400"></i>
+            </div>
 
-                            {% if activity.status == 'Baja' %}
-                                <div class="w-2 h-2 rounded-full bg-red-500 mt-2"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">Voluntario dado de baja</p>
-                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
-                                </div>
-                            {% elseif activity.status == 'Suspensión' %}
-                                <div class="w-2 h-2 rounded-full bg-yellow-500 mt-2"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">Voluntario en suspensión</p>
-                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
-                                </div>
-                            {% else %}
-                                <div class="w-2 h-2 rounded-full bg-green-500 mt-2"></div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-medium text-gray-900">Nuevo voluntario registrado</p>
-                                    <p class="text-sm text-gray-600">{{ activity.name }}</p>
-                                    <p class="text-xs text-gray-500 mt-1">{{ event_date|date('d/m/Y H:i') }}</p>
-                                </div>
-                            {% endif %}
-                        {% else %}
-                            {# It's a Service entity #}
-                            <div class="w-2 h-2 rounded-full bg-blue-500 mt-2"></div>
-                            <div class="flex-1">
-                                <p class="text-sm font-medium text-gray-900">Servicio completado</p>
-                                <p class="text-sm text-gray-600">{{ activity.title }}</p>
-                                <p class="text-xs text-gray-500 mt-1">{{ activity.endDate|date('d/m/Y H:i') }}</p>
+            <div class="relative">
+                <!-- Línea vertical del timeline -->
+                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-100"></div>
+
+                <div class="space-y-8 relative">
+                    {% for activity in recent_activities|slice(0, 5) %}
+                        <div class="flex items-start gap-6 group">
+                            <!-- Icono/Punto del timeline -->
+                            <div class="relative z-10">
+                                {% if attribute(activity, 'joinDate') is defined %}
+                                    {% if activity.status == 'Baja' %}
+                                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
+                                            <i data-lucide="user-minus" class="w-4 h-4 text-red-600"></i>
+                                        </div>
+                                    {% elseif activity.status == 'Suspensión' %}
+                                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
+                                            <i data-lucide="user-x" class="w-4 h-4 text-orange-600"></i>
+                                        </div>
+                                    {% else %}
+                                        <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
+                                            <i data-lucide="user-plus" class="w-4 h-4 text-green-600"></i>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
+                                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
+                                    </div>
+                                {% endif %}
                             </div>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <p class="text-sm text-gray-500">No hay actividad reciente.</p>
-                {% endfor %}
+
+                            <!-- Contenido -->
+                            <div class="flex-1 pt-0.5">
+                                {% if attribute(activity, 'joinDate') is defined %}
+                                    {% set joinDate = activity.joinDate %}
+                                    {% set statusChangeDate = attribute(activity, 'statusChangeDate') %}
+                                    {% set event_date = (statusChangeDate and statusChangeDate > joinDate) ? statusChangeDate : joinDate %}
+
+                                    <p class="text-sm font-bold text-slate-800">
+                                        {% if activity.status == 'Baja' %}Voluntario dado de baja{% elseif activity.status == 'Suspensión' %}Voluntario en suspensión{% else %}Nuevo voluntario{% endif %}
+                                    </p>
+                                    <p class="text-sm text-slate-600 mt-0.5">{{ activity.name }}</p>
+                                    <p class="text-[10px] font-semibold text-slate-400 mt-1 uppercase tracking-tight">{{ event_date|date('d/m/Y H:i') }}</p>
+                                {% else %}
+                                    <p class="text-sm font-bold text-slate-800">Servicio completado</p>
+                                    <p class="text-sm text-slate-600 mt-0.5">{{ activity.title }}</p>
+                                    <p class="text-[10px] font-semibold text-slate-400 mt-1 uppercase tracking-tight">{{ activity.endDate|date('d/m/Y H:i') }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-10">
+                            <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <i data-lucide="info" class="w-8 h-8 text-slate-300"></i>
+                            </div>
+                            <p class="text-sm font-medium text-slate-400">Sin actividad registrada</p>
+                        </div>
+                    {% endfor %}
+                </div>
             </div>
         </div>
 
-        <!-- Upcoming events -->
-        <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Próximos Eventos</h3>
-            <div class="space-y-4">
+        <!-- Upcoming events (Date Blocks) -->
+        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-lg font-bold text-slate-800">Próximos Eventos</h3>
+                <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
+            </div>
+
+            <div class="space-y-6">
                 {% for service in upcoming_services %}
-                    <div class="border border-gray-200 rounded-lg p-4">
-                        <h4 class="font-medium text-gray-900">{{ service.title }}</h4>
-                        <div class="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                            <span>📅 {{ service.startDate|date('d M Y') }}</span>
-                            <span>🕐 {{ service.startDate|date('H:i') }}</span>
-                            <span>👥 {{ service.maxAttendees }} participantes</span>
+                    <div class="flex items-center gap-6 group hover:bg-slate-50 p-3 -m-3 rounded-2xl transition-all duration-300 border border-transparent hover:border-slate-100">
+                        <!-- Bloque de Fecha -->
+                        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                            <span class="text-xl font-black leading-none">{{ service.startDate|date('d') }}</span>
+                            <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ service.startDate|date('M') }}</span>
                         </div>
+
+                        <!-- Detalles -->
+                        <div class="flex-1">
+                            <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ service.title }}</h4>
+                            <div class="flex items-center gap-4 mt-1 text-xs font-medium text-slate-500">
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
+                                    <span>{{ service.startDate|date('H:i') }}</span>
+                                </div>
+                                <div class="flex items-center gap-1">
+                                    <i data-lucide="users-2" class="w-3.5 h-3.5"></i>
+                                    <span>{{ service.maxAttendees }} plazas</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0"></i>
                     </div>
                 {% else %}
-                    <p class="text-sm text-gray-500">No hay eventos próximos.</p>
+                    <!-- Empty State -->
+                    <div class="text-center py-12">
+                        <div class="relative w-32 h-32 mx-auto mb-6">
+                            <div class="absolute inset-0 bg-blue-50 rounded-full animate-pulse"></div>
+                            <i data-lucide="calendar-x" class="absolute inset-0 m-auto w-12 h-12 text-slate-300"></i>
+                        </div>
+                        <p class="text-slate-500 font-medium mb-6">No hay eventos programados</p>
+                        <a href="{{ path('app_service_new') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 transition-all">
+                            <i data-lucide="plus" class="w-5 h-5"></i>
+                            <span>Crear Evento</span>
+                        </a>
+                    </div>
                 {% endfor %}
             </div>
         </div>
     </div>
 
-    <!-- Quick actions -->
-    <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-200">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
-        <div class="flex items-center gap-4">
+    <!-- Quick actions (Refined UI) -->
+    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
+        <h3 class="text-lg font-bold text-slate-800 mb-8">Acciones Rápidas</h3>
+        <div class="flex flex-wrap items-center gap-6">
             <!-- Add Volunteer Modal Controller -->
-            <div data-controller="modal" class="flex-1">
-                <button data-action="click->modal#open" class="w-full flex items-center justify-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <i data-lucide="users" class="w-5 h-5 text-blue-600"></i>
-                    <span class="font-medium">Añadir Voluntario</span>
+            <div data-controller="modal" class="flex-1 min-w-[200px]">
+                <button data-action="click->modal#open" class="w-full group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
+                    <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                        <i data-lucide="user-plus" class="w-6 h-6"></i>
+                    </div>
+                    <span class="font-bold text-slate-700 group-hover:text-blue-600">Añadir Voluntario</span>
                 </button>
                 <!-- Add Volunteer Modal -->
-                <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center hidden">
-                    <div data-modal-target="content" class="relative p-8 bg-white w-full max-w-md m-auto flex-col flex rounded-lg shadow-lg">
+                <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center hidden">
+                    <div data-modal-target="content" class="relative p-10 bg-white w-full max-w-md m-auto flex-col flex rounded-2xl shadow-2xl">
                         <div data-modal-target="invitationForm">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold">Añadir Voluntario</h2>
-                                <button data-action="click->modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
+                            <div class="flex justify-between items-center mb-8">
+                                <h2 class="text-2xl font-black text-slate-800">Añadir Voluntario</h2>
+                                <button data-action="click->modal#closeButton" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-all">&times;</button>
                             </div>
-                            <div class="space-y-6">
-                                <div>
-                                    <h3 class="font-medium text-gray-900">Añadir manualmente</h3>
-                                    <p class="text-sm text-gray-600 mt-1">Introduce los datos del voluntario directamente en el sistema.</p>
-                                    <a href="{{ path('app_volunteer_new') }}" class="mt-2 block w-full text-center p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                            <div class="space-y-8">
+                                <div class="group">
+                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Añadir manualmente</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Introduce los datos directamente en el sistema.</p>
+                                    <a href="{{ path('app_volunteer_new') }}" class="mt-4 block w-full text-center p-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
                                         Ir al formulario
                                     </a>
                                 </div>
-                                <div class="border-t pt-6">
-                                    <h3 class="font-medium text-gray-900">Enviar invitación por correo</h3>
-                                    <p class="text-sm text-gray-600 mt-1">Envia un enlace de registro al correo del nuevo voluntario.</p>
-                                    <div class="mt-4 space-y-2">
-                                        <label for="invitation-email" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                                        <input type="email" data-modal-target="emailInput" placeholder="nombre@ejemplo.com" class="w-full p-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
+                                <div class="border-t border-slate-100 pt-8 group">
+                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Enviar invitación</h3>
+                                    <p class="text-sm text-slate-500 mt-1">Enlace de registro al correo del nuevo voluntario.</p>
+                                    <div class="mt-6 space-y-3">
+                                        <label for="invitation-email" class="block text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Correo electrónico</label>
+                                        <input type="email" data-modal-target="emailInput" placeholder="ejemplo@voluntarios.org" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
                                     </div>
-                                    <button data-action="click->modal#sendInvitation" class="mt-4 w-full p-3 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors">
+                                    <button data-action="click->modal#sendInvitation" class="mt-6 w-full p-4 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 shadow-lg transition-all active:scale-95">
                                         Enviar inscripción
                                     </button>
                                 </div>
                             </div>
                         </div>
                         <div data-modal-target="emailPreview" class="hidden">
-                            <div class="flex justify-between items-center mb-4">
-                                <h2 class="text-xl font-semibold">Contenido del Correo (Entorno de Pruebas)</h2>
-                                <button data-action="click->modal#closeButton" class="text-gray-500 hover:text-gray-800">&times;</button>
+                            <div class="flex justify-between items-center mb-6">
+                                <h2 class="text-xl font-bold text-slate-800">Vista previa del correo</h2>
+                                <button data-action="click->modal#closeButton" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-all">&times;</button>
                             </div>
-                            <div data-modal-target="emailBody" class="prose max-w-none"></div>
+                            <div data-modal-target="emailBody" class="prose max-w-none bg-slate-50 p-6 rounded-xl border border-slate-200 text-slate-600 text-sm italic"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <a href="{{ path('app_service_new') }}" class="flex-1 flex items-center justify-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="calendar" class="w-5 h-5 text-green-600"></i>
-                <span class="font-medium">Programar Servicio</span>
+            <a href="{{ path('app_service_new') }}" class="flex-1 min-w-[200px] group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-green-500 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300">
+                <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                    <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-slate-700 group-hover:text-green-600">Programar Servicio</span>
             </a>
-            <button class="flex-1 flex items-center justify-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                <i data-lucide="trending-up" class="w-5 h-5 text-purple-600"></i>
-                <span class="font-medium">Ver Estadísticas</span>
+
+            <button class="flex-1 min-w-[200px] group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-purple-500 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
+                <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                    <i data-lucide="bar-chart-big" class="w-6 h-6"></i>
+                </div>
+                <span class="font-bold text-slate-700 group-hover:text-purple-600">Ver Estadísticas</span>
             </button>
         </div>
     </div>

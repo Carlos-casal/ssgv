@@ -1,20 +1,20 @@
 import { Controller } from '@hotwired/stimulus';
-import { createIcons, icons } from 'lucide';
 
 /* stimulusFetch: 'lazy' */
 export default class extends Controller {
-    static targets = ['input', 'icon'];
+    static targets = ['input', 'eyeIcon', 'eyeOffIcon'];
 
     toggle() {
-        if (this.inputTarget.type === 'password') {
-            this.inputTarget.type = 'text';
-            this.iconTarget.setAttribute('data-lucide', 'eye-off');
-        } else {
-            this.inputTarget.type = 'password';
-            this.iconTarget.setAttribute('data-lucide', 'eye');
-        }
+        const isPassword = this.inputTarget.type === 'password';
 
-        // Refresh Lucide icons
-        createIcons({ icons });
+        this.inputTarget.type = isPassword ? 'text' : 'password';
+
+        if (isPassword) {
+            this.eyeIconTarget.classList.add('hidden');
+            this.eyeOffIconTarget.classList.remove('hidden');
+        } else {
+            this.eyeIconTarget.classList.remove('hidden');
+            this.eyeOffIconTarget.classList.add('hidden');
+        }
     }
 }

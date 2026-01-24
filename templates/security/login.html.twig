@@ -22,7 +22,7 @@
                          class="mx-auto h-32 w-auto mb-6">
 
                     <h1 class="text-2xl font-bold text-slate-800 mb-1">Protección Civil</h1>
-                    <p class="text-slate-500 font-medium">Sistema de Gestión de Voluntarios</p>
+                    <p class="text-slate-500 font-medium text-sm">Sistema de Gestión de Voluntarios</p>
                 </div>
 
                 {# Muestra el error si existe #}
@@ -42,7 +42,7 @@
                             <div class="relative">
                                 <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                                 <input type="email" value="{{ last_username|default(app.environment == 'dev' ? 'admin@example.com' : '') }}" name="_username" id="inputEmail"
-                                       class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                       class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
                                        placeholder="admin@voluntarios.org" autocomplete="email" required autofocus>
                             </div>
                         </div>
@@ -55,13 +55,18 @@
                                 <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
                                 <input type="password" name="_password" id="inputPassword" value="{{ app.environment == 'dev' ? 'admin123' : '' }}"
                                        data-password-visibility-target="input"
-                                       class="w-full pl-12 pr-12 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none"
+                                       class="w-full pl-12 pr-12 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
                                        placeholder="••••••••" autocomplete="current-password" required>
 
                                 <button type="button"
                                         data-action="password-visibility#toggle"
                                         class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors">
-                                    <i data-lucide="eye" data-password-visibility-target="icon" class="w-5 h-5"></i>
+                                    <span data-password-visibility-target="eyeIcon">
+                                        <i data-lucide="eye" class="w-5 h-5"></i>
+                                    </span>
+                                    <span data-password-visibility-target="eyeOffIcon" class="hidden">
+                                        <i data-lucide="eye-off" class="w-5 h-5"></i>
+                                    </span>
                                 </button>
                             </div>
                         </div>
@@ -85,7 +90,7 @@
             </div>
 
             <p class="text-center text-white/60 text-xs mt-8">
-                &copy; {{ "now"|date("Y") }} Protección Civil. Todos los derechos reservados.
+                &copy; {{ "now"|date("Y") }} Protección Civil de Vigo. Todos los derechos reservados.
             </p>
         </div>
     </div>
