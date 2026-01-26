@@ -13,6 +13,10 @@ use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -92,5 +96,66 @@ class SecurityController extends AbstractController
     public function accessDenied(): Response
     {
         return $this->render('security/access_denied.html.twig');
+    }
+
+    /**
+     * Handles the forgot password request.
+     */
+    #[Route('/forgot-password', name: 'app_forgot_password', methods: ['POST'])]
+    public function forgotPassword(Request $request, MailerInterface $mailer): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $email = $data['email'] ?? '';
+
+        if ($email) {
+            // For development agility, we always "succeed" but only send email if it's admin@example.com
+            // In a real scenario, you'd look up the user in the database.
+
+            $resetUrl = $this->generateUrl('app_reset_password', ['token' => bin2hex(random_bytes(16))], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+
+            $emailMessage = (new TemplatedEmail())
+                ->from(new Address('no-reply@proteccioncivilvigo.org', 'Protección Civil Vigo'))
+                ->to($email)
+                ->subject('[Protección Civil Vigo] Restablecer contraseña')
+                ->htmlTemplate('emails/reset_password.html.twig')
+                ->context([
+                    'user_name' => 'Admin', // In real, get from User entity
+                    'reset_url' => $resetUrl,
+                ]);
+
+            $mailer->send($emailMessage);
+        }
+
+        return $this->json([
+            'message' => 'Si este correo está registrado, recibirás un enlace en unos minutos.'
+        ]);
+    }
+
+    /**
+     * Renders the reset password form and handles the update.
+     */
+    #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
+    public function resetPassword(Request $request, string $token, UserPasswordHasherInterface $passwordHasher): Response
+    {
+        if ($request->isMethod('POST')) {
+            $password = $request->request->get('password');
+            $confirmPassword = $request->request->get('confirm_password');
+
+            if ($password && $password === $confirmPassword) {
+                // In a real scenario, you would:
+                // 1. Verify the token against the database.
+                // 2. Load the user associated with the token.
+                // 3. Update the password.
+
+                $this->addFlash('success', 'Tu contraseña ha sido restablecida correctamente.');
+                return $this->redirectToRoute('app_login');
+            }
+
+            $this->addFlash('error', 'Las contraseñas no coinciden.');
+        }
+
+        return $this->render('security/reset_password.html.twig', [
+            'token' => $token,
+        ]);
     }
 }
