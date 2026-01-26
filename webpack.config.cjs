@@ -39,7 +39,7 @@ Encore
     })
     .copyFiles({
         from: './assets/images',
-        to: 'images/[path][name].[ext]'
+        to: '../assets/images/[path][name].[ext]'
     })
     .copyFiles({
         from: './node_modules/tinymce/icons',
