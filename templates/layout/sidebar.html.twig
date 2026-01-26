@@ -1,18 +1,18 @@
 <!-- Sidebar -->
-<div class="w-64 h-full bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 m-0 p-0 overflow-y-auto border-r border-slate-800" id="sidebar">
+<div class="w-64 h-full bg-blue-600 text-white flex flex-col flex-shrink-0 m-0 p-0 overflow-y-auto" id="sidebar">
 
     <!-- Header -->
-<div class="pt-10 px-6 pb-6 border-b border-slate-800">
+<div class="pt-10 px-6 pb-6 border-b border-blue-700">
     {% if app.user %}
         <div class="mb-6">
-            <a href="{{ path('app_logout') }}" class="w-full flex items-center justify-start gap-x-4 pl-4 py-1 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
+            <a href="{{ path('app_logout') }}" class="w-full flex items-center gap-x-4 pl-4 py-2 text-red-400 hover:bg-red-500 hover:text-white rounded-lg transition-all duration-200">
                 <i data-lucide="log-out" class="w-5 h-5 flex-shrink-0"></i>
                 <span class="text-sm font-medium">Cerrar Sesión</span>
             </a>
         </div>
         <div class="flex items-center justify-between">
             <div class="flex items-center min-w-0">
-                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-slate-700 flex-shrink-0">
+                <div class="w-16 h-16 rounded-full overflow-hidden border-2 border-white/20 flex-shrink-0">
                     <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}"
                          alt="Foto de perfil"
                          class="w-full h-full object-cover"
@@ -20,22 +20,22 @@
                 </div>
                 <div class="flex-1 min-w-0 ml-4">
                     <p class="font-semibold text-white text-sm truncate">{{ app.user.volunteer.name|default('Usuario') }}</p>
-                    <p class="text-xs text-slate-400 truncate">{{ app.user.email }}</p>
+                    <p class="text-xs text-blue-200 truncate">{{ app.user.email }}</p>
                 </div>
             </div>
             <div class="relative">
-                <button class="flex items-center justify-center p-2 hover:bg-slate-800 rounded-full transition-colors text-slate-400 hover:text-white">
+                <button class="flex items-center justify-center p-2 hover:bg-blue-500 rounded-full transition-colors">
                     <i data-lucide="bell" class="w-5 h-5"></i>
                 </button>
                 {% if pending_volunteer_count > 0 %}
-                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-slate-900"></span>
+                    <span class="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full border border-blue-600"></span>
                 {% endif %}
             </div>
         </div>
     {% else %}
         <div class="flex items-center justify-end h-16"> {# Set a fixed height to avoid layout shift #}
             <div class="relative">
-                <button class="flex items-center justify-center w-8 h-8 hover:bg-slate-700 rounded-full transition-colors">
+                <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
                     <i data-lucide="bell" class="w-5 h-5"></i>
                 </button>
                 {% if pending_volunteer_count > 0 %}
@@ -51,137 +51,146 @@
         <nav class="space-y-1" id="main-nav">
             <ul class="space-y-1">
                 <li>
-                    {% set active = app.request.attributes.get('_route') == 'app_dashboard' %}
-                    <a href="{{ path('app_dashboard') }}" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-slate-800 text-white border-l-4 border-blue-500 rounded-l-none' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
-                        <i data-lucide="home" class="w-5 h-5 flex-shrink-0 mr-3 {{ active ? 'text-blue-400' : 'text-slate-500 group-hover:text-blue-400' }}"></i>
-                        <span>Inicio</span>
+                    <a href="{{ path('app_dashboard') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm">
+                        <i data-lucide="home" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                        <span>INICIO</span>
                     </a>
                 </li>
 
                 {% if is_granted('ROLE_ADMIN') %}
-                <!-- Gestión -->
-                <li class="has-submenu mt-6 mb-1">
-                    <button class="w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-semibold text-slate-500 text-xs uppercase tracking-wider" aria-haspopup="true" aria-expanded="false">
-                        <i data-lucide="folder-kanban" class="w-4 h-4 flex-shrink-0 mr-3"></i>
-                        <span class="flex-1 text-left text-[10px]">Gestión</span>
+                <!-- GESTIÓN -->
+                <li class="has-submenu mt-8 mb-2">
+                    <button class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm" aria-haspopup="true" aria-expanded="false">
+                        <i data-lucide="folder-kanban" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                        <span class="flex-1 text-left">GESTIÓN</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </button>
-                    <ul class="mt-1 space-y-1 bg-black/20 rounded-lg overflow-hidden transition-all duration-300">
-                        <!-- Personal -->
+                    <ul class="mt-1 space-y-1 bg-white/5 rounded-lg overflow-hidden transition-all duration-300">
+                        <!-- PERSONAL -->
                         <li class="has-submenu">
-                            <button class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm" aria-haspopup="true" aria-expanded="false">
-                                <i data-lucide="users" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i>
-                                <span class="flex-1 text-left">Personal</span>
+                            <button class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm" aria-haspopup="true" aria-expanded="false">
+                                <i data-lucide="users" class="w-4 h-4 flex-shrink-0 mr-3"></i>
+                                <span class="flex-1 text-left">PERSONAL</span>
                                 <i data-lucide="chevron-right" class="w-3 h-3 transition-transform"></i>
                             </button>
                             <ul class="mt-0.5 space-y-0.5">
-                                <li>
-                                    {% set active = app.request.attributes.get('_route') == 'app_volunteer_list' %}
-                                    <a href="{{ path('app_volunteer_list') }}" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium rounded-xl transition-all duration-200 {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-500 hover:text-white hover:bg-slate-800' }}">
-                                        <i data-lucide="list" class="w-3.5 h-3.5 mr-2 {{ active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}" style="margin-left: 40px !important;"></i>
-                                        <span>Listado</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="#" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200">
-                                        <i data-lucide="file-text" class="w-3.5 h-3.5 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i>
-                                        <span>Informes</span>
-                                    </a>
-                                </li>
+                                <li><a href="{{ path('app_volunteer_list') }}" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="list" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>LISTADO</a></li>
+                                <li><a href="#" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="file-text" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>INFORMES</a></li>
                             </ul>
                         </li>
-                        <!-- Servicios -->
+                        <!-- SERVICIOS -->
                         <li class="has-submenu">
-                            <button class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm" aria-haspopup="true" aria-expanded="false">
-                                <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i>
-                                <span class="flex-1 text-left">Servicios</span>
+                            <button class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm" aria-haspopup="true" aria-expanded="false">
+                                <i data-lucide="briefcase" class="w-4 h-4 flex-shrink-0 mr-3"></i>
+                                <span class="flex-1 text-left">SERVICIOS</span>
                                 <i data-lucide="chevron-right" class="w-3 h-3 transition-transform"></i>
                             </button>
                             <ul class="mt-0.5 space-y-0.5">
-                                <li>
-                                    {% set active = app.request.attributes.get('_route') == 'app_services_list' %}
-                                    <a href="{{ path('app_services_list') }}" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium rounded-xl transition-all duration-200 {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-500 hover:text-white hover:bg-slate-800' }}">
-                                        <i data-lucide="list" class="w-3.5 h-3.5 mr-2 {{ active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}" style="margin-left: 40px !important;"></i>
-                                        <span>Listado</span>
-                                    </a>
-                                </li>
-                                <li>
-                                    <a href="{{ path('app_admin_import_hours') }}" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200">
-                                        <i data-lucide="upload" class="w-3.5 h-3.5 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i>
-                                        <span>Importar Horas</span>
-                                    </a>
-                                </li>
-                                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="file-text" class="w-3.5 h-3.5 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i><span>Informes</span></a></li>
-                                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-1 text-xs font-medium text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="calendar" class="w-3.5 h-3.5 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i><span>Cuadrante</span></a></li>
+                                <li><a href="{{ path('app_services_list') }}" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="list" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>LISTADO</a></li>
+                                <li><a href="{{ path('app_admin_import_hours') }}" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="upload" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>IMPORTAR HORAS</a></li>
+                                <li><a href="#" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="file-text" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>INFORMES</a></li>
+                                <li><a href="#" class="w-full flex items-center justify-start pl-16 py-1 text-[11px] font-normal text-blue-200 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="calendar" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>CUADRANTE</a></li>
                             </ul>
                         </li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="megaphone" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Comunicado y Alertas</span></a></li>
-                        <!-- Recursos -->
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm"><i data-lucide="megaphone" class="w-4 h-4 flex-shrink-0 mr-3"></i><span>COMUNICADO Y ALERTAS</span></a></li>
+                        <!-- RECURSOS -->
                         <li class="has-submenu">
-                            <button class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm" aria-haspopup="true" aria-expanded="false">
-                                <i data-lucide="archive" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i>
-                                <span class="flex-1 text-left">Recursos</span>
+                            <button class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm" aria-haspopup="true" aria-expanded="false">
+                                <i data-lucide="archive" class="w-4 h-4 flex-shrink-0 mr-3"></i>
+                                <span class="flex-1 text-left">RECURSOS</span>
                                 <i data-lucide="chevron-right" class="w-3 h-3 transition-transform"></i>
                             </button>
                             <ul class="mt-0.5 space-y-0.5">
-                                <li>
-                                    {% set active = app.request.attributes.get('_route') == 'app_vehicle_index' %}
-                                    <a href="{{ path('app_vehicle_index') }}" class="group w-full flex items-center justify-start pl-4 py-1 rounded-xl transition-all duration-200 font-medium text-xs {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-500 hover:text-white hover:bg-slate-800' }}">
-                                        <i data-lucide="truck" class="w-3.5 h-3.5 mr-2 {{ active ? 'opacity-100' : 'opacity-60 group-hover:opacity-100' }}" style="margin-left: 40px !important;"></i>
-                                        <span>Vehículos</span>
-                                    </a>
-                                </li>
-                                <!-- Inventario -->
+                                <li><a href="{{ path('app_vehicle_index') }}" class="w-full flex items-center justify-start pl-16 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-normal text-blue-200 text-[11px]"><i data-lucide="truck" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-70"></i><span>VEHICULO</span></a></li>
+                                <!-- INVENTARIO -->
                                 <li class="has-submenu">
-                                    <button class="group w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-500 hover:text-white text-xs" aria-haspopup="true" aria-expanded="false">
-                                        <i data-lucide="boxes" class="w-3.5 h-3.5 flex-shrink-0 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i>
-                                        <span class="flex-1 text-left">Inventario</span>
-                                        <i data-lucide="chevron-right" class="w-3 h-3 transition-transform"></i>
+                                    <button class="w-full flex items-center justify-start pl-16 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-normal text-blue-200 text-[11px]" aria-haspopup="true" aria-expanded="false">
+                                        <i data-lucide="boxes" class="w-2.5 h-2.5 text-[10px] flex-shrink-0 mr-3 opacity-70"></i>
+                                        <span class="flex-1 text-left">INVENTARIO</span>
+                                        <i data-lucide="chevron-right" class="w-2.5 h-2.5 transition-transform"></i>
                                     </button>
                                     <ul class="mt-0.5 space-y-0.5">
-                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-2 opacity-40"></i>Artículos</a></li>
-                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-2 opacity-40"></i>Almacenes</a></li>
-                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-2 opacity-40"></i>Proveedores</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>ARTICULOS</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>ALMACENES</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>PROVEEDORES</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>ENTRADAS-SALIDAS</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>TRASPASO</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-1.5 h-1.5 mr-3 opacity-50"></i>LOTE</a></li>
                                     </ul>
                                 </li>
-                                <!-- Arce -->
+                                <!-- ARCE -->
                                 <li class="has-submenu">
-                                    <button class="group w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-500 hover:text-white text-xs" aria-haspopup="true" aria-expanded="false">
-                                        <i data-lucide="puzzle" class="w-3.5 h-3.5 flex-shrink-0 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i>
+                                    <button class="w-full flex items-center justify-start pl-16 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-normal text-blue-200 text-[11px]" aria-haspopup="true" aria-expanded="false">
+                                        <i data-lucide="puzzle" class="w-2.5 h-2.5 text-[10px] flex-shrink-0 mr-3 opacity-70"></i>
                                         <span class="flex-1 text-left">ARCE</span>
-                                        <i data-lucide="chevron-right" class="w-3 h-3 transition-transform"></i>
+                                        <i data-lucide="chevron-right" class="w-2.5 h-2.5 transition-transform"></i>
                                     </button>
                                     <ul class="mt-0.5 space-y-0.5">
-                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-slate-500 hover:text-white hover:bg-slate-800 rounded-xl transition-all duration-200"><i data-lucide="file-text" class="w-2.5 h-2.5 text-[10px] mr-2 opacity-40"></i>Informes</a></li>
+                                        <li><a href="#" class="w-full flex items-center justify-start pl-20 py-1 text-[10px] font-normal text-blue-200/60 rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="file-text" class="w-2.5 h-2.5 text-[10px] mr-3 opacity-50"></i>INFORMES</a></li>
                                     </ul>
                                 </li>
-                                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-500 hover:text-white text-xs"><i data-lucide="faucet" class="w-3.5 h-3.5 flex-shrink-0 mr-2 opacity-60 group-hover:opacity-100" style="margin-left: 40px !important;"></i><span>Hidrantes</span></a></li>
                             </ul>
                         </li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="user-plus" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Filiaciones</span></a></li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="landmark" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Tesorería</span></a></li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="check-square" class="w-4 h-4 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Tareas</span></a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm"><i data-lucide="faucet" class="w-4 h-4 flex-shrink-0 mr-3"></i><span>HIDRANTES</span></a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm"><i data-lucide="user-plus" class="w-4 h-4 flex-shrink-0 mr-3"></i><span>FILIACIONES</span></a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm"><i data-lucide="landmark" class="w-4 h-4 flex-shrink-0 mr-3"></i><span>TESORERIA</span></a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-blue-100 text-sm"><i data-lucide="check-square" class="w-4 h-4 flex-shrink-0 mr-3"></i><span>TAREAS</span></a></li>
                     </ul>
                 </li>
-                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Gesdoc</span></a></li>
-                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Central</span></a></li>
-                <li><a href="#" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Estadísticas</span></a></li>
+                <li><a href="#" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm"><i data-lucide="file-archive" class="w-5 h-5 flex-shrink-0 mr-3"></i><span>GESDOC</span></a></li>
+                <li><a href="#" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm"><i data-lucide="phone-forwarded" class="w-5 h-5 flex-shrink-0 mr-3"></i><span>CENTRAL</span></a></li>
+                <li><a href="#" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm"><i data-lucide="bar-chart-2" class="w-5 h-5 flex-shrink-0 mr-3"></i><span>ESTADISTICAS</span></a></li>
 
-                <!-- Configuración -->
-                <li class="has-submenu mt-6 mb-1">
-                    <button class="w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-semibold text-slate-500 text-xs uppercase tracking-wider" aria-haspopup="true" aria-expanded="false">
-                        <i data-lucide="settings" class="w-4 h-4 flex-shrink-0 mr-3"></i>
-                        <span class="flex-1 text-left text-[10px]">Configuración</span>
+                <!-- CONFIGURACION -->
+                <li class="has-submenu mt-8 mb-2">
+                    <button class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm" aria-haspopup="true" aria-expanded="false">
+                        <i data-lucide="settings" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                        <span class="flex-1 text-left">CONFIGURACION</span>
                         <i data-lucide="chevron-right" class="w-4 h-4 transition-transform"></i>
                     </button>
-                    <ul class="mt-1 space-y-1 bg-black/20 rounded-lg overflow-hidden">
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 text-slate-400 hover:text-white font-medium text-sm rounded-xl hover:bg-slate-800 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 text-slate-500 group-hover:text-blue-400 opacity-40"></i>Sistemas</a></li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 text-slate-400 hover:text-white font-medium text-sm rounded-xl hover:bg-slate-800 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 text-slate-500 group-hover:text-blue-400 opacity-40"></i>Utilidades</a></li>
-                        <li><a href="#" class="group w-full flex items-center justify-start pl-10 py-1.5 text-slate-400 hover:text-white font-medium text-sm rounded-xl hover:bg-slate-800 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 text-slate-500 group-hover:text-blue-400 opacity-40"></i>Administración</a></li>
+                    <ul class="mt-1 space-y-1 bg-white/5 rounded-lg overflow-hidden">
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 text-blue-100 font-medium text-sm rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 opacity-50"></i>SISTEMAS</a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 text-blue-100 font-medium text-sm rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 opacity-50"></i>UTILIDADES</a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 text-blue-100 font-medium text-sm rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 opacity-50"></i>ADMINISTRACION</a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 text-blue-100 font-medium text-sm rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 opacity-50"></i>ENTIDAD</a></li>
+                        <li><a href="#" class="w-full flex items-center justify-start pl-10 py-1 text-blue-100 font-medium text-sm rounded-xl hover:bg-white/10 transition-all duration-200"><i data-lucide="circle" class="w-2 h-2 mr-3 opacity-50"></i>SUSCRIPCION</a></li>
                     </ul>
                 </li>
 
-                <li class="mt-6"><a href="#" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Usuario</span></a></li>
+                <li class="mt-8"><a href="#" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-bold uppercase text-white text-sm"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0 mr-3"></i><span>USUARIO</span></a></li>
+                {% else %}
+                    {# Simplified menu for non-admins, e.g., ROLE_VOLUNTEER #}
+                     <li class="mt-8">
+                        <a href="{{ path('app_services_list') }}" class="w-full flex items-center justify-start pl-4 py-2.5 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
+                            <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                            <span>Servicios</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ path('app_my_services') }}" class="w-full flex items-center justify-start pl-4 py-2.5 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
+                            <i data-lucide="star" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                            <span>Mis servicios</span>
+                        </a>
+                    </li>
+
+                    {% set is_responsible_for_any_service = false %}
+                    {% if app.user.volunteer is defined and app.user.volunteer %}
+                        {% for confirmation in app.user.volunteer.assistanceConfirmations %}
+                            {% if confirmation.isFichajeResponsible %}
+                                {% set is_responsible_for_any_service = true %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if is_responsible_for_any_service %}
+                        <li class="mt-8">
+                            <a href="{{ path('app_responsible_services_list') }}" class="w-full flex items-center justify-start pl-4 py-2.5 rounded-xl text-yellow-400 bg-white/5 hover:bg-white/10 transition-all duration-200 font-medium text-sm">
+                                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0 mr-3"></i>
+                                <span>Servicios Responsable</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                {% endif %}
             </ul>
         </nav>
     </div>
@@ -193,12 +202,19 @@
         overflow: hidden;
         max-height: 0;
         transition: max-height 0.3s ease-in-out;
+        background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background for submenus */
     }
     .has-submenu.submenu-open > ul {
-        max-height: 1000px;
+        max-height: 1000px; /* A large enough value to show all content */
     }
-    .has-submenu.submenu-open > button > [data-lucide="chevron-right"] {
+    .has-submenu.submenu-open > a > [data-lucide="chevron-right"] {
         transform: rotate(90deg);
+    }
+    .has-submenu ul a {
+        color: white; /* Ensure text is white */
+    }
+    .has-submenu ul a:hover {
+        background-color: #1e40af; /* A darker blue for hover */
     }
 </style>
 
@@ -208,17 +224,19 @@
         if (!nav) return;
 
         const closeSubmenu = (submenu) => {
+            // Recursively close all descendant submenus that are open
             submenu.querySelectorAll('.submenu-open').forEach(openChild => {
                 openChild.classList.remove('submenu-open');
-                const childLink = openChild.querySelector('button[aria-expanded]');
+                const childLink = openChild.querySelector('a[aria-expanded]');
                 if (childLink) {
                     childLink.setAttribute('aria-expanded', 'false');
                 }
             });
 
+            // Close the submenu itself
             if (submenu.classList.contains('submenu-open')) {
                 submenu.classList.remove('submenu-open');
-                const link = submenu.querySelector('button[aria-expanded]');
+                const link = submenu.querySelector('a[aria-expanded]');
                 if (link) {
                     link.setAttribute('aria-expanded', 'false');
                 }
@@ -235,8 +253,10 @@
             let leaveTimer;
 
             item.addEventListener('mouseenter', () => {
-                clearTimeout(leaveTimer);
+                clearTimeout(leaveTimer); // Cancel any pending close operations
+
                 enterTimer = setTimeout(() => {
+                    // Close sibling submenus
                     const parentUl = item.parentElement;
                     parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
                         if (sibling !== item) {
@@ -244,19 +264,21 @@
                         }
                     });
 
+                    // Open this submenu
                     item.classList.add('submenu-open');
-                    const link = item.querySelector('button[aria-expanded]');
+                    const link = item.querySelector('a[aria-expanded]');
                     if (link) {
                         link.setAttribute('aria-expanded', 'true');
                     }
-                }, 100);
+                }, 100); // A small delay to prevent accidental opening
             });
 
             item.addEventListener('mouseleave', () => {
-                clearTimeout(enterTimer);
+                clearTimeout(enterTimer); // Cancel any pending open operations
+
                 leaveTimer = setTimeout(() => {
                     closeSubmenu(item);
-                }, 200);
+                }, 200); // Delay to allow moving mouse to child submenu
             });
         });
     }
