@@ -20,14 +20,14 @@ import {
 const initializeIcons = () => {
     createIcons({
         icons: {
-            Mail,
-            Lock,
-            Eye,
-            EyeOff,
-            AlertCircle,
-            X,
-            Key,
-            CheckCircle
+            mail: Mail,
+            lock: Lock,
+            eye: Eye,
+            'eye-off': EyeOff,
+            'alert-circle': AlertCircle,
+            x: X,
+            key: Key,
+            'check-circle': CheckCircle
         }
     });
 };

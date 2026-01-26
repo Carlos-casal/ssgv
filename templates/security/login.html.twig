@@ -5,14 +5,14 @@
 {% block body_class %}{% endblock %}
 
 {% block body %}
-    <div class="h-screen w-full relative flex items-center justify-center m-0 p-0 overflow-hidden bg-slate-900">
+    <div class="h-screen w-full relative flex items-center justify-center m-0 p-0 overflow-hidden bg-slate-900" data-controller="forgot-password">
         <!-- Fondo con Imagen y Overlay -->
         <div class="absolute inset-0 z-0">
             <img src="{{ asset('/images/fondo-login.jpg') }}" alt="Fondo" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-blue-900/80"></div>
         </div>
 
-        <div class="relative z-10 max-w-md w-full px-6" data-controller="forgot-password">
+        <div class="relative z-10 max-w-md w-full px-6">
             <!-- Contenedor Unificado (Card) -->
             <div class="bg-white rounded-2xl shadow-2xl p-8 md:p-10">
                 <div class="text-center mb-8">
@@ -47,7 +47,7 @@
                             </label>
                             <div class="relative">
                                 <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 {{ error ? 'text-red-500' : 'text-slate-400' }}"></i>
-                                <input type="email" name="_username" id="inputEmail"
+                                <input type="email" value="{{ last_username|default('') }}" name="_username" id="inputEmail"
                                        class="w-full pl-12 pr-4 h-12 border {{ error ? 'border-red-500' : 'border-slate-200' }} rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
                                        placeholder="admin@voluntarios.org" autocomplete="email" required autofocus>
                             </div>
@@ -65,7 +65,7 @@
                                        placeholder="••••••••" autocomplete="current-password" required>
 
                                 <button type="button"
-                                        data-action="password-visibility#toggle"
+                                        data-action="click->password-visibility#toggle"
                                         class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 focus:outline-none transition-colors">
                                     <span data-password-visibility-target="eyeIcon">
                                         <i data-lucide="eye" class="w-5 h-5"></i>
