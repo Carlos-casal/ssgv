@@ -261,5 +261,5 @@
   "build/tinymce/plugins/wordcount/index.js": "/build/tinymce/plugins/wordcount/index.js",
   "build/tinymce/icons/default/index.js": "/build/tinymce/icons/default/index.js",
   "build/tinymce/themes/silver/index.js": "/build/tinymce/themes/silver/index.js",
-  "build/images/fondo-login.jpg": "/build/images/fondo-login.jpg"
+  "build/../assets/images/fondo-login.jpg": "/build/../assets/images/fondo-login.jpg"
 }
