@@ -9,6 +9,7 @@ import { createIcons, icons } from 'lucide';
 
 const initializeIcons = () => {
     createIcons({ icons });
+    window.lucide = { createIcons: () => createIcons({ icons }) };
 };
 
 document.addEventListener('turbo:load', initializeIcons);
