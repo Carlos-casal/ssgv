@@ -174,6 +174,12 @@ class Service
     private ?int $numSvae = null;
 
     /**
+     * @var int|null The number of Rapid Intervention Vehicle (VIR) units required.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $numVir = null;
+
+    /**
      * @var int|null The number of doctors required.
      */
     #[ORM\Column(nullable: true)]
@@ -744,6 +750,27 @@ class Service
     public function setNumSvae(?int $numSvae): static
     {
         $this->numSvae = $numSvae;
+
+        return $this;
+    }
+
+    /**
+     * Gets the number of VIR units required.
+     * @return int|null
+     */
+    public function getNumVir(): ?int
+    {
+        return $this->numVir;
+    }
+
+    /**
+     * Sets the number of VIR units required.
+     * @param int|null $numVir The number of units.
+     * @return static
+     */
+    public function setNumVir(?int $numVir): static
+    {
+        $this->numVir = $numVir;
 
         return $this;
     }

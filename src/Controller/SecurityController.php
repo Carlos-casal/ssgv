@@ -131,8 +131,6 @@ class SecurityController extends AbstractController
                     'reset_url' => $resetUrl,
                 ]);
 
-            dump($mailer);
-            die;
             $mailer->send($emailMessage);
         }
 

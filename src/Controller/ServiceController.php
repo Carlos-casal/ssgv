@@ -93,13 +93,31 @@ class ServiceController extends AbstractController
      * @return Response|JsonResponse The response object, either redirecting or returning JSON for AJAX requests.
      */
     #[Route('nuevo_servicio', name: 'app_service_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator, ServiceRepository $serviceRepository): Response
     {
         $service = new Service();
         $form = $this->createForm(ServiceType::class, $service);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Smart ID logic
+            if (!$service->getNumeration()) {
+                $year = (int) $service->getStartDate()->format('Y');
+                $seq = $serviceRepository->getNextSequentialNumber($year);
+
+                $categoryName = $service->getCategory() ? $service->getCategory()->getName() : 'SERV';
+                $words = explode(' ', $categoryName);
+                $code = '';
+                if (count($words) >= 2) {
+                    $code = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 3));
+                } else {
+                    $code = strtoupper(substr($categoryName, 0, 4));
+                }
+
+                $generatedId = sprintf('%d-%s-%03d', $year, $code, $seq);
+                $service->setNumeration($generatedId);
+            }
+
             $entityManager->persist($service);
             $entityManager->flush(); // Flush once to get the ID for URL generation
 

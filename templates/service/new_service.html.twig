@@ -13,9 +13,22 @@
         }
         /* Custom styles for TinyMCE containers to match the design */
         .tox-tinymce {
-            border-radius: 1rem !important;
+            border-radius: 1.5rem !important;
             border: 1px solid #E2E8F0 !important;
             overflow: hidden;
+        }
+        /* Style for switches */
+        .toggle-switch {
+            @apply relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 bg-slate-200;
+        }
+        .toggle-switch[checked], .toggle-switch:checked {
+            @apply bg-blue-600;
+        }
+        .toggle-thumb {
+            @apply pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out translate-x-0;
+        }
+        input:checked + .toggle-switch .toggle-thumb {
+            @apply translate-x-5;
         }
     </style>
 {% endblock %}
@@ -26,11 +39,11 @@
 
 {% block content %}
 <div class="w-full px-8 py-8 bg-slate-100 min-h-full" data-controller="service-form modal-form">
-    {# Redesigning the form for Ssgv (Service) entity using Tailwind to mimic Bootstrap cards #}
+    {# ESPECIFICACIÓN: NUEVO FORMULARIO DE ALTA DE SERVICIOS #}
 
     {{ form_start(form, {
         'attr': {
-            'class': 'space-y-8',
+            'class': 'space-y-6',
             'name': 'service',
             'id': 'service-form',
             'data-service-form-target': 'form',
@@ -38,101 +51,223 @@
         }
     }) }}
 
-    {# Card 1: Cabecera #}
-    <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden mb-6">
+    {# TARJETA 1: Identificación (Cabecera) #}
+    <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
         <div class="p-6 md:p-8">
-            <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
-                <i data-lucide="tag" class="w-4 h-4 mr-2"></i> Cabecera del Registro
-            </h5>
-            <div class="space-y-6">
-                <div>
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+                <div class="flex-1">
+                    {{ form_label(form.title, 'Título del Servicio', {'label_attr': {'class': 'block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 ml-1'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'w-full text-4xl font-black text-slate-900 border-0 focus:ring-0 p-0 placeholder-slate-200', 'placeholder': 'Ej. Dispositivo Maratón'}}) }}
+                    <div class="form-error">{{ form_errors(form.title) }}</div>
+
+                    <div class="mt-2 flex items-center text-slate-500">
+                        <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i>
+                        {{ form_widget(form.locality, {'attr': {'class': 'bg-transparent border-0 p-0 text-sm focus:ring-0 w-full', 'placeholder': 'Añadir ubicación...'}}) }}
+                    </div>
+                </div>
+                <div class="w-full md:w-64">
                     {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    <div class="flex rounded-xl shadow-sm ring-1 ring-inset ring-slate-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600">
-                        <span class="flex select-none items-center pl-3 text-slate-500 sm:text-sm">
-                            <i data-lucide="tag" class="w-4 h-4"></i>
+                    <div class="flex rounded-xl shadow-sm ring-1 ring-inset ring-slate-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600 bg-white">
+                        <span class="flex select-none items-center pl-3 text-slate-500">
+                            <i data-lucide="barcode" class="w-4 h-4"></i>
                         </span>
                         {{ form_widget(form.numeration, {
                             'attr': {
-                                'class': 'block flex-1 border-0 bg-transparent py-3 pl-2 pr-3 text-slate-900 placeholder:text-slate-400 focus:ring-0 sm:text-sm font-mono',
-                                'placeholder': 'S-2026-XXX (Automático si se deja vacío)'
+                                'class': 'block flex-1 border-0 bg-transparent py-2 pl-2 pr-3 text-slate-900 placeholder:text-slate-400 focus:ring-0 sm:text-sm font-mono',
+                                'placeholder': '(Auto: 2026-XXX)'
                             }
                         }) }}
                     </div>
                     <div class="form-error">{{ form_errors(form.numeration) }}</div>
                 </div>
+            </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2">
-                        {{ form_label(form.title, 'Título del Servicio', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                        {{ form_widget(form.title, {'attr': {'class': 'block w-full rounded-xl border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 placeholder:text-slate-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm', 'placeholder': 'Ej. Dispositivo Maratón'}}) }}
-                        <div class="form-error">{{ form_errors(form.title) }}</div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                <div>
+                    {{ form_label(form.type, 'Tipo de Servicio', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                    <div class="flex shadow-sm rounded-xl overflow-hidden border border-slate-200">
+                        {{ form_widget(form.type, {'attr': {'class': 'flex-1 border-none py-3 px-4 text-sm'}}) }}
+                        <button type="button" data-action="click->modal-form#openModal" data-modal-id="typeModal" class="bg-blue-600 hover:bg-blue-700 text-white px-3 flex items-center justify-center transition-colors">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <div>
-                        {{ form_label(form.type, 'Tipo', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                        {{ form_widget(form.type, {'attr': {'class': 'block w-full rounded-xl border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm'}}) }}
-                        <div class="form-error">{{ form_errors(form.type) }}</div>
+                    <div class="form-error">{{ form_errors(form.type) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.category, 'Categoría', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                    <div class="flex shadow-sm rounded-xl overflow-hidden border border-slate-200">
+                        {{ form_widget(form.category, {'attr': {'class': 'flex-1 border-none py-3 px-4 text-sm'}}) }}
+                        <button type="button" data-action="click->modal-form#openModal" data-modal-id="categoryModal" class="bg-blue-600 hover:bg-blue-700 text-white px-3 flex items-center justify-center transition-colors">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
                     </div>
-                    <div>
-                        {{ form_label(form.category, 'Categoría', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                        {{ form_widget(form.category, {'attr': {'class': 'block w-full rounded-xl border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm'}}) }}
-                        <div class="form-error">{{ form_errors(form.category) }}</div>
-                    </div>
+                    <div class="form-error">{{ form_errors(form.category) }}</div>
+                </div>
+                <div>
+                    {{ form_label(form.maxAttendees, 'Plazas Totales', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'block w-full rounded-xl border-slate-200 py-3 px-4 text-sm', 'placeholder': 'Ej. 50'}}) }}
+                    <div class="form-error">{{ form_errors(form.maxAttendees) }}</div>
                 </div>
             </div>
         </div>
     </div>
 
-    {# Card 2: Cronología #}
-    <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden mb-6">
+    {# TARJETA 2: Cronología (Tiempos) #}
+    <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
         <div class="p-6 md:p-8">
             <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
                 <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Cronología del Operativo
             </h5>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div>
-                    {{ form_label(form.startDate, 'Fecha Inicio', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    {{ form_widget(form.startDate, {'attr': {'class': 'block w-full rounded-xl border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm'}}) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b border-slate-50">
+                <div class="form-group">
+                    {{ form_label(form.startDate, 'Inicio del Servicio', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_widget(form.startDate, {'attr': {'class': 'block w-full rounded-xl border-0 py-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-lg font-bold'}}) }}
                     <div class="form-error">{{ form_errors(form.startDate) }}</div>
                 </div>
-                <div>
-                    {{ form_label(form.endDate, 'Fecha Fin', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    {{ form_widget(form.endDate, {'attr': {'class': 'block w-full rounded-xl border-0 py-3 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm'}}) }}
+                <div class="form-group">
+                    {{ form_label(form.endDate, 'Finalización', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_widget(form.endDate, {'attr': {'class': 'block w-full rounded-xl border-0 py-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 text-lg font-bold'}}) }}
                     <div class="form-error">{{ form_errors(form.endDate) }}</div>
+                </div>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                    {{ form_label(form.timeAtBase, 'Hora en Base', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'block w-full rounded-lg border-0 py-2 text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-xs'}}) }}
+                </div>
+                <div>
+                    {{ form_label(form.departureTime, 'Hora de Salida', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.departureTime, {'attr': {'class': 'block w-full rounded-lg border-0 py-2 text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-xs'}}) }}
+                </div>
+                <div>
+                    {{ form_label(form.registrationLimitDate, 'Límite de Inscripción', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'block w-full rounded-lg border-0 py-2 text-slate-600 shadow-sm ring-1 ring-inset ring-slate-200 focus:ring-2 focus:ring-inset focus:ring-blue-500 sm:text-xs'}}) }}
                 </div>
             </div>
         </div>
     </div>
 
-    {# Card 3: Detalles #}
-    <div class="bg-white shadow-sm border border-slate-200 rounded-2xl overflow-hidden mb-6">
+    {# TARJETA 3: Recursos y Dotación #}
+    <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
+        <div class="p-6 md:p-8">
+            <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-8 flex items-center">
+                <i data-lucide="package" class="w-4 h-4 mr-2"></i> Recursos y Dotación
+            </h5>
+
+            <div class="space-y-10">
+                {# Fila 1: Vehículos #}
+                <div class="bg-slate-50/50 p-6 rounded-2xl">
+                    <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
+                        <i data-lucide="truck" class="w-3 h-3 mr-2 text-blue-600"></i> Flota de Vehículos
+                    </h6>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div class="form-group">
+                            {{ form_label(form.numSvb, 'SVB', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numSvb, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numSva, 'SVA', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numSva, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numSvae, 'SVA-E', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numSvae, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numVir, 'VIR', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numVir, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Fila 2: Personal #}
+                <div class="p-6 rounded-2xl border border-slate-100">
+                    <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
+                        <i data-lucide="users" class="w-3 h-3 mr-2 text-green-600"></i> Personal Sanitario
+                    </h6>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="form-group">
+                            {{ form_label(form.numDoctors, 'Médicos', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numDoctors, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numDues, 'Enfermeros (DUE)', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numDues, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                        <div class="form-group">
+                            {{ form_label(form.numTecnicos, 'Técnicos (TTS)', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.numTecnicos, {'attr': {'class': 'w-full rounded-xl border-slate-200 text-center py-2.5 focus:ring-2 focus:ring-blue-500 focus:border-blue-500', 'placeholder': '0'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                {# Fila 3: Logística #}
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+                    <div class="form-group">
+                        {{ form_label(form.afluencia, 'Afluencia Estimada', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                        {{ form_widget(form.afluencia, {'attr': {'class': 'w-full rounded-xl border-slate-200 py-2.5 text-sm'}}) }}
+                    </div>
+                    <div class="flex items-center space-x-3 mb-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'sr-only peer'}}) }}
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-xs font-bold text-slate-600">Hospital de Campaña</span>
+                        </label>
+                    </div>
+                    <div class="flex items-center space-x-3 mb-3">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            {{ form_widget(form.hasProvisions, {'attr': {'class': 'sr-only peer'}}) }}
+                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span class="ms-3 text-xs font-bold text-slate-600">Avituallamiento</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# TARJETA 4: Definición Operativa #}
+    <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-12">
         <div class="p-6 md:p-8">
             <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
-                <i data-lucide="file-text" class="w-4 h-4 mr-2"></i> Detalles del Servicio
+                <i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Definición Operativa
             </h5>
             <div class="space-y-8">
+                <div class="bg-slate-50/50 p-6 rounded-2xl mb-6">
+                    {{ form_label(form.recipients, 'Destinatarios del Servicio', {'label_attr': {'class': 'block text-xs font-black text-slate-800 uppercase mb-4'}}) }}
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {% for child in form.recipients %}
+                            <div class="flex items-center space-x-2">
+                                {{ form_widget(child, {'attr': {'class': 'w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500'}}) }}
+                                {{ form_label(child, null, {'label_attr': {'class': 'text-xs font-medium text-slate-600'}}) }}
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
                 <div>
-                    {{ form_label(form.tasks, 'Nombre de la Tarea', {'label_attr': {'class': 'block text-lg font-black text-slate-800 mb-4'}}) }}
+                    {{ form_label(form.tasks, 'Resumen de Tarea (Titular)', {'label_attr': {'class': 'block text-lg font-black text-slate-800 mb-4'}}) }}
                     {{ form_widget(form.tasks, {
                         'id': 'service_tasks',
                         'attr': {
-                            'class': 'block w-full rounded-2xl border-0 py-4 text-white shadow-inner focus:ring-4 focus:ring-blue-500/10 sm:text-base font-medium',
+                            'class': 'block w-full rounded-2xl border-slate-200 py-4 px-6 text-slate-900 shadow-sm focus:ring-4 focus:ring-blue-500/10 sm:text-base font-black',
                             'rows': '5',
-                            'style': 'background-color: #1e293b !important; border-left: 4px solid #3b82f6 !important;',
                             'data-service-form-target': 'tasks',
-                            'placeholder': 'Describe las tareas principales aquí...'
+                            'placeholder': 'Resume las tareas principales en negrita...'
                         }
                     }) }}
                     <div class="form-error">{{ form_errors(form.tasks) }}</div>
                 </div>
 
                 <div>
-                    {{ form_label(form.description, 'Descripción', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_label(form.description, 'Descripción Detallada (Desarrollo)', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
                     {{ form_widget(form.description, {
                         'id': 'service_description',
                         'attr': {
-                            'class': 'block w-full rounded-2xl border-0 py-4 text-slate-900 shadow-sm ring-1 ring-inset ring-slate-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm bg-slate-50',
-                            'rows': '5',
-                            'data-service-form-target': 'description'
+                            'class': 'block w-full rounded-2xl border-0 py-6 px-6 text-slate-900 shadow-inner sm:text-sm bg-slate-50 focus:ring-4 focus:ring-blue-500/10',
+                            'rows': '8',
+                            'data-service-form-target': 'description',
+                            'placeholder': 'Desarrolla los detalles del operativo aquí...'
                         }
                     }) }}
                     <div class="form-error">{{ form_errors(form.description) }}</div>
@@ -141,23 +276,19 @@
         </div>
     </div>
 
-    {# Hidden fields needed for validity #}
+    {# Hidden fields for form validity #}
     <div class="hidden">
-        {{ form_row(form.registrationLimitDate) }}
-        {{ form_row(form.maxAttendees) }}
-        {{ form_row(form.locality) }}
-        {{ form_row(form.recipients) }}
         {{ form_row(form.numNurses) }}
         {{ form_row(form.whatsappMessage) }}
     </div>
 
     {# Footer Actions #}
-    <div class="flex items-center justify-between mt-12 pt-8 border-t border-slate-200">
+    <div class="flex items-center justify-between pt-8 border-t border-slate-200">
         <a href="{{ path('app_services_list') }}" class="inline-flex items-center text-sm font-bold text-slate-400 hover:text-slate-600 transition-colors">
             <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Cancelar y Volver
         </a>
-        <button type="submit" class="inline-flex items-center px-8 py-4 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-500/20 hover:bg-blue-700 active:scale-95 transition-all">
-            Guardar Nuevo Registro
+        <button type="submit" class="inline-flex items-center px-10 py-5 bg-blue-600 text-white font-black rounded-2xl shadow-2xl shadow-blue-600/20 hover:bg-blue-700 active:scale-95 transition-all uppercase tracking-widest text-xs">
+            Finalizar y Guardar Registro
         </button>
     </div>
 
