@@ -27,9 +27,15 @@
 
                 {# Muestra el error si existe #}
                 {% if error %}
-                    <div class="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-lg mb-6">
-                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-500 flex-shrink-0"></i>
-                        <span class="text-sm text-red-700">{{ error.messageKey|trans(error.messageData, 'security') }}</span>
+                    <div class="flex items-center gap-3 p-4 bg-red-50 border-l-4 border-red-600 rounded-r-lg mb-6">
+                        <i data-lucide="alert-circle" class="w-5 h-5 text-red-600 flex-shrink-0"></i>
+                        <span class="text-sm text-red-800 font-medium">
+                            {% if error.messageKey == 'Invalid credentials.' %}
+                                El correo electrónico o la contraseña no son correctos.
+                            {% else %}
+                                {{ error.messageKey|trans(error.messageData, 'security') }}
+                            {% endif %}
+                        </span>
                     </div>
                 {% endif %}
 
@@ -40,9 +46,9 @@
                                 Correo electrónico
                             </label>
                             <div class="relative">
-                                <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                                <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 {{ error ? 'text-red-500' : 'text-slate-400' }}"></i>
                                 <input type="email" value="{{ last_username|default(app.environment == 'dev' ? 'admin@example.com' : '') }}" name="_username" id="inputEmail"
-                                       class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
+                                       class="w-full pl-12 pr-4 h-12 border {{ error ? 'border-red-500' : 'border-slate-200' }} rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
                                        placeholder="admin@voluntarios.org" autocomplete="email" required autofocus>
                             </div>
                         </div>
@@ -52,10 +58,10 @@
                                 Contraseña
                             </label>
                             <div class="relative">
-                                <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                                <i data-lucide="lock" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 {{ error ? 'text-red-500' : 'text-slate-400' }}"></i>
                                 <input type="password" name="_password" id="inputPassword" value="{{ app.environment == 'dev' ? 'admin123' : '' }}"
                                        data-password-visibility-target="input"
-                                       class="w-full pl-12 pr-12 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
+                                       class="w-full pl-12 pr-12 h-12 border {{ error ? 'border-red-500' : 'border-slate-200' }} rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
                                        placeholder="••••••••" autocomplete="current-password" required>
 
                                 <button type="button"

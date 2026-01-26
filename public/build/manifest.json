@@ -1,5 +1,5 @@
 {
-  "build/app.css": "/build/app.7861836b.css",
+  "build/app.css": "/build/app.ecc6a390.css",
   "build/app.js": "/build/app.74cd33e4.js",
   "build/runtime.js": "/build/runtime.b7c30edf.js",
   "build/tinymce/themes/silver/theme.js": "/build/tinymce/themes/silver/theme.js",
@@ -66,6 +66,7 @@
   "build/tinymce/plugins/link/plugin.min.js": "/build/tinymce/plugins/link/plugin.min.js",
   "build/tinymce/plugins/fullscreen/plugin.js": "/build/tinymce/plugins/fullscreen/plugin.js",
   "build/tinymce/plugins/fullscreen/plugin.min.js": "/build/tinymce/plugins/fullscreen/plugin.min.js",
+  "build/images/fondo-login.jpg": "/build/images/fondo-login.jpg",
   "build/tinymce/plugins/accordion/plugin.js": "/build/tinymce/plugins/accordion/plugin.js",
   "build/tinymce/plugins/accordion/plugin.min.js": "/build/tinymce/plugins/accordion/plugin.min.js",
   "build/tinymce/plugins/searchreplace/plugin.js": "/build/tinymce/plugins/searchreplace/plugin.js",
