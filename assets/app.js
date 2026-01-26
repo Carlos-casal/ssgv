@@ -5,11 +5,31 @@ import './styles/app.css';
 import './bootstrap.js';
 
 // Import and initialize Lucide icons
-import { createIcons, icons } from 'lucide';
+import {
+    createIcons,
+    Mail,
+    Lock,
+    Eye,
+    EyeOff,
+    AlertCircle,
+    X,
+    Key,
+    CheckCircle
+} from 'lucide';
 
 const initializeIcons = () => {
-    // Pass the icons object as required by the lucide library
-    createIcons({ icons });
+    createIcons({
+        icons: {
+            Mail,
+            Lock,
+            Eye,
+            EyeOff,
+            AlertCircle,
+            X,
+            Key,
+            CheckCircle
+        }
+    });
 };
 
 document.addEventListener('turbo:load', initializeIcons);
