@@ -5,7 +5,7 @@
 {% block body_class %}{% endblock %}
 
 {% block body %}
-    <div class="h-screen w-full relative flex items-center justify-center m-0 p-0 overflow-hidden bg-slate-900">
+    <div class="h-screen w-full relative flex items-center justify-center m-0 p-0 overflow-hidden bg-slate-900" data-controller="forgot-password">
         <!-- Fondo con Imagen y Overlay -->
         <div class="absolute inset-0 z-0">
             <img src="{{ asset('/images/fondo-login.jpg') }}" alt="Fondo" class="w-full h-full object-cover">
@@ -89,15 +89,79 @@
                 </form>
 
                 <div class="mt-8 text-center">
-                    <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
+                    <button type="button"
+                            data-action="click->forgot-password#open"
+                            class="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline">
                         ¿Has olvidado tu contraseña?
-                    </a>
+                    </button>
                 </div>
             </div>
 
             <p class="text-center text-white/60 text-xs mt-8">
                 &copy; {{ "now"|date("Y") }} Protección Civil de Vigo. Todos los derechos reservados.
             </p>
+        </div>
+
+        <!-- Modal de Recuperación -->
+        <div data-forgot-password-target="modal"
+             class="fixed inset-0 z-50 hidden items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity duration-300">
+            <div class="bg-white w-full max-w-md rounded-2xl shadow-2xl transform transition-all duration-300 relative overflow-hidden">
+                <!-- Botón Cerrar -->
+                <button type="button"
+                        data-action="click->forgot-password#close"
+                        class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition-colors">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+
+                <div class="p-8 md:p-10">
+                    <!-- Icono Superior -->
+                    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                        <i data-lucide="key" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+
+                    <div data-forgot-password-target="form">
+                        <div class="text-center mb-8">
+                            <h2 class="text-2xl font-bold text-slate-800 mb-2">Recuperar acceso</h2>
+                            <p class="text-slate-500 text-sm">Introduce tu correo electrónico y te enviaremos las instrucciones para restablecer tu contraseña.</p>
+                        </div>
+
+                        <form data-action="submit->forgot-password#submit" class="space-y-6">
+                            <div>
+                                <label for="recoveryEmail" class="block text-sm font-semibold text-slate-700 mb-2 ml-1">
+                                    Correo electrónico
+                                </label>
+                                <div class="relative">
+                                    <i data-lucide="mail" class="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400"></i>
+                                    <input type="email" id="recoveryEmail" data-forgot-password-target="emailInput" required
+                                           class="w-full pl-12 pr-4 h-12 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none text-slate-800"
+                                           placeholder="tu@email.com">
+                                </div>
+                            </div>
+
+                            <button type="submit"
+                                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12 rounded-xl transition-all shadow-lg hover:shadow-blue-500/30">
+                                Enviar instrucciones
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Mensaje de Éxito (Agnóstico) -->
+                    <div data-forgot-password-target="successMessage" class="hidden text-center py-4">
+                        <div class="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <i data-lucide="check-circle" class="w-8 h-8 text-green-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold text-slate-800 mb-3">Solicitud enviada</h3>
+                        <p class="text-slate-600 leading-relaxed">
+                            Si este correo está registrado, recibirás un enlace en unos minutos.
+                        </p>
+                        <button type="button"
+                                data-action="click->forgot-password#close"
+                                class="mt-8 text-sm font-semibold text-blue-600 hover:text-blue-700">
+                            Volver al inicio de sesión
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}
