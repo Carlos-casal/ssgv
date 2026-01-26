@@ -143,6 +143,10 @@ class ServiceType extends AbstractType
                 'label' => 'SVAE',
                 'required' => false,
             ])
+            ->add('numVir', IntegerType::class, [
+                'label' => 'VIR',
+                'required' => false,
+            ])
             ->add('numDoctors', IntegerType::class, [
                 'label' => 'Medico',
                 'required' => false,

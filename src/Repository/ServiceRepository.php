@@ -226,4 +226,25 @@ class ServiceRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Gets the next sequential number for services in a given year.
+     * @param int $year The year to check.
+     * @return int The next sequential number.
+     */
+    public function getNextSequentialNumber(int $year): int
+    {
+        $startOfYear = new \DateTime("$year-01-01 00:00:00");
+        $endOfYear = new \DateTime("$year-12-31 23:59:59");
+
+        $count = (int) $this->createQueryBuilder('s')
+            ->select('count(s.id)')
+            ->where('s.startDate BETWEEN :start AND :end')
+            ->setParameter('start', $startOfYear)
+            ->setParameter('end', $endOfYear)
+            ->getQuery()
+            ->getSingleScalarResult();
+
+        return $count + 1;
+    }
 }
