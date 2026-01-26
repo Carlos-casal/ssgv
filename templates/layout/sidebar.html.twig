@@ -35,7 +35,7 @@
     {% else %}
         <div class="flex items-center justify-end h-16"> {# Set a fixed height to avoid layout shift #}
             <div class="relative">
-                <button class="flex items-center justify-center w-8 h-8 hover:bg-blue-700 rounded-full transition-colors">
+                <button class="flex items-center justify-center w-8 h-8 hover:bg-slate-700 rounded-full transition-colors">
                     <i data-lucide="bell" class="w-5 h-5"></i>
                 </button>
                 {% if pending_volunteer_count > 0 %}
@@ -182,39 +182,6 @@
                 </li>
 
                 <li class="mt-6"><a href="#" class="group w-full flex items-center justify-start pl-4 py-2 rounded-xl hover:bg-slate-800 transition-all duration-200 font-medium text-slate-400 hover:text-white text-sm"><i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0 mr-3 text-slate-500 group-hover:text-blue-400"></i><span>Usuario</span></a></li>
-                {% else %}
-                    {# Simplified menu for non-admins, e.g., ROLE_VOLUNTEER #}
-                     <li class="mt-8">
-                        <a href="{{ path('app_services_list') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                            <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                            <span>Servicios</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('app_my_services') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                            <i data-lucide="star" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                            <span>Mis servicios</span>
-                        </a>
-                    </li>
-
-                    {% set is_responsible_for_any_service = false %}
-                    {% if app.user.volunteer is defined and app.user.volunteer %}
-                        {% for confirmation in app.user.volunteer.assistanceConfirmations %}
-                            {% if confirmation.isFichajeResponsible %}
-                                {% set is_responsible_for_any_service = true %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if is_responsible_for_any_service %}
-                        <li class="mt-8">
-                            <a href="{{ path('app_responsible_services_list') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl text-yellow-400 bg-white/5 hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                                <span>Servicios Responsable</span>
-                            </a>
-                        </li>
-                    {% endif %}
-                {% endif %}
             </ul>
         </nav>
     </div>
@@ -226,19 +193,12 @@
         overflow: hidden;
         max-height: 0;
         transition: max-height 0.3s ease-in-out;
-        background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background for submenus */
     }
     .has-submenu.submenu-open > ul {
-        max-height: 1000px; /* A large enough value to show all content */
+        max-height: 1000px;
     }
-    .has-submenu.submenu-open > a > [data-lucide="chevron-right"] {
+    .has-submenu.submenu-open > button > [data-lucide="chevron-right"] {
         transform: rotate(90deg);
-    }
-    .has-submenu ul a {
-        color: white; /* Ensure text is white */
-    }
-    .has-submenu ul a:hover {
-        background-color: #1e40af; /* A darker blue for hover */
     }
 </style>
 
@@ -248,19 +208,17 @@
         if (!nav) return;
 
         const closeSubmenu = (submenu) => {
-            // Recursively close all descendant submenus that are open
             submenu.querySelectorAll('.submenu-open').forEach(openChild => {
                 openChild.classList.remove('submenu-open');
-                const childLink = openChild.querySelector('a[aria-expanded]');
+                const childLink = openChild.querySelector('button[aria-expanded]');
                 if (childLink) {
                     childLink.setAttribute('aria-expanded', 'false');
                 }
             });
 
-            // Close the submenu itself
             if (submenu.classList.contains('submenu-open')) {
                 submenu.classList.remove('submenu-open');
-                const link = submenu.querySelector('a[aria-expanded]');
+                const link = submenu.querySelector('button[aria-expanded]');
                 if (link) {
                     link.setAttribute('aria-expanded', 'false');
                 }
@@ -277,10 +235,8 @@
             let leaveTimer;
 
             item.addEventListener('mouseenter', () => {
-                clearTimeout(leaveTimer); // Cancel any pending close operations
-
+                clearTimeout(leaveTimer);
                 enterTimer = setTimeout(() => {
-                    // Close sibling submenus
                     const parentUl = item.parentElement;
                     parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
                         if (sibling !== item) {
@@ -288,21 +244,19 @@
                         }
                     });
 
-                    // Open this submenu
                     item.classList.add('submenu-open');
-                    const link = item.querySelector('a[aria-expanded]');
+                    const link = item.querySelector('button[aria-expanded]');
                     if (link) {
                         link.setAttribute('aria-expanded', 'true');
                     }
-                }, 100); // A small delay to prevent accidental opening
+                }, 100);
             });
 
             item.addEventListener('mouseleave', () => {
-                clearTimeout(enterTimer); // Cancel any pending open operations
-
+                clearTimeout(enterTimer);
                 leaveTimer = setTimeout(() => {
                     closeSubmenu(item);
-                }, 200); // Delay to allow moving mouse to child submenu
+                }, 200);
             });
         });
     }
