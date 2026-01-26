@@ -5,31 +5,10 @@ import './styles/app.css';
 import './bootstrap.js';
 
 // Import and initialize Lucide icons
-import {
-    createIcons,
-    Mail,
-    Lock,
-    Eye,
-    EyeOff,
-    AlertCircle,
-    X,
-    Key,
-    CheckCircle
-} from 'lucide';
+import { createIcons, icons } from 'lucide';
 
 const initializeIcons = () => {
-    createIcons({
-        icons: {
-            mail: Mail,
-            lock: Lock,
-            eye: Eye,
-            'eye-off': EyeOff,
-            'alert-circle': AlertCircle,
-            x: X,
-            key: Key,
-            'check-circle': CheckCircle
-        }
-    });
+    createIcons({ icons });
 };
 
 document.addEventListener('turbo:load', initializeIcons);
