@@ -1,6 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
 
-/* stimulusFetch: 'lazy' */
 // Controller to toggle password visibility
 export default class extends Controller {
     static targets = ['input', 'eyeIcon', 'eyeOffIcon'];
