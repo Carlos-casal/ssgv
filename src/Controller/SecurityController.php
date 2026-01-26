@@ -17,6 +17,8 @@ use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
 use Symfony\Component\Mime\Address;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use App\Repository\UserRepository;
+use Doctrine\ORM\EntityManagerInterface;
 
 /**
  * Controller handling security-related actions like login, logout, and access control.
@@ -102,16 +104,22 @@ class SecurityController extends AbstractController
      * Handles the forgot password request.
      */
     #[Route('/forgot-password', name: 'app_forgot_password', methods: ['POST'])]
-    public function forgotPassword(Request $request, MailerInterface $mailer): Response
+    public function forgotPassword(Request $request, MailerInterface $mailer, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
         $data = json_decode($request->getContent(), true);
         $email = $data['email'] ?? '';
 
-        if ($email) {
-            // For development agility, we always "succeed" but only send email if it's admin@example.com
-            // In a real scenario, you'd look up the user in the database.
+        $user = $userRepository->findOneBy(['email' => $email]);
 
-            $resetUrl = $this->generateUrl('app_reset_password', ['token' => bin2hex(random_bytes(16))], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
+        if ($user) {
+            $token = bin2hex(random_bytes(32));
+            $user->setResetToken($token);
+            $user->setResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
+
+            $entityManager->persist($user);
+            $entityManager->flush();
+
+            $resetUrl = $this->generateUrl('app_reset_password', ['token' => $token], \Symfony\Component\Routing\Generator\UrlGeneratorInterface::ABSOLUTE_URL);
 
             $emailMessage = (new TemplatedEmail())
                 ->from(new Address('no-reply@proteccioncivilvigo.org', 'Protección Civil Vigo'))
@@ -119,7 +127,7 @@ class SecurityController extends AbstractController
                 ->subject('[Protección Civil Vigo] Restablecer contraseña')
                 ->htmlTemplate('emails/reset_password.html.twig')
                 ->context([
-                    'user_name' => 'Admin', // In real, get from User entity
+                    'user_name' => $user->getVolunteer() ? $user->getVolunteer()->getName() : 'Usuario',
                     'reset_url' => $resetUrl,
                 ]);
 
@@ -135,17 +143,25 @@ class SecurityController extends AbstractController
      * Renders the reset password form and handles the update.
      */
     #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
-    public function resetPassword(Request $request, string $token, UserPasswordHasherInterface $passwordHasher): Response
+    public function resetPassword(Request $request, string $token, UserPasswordHasherInterface $passwordHasher, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
+        $user = $userRepository->findOneBy(['resetToken' => $token]);
+
+        if (!$user || ($user->getResetTokenExpiresAt() && $user->getResetTokenExpiresAt() < new \DateTimeImmutable())) {
+            $this->addFlash('error', 'El enlace de recuperación no es válido o ha caducado.');
+            return $this->redirectToRoute('app_login');
+        }
+
         if ($request->isMethod('POST')) {
             $password = $request->request->get('password');
             $confirmPassword = $request->request->get('confirm_password');
 
             if ($password && $password === $confirmPassword) {
-                // In a real scenario, you would:
-                // 1. Verify the token against the database.
-                // 2. Load the user associated with the token.
-                // 3. Update the password.
+                $user->setPassword($passwordHasher->hashPassword($user, $password));
+                $user->setResetToken(null);
+                $user->setResetTokenExpiresAt(null);
+
+                $entityManager->flush();
 
                 $this->addFlash('success', 'Tu contraseña ha sido restablecida correctamente.');
                 return $this->redirectToRoute('app_login');
