@@ -30,10 +30,6 @@
         input:checked + .toggle-switch .toggle-thumb {
             @apply translate-x-5;
         }
-        .mini-input {
-            width: 70px !important;
-            text-align: right;
-        }
     </style>
 {% endblock %}
 
@@ -74,35 +70,35 @@
         <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
     <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
         <div class="p-6 md:p-8">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-                <div class="flex-1">
-                    {{ form_label(form.title, 'Título del Servicio', {'label_attr': {'class': 'block text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-2 ml-1'}}) }}
-                    {{ form_widget(form.title, {'attr': {'class': 'form-control text-4xl font-black text-slate-900 placeholder-slate-200 mb-3', 'placeholder': 'Ej. Dispositivo Maratón'}}) }}
+            <div class="row g-4 mb-6">
+                <div class="col-md-8">
+                    {{ form_label(form.title, 'Título del Servicio', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                    {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg font-bold text-slate-900', 'placeholder': 'Ej. Dispositivo Maratón'}}) }}
                     <div class="form-error">{{ form_errors(form.title) }}</div>
-
-                    <div class="mt-2">
-                        {{ form_label(form.locality, 'Ubicación', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-1'}}) }}
-                        <div class="input-group">
-                            <span class="input-group-text bg-white border-end-0"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i></span>
-                            {{ form_widget(form.locality, {'attr': {'class': 'form-control border-start-0 ps-0 text-sm', 'placeholder': 'Añadir ubicación...'}}) }}
-                        </div>
-                    </div>
                 </div>
-                <div class="w-full md:w-64">
-                    {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    <div class="flex rounded-xl shadow-sm ring-1 ring-inset ring-slate-300 focus-within:ring-2 focus-within:ring-inset focus-within:ring-blue-600 bg-white">
-                        <span class="flex select-none items-center pl-3 text-slate-500">
-                            <i data-lucide="barcode" class="w-4 h-4"></i>
-                        </span>
+                <div class="col-md-4">
+                    {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                    <div class="input-group input-group-lg">
+                        <span class="input-group-text bg-slate-50 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
                         {{ form_widget(form.numeration, {
                             'attr': {
-                                'class': 'block flex-1 border-0 bg-transparent py-2 pl-2 pr-3 text-slate-900 placeholder:text-slate-400 focus:ring-0 sm:text-sm font-mono',
-                                'placeholder': '(Auto: 2026-XXX)'
+                                'class': 'form-control font-mono bg-slate-50 text-slate-500',
+                                'placeholder': '(Auto: 2026-XXX)',
+                                'readonly': 'readonly'
                             }
                         }) }}
                     </div>
                     <div class="form-error">{{ form_errors(form.numeration) }}</div>
                 </div>
+            </div>
+
+            <div class="mb-6">
+                {{ form_label(form.locality, 'Ubicación / Lugar del Operativo', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                <div class="input-group">
+                    <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i></span>
+                    {{ form_widget(form.locality, {'attr': {'class': 'form-control text-sm', 'placeholder': 'Añadir ubicación...'}}) }}
+                </div>
+                <div class="form-error">{{ form_errors(form.locality) }}</div>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
@@ -143,28 +139,28 @@
             </h5>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b border-slate-50">
                 <div class="form-group">
-                    {{ form_label(form.startDate, 'Inicio del Servicio', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control rounded-xl py-4 text-slate-900 shadow-sm text-lg font-bold'}}) }}
+                    {{ form_label(form.startDate, 'Inicio del Servicio', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-lg rounded-xl text-slate-900 shadow-sm font-bold'}}) }}
                     <div class="form-error">{{ form_errors(form.startDate) }}</div>
                 </div>
                 <div class="form-group">
-                    {{ form_label(form.endDate, 'Finalización', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
-                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control rounded-xl py-4 text-slate-900 shadow-sm text-lg font-bold'}}) }}
+                    {{ form_label(form.endDate, 'Finalización', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-lg rounded-xl text-slate-900 shadow-sm font-bold'}}) }}
                     <div class="form-error">{{ form_errors(form.endDate) }}</div>
                 </div>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
-                    {{ form_label(form.timeAtBase, 'Hora en Base', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
-                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control rounded-lg py-2 text-slate-600 shadow-sm sm:text-xs'}}) }}
+                    {{ form_label(form.timeAtBase, 'Hora en Base', {'label_attr': {'class': 'form-label text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-lg rounded-lg text-slate-600 shadow-sm'}}) }}
                 </div>
                 <div>
-                    {{ form_label(form.departureTime, 'Hora de Salida', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
-                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control rounded-lg py-2 text-slate-600 shadow-sm sm:text-xs'}}) }}
+                    {{ form_label(form.departureTime, 'Hora de Salida', {'label_attr': {'class': 'form-label text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-lg rounded-lg text-slate-600 shadow-sm'}}) }}
                 </div>
                 <div>
-                    {{ form_label(form.registrationLimitDate, 'Límite de Inscripción', {'label_attr': {'class': 'block text-xs font-semibold text-slate-400 mb-2'}}) }}
-                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control rounded-lg py-2 text-slate-600 shadow-sm sm:text-xs'}}) }}
+                    {{ form_label(form.registrationLimitDate, 'Límite de Inscripción', {'label_attr': {'class': 'form-label text-xs font-semibold text-slate-400 mb-2'}}) }}
+                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-lg rounded-lg text-slate-600 shadow-sm'}}) }}
                 </div>
             </div>
         </div>
@@ -178,13 +174,12 @@
             </h5>
             <div class="space-y-8">
                 <div>
-                    {{ form_label(form.tasks, 'Resumen de Tarea (Titular)', {'label_attr': {'class': 'block text-lg font-black text-slate-800 mb-4'}}) }}
+                    {{ form_label(form.tasks, 'Resumen de Tarea (Titular)', {'label_attr': {'class': 'form-label text-lg font-bold text-slate-800 mb-3'}}) }}
                     {{ form_widget(form.tasks, {
                         'attr': {
-                            'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base font-black',
-                            'rows': '3',
-                            'data-service-form-target': 'tasks',
-                            'placeholder': 'Resume las tareas principales en negrita...'
+                            'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base',
+                            'rows': '2',
+                            'placeholder': 'Resume las tareas principales aquí (Texto plano)...'
                         }
                     }) }}
                     <div class="form-error">{{ form_errors(form.tasks) }}</div>
