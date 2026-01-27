@@ -101,13 +101,13 @@ html, body {
         border-bottom-left-radius: 0 !important;
     }
 
-    .input-group > .form-control,
-    .input-group > .form-select,
-    .input-group > .btn {
+    .input-group.rounded-xl > .form-control,
+    .input-group.rounded-xl > .form-select,
+    .input-group.rounded-xl > .btn {
         border: none !important;
     }
 
-    .input-group > .form-select {
+    .input-group.rounded-xl > .form-select {
         border-right: 1px solid #dee2e6 !important;
     }
 

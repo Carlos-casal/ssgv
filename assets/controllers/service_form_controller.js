@@ -10,9 +10,6 @@ export default class extends Controller {
         "tabLink",
         "tabContent",
         "quillDescription",
-        "quillTasks",
-        "description",
-        "tasks",
         "modal",
         "userSearchInput",
         "userList",
@@ -29,7 +26,12 @@ export default class extends Controller {
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
         }
+
+        // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
+        tinymce.remove('textarea#service_tasks');
+
         // Ultra-minimalist TinyMCE configuration for Description
+        // Explicitly only target the description field
         tinymce.init({
             selector: 'textarea#service_description',
             plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',

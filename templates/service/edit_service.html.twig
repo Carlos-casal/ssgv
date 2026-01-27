@@ -174,13 +174,13 @@
                                     <span class="w-1.5 h-8 bg-blue-600 rounded-full"></span>
                                     Tareas
                                 </h4>
-                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
+                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base', 'rows': '2', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
                                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
                             </div>
 
                             <div class="form-group">
                                 {{ form_label(form.description, 'Descripción', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
-                                {{ form_widget(form.description, {'attr': {'data-service-form-target': 'description', 'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-sm', 'rows': '4'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-sm', 'rows': '4'}}) }}
                                 <div class="form-error">{{ form_errors(form.description) }}</div>
                             </div>
                         </div>
