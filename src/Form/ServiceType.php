@@ -169,7 +169,10 @@ class ServiceType extends AbstractType
             ->add('tasks', TextareaType::class, [
                 'label' => 'Tareas',
                 'required' => false,
-                'attr' => ['rows' => 2],
+                'attr' => [
+                    'rows' => 2,
+                    'class' => 'form-control',
+                ],
             ])
             ->add('hasProvisions', CheckboxType::class, [
                 'label' => 'Avituallamiento',
