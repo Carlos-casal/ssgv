@@ -30,6 +30,10 @@ class ServiceType extends AbstractType
     /**
      * Builds the form structure for the Service entity.
      *
+     * This method defines all the fields for the form. It also includes a PRE_SUBMIT event listener
+     * to combine the 'numDues' and 'numTecnicos' fields into the 'numNurses' field before submission,
+     * as 'numDues' and 'numTecnicos' are for user interface purposes only and are not mapped to the entity.
+     *
      * @param FormBuilderInterface $builder The form builder.
      * @param array $options The options for building the form.
      */
@@ -116,41 +120,49 @@ class ServiceType extends AbstractType
             ->add('numSvb', IntegerType::class, [
                 'label' => 'SVB',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numSva', IntegerType::class, [
                 'label' => 'SVA',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numSvae', IntegerType::class, [
                 'label' => 'SVAE',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numVir', IntegerType::class, [
                 'label' => 'VIR',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numTes', IntegerType::class, [
                 'label' => 'TES',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numTts', IntegerType::class, [
                 'label' => 'TTS',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numDue', IntegerType::class, [
                 'label' => 'DUE',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('numDoctors', IntegerType::class, [
                 'label' => 'Médico',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
                 'required' => false,
             ])
             ->add('tasks', TextareaType::class, [
-                'label' => 'Solo Tareas',
+                'label' => 'Tareas',
                 'required' => false,
             ])
             ->add('hasProvisions', CheckboxType::class, [
