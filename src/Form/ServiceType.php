@@ -114,54 +114,59 @@ class ServiceType extends AbstractType
                     'Media' => 'media',
                     'Alta' => 'alta',
                 ],
+                'choice_attr' => [
+                    'Baja' => ['class' => 'bg-green-100 text-green-800'],
+                    'Media' => ['class' => 'bg-orange-100 text-orange-800'],
+                    'Alta' => ['class' => 'bg-blue-100 text-blue-800'],
+                ],
                 'placeholder' => 'Selecciona un nivel',
                 'required' => false,
             ])
             ->add('numSvb', IntegerType::class, [
                 'label' => 'SVB',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numSva', IntegerType::class, [
                 'label' => 'SVA',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numSvae', IntegerType::class, [
                 'label' => 'SVAE',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numVir', IntegerType::class, [
                 'label' => 'VIR',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numTes', IntegerType::class, [
                 'label' => 'TES',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numTts', IntegerType::class, [
                 'label' => 'TTS',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numDue', IntegerType::class, [
                 'label' => 'DUE',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('numDoctors', IntegerType::class, [
                 'label' => 'Médico',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2],
+                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
                 'required' => false,
             ])
-            ->add('tasks', TextareaType::class, [
+            ->add('tasks', TextType::class, [
                 'label' => 'Tareas',
                 'required' => false,
             ])

@@ -32,22 +32,43 @@ export default class extends Controller {
         // Ultra-minimalist TinyMCE configuration for Description
         tinymce.init({
             selector: 'textarea#service_description',
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
             toolbar: 'bold italic | bullist numlist | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            height: 200,
+            height: 150,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
-            suffix: '.min'
+            suffix: '.min',
+            language: 'es'
         });
+
+        this.updateAllAfluenciaColors();
     }
 
     disconnect() {
         tinymce.remove('textarea#service_description');
+    }
+
+    updateAfluenciaColor(event) {
+        this.applyAfluenciaClass(event.currentTarget);
+    }
+
+    updateAllAfluenciaColors() {
+        this.element.querySelectorAll('select[id$="_afluencia"]').forEach(select => {
+            this.applyAfluenciaClass(select);
+        });
+    }
+
+    applyAfluenciaClass(select) {
+        select.classList.remove('afluencia-baja', 'afluencia-media', 'afluencia-alta');
+        const val = select.value;
+        if (val === 'baja') select.classList.add('afluencia-baja');
+        else if (val === 'media') select.classList.add('afluencia-media');
+        else if (val === 'alta') select.classList.add('afluencia-alta');
     }
 
     switchTab(event) {

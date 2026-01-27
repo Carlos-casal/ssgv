@@ -174,7 +174,6 @@
                             {{ form_widget(form.tasks, {
                                 'attr': {
                                     'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base',
-                                    'rows': '2',
                                     'placeholder': 'Resume las tareas principales aquí (Texto plano)...'
                                 }
                             }) }}
@@ -265,7 +264,12 @@
                             <div class="space-y-4">
                                 <div class="form-group">
                                     {{ form_label(form.afluencia, 'Afluencia Estimada', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
-                                    {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm rounded-xl border-primary text-primary font-bold'}}) }}
+                                    {{ form_widget(form.afluencia, {
+                                        'attr': {
+                                            'class': 'form-select form-select-sm rounded-xl font-bold',
+                                            'data-action': 'change->service-form#updateAfluenciaColor'
+                                        }
+                                    }) }}
                                 </div>
                                 <div class="flex items-center space-x-3">
                                     <label for="{{ form.hasFieldHospital.vars.id }}" class="relative inline-flex items-center cursor-pointer">
