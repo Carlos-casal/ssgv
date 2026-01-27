@@ -31,9 +31,9 @@ export default class extends Controller {
         tinymce.remove('textarea#service_tasks');
 
         // Ultra-minimalist TinyMCE configuration for Description
-        // Explicitly only target the description field
+        // Targeted selector using class to avoid global application and race conditions
         tinymce.init({
-            selector: 'textarea#service_description',
+            selector: 'textarea.js-editor-tiny:not(#service_tasks)',
             plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
             toolbar: 'bold italic | bullist numlist | removeformat',
             menubar: false,
@@ -52,7 +52,7 @@ export default class extends Controller {
     }
 
     disconnect() {
-        tinymce.remove('textarea#service_description');
+        tinymce.remove('textarea.js-editor-tiny');
     }
 
     updateAfluenciaColor(event) {
