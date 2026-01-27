@@ -103,20 +103,6 @@ class ServiceType extends AbstractType
                 'label' => 'Descripción',
                 'required' => false,
             ])
-            ->add('recipients', ChoiceType::class, [
-                'label' => 'Destinatarios del Servicio',
-                'choices' => [
-                    'Niños y adolescentes' => 'ninos_adolescentes',
-                    'Personas mayores' => 'personas_mayores',
-                    'Población en general' => 'poblacion_general',
-                    'Personas con discapacidad' => 'personas_discapacidad',
-                    'Animales' => 'animales',
-                    'Medio ambiente' => 'medio_ambiente',
-                ],
-                'multiple' => true,
-                'expanded' => true,
-                'required' => false,
-            ])
             ->add('locality', TextType::class, [
                 'label' => 'Lugar',
                 'required' => false,
