@@ -75,4 +75,38 @@ html, body {
         width: 6ch !important;
         text-align: center;
     }
+
+    .mini-input {
+        width: 70px !important;
+        text-align: right;
+    }
+
+    /* Fix for visual glitch in Bootstrap Input Groups with rounded custom classes */
+    .input-group.rounded-xl {
+        border-radius: 0.75rem !important;
+    }
+
+    .input-group.rounded-xl > *:first-child:not(.form-check) {
+        border-top-left-radius: 0.75rem !important;
+        border-bottom-left-radius: 0.75rem !important;
+    }
+
+    .input-group.rounded-xl > *:last-child {
+        border-top-right-radius: 0.75rem !important;
+        border-bottom-right-radius: 0.75rem !important;
+    }
+
+    .input-group > .form-control:not(:first-child),
+    .input-group > .form-select:not(:first-child),
+    .input-group > .btn:not(:first-child) {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+
+    .input-group > .form-control:not(:last-child),
+    .input-group > .form-select:not(:last-child),
+    .input-group > .btn:not(:last-child) {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
 }

@@ -25,9 +25,15 @@ export default class extends Controller {
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
         }
+        // Minimalist TinyMCE configuration for Description
         tinymce.init({
-            selector: 'textarea#service_tasks, textarea#service_description',
+            selector: 'textarea#service_description',
             plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
+            toolbar: 'undo redo | bold italic | bullist numlist | link',
+            menubar: false,
+            statusbar: false,
+            resize: false,
+            height: 300,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
@@ -37,7 +43,6 @@ export default class extends Controller {
     }
 
     disconnect() {
-        tinymce.remove('textarea#service_tasks');
         tinymce.remove('textarea#service_description');
     }
 
