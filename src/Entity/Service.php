@@ -192,6 +192,24 @@ class Service
     private ?int $numNurses = null;
 
     /**
+     * @var int|null The number of TES (Técnico en Emergencias Sanitarias) required.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $numTes = null;
+
+    /**
+     * @var int|null The number of TTS (Técnico en Transporte Sanitario) required.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $numTts = null;
+
+    /**
+     * @var int|null The number of DUE (Enfermero) required.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $numDue = null;
+
+    /**
      * @var bool|null Indicates if a field hospital is required.
      */
     #[ORM\Column(nullable: true)]
@@ -814,6 +832,39 @@ class Service
     {
         $this->numNurses = $numNurses;
 
+        return $this;
+    }
+
+    public function getNumTes(): ?int
+    {
+        return $this->numTes;
+    }
+
+    public function setNumTes(?int $numTes): static
+    {
+        $this->numTes = $numTes;
+        return $this;
+    }
+
+    public function getNumTts(): ?int
+    {
+        return $this->numTts;
+    }
+
+    public function setNumTts(?int $numTts): static
+    {
+        $this->numTts = $numTts;
+        return $this;
+    }
+
+    public function getNumDue(): ?int
+    {
+        return $this->numDue;
+    }
+
+    public function setNumDue(?int $numDue): static
+    {
+        $this->numDue = $numDue;
         return $this;
     }
 
