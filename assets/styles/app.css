@@ -1,5 +1,4 @@
 /* assets/styles/app.css */
-@import 'bootstrap/dist/css/bootstrap.min.css';
 
 @tailwind base;
 @tailwind components;
@@ -108,5 +107,10 @@ html, body {
     .input-group > .btn:not(:last-child) {
         border-top-right-radius: 0 !important;
         border-bottom-right-radius: 0 !important;
+    }
+
+    /* Force hide TinyMCE branding if any */
+    .tox-statusbar__branding {
+        display: none !important;
     }
 }

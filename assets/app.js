@@ -1,9 +1,6 @@
 // Import our custom CSS
 import './styles/app.css';
 
-// Import Bootstrap
-import 'bootstrap';
-
 // Import the Stimulus application
 import './bootstrap.js';
 
