@@ -1,9 +1,5 @@
 import { Controller } from '@hotwired/stimulus';
 import tinymce from 'tinymce';
-import 'tinymce/themes/silver';
-import 'tinymce/skins/ui/oxide/skin.min.css';
-import 'tinymce/skins/ui/oxide/content.min.css';
-import 'tinymce/skins/content/default/content.min.css';
 
 export default class extends Controller {
     static targets = [
@@ -31,11 +27,12 @@ export default class extends Controller {
         }
         tinymce.init({
             selector: 'textarea#service_tasks, textarea#service_description',
-            plugins: 'advlist autolink lists link image charmap print preview hr anchor pagebreak',
+            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
-            suffix: '.min'
+            suffix: '.min',
+            license_key: 'gpl'
         });
     }
 
