@@ -166,9 +166,10 @@ class ServiceType extends AbstractType
                 'label' => 'Hospital de Campaña',
                 'required' => false,
             ])
-            ->add('tasks', TextType::class, [
+            ->add('tasks', TextareaType::class, [
                 'label' => 'Tareas',
                 'required' => false,
+                'attr' => ['rows' => 2],
             ])
             ->add('hasProvisions', CheckboxType::class, [
                 'label' => 'Avituallamiento',
