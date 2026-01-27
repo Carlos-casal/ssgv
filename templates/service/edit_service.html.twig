@@ -174,7 +174,7 @@
                                     <span class="w-1.5 h-8 bg-blue-600 rounded-full"></span>
                                     Tareas
                                 </h4>
-                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base', 'rows': '2', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
+                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
                                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
                             </div>
 
@@ -251,7 +251,12 @@
                                 <div class="space-y-6">
                                     <div class="form-group">
                                         {{ form_label(form.afluencia, 'Nivel de Afluencia', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
-                                        {{ form_widget(form.afluencia, {'attr': {'class': 'form-select w-full rounded-xl border-primary text-primary font-bold'}}) }}
+                                        {{ form_widget(form.afluencia, {
+                                            'attr': {
+                                                'class': 'form-select w-full rounded-xl font-bold',
+                                                'data-action': 'change->service-form#updateAfluenciaColor'
+                                            }
+                                        }) }}
                                     </div>
                                     <div class="flex items-center mb-4">
                                         <label for="{{ form.hasFieldHospital.vars.id }}" class="relative inline-flex items-center cursor-pointer">
