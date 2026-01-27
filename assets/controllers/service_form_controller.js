@@ -25,13 +25,14 @@ export default class extends Controller {
         if (this.hasModalTarget) {
             this.setupAttendanceModal();
         }
-        // Minimalist TinyMCE configuration for Description
+        // Ultra-minimalist TinyMCE configuration for Description
         tinymce.init({
             selector: 'textarea#service_description',
             plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
-            toolbar: 'undo redo | bold italic | bullist numlist | link',
+            toolbar: 'bold italic | bullist numlist | removeformat',
             menubar: false,
             statusbar: false,
+            branding: false,
             resize: false,
             height: 300,
             toolbar_mode: 'floating',

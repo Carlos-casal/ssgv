@@ -174,7 +174,7 @@
             </h5>
             <div class="space-y-8">
                 <div>
-                    {{ form_label(form.tasks, 'Resumen de Tarea (Titular)', {'label_attr': {'class': 'form-label text-lg font-bold text-slate-800 mb-3'}}) }}
+                    {{ form_label(form.tasks, 'Solo Tareas', {'label_attr': {'class': 'form-label text-lg font-bold text-slate-800 mb-3'}}) }}
                     {{ form_widget(form.tasks, {
                         'attr': {
                             'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base',
@@ -186,7 +186,7 @@
                 </div>
 
                 <div>
-                    {{ form_label(form.description, 'Descripción Detallada (Desarrollo)', {'label_attr': {'class': 'block text-sm font-bold text-slate-700 mb-2'}}) }}
+                    {{ form_label(form.description, 'Descripción', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
                     {{ form_widget(form.description, {
                         'attr': {
                             'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-sm',
@@ -212,10 +212,10 @@
                     </h5>
 
                     <div class="row g-4">
-                        <!-- Column 1: Vehículos -->
+                        <!-- Column 1: Ambulancias -->
                         <div class="col-md-4 border-end">
                             <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
-                                <i data-lucide="truck" class="w-3 h-3 mr-2 text-blue-600"></i> Vehículos
+                                <i data-lucide="truck" class="w-3 h-3 mr-2 text-blue-600"></i> Ambulancias
                             </h6>
                             <div class="space-y-3">
                                 <div class="d-flex align-items-center justify-content-between">
@@ -237,23 +237,27 @@
                             </div>
                         </div>
 
-                        <!-- Column 2: Personal -->
+                        <!-- Column 2: Personal Sanitario -->
                         <div class="col-md-4 border-end">
                             <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
-                                <i data-lucide="users" class="w-3 h-3 mr-2 text-green-600"></i> Personal
+                                <i data-lucide="users" class="w-3 h-3 mr-2 text-green-600"></i> Personal Sanitario
                             </h6>
                             <div class="space-y-3">
                                 <div class="d-flex align-items-center justify-content-between">
-                                    {{ form_label(form.numDoctors, 'Médicos', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
+                                    {{ form_label(form.numTes, 'TES', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
+                                    {{ form_widget(form.numTes, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    {{ form_label(form.numTts, 'TTS', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
+                                    {{ form_widget(form.numTts, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    {{ form_label(form.numDue, 'DUE', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
+                                    {{ form_widget(form.numDue, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
+                                </div>
+                                <div class="d-flex align-items-center justify-content-between">
+                                    {{ form_label(form.numDoctors, 'Médico', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
                                     {{ form_widget(form.numDoctors, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    {{ form_label(form.numDues, 'DUE', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
-                                    {{ form_widget(form.numDues, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
-                                </div>
-                                <div class="d-flex align-items-center justify-content-between">
-                                    {{ form_label(form.numTecnicos, 'TTS', {'label_attr': {'class': 'text-xs font-bold text-slate-500 mb-0'}}) }}
-                                    {{ form_widget(form.numTecnicos, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -265,21 +269,21 @@
                             </h6>
                             <div class="space-y-4">
                                 <div class="form-group">
-                                    {{ form_label(form.afluencia, 'Afluencia Estimada', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                                    {{ form_label(form.afluencia, 'Afluencia Estimada', {'label_attr': {'class': 'form-label text-xs font-bold text-primary mb-2'}}) }}
                                     {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm rounded-xl'}}) }}
                                 </div>
                                 <div class="flex items-center space-x-3">
                                     <label for="{{ form.hasFieldHospital.vars.id }}" class="relative inline-flex items-center cursor-pointer">
                                         {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'sr-only peer'}}) }}
                                         <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                        <span class="ms-3 text-xs font-bold text-slate-600">Hospital</span>
+                                        <span class="ms-3 text-xs font-bold text-success">Hospital de Campaña</span>
                                     </label>
                                 </div>
                                 <div class="flex items-center space-x-3">
                                     <label for="{{ form.hasProvisions.vars.id }}" class="relative inline-flex items-center cursor-pointer">
                                         {{ form_widget(form.hasProvisions, {'attr': {'class': 'sr-only peer'}}) }}
                                         <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                                        <span class="ms-3 text-xs font-bold text-slate-600">Provisión</span>
+                                        <span class="ms-3 text-xs font-bold text-info">Avituallamiento</span>
                                     </label>
                                 </div>
                             </div>
@@ -292,7 +296,6 @@
 
     {# Hidden fields for form validity #}
     <div class="hidden">
-        {{ form_row(form.numNurses) }}
         {{ form_row(form.whatsappMessage) }}
     </div>
 

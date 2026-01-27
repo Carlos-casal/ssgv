@@ -30,10 +30,6 @@ class ServiceType extends AbstractType
     /**
      * Builds the form structure for the Service entity.
      *
-     * This method defines all the fields for the form. It also includes a PRE_SUBMIT event listener
-     * to combine the 'numDues' and 'numTecnicos' fields into the 'numNurses' field before submission,
-     * as 'numDues' and 'numTecnicos' are for user interface purposes only and are not mapped to the entity.
-     *
      * @param FormBuilderInterface $builder The form builder.
      * @param array $options The options for building the form.
      */
@@ -133,29 +129,28 @@ class ServiceType extends AbstractType
                 'label' => 'VIR',
                 'required' => false,
             ])
+            ->add('numTes', IntegerType::class, [
+                'label' => 'TES',
+                'required' => false,
+            ])
+            ->add('numTts', IntegerType::class, [
+                'label' => 'TTS',
+                'required' => false,
+            ])
+            ->add('numDue', IntegerType::class, [
+                'label' => 'DUE',
+                'required' => false,
+            ])
             ->add('numDoctors', IntegerType::class, [
-                'label' => 'Medico',
+                'label' => 'Médico',
                 'required' => false,
-            ])
-            ->add('numNurses', HiddenType::class, [
-                'required' => false,
-            ])
-            ->add('numDues', IntegerType::class, [
-                'label' => 'Enfermeros/as (DUE)',
-                'required' => false,
-                'mapped' => false,
-            ])
-            ->add('numTecnicos', IntegerType::class, [
-                'label' => 'Técnicos (TTS)',
-                'required' => false,
-                'mapped' => false,
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
                 'required' => false,
             ])
             ->add('tasks', TextareaType::class, [
-                'label' => 'Tareas',
+                'label' => 'Solo Tareas',
                 'required' => false,
             ])
             ->add('hasProvisions', CheckboxType::class, [
@@ -168,18 +163,6 @@ class ServiceType extends AbstractType
                 'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
             ]);
 
-        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
-            $data = $event->getData();
-            $form = $event->getForm();
-
-            $numDues = $data['numDues'] ?? 0;
-            $numTecnicos = $data['numTecnicos'] ?? 0;
-
-            // Cast to integers to prevent TypeError if the values are empty strings
-            $data['numNurses'] = (int)$numDues + (int)$numTecnicos;
-
-            $event->setData($data);
-        });
     }
 
     /**
