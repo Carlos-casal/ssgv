@@ -1,6 +1,6 @@
 {
-  "build/app.css": "/build/app.af3e5d4d.css",
-  "build/app.js": "/build/app.3c05fa65.js",
+  "build/app.css": "/build/app.48320f0c.css",
+  "build/app.js": "/build/app.6e2a1bd7.js",
   "build/runtime.js": "/build/runtime.b7c30edf.js",
   "build/tinymce/themes/silver/theme.js": "/build/tinymce/themes/silver/theme.js",
   "build/tinymce/themes/silver/theme.min.js": "/build/tinymce/themes/silver/theme.min.js",
@@ -20,6 +20,8 @@
   "build/tinymce/skins/ui/oxide-dark/skin.css": "/build/tinymce/skins/ui/oxide-dark/skin.css",
   "build/tinymce/skins/ui/oxide/skin.min.css": "/build/tinymce/skins/ui/oxide/skin.min.css",
   "build/tinymce/skins/ui/oxide-dark/skin.min.css": "/build/tinymce/skins/ui/oxide-dark/skin.min.css",
+  "build/tinymce/models/dom/model.js": "/build/tinymce/models/dom/model.js",
+  "build/tinymce/models/dom/model.min.js": "/build/tinymce/models/dom/model.min.js",
   "build/tinymce/icons/default/icons.js": "/build/tinymce/icons/default/icons.js",
   "build/tinymce/icons/default/icons.min.js": "/build/tinymce/icons/default/icons.min.js",
   "build/tinymce/plugins/codesample/plugin.js": "/build/tinymce/plugins/codesample/plugin.js",
@@ -261,5 +263,6 @@
   "build/tinymce/plugins/visualchars/index.js": "/build/tinymce/plugins/visualchars/index.js",
   "build/tinymce/plugins/wordcount/index.js": "/build/tinymce/plugins/wordcount/index.js",
   "build/tinymce/icons/default/index.js": "/build/tinymce/icons/default/index.js",
+  "build/tinymce/models/dom/index.js": "/build/tinymce/models/dom/index.js",
   "build/tinymce/themes/silver/index.js": "/build/tinymce/themes/silver/index.js"
 }

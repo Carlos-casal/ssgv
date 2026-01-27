@@ -53,6 +53,10 @@ Encore
         from: './node_modules/tinymce/themes',
         to: 'tinymce/themes/[path][name].[ext]'
     })
+    .copyFiles({
+        from: './node_modules/tinymce/models',
+        to: 'tinymce/models/[path][name].[ext]'
+    })
 ;
 
 module.exports = Encore.getWebpackConfig();
