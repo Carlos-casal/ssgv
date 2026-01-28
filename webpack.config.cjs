@@ -34,6 +34,11 @@ Encore
 
     // Copia los assets de TinyMCE
     .copyFiles({
+        from: './node_modules/tinymce',
+        to: 'tinymce/[name].[ext]',
+        pattern: /tinymce\.min\.js$/
+    })
+    .copyFiles({
         from: './node_modules/tinymce/models',
         to: 'tinymce/models/[path][name].[ext]'
     })

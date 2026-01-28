@@ -1,147 +1,231 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>Test Form - TinyMCE & Borders</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Carga de Bootstrap 5 desde CDN para aislamiento total -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}TEST: Nuevo Servicio (Fix UI){% endblock %}
+{% block page_title %}Panel de Control{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
     <style>
-        body {
-            background-color: #f0f2f5;
-            padding-top: 50px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* FIX: Esquinas redondeadas y borde izquierdo cortado (image_40d850.png) */
+        .input-group.test-fix {
+            overflow: visible !important; /* Permitir que los bordes externos se vean */
         }
-        .test-container {
-            max-width: 850px;
-            margin: auto;
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
-
-        /* --- CSS FIXES SOLICITADOS --- */
-
-        /* 1. Global TinyMCE Logo/Statusbar Fix */
-        .tox-statusbar__branding,
-        .tox-statusbar__path,
-        .tox-throbber,
-        .tox-promotion {
-            display: none !important;
-        }
-
-        /* 2. Input Group "Cut-Corner" & Border Fix */
-        .test-input-group {
-            display: flex !important;
-            width: 100% !important;
-            overflow: visible !important; /* CRUCIAL: No cortar bordes externos ni sombras */
-            position: relative !important;
-        }
-
-        .test-input-group .form-select {
+        .input-group.test-fix .form-select {
             border-top-right-radius: 0 !important;
             border-bottom-right-radius: 0 !important;
             border-right: 0 !important;
-            z-index: 2;
+            border-left: 1px solid #dee2e6 !important; /* Asegurar borde izquierdo visible */
         }
-
-        .test-input-group .btn {
+        .input-group.test-fix .btn {
             border-top-left-radius: 0 !important;
             border-bottom-left-radius: 0 !important;
-            z-index: 1;
-            padding-left: 15px;
-            padding-right: 15px;
         }
 
-        /* Asegurar que el borde izquierdo sea siempre visible */
-        .test-input-group > .form-select:first-child {
-            border-left: 1px solid #dee2e6 !important;
+        /* FIX: TinyMCE Logo y Statusbar (image_dbf573.png) */
+        .tox-statusbar__branding, .tox-statusbar__path, .tox-throbber {
+            display: none !important;
         }
 
-        /* Mantener el foco visible y por encima */
-        .test-input-group .form-select:focus {
-            z-index: 5;
-            position: relative;
+        /* Estilos originales replicados */
+        .form-error {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
         }
     </style>
-</head>
-<body>
-    <div class="test-container">
-        <h1 class="h3 mb-4 text-primary border-bottom pb-3">Entorno de Pruebas Aislado</h1>
+{% endblock %}
 
-        <div class="row mb-5">
-            <h5 class="mb-3 text-secondary">1. Verificación de Bordes (Input Groups)</h5>
-            <div class="col-md-6 mb-3">
-                <label class="form-label small fw-bold">Tipo de Servicio</label>
-                <div class="input-group test-input-group">
-                    <select class="form-select">
-                        <option>Preventivo</option>
-                        <option>Emergencia</option>
-                    </select>
-                    <button class="btn btn-primary" type="button">+ Nuevo</button>
+{% block content %}
+<div class="w-full px-8 py-8 bg-slate-100 min-h-full">
+    {# Réplica exacta de la estructura de Nuevo Servicio #}
+    {{ form_start(form, {
+        'attr': {
+            'class': 'space-y-6',
+            'id': 'test-form'
+        }
+    }) }}
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs mb-4" id="serviceTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab">
+                <i data-lucide="info" class="w-4 h-4 inline-block mr-1"></i> Datos Generales
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources" type="button" role="tab">
+                <i data-lucide="package" class="w-4 h-4 inline-block mr-1"></i> Recursos y Dotación
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Tab 1: Datos Generales -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel">
+            <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
+                <div class="p-6 md:p-8">
+                    <div class="row g-4 mb-6">
+                        <div class="col-md-8">
+                            {{ form_label(form.title, 'Título del Servicio', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-lg font-bold text-slate-900'}}) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-slate-50 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
+                                {{ form_widget(form.numeration, {
+                                    'attr': {
+                                        'class': 'form-control font-mono bg-slate-50 text-slate-500',
+                                        'readonly': 'readonly',
+                                        'placeholder': 'S-2026-XXX (Automático si se deja vacío)'
+                                    }
+                                }) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        {{ form_label(form.locality, 'Ubicación / Lugar del Operativo', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                        <div class="input-group">
+                            <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i></span>
+                            {{ form_widget(form.locality, {'attr': {'class': 'form-control text-sm'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6 border-t border-slate-100">
+                        <div>
+                            {{ form_label(form.type, 'Tipo de Servicio', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            <div class="input-group shadow-sm rounded-xl test-fix">
+                                {{ form_widget(form.type, {'attr': {'class': 'form-select border-slate-200 py-3 px-4 text-sm'}}) }}
+                                <button type="button" class="btn btn-primary px-3 flex items-center justify-center">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            {{ form_label(form.category, 'Categoría', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            <div class="input-group shadow-sm rounded-xl test-fix">
+                                {{ form_widget(form.category, {'attr': {'class': 'form-select border-slate-200 py-3 px-4 text-sm'}}) }}
+                                <button type="button" class="btn btn-primary px-3 flex items-center justify-center">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            {{ form_label(form.maxAttendees, 'Plazas Totales', {'label_attr': {'class': 'block text-xs font-bold text-slate-500 mb-2'}}) }}
+                            {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control rounded-xl py-3 px-4 text-sm'}}) }}
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <label class="form-label small fw-bold">Categoría</label>
-                <div class="input-group test-input-group">
-                    <select class="form-select">
-                        <option>Terrestre</option>
-                        <option>Acuático</option>
-                    </select>
-                    <button class="btn btn-primary" type="button">+ Nuevo</button>
+
+            {# Cronología #}
+            <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-6">
+                <div class="p-6 md:p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Cronología del Operativo
+                    </h5>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8 pb-8 border-b border-slate-50">
+                        <div>
+                            {{ form_label(form.startDate, 'Inicio del Servicio', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
+                            {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-lg rounded-xl text-slate-900 shadow-sm font-bold'}}) }}
+                        </div>
+                        <div>
+                            {{ form_label(form.endDate, 'Finalización', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
+                            {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-lg rounded-xl text-slate-900 shadow-sm font-bold'}}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Definición Operativa - AQUÍ ESTÁ EL FIX DE TAREAS Y DESCRIPCIÓN #}
+            <div class="bg-white shadow-sm border border-slate-200 rounded-3xl overflow-hidden mb-12">
+                <div class="p-6 md:p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
+                        <i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Definición Operativa
+                    </h5>
+                    <div class="space-y-8">
+                        <div>
+                            {{ form_label(form.tasks, 'Tareas (Plain Text)', {'label_attr': {'class': 'form-label text-lg font-bold text-slate-800 mb-3'}}) }}
+                            {{ form_widget(form.tasks, {
+                                'id': 'test_tasks',
+                                'attr': {
+                                    'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base',
+                                    'rows': '3',
+                                    'placeholder': 'Este campo NO debe tener TinyMCE...'
+                                }
+                            }) }}
+                        </div>
+
+                        <div>
+                            {{ form_label(form.description, 'Descripción (TinyMCE Fix)', {'label_attr': {'class': 'form-label text-sm font-bold text-slate-700 mb-2'}}) }}
+                            {{ form_widget(form.description, {
+                                'id': 'test_description',
+                                'attr': {
+                                    'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-sm',
+                                    'rows': '4'
+                                }
+                            }) }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <hr class="mb-5">
-
-        <div class="mb-5">
-            <h5 class="mb-3 text-secondary">2. Aislamiento de TinyMCE</h5>
-
-            <div class="mb-4">
-                <label for="test_tasks" class="form-label small fw-bold">Tareas (Debe ser Plain Text)</label>
-                <textarea id="test_tasks" name="tareas" class="form-control" rows="3">Este campo NO carga TinyMCE. Es un simple cuadro de texto con rows="3".</textarea>
+        <!-- Tab 2: Recursos y Dotación (Simplificado para el test) -->
+        <div class="tab-pane fade" id="resources" role="tabpanel">
+            <div class="bg-white shadow-sm border border-slate-200 rounded-3xl p-8 mb-6 text-center text-slate-400">
+                Pestaña de Recursos (Replicada pero secundaria para este test)
             </div>
-
-            <div class="mb-4">
-                <label for="test_description" class="form-label small fw-bold">Descripción (Debe cargar TinyMCE)</label>
-                <textarea id="test_description" name="descripcion" class="form-control">Este campo SÍ carga TinyMCE en Español, sin barra de menús y sin branding.</textarea>
-            </div>
-        </div>
-
-        <div class="d-flex justify-content-between align-items-center mt-5">
-            <span class="text-muted small">Estado: Verificando fixes de UI</span>
-            <a href="/" class="btn btn-outline-secondary btn-sm">Regresar</a>
         </div>
     </div>
 
-    <!-- TinyMCE desde CDN para evitar problemas de dependencias locales -->
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <div class="d-flex justify-content-end align-items-center gap-3 pt-6 border-t border-slate-200 mt-8">
+        <a href="#" class="btn btn-outline-secondary px-6 py-2.5 rounded-xl text-sm font-bold">Cancelar</a>
+        <button type="button" class="btn btn-primary px-6 py-2.5 rounded-xl text-sm font-bold">Guardar Servicio</button>
+    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Inicialización dirigida EXCLUSIVAMENTE al ID solicitado
-            tinymce.init({
-                selector: '#test_description',
-                language: 'es',
-                menubar: false,
-                statusbar: false,
-                branding: false,
-                promotion: false,
-                plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
-                toolbar: 'bold italic | bullist numlist | removeformat',
-                height: 250,
-                content_style: 'body { font-family: sans-serif; font-size: 14px; }'
-            });
+    {{ form_end(form) }}
+</div>
 
-            console.log('Test Page Loaded');
-            if (tinymce.get('test_tasks')) {
-                console.error('ERROR: TinyMCE se cargó en Tareas.');
-            } else {
-                console.log('SUCCESS: Tareas es texto plano.');
+<!-- Scripts de TinyMCE Local -->
+<script src="{{ asset('build/tinymce/tinymce.min.js') }}"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Inicialización de TinyMCE Local con los fixes solicitados
+        tinymce.init({
+            selector: '#test_description',
+            base_url: '/build/tinymce',
+            suffix: '.min',
+            language: 'es', // Se cargará si está disponible localmente
+            menubar: false, // Quitar menús Archivo, Editar, etc.
+            statusbar: false, // Quitar barra de estado
+            branding: false, // Quitar logo "Powered by TinyMCE"
+            promotion: false, // Quitar botón de promoción
+            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
+            toolbar: 'bold italic | bullist numlist | removeformat',
+            height: 300,
+            setup: function(editor) {
+                editor.on('init', function() {
+                    console.log('TinyMCE (Local) inicializado en #test_description');
+                });
             }
         });
-    </script>
-</body>
-</html>
+
+        // Aseguramos que #test_tasks NO tenga TinyMCE
+        if (tinymce.get('test_tasks')) {
+            tinymce.remove('#test_tasks');
+        }
+
+        // Fix de Tabs (Bootstrap 5 nativo)
+        const triggerTabList = [].slice.call(document.querySelectorAll('#serviceTabs button'))
+        triggerTabList.forEach(function (triggerEl) {
+            const tabTrigger = new bootstrap.Tab(triggerEl)
+            triggerEl.addEventListener('click', function (event) {
+                event.preventDefault()
+                tabTrigger.show()
+            })
+        });
+    });
+</script>
+{% endblock %}
