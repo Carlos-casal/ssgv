@@ -33,9 +33,9 @@ export default class extends Controller {
         // Ultra-minimalist TinyMCE configuration for Description
         // Targeted selector using ID to avoid global application and race conditions
         tinymce.init({
-            selector: '#descripcion',
+            selector: '#descripcion_field',
             plugins: 'lists link autolink',
-            toolbar: 'bold italic | bullist numlist | link | removeformat',
+            toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
@@ -46,7 +46,7 @@ export default class extends Controller {
             base_url: '/build/tinymce',
             suffix: '.min',
             license_key: 'gpl',
-            api_key: 'no-api-key',
+            'api-key': 'no-api-key',
             setup: function(editor) {
                 editor.on('init', function() {
                     editor.getContainer().style.borderRadius = "1rem";
