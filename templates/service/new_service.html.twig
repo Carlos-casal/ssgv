@@ -75,10 +75,10 @@
                         <div class="col-md-4">
                             {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
                             <div class="input-group input-group-lg">
-                                <span class="input-group-text bg-slate-50 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
+                                <span class="input-group-text bg-slate-100 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
                                 {{ form_widget(form.numeration, {
                                     'attr': {
-                                        'class': 'form-control font-mono bg-slate-50 text-slate-500',
+                                        'class': 'form-control form-control-lg font-mono bg-slate-100 text-slate-500',
                                         'placeholder': '(Auto: 2026-XXX)',
                                         'readonly': 'readonly'
                                     }
@@ -170,10 +170,10 @@
                     </h5>
                     <div class="space-y-8">
                         <div>
-                            {{ form_label(form.tasks, 'Tareas', {'label_attr': {'class': 'form-label text-lg font-bold text-slate-800 mb-3'}}) }}
+                            {{ form_label(form.tasks, 'Tareas', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
                             {{ form_widget(form.tasks, {
                                 'attr': {
-                                    'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base',
+                                    'class': 'form-control border-slate-200 text-slate-900',
                                     'rows': '2',
                                     'placeholder': 'Resume las tareas principales aquí (Texto plano)...'
                                 }

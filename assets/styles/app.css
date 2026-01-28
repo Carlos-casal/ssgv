@@ -112,7 +112,7 @@ html, body {
     }
 
     /* Force hide TinyMCE branding if any */
-    .tox-statusbar__branding, .tox-promotion {
+    .tox-statusbar__branding, .tox-promotion, .tox-statusbar__path {
         display: none !important;
     }
 

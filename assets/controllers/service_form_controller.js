@@ -45,7 +45,9 @@ export default class extends Controller {
             promotion: false,
             base_url: '/build/tinymce',
             suffix: '.min',
-            language: 'es'
+            language: 'es',
+            license_key: 'gpl',
+            api_key: 'no-api-key'
         });
 
         this.updateAllAfluenciaColors();
