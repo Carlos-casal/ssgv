@@ -31,9 +31,9 @@ export default class extends Controller {
         tinymce.remove('textarea#service_tasks');
 
         // Ultra-minimalist TinyMCE configuration for Description
-        // Targeted selector using class to avoid global application and race conditions
+        // Targeted selector using ID to avoid global application and race conditions
         tinymce.init({
-            selector: 'textarea.js-editor-tiny:not(#service_tasks)',
+            selector: '#descripcion',
             plugins: 'lists link autolink',
             toolbar: 'bold italic | bullist numlist | link | removeformat',
             menubar: false,
@@ -45,7 +45,6 @@ export default class extends Controller {
             promotion: false,
             base_url: '/build/tinymce',
             suffix: '.min',
-            language: 'es',
             license_key: 'gpl',
             api_key: 'no-api-key',
             setup: function(editor) {
