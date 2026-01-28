@@ -76,8 +76,8 @@
                             <div class="col-md-4">
                                 {{ form_label(form.numeration, 'Nº de Registro', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
                                 <div class="input-group input-group-lg">
-                                    <span class="input-group-text bg-slate-50 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
-                                    {{ form_widget(form.numeration, {'attr': {'class': 'form-control font-mono bg-slate-50 text-slate-500', 'placeholder': 'Automático', 'readonly': 'readonly'}}) }}
+                                    <span class="input-group-text bg-slate-100 text-slate-400"><i data-lucide="barcode" class="w-4 h-4"></i></span>
+                                    {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-lg font-mono bg-slate-100 text-slate-500', 'placeholder': 'Automático', 'readonly': 'readonly'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -170,17 +170,14 @@
                         </h5>
                         <div class="space-y-8">
                             <div class="form-group">
-                                <h4 class="text-xl font-black text-slate-800 mb-6 flex items-center gap-3">
-                                    <span class="w-1.5 h-8 bg-blue-600 rounded-full"></span>
-                                    Tareas
-                                </h4>
-                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-base', 'rows': '2', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
+                                {{ form_label(form.tasks, 'Tareas', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
+                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control border-slate-200 text-slate-900', 'rows': '2', 'placeholder': 'Resumen de tareas (Texto plano)...'}}) }}
                                 <div class="form-error">{{ form_errors(form.tasks) }}</div>
                             </div>
 
                             <div class="form-group">
                                 {{ form_label(form.description, 'Descripción', {'label_attr': {'class': 'form-label text-xs font-bold text-slate-500 mb-2'}}) }}
-                                {{ form_widget(form.description, {'attr': {'class': 'form-control rounded-2xl border-slate-300 py-4 px-6 text-slate-900 shadow-sm sm:text-sm js-editor-tiny', 'rows': '4'}}) }}
+                                {{ form_widget(form.description, {'attr': {'class': 'form-control border-slate-200 text-slate-900 js-editor-tiny', 'rows': '4'}}) }}
                                 <div class="form-error">{{ form_errors(form.description) }}</div>
                             </div>
                         </div>
@@ -286,10 +283,10 @@
 
         {# Footer Actions #}
         <div class="d-flex justify-content-end align-items-center gap-3 mt-16 pt-10 border-t border-slate-100">
-            <a href="{{ path('app_services_list') }}" class="btn btn-outline-secondary px-6 py-2.5 rounded-xl text-sm font-bold d-inline-flex align-items-center justify-content-center">
+            <a href="{{ path('app_services_list') }}" class="btn btn-outline-secondary px-4">
                 Cancelar
             </a>
-            <button type="submit" class="btn btn-primary px-6 py-2.5 rounded-xl text-sm font-bold d-inline-flex align-items-center justify-content-center">
+            <button type="submit" class="btn btn-primary px-4">
                 Guardar Servicio
             </button>
         </div>
