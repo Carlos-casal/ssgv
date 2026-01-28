@@ -34,20 +34,25 @@ export default class extends Controller {
         // Targeted selector using class to avoid global application and race conditions
         tinymce.init({
             selector: 'textarea.js-editor-tiny:not(#service_tasks)',
-            plugins: 'advlist autolink lists link image charmap preview anchor pagebreak',
-            toolbar: 'bold italic | bullist numlist | removeformat',
+            plugins: 'lists link autolink',
+            toolbar: 'bold italic | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            height: 150,
+            height: 200,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
             suffix: '.min',
             language: 'es',
             license_key: 'gpl',
-            api_key: 'no-api-key'
+            api_key: 'no-api-key',
+            setup: function(editor) {
+                editor.on('init', function() {
+                    editor.getContainer().style.borderRadius = "1rem";
+                });
+            }
         });
 
         this.updateAllAfluenciaColors();

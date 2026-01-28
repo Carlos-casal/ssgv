@@ -1,4 +1,5 @@
 /* assets/styles/app.css */
+@import 'bootstrap/dist/css/bootstrap.min.css';
 
 @tailwind base;
 @tailwind components;
@@ -80,6 +81,17 @@ html, body {
         text-align: right;
     }
 
+    /* Utility for integrated buttons in input-groups */
+    .btn-integrated-right {
+        border-top-left-radius: 0 !important;
+        border-bottom-left-radius: 0 !important;
+    }
+
+    .input-integrated-left {
+        border-top-right-radius: 0 !important;
+        border-bottom-right-radius: 0 !important;
+    }
+
     /* Fix for visual glitch in Bootstrap Input Groups with rounded custom classes */
     .input-group.rounded-xl {
         border-radius: 0.75rem !important;
@@ -120,4 +132,9 @@ html, body {
     .afluencia-baja { background-color: #d1fae5 !important; color: #065f46 !important; border-color: #10b981 !important; }
     .afluencia-media { background-color: #ffedd5 !important; color: #9a3412 !important; border-color: #f97316 !important; }
     .afluencia-alta { background-color: #dbeafe !important; color: #1e40af !important; border-color: #3b82f6 !important; }
+
+    /* Bootstrap Tabs Fix */
+    .tab-content > .tab-pane:not(.active) {
+        display: none !important;
+    }
 }
