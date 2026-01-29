@@ -1,0 +1,11 @@
+<div class="material-item d-flex align-items-center justify-content-between mb-2">
+    <div class="flex-grow-1 me-2">
+        {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm', 'aria-label': 'Seleccionar material'}}) }}
+    </div>
+    <div class="me-2">
+        {{ form_widget(form.quantity, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0', 'aria-label': 'Cantidad'}}) }}
+    </div>
+    <button type="button" class="btn btn-outline-danger btn-sm p-1" data-action="click->service-form#removeMaterial" title="Eliminar material">
+        <i data-lucide="trash-2" class="w-4 h-4"></i>
+    </button>
+</div>

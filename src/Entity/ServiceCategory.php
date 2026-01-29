@@ -20,6 +20,13 @@ class ServiceCategory
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\Column(length: 50, unique: true, nullable: true)]
+    private ?string $code = null;
+
+    #[ORM\ManyToOne(targetEntity: ServiceType::class)]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?ServiceType $type = null;
+
     #[ORM\OneToMany(mappedBy: 'category', targetEntity: Service::class)]
     private Collection $services;
 
@@ -41,6 +48,30 @@ class ServiceCategory
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getCode(): ?string
+    {
+        return $this->code;
+    }
+
+    public function setCode(?string $code): static
+    {
+        $this->code = $code;
+
+        return $this;
+    }
+
+    public function getType(): ?ServiceType
+    {
+        return $this->type;
+    }
+
+    public function setType(?ServiceType $type): static
+    {
+        $this->type = $type;
 
         return $this;
     }

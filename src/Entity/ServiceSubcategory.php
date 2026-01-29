@@ -2,15 +2,15 @@
 
 namespace App\Entity;
 
-use App\Repository\ServiceTypeRepository;
+use App\Repository\ServiceSubcategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
-#[ORM\Entity(repositoryClass: ServiceTypeRepository::class)]
-#[UniqueEntity('name', message: 'Ya existe un tipo de servicio con este nombre.')]
-class ServiceType
+#[ORM\Entity(repositoryClass: ServiceSubcategoryRepository::class)]
+#[UniqueEntity('name', message: 'Ya existe una subcategoría de servicio con este nombre.')]
+class ServiceSubcategory
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -23,7 +23,11 @@ class ServiceType
     #[ORM\Column(length: 50, unique: true, nullable: true)]
     private ?string $code = null;
 
-    #[ORM\OneToMany(mappedBy: 'type', targetEntity: Service::class)]
+    #[ORM\ManyToOne(targetEntity: ServiceCategory::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?ServiceCategory $category = null;
+
+    #[ORM\OneToMany(mappedBy: 'subcategory', targetEntity: Service::class)]
     private Collection $services;
 
     public function __construct()
@@ -60,6 +64,18 @@ class ServiceType
         return $this;
     }
 
+    public function getCategory(): ?ServiceCategory
+    {
+        return $this->category;
+    }
+
+    public function setCategory(?ServiceCategory $category): static
+    {
+        $this->category = $category;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, Service>
      */
@@ -72,7 +88,7 @@ class ServiceType
     {
         if (!$this->services->contains($service)) {
             $this->services->add($service);
-            $service->setType($this);
+            $service->setSubcategory($this);
         }
 
         return $this;
@@ -81,20 +97,14 @@ class ServiceType
     public function removeService(Service $service): static
     {
         if ($this->services->removeElement($service)) {
-            // set the owning side to null (unless already changed)
-            if ($service->getType() === $this) {
-                $service->setType(null);
+            if ($service->getSubcategory() === $this) {
+                $service->setSubcategory(null);
             }
         }
 
         return $this;
     }
 
-    /**
-     * Returns the name of the service type when the object is converted to a string.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->name ?? '';

@@ -3,7 +3,9 @@
 namespace App\Controller\Api;
 
 use App\Entity\ServiceCategory;
+use App\Entity\ServiceType;
 use App\Form\ServiceCategoryType;
+use App\Repository\ServiceCategoryRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -39,5 +41,27 @@ class ServiceCategoryController extends AbstractController
         return $this->json([
             'errors' => (string) $form->getErrors(true, false),
         ], Response::HTTP_BAD_REQUEST);
+    }
+
+    #[Route('/list', name: 'api_service_category_list', methods: ['GET'])]
+    public function list(Request $request, ServiceCategoryRepository $repository): Response
+    {
+        $typeId = $request->query->get('type');
+        if ($typeId) {
+            $categories = $repository->findBy(['type' => $typeId]);
+        } else {
+            $categories = $repository->findAll();
+        }
+
+        $data = [];
+        foreach ($categories as $category) {
+            $data[] = [
+                'id' => $category->getId(),
+                'name' => $category->getName(),
+                'code' => $category->getCode(),
+            ];
+        }
+
+        return $this->json($data);
     }
 }

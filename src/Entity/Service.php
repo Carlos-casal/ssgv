@@ -93,6 +93,12 @@ class Service
     private ?ServiceCategory $category = null;
 
     /**
+     * @var ServiceSubcategory|null The subcategory of the service.
+     */
+    #[ORM\ManyToOne(inversedBy: 'services')]
+    private ?ServiceSubcategory $subcategory = null;
+
+    /**
      * @var string|null A detailed description of the service.
      */
     #[ORM\Column(type: Types::TEXT, nullable: true)]
@@ -228,12 +234,47 @@ class Service
     private ?bool $hasProvisions = null;
 
     /**
+     * @var Collection<int, Vehicle> The vehicles assigned to the service.
+     */
+    #[ORM\ManyToMany(targetEntity: Vehicle::class)]
+    #[ORM\JoinTable(name: 'service_vehicles')]
+    private Collection $vehicles;
+
+    /**
+     * @var Collection<int, ServiceMaterial> The materials assigned to the service.
+     */
+    #[ORM\OneToMany(mappedBy: 'service', targetEntity: ServiceMaterial::class, cascade: ['persist', 'remove'], orphanRemoval: true)]
+    private Collection $serviceMaterials;
+
+    /**
      * Initializes collections.
      */
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
         $this->volunteerServices = new ArrayCollection();
+        $this->vehicles = new ArrayCollection();
+        $this->serviceMaterials = new ArrayCollection();
+    }
+
+    /**
+     * Gets the subcategory of the service.
+     * @return ServiceSubcategory|null
+     */
+    public function getSubcategory(): ?ServiceSubcategory
+    {
+        return $this->subcategory;
+    }
+
+    /**
+     * Sets the subcategory of the service.
+     * @param ServiceSubcategory|null $subcategory The service subcategory.
+     * @return static
+     */
+    public function setSubcategory(?ServiceSubcategory $subcategory): static
+    {
+        $this->subcategory = $subcategory;
+        return $this;
     }
 
     /**
@@ -243,6 +284,55 @@ class Service
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    /**
+     * @return Collection<int, Vehicle>
+     */
+    public function getVehicles(): Collection
+    {
+        return $this->vehicles;
+    }
+
+    public function addVehicle(Vehicle $vehicle): static
+    {
+        if (!$this->vehicles->contains($vehicle)) {
+            $this->vehicles->add($vehicle);
+        }
+        return $this;
+    }
+
+    public function removeVehicle(Vehicle $vehicle): static
+    {
+        $this->vehicles->removeElement($vehicle);
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, ServiceMaterial>
+     */
+    public function getServiceMaterials(): Collection
+    {
+        return $this->serviceMaterials;
+    }
+
+    public function addServiceMaterial(ServiceMaterial $serviceMaterial): static
+    {
+        if (!$this->serviceMaterials->contains($serviceMaterial)) {
+            $this->serviceMaterials->add($serviceMaterial);
+            $serviceMaterial->setService($this);
+        }
+        return $this;
+    }
+
+    public function removeServiceMaterial(ServiceMaterial $serviceMaterial): static
+    {
+        if ($this->serviceMaterials->removeElement($serviceMaterial)) {
+            if ($serviceMaterial->getService() === $this) {
+                $serviceMaterial->setService(null);
+            }
+        }
+        return $this;
     }
 
     /**
