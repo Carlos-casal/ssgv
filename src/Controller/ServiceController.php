@@ -3,7 +3,7 @@ namespace App\Controller;
 
 use App\Entity\AssistanceConfirmation;
 use App\Entity\Service;
-use App\Form\ServiceType;
+use App\Form\ServiceFormType;
 use App\Security\Voter\FichajeVoter;
 use App\Repository\AssistanceConfirmationRepository;
 use App\Repository\ServiceRepository;
@@ -96,7 +96,22 @@ class ServiceController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager, WhatsAppMessageGenerator $messageGenerator, ServiceRepository $serviceRepository): Response
     {
         $service = new Service();
-        $form = $this->createForm(ServiceType::class, $service);
+
+        // Pre-populate standard materials
+        $materialRepo = $entityManager->getRepository(\App\Entity\Material::class);
+        $standardMaterials = ['Botiquín', 'DESA', 'Camilla', 'Walkies', 'Vallas', 'Carpas'];
+
+        foreach ($standardMaterials as $matName) {
+            $material = $materialRepo->findOneBy(['name' => $matName]);
+            if ($material) {
+                $serviceMaterial = new \App\Entity\ServiceMaterial();
+                $serviceMaterial->setMaterial($material);
+                $serviceMaterial->setQuantity(0);
+                $service->addServiceMaterial($serviceMaterial);
+            }
+        }
+
+        $form = $this->createForm(ServiceFormType::class, $service);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -199,7 +214,7 @@ class ServiceController extends AbstractController
         if (!$service) {
             throw $this->createNotFoundException('El servicio solicitado no existe.');
         }
-        $form = $this->createForm(ServiceType::class, $service);
+        $form = $this->createForm(ServiceFormType::class, $service);
         return $this->render('service/show_service.html.twig', [
             'service' => $service,
             'serviceForm' => $form->createView(),
@@ -219,7 +234,7 @@ class ServiceController extends AbstractController
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
         $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
-        $form = $this->createForm(ServiceType::class, $service);
+        $form = $this->createForm(ServiceFormType::class, $service);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

@@ -13,9 +13,12 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TimeType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use App\Entity\ServiceCategory;
+use App\Entity\ServiceSubcategory;
+use App\Entity\Vehicle;
 use App\Entity\ServiceType as EntityServiceType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
+use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormEvent;
@@ -25,7 +28,7 @@ use Symfony\Component\Form\FormEvents;
  * Form type for creating and editing Service entities.
  * This form includes all fields necessary to define a service, from basic details to resource requirements.
  */
-class ServiceType extends AbstractType
+class ServiceFormType extends AbstractType
 {
     /**
      * Builds the form structure for the Service entity.
@@ -87,17 +90,26 @@ class ServiceType extends AbstractType
             ])
             ->add('type', EntityType::class, [
                 'class' => EntityServiceType::class,
-                'choice_label' => 'name',
+                'choice_label' => function(EntityServiceType $type) {
+                    return $type->getCode() ? $type->getCode() . '. ' . $type->getName() : $type->getName();
+                },
                 'label' => 'Tipo',
                 'placeholder' => 'Selecciona un tipo',
                 'required' => true,
             ])
-            ->add('category', EntityType::class, [
-                'class' => ServiceCategory::class,
-                'choice_label' => 'name',
-                'label' => 'Categoría',
-                'placeholder' => 'Selecciona una categoría',
+            ->add('subcategory', EntityType::class, [
+                'class' => ServiceSubcategory::class,
+                'choice_label' => function(ServiceSubcategory $sub) {
+                    return $sub->getCode() ? $sub->getCode() . ' ' . $sub->getName() : $sub->getName();
+                },
+                'group_by' => function(ServiceSubcategory $sub) {
+                    $cat = $sub->getCategory();
+                    return $cat->getCode() ? $cat->getCode() . ' ' . $cat->getName() : $cat->getName();
+                },
+                'label' => 'Categoría / Subcategoría',
+                'placeholder' => 'Selecciona subcategoría...',
                 'required' => true,
+                'attr' => ['class' => 'form-select select-hierarchy']
             ])
             ->add('description', TextareaType::class, [
                 'label' => 'Descripción',
@@ -177,6 +189,22 @@ class ServiceType extends AbstractType
             ->add('hasProvisions', CheckboxType::class, [
                 'label' => 'Avituallamiento',
                 'required' => false,
+            ])
+            ->add('vehicles', EntityType::class, [
+                'class' => Vehicle::class,
+                'choice_label' => function(Vehicle $vehicle) {
+                    return sprintf('%s (%s)', $vehicle->getAlias() ?: $vehicle->getModel(), $vehicle->getLicensePlate());
+                },
+                'multiple' => true,
+                'label' => 'Vehículos',
+                'required' => false,
+            ])
+            ->add('serviceMaterials', CollectionType::class, [
+                'entry_type' => ServiceMaterialFormType::class,
+                'allow_add' => true,
+                'allow_delete' => true,
+                'by_reference' => false,
+                'label' => false,
             ])
             ->add('whatsappMessage', TextareaType::class, [
                 'label' => 'Mensaje de WhatsApp',

@@ -3,6 +3,8 @@
 namespace App\Form;
 
 use App\Entity\ServiceCategory;
+use App\Entity\ServiceType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -16,6 +18,15 @@ class ServiceCategoryType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nombre de la categoría de servicio',
                 'required' => true,
+            ])
+            ->add('code', TextType::class, [
+                'label' => 'Código (e.g. 1.1)',
+                'required' => false,
+            ])
+            ->add('type', EntityType::class, [
+                'class' => ServiceType::class,
+                'choice_label' => 'name',
+                'required' => false,
             ]);
     }
 
