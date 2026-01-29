@@ -39,6 +39,8 @@ security:
         - { path: ^/forgot-password, roles: PUBLIC_ACCESS }
         - { path: ^/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/nueva_inscripcion, roles: PUBLIC_ACCESS }
+        - { path: ^/nuevo_servicio, roles: PUBLIC_ACCESS }
+        - { path: ^/api, roles: PUBLIC_ACCESS }
         - { path: ^/servicios/new, roles: ROLE_ADMIN }
         - { path: ^/servicios/\d+/editar, roles: ROLE_ADMIN }
         - { path: ^/servicios/\d+/asistencia, roles: ROLE_ADMIN }

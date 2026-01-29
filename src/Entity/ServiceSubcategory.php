@@ -2,14 +2,14 @@
 
 namespace App\Entity;
 
-use App\Repository\ServiceCategoryRepository;
+use App\Repository\ServiceSubcategoryRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ServiceCategoryRepository::class)]
-#[ORM\UniqueConstraint(name: "uniq_category_codigo", columns: ["codigo"])]
-class ServiceCategory
+#[ORM\Entity(repositoryClass: ServiceSubcategoryRepository::class)]
+#[ORM\UniqueConstraint(name: "uniq_subcategory_codigo", columns: ["codigo"])]
+class ServiceSubcategory
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -22,16 +22,16 @@ class ServiceCategory
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(targetEntity: ServiceType::class, inversedBy: 'serviceCategories')]
+    #[ORM\ManyToOne(targetEntity: ServiceCategory::class, inversedBy: 'serviceSubcategories')]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
-    private ?ServiceType $serviceType = null;
+    private ?ServiceCategory $serviceCategory = null;
 
-    #[ORM\OneToMany(mappedBy: 'serviceCategory', targetEntity: ServiceSubcategory::class, orphanRemoval: true)]
-    private Collection $serviceSubcategories;
+    #[ORM\OneToMany(mappedBy: 'subcategory', targetEntity: Service::class)]
+    private Collection $services;
 
     public function __construct()
     {
-        $this->serviceSubcategories = new ArrayCollection();
+        $this->services = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -61,23 +61,23 @@ class ServiceCategory
         return $this;
     }
 
-    public function getServiceType(): ?ServiceType
+    public function getServiceCategory(): ?ServiceCategory
     {
-        return $this->serviceType;
+        return $this->serviceCategory;
     }
 
-    public function setServiceType(?ServiceType $serviceType): self
+    public function setServiceCategory(?ServiceCategory $serviceCategory): self
     {
-        $this->serviceType = $serviceType;
+        $this->serviceCategory = $serviceCategory;
         return $this;
     }
 
     /**
-     * @return Collection<int, ServiceSubcategory>
+     * @return Collection<int, Service>
      */
-    public function getServiceSubcategories(): Collection
+    public function getServices(): Collection
     {
-        return $this->serviceSubcategories;
+        return $this->services;
     }
 
     public function __toString(): string

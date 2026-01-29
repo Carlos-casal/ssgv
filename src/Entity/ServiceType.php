@@ -6,10 +6,9 @@ use App\Repository\ServiceTypeRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ServiceTypeRepository::class)]
-#[UniqueEntity('name', message: 'Ya existe un tipo de servicio con este nombre.')]
+#[ORM\UniqueConstraint(name: "uniq_type_codigo", columns: ["codigo"])]
 class ServiceType
 {
     #[ORM\Id]
@@ -17,15 +16,18 @@ class ServiceType
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column(length: 10)]
+    private ?string $codigo = null;
+
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
-    #[ORM\OneToMany(mappedBy: 'type', targetEntity: Service::class)]
-    private Collection $services;
+    #[ORM\OneToMany(mappedBy: 'serviceType', targetEntity: ServiceCategory::class, orphanRemoval: true)]
+    private Collection $serviceCategories;
 
     public function __construct()
     {
-        $this->services = new ArrayCollection();
+        $this->serviceCategories = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -33,53 +35,36 @@ class ServiceType
         return $this->id;
     }
 
+    public function getCodigo(): ?string
+    {
+        return $this->codigo;
+    }
+
+    public function setCodigo(string $codigo): self
+    {
+        $this->codigo = $codigo;
+        return $this;
+    }
+
     public function getName(): ?string
     {
         return $this->name;
     }
 
-    public function setName(string $name): static
+    public function setName(string $name): self
     {
         $this->name = $name;
-
         return $this;
     }
 
     /**
-     * @return Collection<int, Service>
+     * @return Collection<int, ServiceCategory>
      */
-    public function getServices(): Collection
+    public function getServiceCategories(): Collection
     {
-        return $this->services;
+        return $this->serviceCategories;
     }
 
-    public function addService(Service $service): static
-    {
-        if (!$this->services->contains($service)) {
-            $this->services->add($service);
-            $service->setType($this);
-        }
-
-        return $this;
-    }
-
-    public function removeService(Service $service): static
-    {
-        if ($this->services->removeElement($service)) {
-            // set the owning side to null (unless already changed)
-            if ($service->getType() === $this) {
-                $service->setType(null);
-            }
-        }
-
-        return $this;
-    }
-
-    /**
-     * Returns the name of the service type when the object is converted to a string.
-     *
-     * @return string
-     */
     public function __toString(): string
     {
         return $this->name ?? '';
