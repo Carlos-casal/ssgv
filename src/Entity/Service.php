@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBal\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Represents a service or event that volunteers can attend.
@@ -15,6 +17,7 @@ use Gedmo\Mapping\Annotation as Gedmo;
  */
 #[ORM\Entity(repositoryClass: ServiceRepository::class)]
 #[ORM\Table(name: 'service')]
+#[UniqueEntity(fields: ['numeration'], message: 'Este número de registro ya está en uso.')]
 class Service
 {
     /**
@@ -28,7 +31,7 @@ class Service
     /**
      * @var string|null The official numeration or code for the service.
      */
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true, unique: true)]
     private ?string $numeration = null;
 
     /**
