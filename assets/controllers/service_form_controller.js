@@ -46,7 +46,7 @@ export default class extends Controller {
         tinymce.init({
             selector: '#service_form_description',
             plugins: 'lists link',
-            toolbar: 'bold italic underline strikethrough | bullist numlist | link | removeformat',
+            toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
@@ -66,6 +66,11 @@ export default class extends Controller {
         });
 
         this.updateAllAfluenciaColors();
+
+        // Bind main form submission if present
+        if (this.hasFormTarget) {
+            this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
+        }
     }
 
     disconnect() {
@@ -189,6 +194,13 @@ export default class extends Controller {
     async handleTypeSubmit(event) {
         event.preventDefault();
         const form = event.currentTarget;
+
+        // Custom validation
+        if (!form.checkValidity()) {
+            this.validateForm(form);
+            return;
+        }
+
         const formData = new FormData(form);
         const payload = {
             service_type: {
@@ -216,7 +228,7 @@ export default class extends Controller {
                 // Trigger updateCategories
                 this.updateCategories({ target: typeSelect });
             } else {
-                this.showError('type_name_input', data.errors || 'Nombre inválido o duplicado');
+                this.showError('type_name_input', this.humanizeError(data.errors || 'Nombre inválido o duplicado'));
             }
         } catch (error) {
             console.error('Error adding type:', error);
@@ -275,6 +287,13 @@ export default class extends Controller {
     async handleSubcategorySubmit(event) {
         event.preventDefault();
         const form = event.currentTarget;
+
+        // Custom validation
+        if (!form.checkValidity()) {
+            this.validateForm(form);
+            return;
+        }
+
         const formData = new FormData(form);
         const typeId = formData.get('type_id');
         let categoryId = formData.get('category');
@@ -298,7 +317,7 @@ export default class extends Controller {
                 if (catResponse.ok) {
                     categoryId = catData.id;
                 } else {
-                    this.showError('modal_new_category_name', catData.errors || 'Error al crear categoría');
+                    this.showError('modal_new_category_name', this.humanizeError(catData.errors || 'Error al crear categoría'));
                     return;
                 }
             }
@@ -332,7 +351,7 @@ export default class extends Controller {
                 // Select the new subcategory
                 document.getElementById('service_subcategory').value = subData.id;
             } else {
-                this.showError('subcategory_name_input', subData.errors || 'Error al crear subcategoría');
+                this.showError('subcategory_name_input', this.humanizeError(subData.errors || 'Error al crear subcategoría'));
             }
         } catch (error) {
             console.error('Error adding subcategory:', error);
@@ -342,6 +361,13 @@ export default class extends Controller {
     async handleMaterialSubmit(event) {
         event.preventDefault();
         const form = event.currentTarget;
+
+        // Custom validation
+        if (!form.checkValidity()) {
+            this.validateForm(form);
+            return;
+        }
+
         const formData = new FormData(form);
         const name = formData.get('name');
         const category = formData.get('category');
@@ -360,7 +386,7 @@ export default class extends Controller {
                 this.closeMaterialModal();
                 this.showToast(`Material "${data.name}" añadido.`);
             } else {
-                this.showError('material_name', data.errors || 'Error al añadir material');
+                this.showError('material_name', this.humanizeError(data.errors || 'Error al añadir material'));
             }
         } catch (error) {
             console.error('Error adding material:', error);
@@ -371,11 +397,42 @@ export default class extends Controller {
     showError(inputId, message) {
         const input = document.getElementById(inputId);
         const errorDiv = document.getElementById(`error-${inputId}`);
-        if (input) input.classList.add('is-invalid');
+        if (input) {
+            input.classList.add('is-invalid');
+            input.classList.add('border-red-500'); // Ensure red border
+        }
         if (errorDiv) {
             errorDiv.textContent = message;
             errorDiv.classList.remove('hidden');
+            errorDiv.style.fontSize = "0.85rem"; // Required style
         }
+    }
+
+    validateForm(form) {
+        form.querySelectorAll('[required]').forEach(input => {
+            if (!input.value) {
+                this.showError(input.id, 'Este campo es obligatorio');
+            } else {
+                this.clearError({ currentTarget: input });
+            }
+        });
+    }
+
+    humanizeError(message) {
+        if (typeof message !== 'string') return 'Error inesperado';
+
+        // Remove technical prefixes like "name: ERROR:"
+        let clean = message.replace(/^[a-zA-Z0-9_]+:\s*ERROR:\s*/i, '');
+        clean = clean.replace(/^[a-zA-Z0-9_]+:\s*/i, '');
+
+        // Common translations
+        const translations = {
+            'This value should not be blank.': 'Este campo no puede estar vacío.',
+            'This value is already used.': 'Este valor ya está en uso.',
+            'Invalid credentials.': 'Credenciales inválidas.'
+        };
+
+        return translations[clean] || clean;
     }
 
     clearError(event) {
@@ -383,14 +440,22 @@ export default class extends Controller {
         const inputId = input.id;
         const errorDiv = document.getElementById(`error-${inputId}`);
         input.classList.remove('is-invalid');
+        input.classList.remove('border-red-500');
         if (errorDiv) {
             errorDiv.textContent = '';
+            errorDiv.classList.add('hidden');
         }
     }
 
     clearAllModalErrors(modal) {
-        modal.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
-        modal.querySelectorAll('.invalid-feedback').forEach(el => el.textContent = '');
+        modal.querySelectorAll('.is-invalid').forEach(el => {
+            el.classList.remove('is-invalid');
+            el.classList.remove('border-red-500');
+        });
+        modal.querySelectorAll('.invalid-feedback').forEach(el => {
+            el.textContent = '';
+            el.classList.add('hidden');
+        });
     }
 
     showToast(message) {
@@ -539,17 +604,37 @@ export default class extends Controller {
         }, 300);
     }
 
+    handleMainFormSubmit(event) {
+        if (!event.currentTarget.checkValidity()) {
+            event.preventDefault();
+            this.validateForm(event.currentTarget);
+
+            // Scroll to the first error
+            const firstError = event.currentTarget.querySelector('.is-invalid');
+            if (firstError) {
+                firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    }
+
     async saveAttendance() {
+        // Clear previous errors in modal
+        this.clearAllModalErrors(this.modalTarget);
+
+        let hasError = false;
         if (this.selectedVolunteers.length === 0) {
-            alert('Por favor, selecciona al menos un voluntario.');
-            return;
+            // We don't have a specific input for volunteers, but we can show it near the search
+            this.showError(this.userSearchInputTarget.id, 'Selecciona al menos un voluntario');
+            hasError = true;
         }
 
         const status = this.attendanceStatusSelectTarget.value;
         if (!status) {
-            alert('Por favor, selecciona una respuesta.');
-            return;
+            this.showError(this.attendanceStatusSelectTarget.id, 'Selecciona una respuesta');
+            hasError = true;
         }
+
+        if (hasError) return;
 
         const serviceId = this.element.dataset.serviceId;
         try {

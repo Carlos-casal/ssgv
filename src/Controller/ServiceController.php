@@ -151,14 +151,6 @@ class ServiceController extends AbstractController
                 ]);
             }
 
-            if ($request->isXmlHttpRequest()) {
-                return new JsonResponse([
-                    'success' => true,
-                    'serviceId' => $service->getId(),
-                    'whatsappMessage' => $message,
-                ]);
-            }
-
             $this->addFlash('success', '¡El servicio ha sido creado con éxito!');
             $this->addFlash('info', 'Ahora puedes compartir el servicio por WhatsApp.');
 
@@ -173,7 +165,7 @@ class ServiceController extends AbstractController
             return new JsonResponse(['success' => false, 'errors' => $errors], Response::HTTP_BAD_REQUEST);
         }
 
-        return $this->render('service/new_service.html.twig', [
+        return $this->render('service/new.html.twig', [
             'form' => $form->createView(),
         ]);
     }
