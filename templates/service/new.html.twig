@@ -1,147 +1,422 @@
-{% extends 'base.html.twig' %} {# Asegúrate de que tu base.html.twig incluye Tailwind CSS compilado #}
+{% extends 'layout/app.html.twig' %}
 
 {% block title %}Crear Nuevo Servicio{% endblock %}
+{% block page_title %}Crear Nuevo Servicio{% endblock %}
 
-{% block body %}
-    <div class="w-full px-4 py-8"> {# Contenedor centrado y con padding #}
-        <h1 class="text-3xl font-bold mb-6 text-gray-800">Crear Nuevo Servicio</h1>
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .form-error {
+            color: #EF4444;
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        .tox-tinymce {
+            border-radius: 1rem !important;
+            border: 1px solid #E2E8F0 !important;
+        }
+        .mini-input {
+            width: 60px;
+            text-align: right;
+        }
+        .tab-content > .tab-pane:not(.active) {
+            display: none !important;
+        }
+        .input-integrated-left {
+            border-top-right-radius: 0 !important;
+            border-bottom-right-radius: 0 !important;
+        }
+        .btn-integrated-right {
+            border-top-left-radius: 0 !important;
+            border-bottom-left-radius: 0 !important;
+        }
+    </style>
+{% endblock %}
 
-        {# Mensajes flash (ej. "¡El servicio ha sido creado con éxito!") #}
-        {% for message in app.flashes('success') %}
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">¡Éxito!</strong>
-                <span class="block sm:inline">{{ message }}</span>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                    <svg class="fill-current h-6 w-6 text-green-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" onclick="this.parentElement.parentElement.style.display='none';"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-                </span>
-            </div>
-        {% endfor %}
-        {% for message in app.flashes('error') %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
-                <strong class="font-bold">¡Error!</strong>
-                <span class="block sm:inline">{{ message }}</span>
-                <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                    <svg class="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" onclick="this.parentElement.parentElement.style.display='none';"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-                </span>
-            </div>
-        {% endfor %}
+{% block content %}
+<div class="w-full px-8 py-8 bg-slate-100 min-h-full" data-controller="service-form">
+    {{ form_start(form, {
+        'attr': {
+            'class': 'space-y-6',
+            'id': 'new-service-form-element',
+            'data-service-form-target': 'form',
+            'novalidate': 'novalidate'
+        }
+    }) }}
 
-        {# Contenedor principal del formulario con sombra y bordes redondeados #}
-        <div class="bg-white shadow-md rounded-lg p-6 mb-8">
-            {{ form_start(serviceForm, {'attr': {'class': 'grid grid-cols-1 md:grid-cols-2 gap-6'}}) }} {# Usamos grid para las columnas #}
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs mb-4 border-b-0" id="serviceTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active font-bold py-3 px-6 rounded-t-2xl border-0 shadow-sm transition-all" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
+                <i data-lucide="info" class="w-4 h-4 inline-block mr-2"></i> Datos Generales
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link font-bold py-3 px-6 rounded-t-2xl border-0 shadow-sm transition-all text-slate-500" id="resources-tab" data-bs-toggle="tab" data-bs-target="#resources" type="button" role="tab" aria-controls="resources" aria-selected="false">
+                <i data-lucide="package" class="w-4 h-4 inline-block mr-2"></i> Recursos y Dotación
+            </button>
+        </li>
+    </ul>
 
-            {# Campo Numeración #}
-            <div>
-                {{ form_label(serviceForm.numeration, 'Numeración:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.numeration, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.numeration, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+    <div class="tab-content" id="serviceTabsContent">
+        <!-- Tab 1: Datos Generales -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="card border-0 shadow-sm rounded-3xl overflow-hidden mb-6">
+                <div class="card-body p-8">
+                    <div class="row g-4 mb-8">
+                        <div class="col-md-8">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_title">Título del Servicio</label>
+                            {{ form_widget(form.title, {'id': 'service_title', 'attr': {'class': 'form-control form-control-lg font-bold text-slate-900 fs-4 w-full', 'placeholder': 'Ej. Dispositivo Maratón', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_title"></div>
+                            <div class="form-error">{{ form_errors(form.title) }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_numeration">Nº de Registro</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text bg-slate-50 text-slate-400 border-end-0"><i data-lucide="barcode" class="w-4 h-4"></i></span>
+                                {{ form_widget(form.numeration, {'id': 'service_numeration', 'attr': {'class': 'form-control form-control-lg font-mono border-start-0', 'placeholder': 'Automático', 'readonly': 'readonly'}}) }}
+                            </div>
+                        </div>
+                    </div>
 
-            {# Campo Título #}
-            <div>
-                {{ form_label(serviceForm.title, 'Título:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.title, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.title, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
+                    <div class="row g-4 mb-8">
+                        <div class="col-md-8">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_locality">Ubicación / Lugar del Operativo</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i data-lucide="map-pin" class="w-4 h-4 text-slate-400"></i></span>
+                                {{ form_widget(form.locality, {'id': 'service_locality', 'attr': {'class': 'form-control border-start-0', 'placeholder': 'Añadir ubicación...'}}) }}
+                            </div>
+                            <div class="form-error">{{ form_errors(form.locality) }}</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_afluencia">Afluencia Estimada</label>
+                            {{ form_widget(form.afluencia, {'id': 'service_afluencia', 'attr': {'class': 'form-select', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
+                        </div>
+                    </div>
 
-            {# Campo Slug (de solo lectura si es auto-generado) #}
-            <div>
-                {{ form_label(serviceForm.slug, 'Slug:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.slug, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-100 leading-tight focus:outline-none focus:shadow-outline', 'readonly': 'readonly'}}) }}
-                {{ form_errors(serviceForm.slug, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Fecha de Inicio #}
-            <div>
-                {{ form_label(serviceForm.startDate, 'Fecha de Inicio:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.startDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.startDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Fecha de Fin #}
-            <div>
-                {{ form_label(serviceForm.endDate, 'Fecha de Fin:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.endDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.endDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Fecha Límite de Registro #}
-            <div>
-                {{ form_label(serviceForm.registrationLimitDate, 'Fecha Límite de Registro:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.registrationLimitDate, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.registrationLimitDate, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Hora en Base #}
-            <div>
-                {{ form_label(serviceForm.timeAtBase, 'Hora en Base:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.timeAtBase, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.timeAtBase, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Hora de Salida #}
-            <div>
-                {{ form_label(serviceForm.departureTime, 'Hora de Salida:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.departureTime, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.departureTime, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Máximo de Asistentes #}
-            <div>
-                {{ form_label(serviceForm.maxAttendees, 'Máximo de Asistentes:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.maxAttendees, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.maxAttendees, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Tipo (si es un select) #}
-            <div>
-                {{ form_label(serviceForm.type, 'Tipo:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.type, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline appearance-none'}}) }} {# Para select inputs #}
-                {{ form_errors(serviceForm.type, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Categoría (si es un select) #}
-            <div>
-                {{ form_label(serviceForm.category, 'Categoría:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.category, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline appearance-none'}}) }} {# Para select inputs #}
-                {{ form_errors(serviceForm.category, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Recipients (si es un select múltiple o colección) #}
-            <div>
-                {{ form_label(serviceForm.recipients, 'Receptores:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.recipients, {'attr': {'class': 'shadow border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }} {# Puede que necesites una librería JS para un select múltiple con buen estilo #}
-                {{ form_errors(serviceForm.recipients, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-            
-            {# Campo Eys #}
-            <div>
-                {{ form_label(serviceForm.eys, 'Eys:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.eys, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'}}) }}
-                {{ form_errors(serviceForm.eys, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-
-            {# Campo Descripción (ocupa todo el ancho, por eso no está en el grid) #}
-            <div class="md:col-span-2"> {# Ocupa 2 columnas en pantallas medianas y más grandes #}
-                {{ form_label(serviceForm.description, 'Descripción:', {'label_attr': {'class': 'block text-gray-700 text-sm font-bold mb-2'}}) }}
-                {{ form_widget(serviceForm.description, {'attr': {'class': 'shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline h-32 resize-y'}}) }} {# h-32 para altura, resize-y para redimensionar verticalmente #}
-                {{ form_errors(serviceForm.description, {'attr': {'class': 'text-red-500 text-xs italic mt-1'}}) }}
-            </div>
-            
-            {# Renderiza los campos restantes si los hubiera, o el campo "_token" #}
-            {{ form_rest(serviceForm) }}
-
-            {# Botones de acción #}
-            <div class="md:col-span-2 flex items-center justify-end mt-6"> {# Ocupa 2 columnas, alinea a la derecha #}
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
-                    Guardar Servicio
-                </button>
-                <a href="{{ path('list_service') }}" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline ml-3">
-                    Volver a la Lista
-                </a>
+                    <!-- 3-Level Hierarchy -->
+                    <div class="row g-4 pt-6 border-t border-slate-50">
+                        <div class="col-md-6">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_type">1. Tipo de Servicio</label>
+                            <div class="input-group">
+                                {{ form_widget(form.type, {'id': 'service_type', 'attr': {'class': 'form-select py-3 shadow-sm input-integrated-left', 'data-action': 'change->service-form#updateCategories change->service-form#clearError'}}) }}
+                                <button type="button" class="btn btn-primary px-3 btn-integrated-right" data-action="click->service-form#openTypeModal">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback hidden" id="error-service_type"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_subcategory">2. Categoría y Subcategoría</label>
+                            <div class="input-group">
+                                {{ form_widget(form.subcategory, {'id': 'service_subcategory', 'attr': {'class': 'form-select py-3 shadow-sm input-integrated-left', 'data-action': 'change->service-form#clearError'}}) }}
+                                <button type="button" class="btn btn-primary px-3 btn-integrated-right" data-action="click->service-form#openSubcategoryModal">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="invalid-feedback hidden" id="error-service_subcategory"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            {{ form_end(serviceForm) }}
+            <!-- Cronología -->
+            <div class="card border-0 shadow-sm rounded-3xl overflow-hidden mb-6">
+                <div class="card-body p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
+                        <i data-lucide="calendar" class="w-4 h-4 mr-2"></i> Cronología del Operativo
+                    </h5>
+                    <div class="row g-4 mb-6">
+                        <div class="col-md-6">
+                            <label class="form-label text-sm font-bold text-slate-700 mb-2" for="service_startDate">Inicio del Servicio</label>
+                            {{ form_widget(form.startDate, {'id': 'service_startDate', 'attr': {'class': 'form-control form-control-lg font-bold shadow-sm', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_startDate"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label text-sm font-bold text-slate-700 mb-2" for="service_endDate">Finalización</label>
+                            {{ form_widget(form.endDate, {'id': 'service_endDate', 'attr': {'class': 'form-control form-control-lg font-bold shadow-sm', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_endDate"></div>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <label class="form-label text-xs font-semibold text-slate-400 mb-2" for="service_timeAtBase">Hora en Base</label>
+                            {{ form_widget(form.timeAtBase, {'id': 'service_timeAtBase', 'attr': {'class': 'form-control shadow-sm', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_timeAtBase"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-xs font-semibold text-slate-400 mb-2" for="service_departureTime">Hora de Salida</label>
+                            {{ form_widget(form.departureTime, {'id': 'service_departureTime', 'attr': {'class': 'form-control shadow-sm', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_departureTime"></div>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label text-xs font-semibold text-slate-400 mb-2" for="service_registrationLimitDate">Límite Inscripción</label>
+                            {{ form_widget(form.registrationLimitDate, {'id': 'service_registrationLimitDate', 'attr': {'class': 'form-control shadow-sm', 'data-action': 'input->service-form#clearError'}}) }}
+                            <div class="invalid-feedback hidden" id="error-service_registrationLimitDate"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Definición Operativa -->
+            <div class="card border-0 shadow-sm rounded-3xl overflow-hidden mb-6">
+                <div class="card-body p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
+                        <i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Definición Operativa
+                    </h5>
+                    <div class="space-y-6">
+                        <div>
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_tasks">Tareas</label>
+                            {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'class': 'form-control', 'rows': '2', 'placeholder': 'Resume las tareas principales...'}}) }}
+                        </div>
+                        <div>
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_form_description">Descripción</label>
+                            {{ form_widget(form.description, {'id': 'service_form_description', 'attr': {'class': 'form-control', 'rows': '4'}}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Recursos y Dotación -->
+        <div class="tab-pane fade" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+            <!-- Bloque Superior: Material -->
+            <div class="card border-0 shadow-sm rounded-3xl overflow-hidden mb-6">
+                <div class="card-body p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-8 flex items-center">
+                        <i data-lucide="package" class="w-4 h-4 mr-2"></i> Material y Logística
+                    </h5>
+                    <div class="row g-4" id="materials-container"
+                         data-service-form-target="materialsContainer"
+                         data-index="{{ form.serviceMaterials|length }}"
+                         data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
+
+                        <!-- Categoría: Sanitario -->
+                        <div class="col-md-4 border-end">
+                            <div class="flex justify-between items-center mb-4">
+                                <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                    <i data-lucide="heart-pulse" class="w-3 h-3 mr-2 text-red-600"></i> Sanitario
+                                </h6>
+                                <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Sanitario">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-3" data-material-category="Sanitario">
+                                {% for sm in form.serviceMaterials %}
+                                    {% if sm.vars.data.material and sm.vars.data.material.category == 'Sanitario' %}
+                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Sanitario">
+                                    Aprender Nuevo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Categoría: Comunicaciones -->
+                        <div class="col-md-4 border-end px-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                    <i data-lucide="radio" class="w-3 h-3 mr-2 text-blue-600"></i> Comunicaciones
+                                </h6>
+                                <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Comunicaciones">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-3" data-material-category="Comunicaciones">
+                                {% for sm in form.serviceMaterials %}
+                                    {% if sm.vars.data.material and sm.vars.data.material.category == 'Comunicaciones' %}
+                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Comunicaciones">
+                                    Aprender Nuevo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Categoría: Logística -->
+                        <div class="col-md-4 ps-4">
+                            <div class="flex justify-between items-center mb-4">
+                                <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                    <i data-lucide="truck" class="w-3 h-3 mr-2 text-orange-600"></i> Logística
+                                </h6>
+                                <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Logística">
+                                    <i data-lucide="plus" class="w-3 h-3"></i>
+                                </button>
+                            </div>
+                            <div class="space-y-3" data-material-category="Logística">
+                                {% for sm in form.serviceMaterials %}
+                                    {% if sm.vars.data.material and sm.vars.data.material.category == 'Logística' %}
+                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Logística">
+                                    Aprender Nuevo
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bloque Inferior: Dotación -->
+            <div class="card border-0 shadow-sm rounded-3xl overflow-hidden mb-6">
+                <div class="card-body p-8">
+                    <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-8 flex items-center">
+                        <i data-lucide="users" class="w-4 h-4 mr-2"></i> Dotación y Vehículos
+                    </h5>
+                    <div class="row g-4">
+                        <!-- Vehículos -->
+                        <div class="col-md-6 border-end pe-6">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_vehicles">Vehículos Asignados</label>
+                            {{ form_widget(form.vehicles, {'id': 'service_vehicles', 'attr': {'class': 'form-select shadow-sm', 'style': 'height: 120px;'}}) }}
+                        </div>
+                        <!-- Personal -->
+                        <div class="col-md-6 ps-6">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-4">Personal Sanitario Requerido</label>
+                            <div class="row g-3">
+                                <div class="col-6 d-flex align-items-center justify-content-between">
+                                    <label class="text-xs font-bold text-slate-500" for="service_numTes">TES</label>
+                                    {{ form_widget(form.numTes, {'id': 'service_numTes', 'attr': {'class': 'form-control form-control-sm mini-input'}}) }}
+                                </div>
+                                <div class="col-6 d-flex align-items-center justify-content-between">
+                                    <label class="text-xs font-bold text-slate-500" for="service_numTts">TTS</label>
+                                    {{ form_widget(form.numTts, {'id': 'service_numTts', 'attr': {'class': 'form-control form-control-sm mini-input'}}) }}
+                                </div>
+                                <div class="col-6 d-flex align-items-center justify-content-between">
+                                    <label class="text-xs font-bold text-slate-500" for="service_numDue">DUE</label>
+                                    {{ form_widget(form.numDue, {'id': 'service_numDue', 'attr': {'class': 'form-control form-control-sm mini-input'}}) }}
+                                </div>
+                                <div class="col-6 d-flex align-items-center justify-content-between">
+                                    <label class="text-xs font-bold text-slate-500" for="service_numDoctors">Médico</label>
+                                    {{ form_widget(form.numDoctors, {'id': 'service_numDoctors', 'attr': {'class': 'form-control form-control-sm mini-input'}}) }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
+
+    <!-- Hidden Fields -->
+    <div style="display:none;">
+        {{ form_rest(form) }}
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-end align-items-center gap-3 pt-6 border-t border-slate-200 mt-8">
+        <a href="{{ path('app_services_list') }}" class="btn btn-outline-secondary btn-lg px-4 me-3">
+            Cancelar
+        </a>
+        <button type="submit" class="btn btn-primary btn-lg fw-bold px-4">
+            Guardar Servicio
+        </button>
+    </div>
+
+    {{ form_end(form) }}
+
+<!-- Type Modal -->
+<div id="typeModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="typeModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">Añadir Nuevo Tipo</h3>
+            <button type="button" data-action="click->service-form#closeTypeModal" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <form id="modal-new-type-form" data-action="submit->service-form#handleTypeSubmit" novalidate>
+            <div class="mb-4">
+                <label for="type_name_input" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
+                <input type="text" id="type_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
+                <div class="invalid-feedback hidden" id="error-type_name_input"></div>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Subcategory Modal -->
+<div id="subcategoryModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="subcategoryModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">Añadir Categoría/Subcategoría</h3>
+            <button type="button" data-action="click->service-form#closeSubcategoryModal" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <form id="modal-new-subcategory-form" data-action="submit->service-form#handleSubcategorySubmit" novalidate>
+            <input type="hidden" id="modal_type_id" name="type_id">
+            
+            <div class="mb-4">
+                <label for="modal_category_select" class="block text-sm font-medium text-gray-700 mb-1">Categoría (Nivel 2) <span class="text-red-500">*</span></label>
+                <div class="input-group">
+                    <select id="modal_category_select" name="category" class="form-select w-full border-gray-300 rounded-md shadow-sm" required data-action="change->service-form#clearError">
+                        <option value="">Selecciona...</option>
+                    </select>
+                    <button type="button" class="btn btn-outline-primary" data-action="click->service-form#showNewCategoryInput">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="invalid-feedback hidden" id="error-modal_category_select"></div>
+            </div>
+
+            <div id="new_category_input_container" class="mb-4 hidden">
+                <label for="modal_new_category_name" class="block text-sm font-medium text-gray-700 mb-1">Nueva Categoría</label>
+                <input type="text" id="modal_new_category_name" name="new_category_name" class="form-control w-full border-gray-300 rounded-md shadow-sm" data-action="input->service-form#clearError">
+                <div class="invalid-feedback hidden" id="error-modal_new_category_name"></div>
+            </div>
+
+            <div class="mb-4">
+                <label for="subcategory_name_input" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría (Nivel 3) <span class="text-red-500">*</span></label>
+                <input type="text" id="subcategory_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
+                <div class="invalid-feedback hidden" id="error-subcategory_name_input"></div>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Material Modal -->
+<div id="materialModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="materialModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">Añadir Nuevo Material</h3>
+            <button type="button" data-action="click->service-form#closeMaterialModal" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <form id="modal-new-material-form" data-action="submit->service-form#handleMaterialSubmit" novalidate>
+            <div class="mb-4">
+                <label for="material_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
+                <input type="text" id="material_name" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
+                <div class="invalid-feedback hidden" id="error-material_name"></div>
+            </div>
+            <div class="mb-4">
+                <label for="material_category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
+                <select id="material_category" name="category" class="form-select w-full border-gray-300 rounded-md shadow-sm">
+                    <option value="Sanitario">Sanitario</option>
+                    <option value="Comunicaciones">Comunicaciones</option>
+                    <option value="Logística">Logística</option>
+                </select>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>
+</div>
 {% endblock %}

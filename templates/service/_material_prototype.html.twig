@@ -1,9 +1,11 @@
 <div class="material-item d-flex align-items-center justify-content-between mb-2">
     <div class="flex-grow-1 me-2">
-        {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm', 'aria-label': 'Seleccionar material'}}) }}
+        <label for="{{ form.material.vars.id }}" class="visually-hidden">Seleccionar material</label>
+        {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm'}}) }}
     </div>
     <div class="me-2">
-        {{ form_widget(form.quantity, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0', 'aria-label': 'Cantidad'}}) }}
+        <label for="{{ form.quantity.vars.id }}" class="visually-hidden">Cantidad</label>
+        {{ form_widget(form.quantity, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '0'}}) }}
     </div>
     <button type="button" class="btn btn-outline-danger btn-sm p-1" data-action="click->service-form#removeMaterial" title="Eliminar material">
         <i data-lucide="trash-2" class="w-4 h-4"></i>
