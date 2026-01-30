@@ -38,7 +38,7 @@
     {{ form_start(form, {
         'attr': {
             'class': 'space-y-6',
-            'id': 'service-form',
+            'id': 'new-service-form-element',
             'data-service-form-target': 'form'
         }
     }) }}
@@ -298,7 +298,6 @@
     </div>
 
     {{ form_end(form) }}
-</div>
 
 <!-- Type Modal -->
 <div id="typeModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="typeModal">
@@ -389,5 +388,6 @@
             </div>
         </form>
     </div>
+</div>
 </div>
 {% endblock %}
