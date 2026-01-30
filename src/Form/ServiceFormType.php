@@ -43,6 +43,27 @@ class ServiceFormType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+                $data = $event->getData();
+                $form = $event->getForm();
+
+                if (isset($data['type']) && $data['type']) {
+                    $form->add('subcategory', EntityType::class, [
+                        'class' => ServiceSubcategory::class,
+                        'choice_label' => function(ServiceSubcategory $sub) {
+                            return $sub->getCode() ? $sub->getCode() . ' ' . $sub->getName() : $sub->getName();
+                        },
+                        'group_by' => function(ServiceSubcategory $sub) {
+                            $cat = $sub->getCategory();
+                            return $cat->getCode() ? $cat->getCode() . ' ' . $cat->getName() : $cat->getName();
+                        },
+                        'label' => 'Categoría / Subcategoría',
+                        'placeholder' => 'Selecciona subcategoría...',
+                        'required' => true,
+                        'attr' => ['class' => 'form-select select-hierarchy']
+                    ]);
+                }
+            })
             ->add('numeration', TextType::class, [
                 'label' => 'Numeración',
                 'required' => false,
@@ -109,6 +130,7 @@ class ServiceFormType extends AbstractType
                 'label' => 'Categoría / Subcategoría',
                 'placeholder' => 'Selecciona subcategoría...',
                 'required' => true,
+                'choices' => [], // Started empty to be populated via JS
                 'attr' => ['class' => 'form-select select-hierarchy']
             ])
             ->add('description', TextareaType::class, [
