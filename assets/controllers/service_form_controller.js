@@ -21,7 +21,9 @@ export default class extends Controller {
         "lastClockOutTime",
         "materialsContainer",
         "materialModal",
-        "form"
+        "form",
+        "typeModal",
+        "subcategoryModal"
     ];
 
     connect() {
@@ -172,6 +174,161 @@ export default class extends Controller {
 
     closeMaterialModal() {
         this.materialModalTarget.classList.add('hidden');
+    }
+
+    // Hierarchy Creation Logic
+    openTypeModal() {
+        this.typeModalTarget.classList.remove('hidden');
+    }
+
+    closeTypeModal() {
+        this.typeModalTarget.classList.add('hidden');
+    }
+
+    async handleTypeSubmit(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const payload = {
+            service_type: {
+                name: formData.get('name')
+            }
+        };
+
+        try {
+            const response = await fetch('/api/service-type/new', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                this.closeTypeModal();
+
+                // Add to main selector and select it
+                const typeSelect = document.getElementById('service_type');
+                const option = new Option(data.name, data.id, true, true);
+                typeSelect.appendChild(option);
+
+                // Trigger updateCategories
+                this.updateCategories({ target: typeSelect });
+            } else {
+                const errorData = await response.json();
+                alert('Error: ' + (errorData.errors || 'Desconocido'));
+            }
+        } catch (error) {
+            console.error('Error adding type:', error);
+        }
+    }
+
+    async openSubcategoryModal() {
+        const typeId = document.getElementById('service_type').value;
+        if (!typeId) {
+            alert('Por favor, selecciona primero un Tipo de Servicio.');
+            return;
+        }
+
+        const modal = this.subcategoryModalTarget;
+        modal.querySelector('#modal_type_id').value = typeId;
+
+        // Fetch categories for this type
+        const categorySelect = modal.querySelector('#modal_category_select');
+        categorySelect.innerHTML = '<option value="">Cargando...</option>';
+
+        try {
+            const response = await fetch(`/api/service-category/list?type=${typeId}`);
+            const categories = await response.json();
+
+            categorySelect.innerHTML = '<option value="">Selecciona...</option>';
+            categories.forEach(cat => {
+                const option = new Option(cat.name, cat.id);
+                categorySelect.appendChild(option);
+            });
+
+            modal.classList.remove('hidden');
+        } catch (error) {
+            console.error('Error fetching categories:', error);
+        }
+    }
+
+    closeSubcategoryModal() {
+        this.subcategoryModalTarget.classList.add('hidden');
+        this.subcategoryModalTarget.querySelector('#new_category_input_container').classList.add('hidden');
+        this.subcategoryModalTarget.querySelector('#modal_new_category_name').value = '';
+    }
+
+    showNewCategoryInput() {
+        const container = this.subcategoryModalTarget.querySelector('#new_category_input_container');
+        container.classList.toggle('hidden');
+        if (!container.classList.contains('hidden')) {
+            this.subcategoryModalTarget.querySelector('#modal_category_select').removeAttribute('required');
+            this.subcategoryModalTarget.querySelector('#modal_new_category_name').setAttribute('required', 'required');
+        } else {
+            this.subcategoryModalTarget.querySelector('#modal_category_select').setAttribute('required', 'required');
+            this.subcategoryModalTarget.querySelector('#modal_new_category_name').removeAttribute('required');
+        }
+    }
+
+    async handleSubcategorySubmit(event) {
+        event.preventDefault();
+        const form = event.currentTarget;
+        const formData = new FormData(form);
+        const typeId = formData.get('type_id');
+        let categoryId = formData.get('category');
+        const newCategoryName = formData.get('new_category_name');
+
+        try {
+            // 1. If new category requested, create it first
+            if (newCategoryName) {
+                const catResponse = await fetch('/api/service-category/new', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        service_category: {
+                            name: newCategoryName,
+                            type: typeId
+                        }
+                    })
+                });
+                if (catResponse.ok) {
+                    const catData = await catResponse.json();
+                    categoryId = catData.id;
+                } else {
+                    throw new Error('Error al crear la categoría');
+                }
+            }
+
+            // 2. Create subcategory
+            const subResponse = await fetch('/api/subcategories/new', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    service_subcategory: {
+                        name: formData.get('name'),
+                        category: categoryId
+                    }
+                })
+            });
+
+            if (subResponse.ok) {
+                const subData = await subResponse.json();
+                this.closeSubcategoryModal();
+
+                // Refresh main hierarchy selector
+                const typeSelect = document.getElementById('service_type');
+                await this.updateCategories({ target: typeSelect });
+
+                // Select the new subcategory
+                document.getElementById('service_subcategory').value = subData.id;
+            } else {
+                const errorData = await subResponse.json();
+                alert('Error: ' + (errorData.errors || 'Desconocido'));
+            }
+        } catch (error) {
+            console.error('Error adding subcategory:', error);
+            alert(error.message);
+        }
     }
 
     async handleMaterialSubmit(event) {

@@ -96,11 +96,21 @@
                     <div class="row g-4 pt-6 border-t border-slate-50">
                         <div class="col-md-6">
                             <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_type">1. Tipo de Servicio</label>
-                            {{ form_widget(form.type, {'id': 'service_type', 'attr': {'class': 'form-select py-3 shadow-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
+                            <div class="input-group">
+                                {{ form_widget(form.type, {'id': 'service_type', 'attr': {'class': 'form-select py-3 shadow-sm input-integrated-left', 'data-action': 'change->service-form#updateCategories'}}) }}
+                                <button type="button" class="btn btn-primary px-3 btn-integrated-right" data-action="click->service-form#openTypeModal">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_subcategory">2. Categoría y Subcategoría</label>
-                            {{ form_widget(form.subcategory, {'id': 'service_subcategory', 'attr': {'class': 'form-select py-3 shadow-sm'}}) }}
+                            <div class="input-group">
+                                {{ form_widget(form.subcategory, {'id': 'service_subcategory', 'attr': {'class': 'form-select py-3 shadow-sm input-integrated-left'}}) }}
+                                <button type="button" class="btn btn-primary px-3 btn-integrated-right" data-action="click->service-form#openSubcategoryModal">
+                                    <i data-lucide="plus" class="w-4 h-4"></i>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -288,6 +298,68 @@
     </div>
 
     {{ form_end(form) }}
+</div>
+
+<!-- Type Modal -->
+<div id="typeModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="typeModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">Añadir Nuevo Tipo</h3>
+            <button type="button" data-action="click->service-form#closeTypeModal" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <form id="modal-new-type-form" data-action="submit->service-form#handleTypeSubmit">
+            <div class="mb-4">
+                <label for="type_name_input" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
+                <input type="text" id="type_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+            </div>
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Subcategory Modal -->
+<div id="subcategoryModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="subcategoryModal">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        <div class="flex justify-between items-center border-b pb-3 mb-4">
+            <h3 class="text-xl font-semibold text-gray-700">Añadir Categoría/Subcategoría</h3>
+            <button type="button" data-action="click->service-form#closeSubcategoryModal" class="text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="h-6 w-6"></i>
+            </button>
+        </div>
+        <form id="modal-new-subcategory-form" data-action="submit->service-form#handleSubcategorySubmit">
+            <input type="hidden" id="modal_type_id" name="type_id">
+
+            <div class="mb-4">
+                <label for="modal_category_select" class="block text-sm font-medium text-gray-700 mb-1">Categoría (Nivel 2) <span class="text-red-500">*</span></label>
+                <div class="input-group">
+                    <select id="modal_category_select" name="category" class="form-select w-full border-gray-300 rounded-md shadow-sm" required>
+                        <option value="">Selecciona...</option>
+                    </select>
+                    <button type="button" class="btn btn-outline-primary" data-action="click->service-form#showNewCategoryInput">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div id="new_category_input_container" class="mb-4 hidden">
+                <label for="modal_new_category_name" class="block text-sm font-medium text-gray-700 mb-1">Nueva Categoría</label>
+                <input type="text" id="modal_new_category_name" name="new_category_name" class="form-control w-full border-gray-300 rounded-md shadow-sm">
+            </div>
+
+            <div class="mb-4">
+                <label for="subcategory_name_input" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría (Nivel 3) <span class="text-red-500">*</span></label>
+                <input type="text" id="subcategory_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required>
+            </div>
+
+            <div class="mt-6 flex justify-end">
+                <button type="submit" class="btn btn-primary">Aceptar</button>
+            </div>
+        </form>
+    </div>
 </div>
 
 <!-- Material Modal -->
