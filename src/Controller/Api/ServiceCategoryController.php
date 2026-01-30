@@ -29,6 +29,18 @@ class ServiceCategoryController extends AbstractController
         $form->submit($data['service_category'] ?? $data, false);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$serviceCategory->getCode()) {
+                $type = $serviceCategory->getType();
+                $last = $entityManager->getRepository(ServiceCategory::class)->findOneBy(['type' => $type], ['code' => 'DESC']);
+                if ($last) {
+                    $parts = explode('.', $last->getCode());
+                    $lastNum = (int)end($parts);
+                    $newNum = $lastNum + 1;
+                    $serviceCategory->setCode($type->getCode() . '.' . $newNum);
+                } else {
+                    $serviceCategory->setCode($type->getCode() . '.1');
+                }
+            }
             $entityManager->persist($serviceCategory);
             $entityManager->flush();
 
