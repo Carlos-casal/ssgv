@@ -156,8 +156,8 @@
                                 {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'class': 'form-control', 'rows': '2'}}) }}
                             </div>
                             <div>
-                                <label class="form-label text-xs font-bold text-slate-500 mb-2" for="descripcion_field">Descripción</label>
-                                {{ form_widget(form.description, {'id': 'descripcion_field', 'attr': {'class': 'form-control', 'rows': '4'}}) }}
+                                <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_form_description">Descripción</label>
+                                {{ form_widget(form.description, {'id': 'service_form_description', 'attr': {'class': 'form-control', 'rows': '4'}}) }}
                             </div>
                         </div>
                     </div>
@@ -178,9 +178,14 @@
 
                             <!-- Categoría: Sanitario -->
                             <div class="col-md-4 border-end">
-                                <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
-                                    <i data-lucide="heart-pulse" class="w-3 h-3 mr-2 text-red-600"></i> Sanitario
-                                </h6>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                        <i data-lucide="heart-pulse" class="w-3 h-3 mr-2 text-red-600"></i> Sanitario
+                                    </h6>
+                                    <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Sanitario">
+                                        <i data-lucide="plus" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
                                 <div class="space-y-3" data-material-category="Sanitario">
                                     {% for sm in form.serviceMaterials %}
                                         {% if sm.vars.data.material and sm.vars.data.material.category == 'Sanitario' %}
@@ -188,10 +193,7 @@
                                         {% endif %}
                                     {% endfor %}
                                 </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <button type="button" class="btn btn-link text-blue-600 p-0 text-xs font-bold" data-action="click->service-form#addMaterial" data-category="Sanitario">
-                                        <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i> Añadir Fila
-                                    </button>
+                                <div class="mt-2">
                                     <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Sanitario">
                                         Aprender Nuevo
                                     </button>
@@ -200,9 +202,14 @@
 
                             <!-- Categoría: Comunicaciones -->
                             <div class="col-md-4 border-end px-4">
-                                <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
-                                    <i data-lucide="radio" class="w-3 h-3 mr-2 text-blue-600"></i> Comunicaciones
-                                </h6>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                        <i data-lucide="radio" class="w-3 h-3 mr-2 text-blue-600"></i> Comunicaciones
+                                    </h6>
+                                    <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Comunicaciones">
+                                        <i data-lucide="plus" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
                                 <div class="space-y-3" data-material-category="Comunicaciones">
                                     {% for sm in form.serviceMaterials %}
                                         {% if sm.vars.data.material and sm.vars.data.material.category == 'Comunicaciones' %}
@@ -210,10 +217,7 @@
                                         {% endif %}
                                     {% endfor %}
                                 </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <button type="button" class="btn btn-link text-blue-600 p-0 text-xs font-bold" data-action="click->service-form#addMaterial" data-category="Comunicaciones">
-                                        <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i> Añadir Fila
-                                    </button>
+                                <div class="mt-2">
                                     <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Comunicaciones">
                                         Aprender Nuevo
                                     </button>
@@ -222,9 +226,14 @@
 
                             <!-- Categoría: Logística -->
                             <div class="col-md-4 ps-4">
-                                <h6 class="text-xs font-black text-slate-800 uppercase mb-4 flex items-center">
-                                    <i data-lucide="truck" class="w-3 h-3 mr-2 text-orange-600"></i> Logística
-                                </h6>
+                                <div class="flex justify-between items-center mb-4">
+                                    <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
+                                        <i data-lucide="truck" class="w-3 h-3 mr-2 text-orange-600"></i> Logística
+                                    </h6>
+                                    <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Logística">
+                                        <i data-lucide="plus" class="w-3 h-3"></i>
+                                    </button>
+                                </div>
                                 <div class="space-y-3" data-material-category="Logística">
                                     {% for sm in form.serviceMaterials %}
                                         {% if sm.vars.data.material and sm.vars.data.material.category == 'Logística' %}
@@ -232,10 +241,7 @@
                                         {% endif %}
                                     {% endfor %}
                                 </div>
-                                <div class="flex justify-between items-center mt-3">
-                                    <button type="button" class="btn btn-link text-blue-600 p-0 text-xs font-bold" data-action="click->service-form#addMaterial" data-category="Logística">
-                                        <i data-lucide="plus" class="w-3 h-3 inline mr-1"></i> Añadir Fila
-                                    </button>
+                                <div class="mt-2">
                                     <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Logística">
                                         Aprender Nuevo
                                     </button>

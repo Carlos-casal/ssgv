@@ -9,14 +9,14 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
-#[Route('/api/service-subcategory')]
+#[Route('/api/subcategories')]
 class ServiceSubcategoryController extends AbstractController
 {
-    #[Route('/list', name: 'api_service_subcategory_list', methods: ['GET'])]
+    #[Route('', name: 'api_subcategories_list', methods: ['GET'])]
     public function list(Request $request, ServiceSubcategoryRepository $repository): Response
     {
         $categoryId = $request->query->get('category');
-        $typeId = $request->query->get('type');
+        $typeId = $request->query->get('type_id');
 
         if ($categoryId) {
             $subcategories = $repository->findBy(['category' => $categoryId]);

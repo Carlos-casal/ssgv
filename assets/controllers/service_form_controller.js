@@ -29,14 +29,21 @@ export default class extends Controller {
             this.setupAttendanceModal();
         }
 
+        // Initialize Hierarchy Selector
+        const typeSelect = document.getElementById('service_type');
+        const subcategorySelect = document.getElementById('service_subcategory');
+        if (typeSelect && subcategorySelect && !typeSelect.value) {
+            subcategorySelect.disabled = true;
+            subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+        }
+
         // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
         tinymce.remove('textarea#service_tasks');
 
         // TinyMCE configuration for Description
         tinymce.init({
-            selector: '#descripcion_field',
-            title: 'Descripción del Servicio',
-            plugins: 'lists link autolink',
+            selector: '#service_form_description',
+            plugins: 'lists link',
             toolbar: 'bold italic underline strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
@@ -60,7 +67,7 @@ export default class extends Controller {
     }
 
     disconnect() {
-        tinymce.remove('#descripcion_field');
+        tinymce.remove('#service_form_description');
     }
 
     switchTab(event) {
@@ -94,13 +101,20 @@ export default class extends Controller {
         const typeId = event.target.value;
         const subcategorySelect = document.getElementById('service_subcategory');
 
-        subcategorySelect.innerHTML = '<option value="">Selecciona...</option>';
+        if (!typeId) {
+            subcategorySelect.disabled = true;
+            subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+            return;
+        }
 
-        if (!typeId) return;
+        subcategorySelect.disabled = false;
+        subcategorySelect.innerHTML = '<option value="">Cargando...</option>';
 
         try {
-            const response = await fetch(`/api/service-subcategory/list?type=${typeId}`);
+            const response = await fetch(`/api/subcategories?type_id=${typeId}`);
             const subcategories = await response.json();
+
+            subcategorySelect.innerHTML = '<option value="">Selecciona una opción...</option>';
 
             // Group subcategories by categoryName
             const grouped = subcategories.reduce((acc, sub) => {
@@ -113,13 +127,14 @@ export default class extends Controller {
                 const optgroup = document.createElement('optgroup');
                 optgroup.label = categoryName;
                 subs.forEach(sub => {
-                    const option = new Option(sub.name, sub.id);
+                    const option = new Option('\u00A0\u00A0\u00A0' + sub.name, sub.id); // Add indentation for subcategories
                     optgroup.appendChild(option);
                 });
                 subcategorySelect.appendChild(optgroup);
             }
         } catch (error) {
             console.error('Error fetching hierarchy:', error);
+            subcategorySelect.innerHTML = '<option value="">Error al cargar datos</option>';
         }
     }
 
