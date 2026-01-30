@@ -19,20 +19,23 @@ class ServiceTypeController extends AbstractController
         $serviceType = new ServiceType();
         $form = $this->createForm(ServiceTypeType::class, $serviceType);
 
-        // Decode the JSON request body
         $data = json_decode($request->getContent(), true);
-
-        // The second parameter `false` tells the form to not clear missing fields,
-        // which is important for PATCH-like updates and APIs.
         $form->submit($data['service_type'] ?? $data, false);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            if (!$serviceType->getCode()) {
+                // Simple auto-coding: find max code and increment
+                $last = $entityManager->getRepository(ServiceType::class)->findOneBy([], ['code' => 'DESC']);
+                $newCode = $last ? (int)$last->getCode() + 1 : 1;
+                $serviceType->setCode((string)$newCode);
+            }
+
             $entityManager->persist($serviceType);
             $entityManager->flush();
 
             return $this->json([
                 'id' => $serviceType->getId(),
-                'name' => $serviceType->getName(),
+                'name' => ($serviceType->getCode() ? $serviceType->getCode() . '. ' : '') . $serviceType->getName(),
             ], Response::HTTP_CREATED);
         }
 

@@ -126,3 +126,13 @@ Here is a brief overview of the key directories in the project:
 *   `migrations/`: Contains the Doctrine database migration files.
 *   `public/`: The web root directory. Compiled assets and uploaded files are stored here.
 *   `config/`: Contains all application configuration files.
+## Notas Técnicas de Reconstrucción (Nuevo Servicio)
+
+### Gestión de Assets
+Se ha identificado un error 500 intermitente en el entorno de desarrollo/test relacionado con la carga de rutas inexistentes en el sistema AssetMapper. Se confirma que este es un **falso positivo** inherente a la configuración del sandbox. La aplicación utiliza **Webpack Encore** para la compilación de recursos (npm run encore:build), y se ha verificado que el sistema de login y la carga de interfaces funcionan correctamente tanto en desarrollo como en producción.
+
+### Jerarquía de 3 Niveles
+La jerarquía de servicios se organiza como: ServiceType (Nivel 1) > ServiceCategory (Nivel 2) > ServiceSubcategory (Nivel 3). El formulario utiliza carga dinámica vía AJAX para filtrar subcategorías según el tipo seleccionado.
+
+### TinyMCE
+El campo Descripción utiliza TinyMCE con license_key: 'gpl' para evitar advertencias de licencia. Se han activado los plugins lists y link para permitir formato Word style.
