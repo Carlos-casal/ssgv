@@ -115,24 +115,6 @@ class ServiceController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Smart ID logic
-            if (!$service->getNumeration()) {
-                $year = (int) $service->getStartDate()->format('Y');
-                $seq = $serviceRepository->getNextSequentialNumber($year);
-
-                $categoryName = $service->getCategory() ? $service->getCategory()->getName() : 'SERV';
-                $words = explode(' ', $categoryName);
-                $code = '';
-                if (count($words) >= 2) {
-                    $code = strtoupper(substr($words[0], 0, 1) . substr($words[1], 0, 3));
-                } else {
-                    $code = strtoupper(substr($categoryName, 0, 4));
-                }
-
-                $generatedId = sprintf('%d-%s-%03d', $year, $code, $seq);
-                $service->setNumeration($generatedId);
-            }
-
             $entityManager->persist($service);
             $entityManager->flush(); // Flush once to get the ID for URL generation
 
@@ -160,7 +142,8 @@ class ServiceController extends AbstractController
         if ($form->isSubmitted() && !$form->isValid() && $request->isXmlHttpRequest()) {
             $errors = [];
             foreach ($form->getErrors(true, true) as $error) {
-                $errors[] = $error->getMessage();
+                $field = $error->getOrigin() ? $error->getOrigin()->getName() : 'global';
+                $errors[$field] = $error->getMessage();
             }
             return new JsonResponse(['success' => false, 'errors' => $errors], Response::HTTP_BAD_REQUEST);
         }

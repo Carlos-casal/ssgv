@@ -396,15 +396,21 @@ export default class extends Controller {
     // Visual Validation Helpers
     showError(inputId, message) {
         const input = document.getElementById(inputId);
-        const errorDiv = document.getElementById(`error-${inputId}`);
-        if (input) {
-            input.classList.add('is-invalid');
-            input.classList.add('border-red-500'); // Ensure red border
+        if (!input) return;
+
+        input.classList.add('is-invalid');
+
+        // Find or create invalid-feedback
+        let errorDiv = document.getElementById(`error-${inputId}`);
+        if (!errorDiv) {
+            errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4')?.querySelector('.invalid-feedback');
         }
+
         if (errorDiv) {
-            errorDiv.textContent = message;
+            errorDiv.textContent = this.humanizeError(message);
             errorDiv.classList.remove('hidden');
-            errorDiv.style.fontSize = "0.85rem"; // Required style
+            errorDiv.classList.add('d-block'); // Bootstrap 5 visibility
+            errorDiv.style.fontSize = "0.85rem";
         }
     }
 
@@ -419,7 +425,7 @@ export default class extends Controller {
     }
 
     humanizeError(message) {
-        if (typeof message !== 'string') return 'Error inesperado';
+        if (typeof message !== 'string') return message;
 
         // Remove technical prefixes like "name: ERROR:"
         let clean = message.replace(/^[a-zA-Z0-9_]+:\s*ERROR:\s*/i, '');
@@ -427,9 +433,10 @@ export default class extends Controller {
 
         // Common translations
         const translations = {
-            'This value should not be blank.': 'Este campo no puede estar vacío.',
+            'This value should not be blank.': 'Este campo es obligatorio.',
             'This value is already used.': 'Este valor ya está en uso.',
-            'Invalid credentials.': 'Credenciales inválidas.'
+            'Invalid credentials.': 'El correo electrónico o la contraseña no son correctos.',
+            'This registration number is already in use.': 'Este número de registro ya está en uso.'
         };
 
         return translations[clean] || clean;

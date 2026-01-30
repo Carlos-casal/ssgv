@@ -139,7 +139,7 @@ class ServiceFormType extends AbstractType
             ])
             ->add('locality', TextType::class, [
                 'label' => 'Lugar',
-                'required' => false,
+                'required' => true,
             ])
             ->add('afluencia', ChoiceType::class, [
                 'label' => 'Afluencia',
@@ -154,7 +154,7 @@ class ServiceFormType extends AbstractType
                     'Alta' => ['class' => 'bg-blue-100 text-blue-800'],
                 ],
                 'placeholder' => 'Selecciona un nivel',
-                'required' => false,
+                'required' => true,
             ])
             ->add('numSvb', IntegerType::class, [
                 'label' => 'SVB',
