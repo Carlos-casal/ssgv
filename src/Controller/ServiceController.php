@@ -97,9 +97,9 @@ class ServiceController extends AbstractController
     {
         $service = new Service();
 
-        // Pre-populate standard materials (Sanitario and Comunicaciones only, as per requirement)
+        // Pre-populate standard materials
         $materialRepo = $entityManager->getRepository(\App\Entity\Material::class);
-        $standardMaterials = ['Botiquín', 'DESA', 'Camilla', 'Walkies', 'VHF'];
+        $standardMaterials = ['Botiquín', 'DESA', 'Camilla', 'Walkies', 'Vallas', 'Carpas'];
 
         foreach ($standardMaterials as $matName) {
             $material = $materialRepo->findOneBy(['name' => $matName]);

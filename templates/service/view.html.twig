@@ -45,8 +45,21 @@
             <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Recursos Requeridos</h3>
                 <div class="space-y-2 text-sm text-slate-700">
-                    <p><strong class="text-slate-900">Ambulancias:</strong> {{ service.numSvb|default(0) }} SVB, {{ service.numSva|default(0) }} SVA</p>
-                    <p><strong class="text-slate-900">Personal:</strong> {{ service.numTes|default(0) }} TES, {{ service.numTts|default(0) }} TTS, {{ service.numDue|default(0) }} DUE, {{ service.numDoctors|default(0) }} Médico</p>
+                    <p><strong class="text-slate-900">Ambulancias:</strong>
+                        {% set ambs = [] %}
+                        {% if service.numSvb %}{% set ambs = ambs|merge(['SVB']) %}{% endif %}
+                        {% if service.numSva %}{% set ambs = ambs|merge(['SVA']) %}{% endif %}
+                        {% if service.numColectiva %}{% set ambs = ambs|merge(['Colectiva']) %}{% endif %}
+                        {{ ambs|join(', ') ?: 'Ninguna' }}
+                    </p>
+                    <p><strong class="text-slate-900">Personal:</strong>
+                        {% set pers = [] %}
+                        {% if service.numTes %}{% set pers = pers|merge(['TES']) %}{% endif %}
+                        {% if service.numTts %}{% set pers = pers|merge(['TTS']) %}{% endif %}
+                        {% if service.numDue %}{% set pers = pers|merge(['DUE']) %}{% endif %}
+                        {% if service.numDoctors %}{% set pers = pers|merge(['Médico']) %}{% endif %}
+                        {{ pers|join(', ') ?: 'Ninguno' }}
+                    </p>
                     <p><strong class="text-slate-900">Inscripciones:</strong> {{ service.maxAttendees|default('∞') }}</p>
                 </div>
             </div>
@@ -57,7 +70,7 @@
                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Vehículos Asignados</h3>
                 <div class="flex flex-wrap gap-2">
                     {% for vehicle in service.vehicles %}
-                        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.plate }})</span>
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">{{ vehicle.alias ?: vehicle.model }} ({{ vehicle.licensePlate }})</span>
                     {% else %}
                         <p class="text-sm text-slate-400 italic">No hay vehículos asignados</p>
                     {% endfor %}
@@ -66,7 +79,7 @@
             <div class="bg-white p-6 rounded-2xl border border-slate-200">
                 <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Material y Logística</h3>
                 <div class="grid grid-cols-2 gap-4">
-                    {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Avituallamiento'] %}
+                    {% for category in ['Sanitario', 'Comunicaciones', 'Logística'] %}
                         {% set cat_materials = service.serviceMaterials|filter(sm => sm.material.category == category) %}
                         {% if cat_materials|length > 0 %}
                             <div>

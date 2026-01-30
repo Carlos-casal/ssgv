@@ -177,6 +177,12 @@ class Service
     private ?int $numSva = null;
 
     /**
+     * @var int|null The number of Collective Ambulance units required.
+     */
+    #[ORM\Column(nullable: true)]
+    private ?int $numColectiva = null;
+
+    /**
      * @var int|null The number of Advanced Nursing Life Support (SVAE) units required.
      */
     #[ORM\Column(nullable: true)]
@@ -379,6 +385,17 @@ class Service
             $volunteerService->setService($this);
         }
 
+        return $this;
+    }
+
+    public function getNumColectiva(): ?int
+    {
+        return $this->numColectiva;
+    }
+
+    public function setNumColectiva(?int $numColectiva): static
+    {
+        $this->numColectiva = $numColectiva;
         return $this;
     }
 

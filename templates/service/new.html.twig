@@ -32,6 +32,19 @@
             border-bottom-left-radius: 0 !important;
             margin-left: -1px;
         }
+
+        /* iPhone Switch Styling */
+        .form-switch .form-check-input {
+            width: 3.5em;
+            height: 1.75em;
+            cursor: pointer;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='rgba(0, 0, 0, 0.25)'/%3e%3c/svg%3e");
+        }
+        .form-switch .form-check-input:checked {
+            background-color: #10b981;
+            border-color: #10b981;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e");
+        }
     </style>
 {% endblock %}
 
@@ -174,11 +187,28 @@
                     <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-6 flex items-center">
                         <i data-lucide="clipboard-list" class="w-4 h-4 mr-2"></i> Definición Operativa
                     </h5>
-                    <div class="space-y-6">
-                        <div>
+
+                    <div class="row g-4 mb-6 align-items-end">
+                        <div class="col-md-8">
                             <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_tasks">Tareas</label>
                             {{ form_widget(form.tasks, {'id': 'service_tasks', 'attr': {'class': 'form-control', 'rows': '2', 'placeholder': 'Resume las tareas principales...'}}) }}
                         </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_hasProvisions">¿Avituallamiento?</label>
+                            <div class="form-check form-switch pt-1">
+                                {{ form_widget(form.hasProvisions, {'id': 'service_hasProvisions', 'attr': {'class': 'form-check-input'}}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_maxAttendees">Límite Inscritos</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-white border-end-0"><i data-lucide="users" class="w-4 h-4 text-slate-400"></i></span>
+                                {{ form_widget(form.maxAttendees, {'id': 'service_maxAttendees', 'attr': {'class': 'form-control border-start-0', 'placeholder': '∞'}}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
                         <div>
                             <label class="form-label text-xs font-bold text-slate-500 mb-2" for="service_form_description">Descripción</label>
                             {{ form_widget(form.description, {'id': 'service_form_description', 'attr': {'class': 'form-control', 'rows': '4'}}) }}
@@ -202,7 +232,7 @@
                          data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
 
                         <!-- Categoría: Sanitario -->
-                        <div class="col-md-3 border-end">
+                        <div class="col-md-4 border-end">
                             <div class="flex justify-between items-center mb-4">
                                 <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
                                     <i data-lucide="heart-pulse" class="w-3 h-3 mr-2 text-red-600"></i> Sanitario
@@ -218,7 +248,7 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-2 text-end">
                                 <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Sanitario">
                                     Aprender Nuevo
                                 </button>
@@ -226,7 +256,7 @@
                         </div>
 
                         <!-- Categoría: Comunicaciones -->
-                        <div class="col-md-3 border-end px-3">
+                        <div class="col-md-4 border-end px-3">
                             <div class="flex justify-between items-center mb-4">
                                 <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
                                     <i data-lucide="radio" class="w-3 h-3 mr-2 text-blue-600"></i> Comunicaciones
@@ -242,15 +272,10 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Comunicaciones">
-                                    Aprender Nuevo
-                                </button>
-                            </div>
                         </div>
 
                         <!-- Categoría: Logística -->
-                        <div class="col-md-3 border-end px-3">
+                        <div class="col-md-4 ps-3">
                             <div class="flex justify-between items-center mb-4">
                                 <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
                                     <i data-lucide="truck" class="w-3 h-3 mr-2 text-orange-600"></i> Logística
@@ -266,32 +291,8 @@
                                     {% endif %}
                                 {% endfor %}
                             </div>
-                            <div class="mt-2">
+                            <div class="mt-2 text-end">
                                 <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Logística">
-                                    Aprender Nuevo
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Categoría: Avituallamiento -->
-                        <div class="col-md-3 ps-3">
-                            <div class="flex justify-between items-center mb-4">
-                                <h6 class="text-xs font-black text-slate-800 uppercase flex items-center m-0">
-                                    <i data-lucide="apple" class="w-3 h-3 mr-2 text-green-600"></i> Avituallamiento
-                                </h6>
-                                <button type="button" class="btn btn-primary btn-sm rounded-circle w-6 h-6 p-0 flex items-center justify-center add-material-btn" data-action="click->service-form#addMaterial" data-category="Avituallamiento">
-                                    <i data-lucide="plus" class="w-3 h-3"></i>
-                                </button>
-                            </div>
-                            <div class="space-y-3" data-material-category="Avituallamiento">
-                                {% for sm in form.serviceMaterials %}
-                                    {% if sm.vars.data.material and sm.vars.data.material.category == 'Avituallamiento' %}
-                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
-                                    {% endif %}
-                                {% endfor %}
-                            </div>
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-link text-slate-400 p-0 text-[10px] font-bold" data-action="click->service-form#openMaterialModal" data-category="Avituallamiento">
                                     Aprender Nuevo
                                 </button>
                             </div>
@@ -300,53 +301,95 @@
                 </div>
             </div>
 
-            <!-- Bloque Inferior: Dotación -->
+            <!-- Bloque Inferior: TAB 2 REDESIGN (3 Columnas con Switches) -->
             <div class="card border-0 shadow-sm mb-4 rounded-3 overflow-hidden">
                 <div class="card-body p-8">
                     <h5 class="text-slate-400 text-[10px] uppercase tracking-[0.2em] font-black mb-8 flex items-center">
-                        <i data-lucide="users" class="w-4 h-4 mr-2"></i> Dotación y Vehículos
+                        <i data-lucide="layers" class="w-4 h-4 mr-2"></i> Centro de Asignación y Dotación
                     </h5>
                     <div class="row g-4">
-                        <!-- Vehículos -->
-                        <div class="col-md-6 border-end pe-6">
-                            <label class="form-label text-xs font-bold text-slate-500 mb-3" for="service_vehicles">Vehículos Solicitados</label>
-                            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 overflow-y-auto" style="max-height: 200px;">
-                                {{ form_widget(form.vehicles, {'id': 'service_vehicles'}) }}
+                        <!-- Columna 1: Vehículos -->
+                        <div class="col-md-4 border-end pe-4">
+                            <h6 class="text-xs font-black text-slate-800 uppercase flex items-center mb-6">
+                                <i data-lucide="car" class="w-4 h-4 mr-2 text-slate-600"></i> Vehículos
+                            </h6>
+                            <div class="space-y-4">
+                                {% set current_type = '' %}
+                                {% for key, vehicle_choice in form.vehicles %}
+                                    {% set vehicle = form.vehicles.vars.choices[key].data %}
+                                    {% if vehicle.type != current_type %}
+                                        <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-4 mb-2">{{ vehicle.type ?: 'Otros' }}</div>
+                                        {% set current_type = vehicle.type %}
+                                    {% endif %}
+                                    <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                        <div class="flex flex-col">
+                                            <span class="text-sm font-bold text-slate-700">{{ vehicle.alias ?: vehicle.model }}</span>
+                                            <span class="text-[10px] text-slate-400 font-mono">{{ vehicle.licensePlate }}</span>
+                                        </div>
+                                        <div class="form-check form-switch">
+                                            <input class="form-check-input" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
+                                        </div>
+                                    </div>
+                                {% endfor %}
                             </div>
                         </div>
-                        <!-- Personal -->
-                        <div class="col-md-6 ps-6">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <label class="form-label text-xs font-bold text-slate-500 m-0">Personal y Ambulancias</label>
-                                <div class="d-flex align-items-center">
-                                    <span class="text-[10px] font-bold text-slate-400 uppercase mr-2">Límite Inscripciones</span>
-                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control form-control-sm mini-input', 'placeholder': '∞'}}) }}
+
+                        <!-- Columna 2: Ambulancias -->
+                        <div class="col-md-4 border-end px-4">
+                            <h6 class="text-xs font-black text-slate-800 uppercase flex items-center mb-6">
+                                <i data-lucide="ambulance" class="w-4 h-4 mr-2 text-red-600"></i> Ambulancias
+                            </h6>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">SVB (Básica)</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numSvb, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">SVA (Avanzada)</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numSva, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">Colectiva</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numColectiva, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="row g-3">
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numTes">TES</label>
-                                    {{ form_widget(form.numTes, {'id': 'service_numTes', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
+                        </div>
+
+                        <!-- Columna 3: Personal -->
+                        <div class="col-md-4 ps-4">
+                            <h6 class="text-xs font-black text-slate-800 uppercase flex items-center mb-6">
+                                <i data-lucide="users" class="w-4 h-4 mr-2 text-blue-600"></i> Personal
+                            </h6>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">TES</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numTes, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
                                 </div>
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numTts">TTS</label>
-                                    {{ form_widget(form.numTts, {'id': 'service_numTts', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">TTS</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numTts, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
                                 </div>
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numDue">DUE</label>
-                                    {{ form_widget(form.numDue, {'id': 'service_numDue', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">DUE</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numDue, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
                                 </div>
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numDoctors">Médico</label>
-                                    {{ form_widget(form.numDoctors, {'id': 'service_numDoctors', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
-                                </div>
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numSvb">SVB</label>
-                                    {{ form_widget(form.numSvb, {'id': 'service_numSvb', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
-                                </div>
-                                <div class="col-4 d-flex align-items-center justify-content-between">
-                                    <label class="text-[10px] font-black text-slate-500 uppercase" for="service_numSva">SVA</label>
-                                    {{ form_widget(form.numSva, {'id': 'service_numSva', 'attr': {'class': 'form-control form-control-sm mini-input', 'maxlength': '2'}}) }}
+                                <div class="flex items-center justify-between bg-slate-50 p-3 rounded-xl border border-slate-100">
+                                    <span class="text-sm font-bold text-slate-700">Médico</span>
+                                    <div class="form-check form-switch">
+                                        {{ form_widget(form.numDoctors, {'attr': {'class': 'form-check-input'}}) }}
+                                    </div>
                                 </div>
                             </div>
                         </div>

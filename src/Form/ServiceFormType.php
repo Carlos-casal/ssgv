@@ -23,6 +23,7 @@ use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\CallbackTransformer;
 
 /**
  * Form type for creating and editing Service entities.
@@ -105,7 +106,7 @@ class ServiceFormType extends AbstractType
                 'html5' => true,
             ])
             ->add('maxAttendees', IntegerType::class, [
-                'label' => 'Límite de Inscripciones',
+                'label' => 'Cupo máximo de voluntarios',
                 'required' => false,
                 'attr' => ['min' => 0, 'placeholder' => 'Ej: 50'],
             ])
@@ -156,45 +157,33 @@ class ServiceFormType extends AbstractType
                 'placeholder' => 'Selecciona un nivel',
                 'required' => true,
             ])
-            ->add('numSvb', IntegerType::class, [
+            ->add('numSvb', CheckboxType::class, [
                 'label' => 'SVB',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
-            ->add('numSva', IntegerType::class, [
+            ->add('numColectiva', CheckboxType::class, [
+                'label' => 'Colectiva',
+                'required' => false,
+            ])
+            ->add('numSva', CheckboxType::class, [
                 'label' => 'SVA',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
-            ->add('numSvae', IntegerType::class, [
-                'label' => 'SVAE',
-                'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
-            ])
-            ->add('numVir', IntegerType::class, [
-                'label' => 'VIR',
-                'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
-            ])
-            ->add('numTes', IntegerType::class, [
+            ->add('numTes', CheckboxType::class, [
                 'label' => 'TES',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
-            ->add('numTts', IntegerType::class, [
+            ->add('numTts', CheckboxType::class, [
                 'label' => 'TTS',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
-            ->add('numDue', IntegerType::class, [
+            ->add('numDue', CheckboxType::class, [
                 'label' => 'DUE',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
-            ->add('numDoctors', IntegerType::class, [
+            ->add('numDoctors', CheckboxType::class, [
                 'label' => 'Médico',
                 'required' => false,
-                'attr' => ['min' => 0, 'max' => 99, 'maxlength' => 2, 'style' => 'width: 60px;'],
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
@@ -209,7 +198,7 @@ class ServiceFormType extends AbstractType
                 ],
             ])
             ->add('hasProvisions', CheckboxType::class, [
-                'label' => 'Avituallamiento',
+                'label' => '¿Requiere Avituallamiento?',
                 'required' => false,
             ])
             ->add('vehicles', EntityType::class, [
@@ -235,6 +224,14 @@ class ServiceFormType extends AbstractType
                 'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
             ]);
 
+        $transformer = new CallbackTransformer(
+            function ($int) { return (bool)$int; },
+            function ($bool) { return $bool ? 1 : 0; }
+        );
+
+        foreach (['numSvb', 'numSva', 'numColectiva', 'numTes', 'numTts', 'numDue', 'numDoctors'] as $field) {
+            $builder->get($field)->addModelTransformer($transformer);
+        }
     }
 
     /**

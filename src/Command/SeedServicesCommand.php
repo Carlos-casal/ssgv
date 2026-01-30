@@ -94,7 +94,6 @@ class SeedServicesCommand extends Command
             ['name' => 'DESA', 'category' => 'Sanitario'],
             ['name' => 'Camilla', 'category' => 'Sanitario'],
             ['name' => 'Walkies', 'category' => 'Comunicaciones'],
-            ['name' => 'VHF', 'category' => 'Comunicaciones'],
             ['name' => 'Vallas', 'category' => 'Logística'],
             ['name' => 'Carpas', 'category' => 'Logística'],
             ['name' => 'Comida', 'category' => 'Avituallamiento'],
@@ -112,9 +111,32 @@ class SeedServicesCommand extends Command
             }
         }
 
+        // 5. Seed Vehicles
+        $vehicleData = [
+            ['make' => 'Toyota', 'model' => 'Land Cruiser', 'plate' => '1234BBB', 'type' => 'Coche urbano', 'alias' => 'Urbano 1'],
+            ['make' => 'Ford', 'model' => 'Ranger', 'plate' => '5678CCC', 'type' => 'Pickup', 'alias' => 'Rescate 1'],
+            ['make' => 'Yamaha', 'model' => 'XT660', 'plate' => '9012DDD', 'type' => 'Moto', 'alias' => 'Moto 1'],
+            ['make' => 'Zodiac', 'model' => 'Pro', 'plate' => '3456EEE', 'type' => 'Embarcación', 'alias' => 'Lancha 1'],
+            ['make' => 'Orbea', 'model' => 'Wild', 'plate' => '7890FFF', 'type' => 'Bicicleta', 'alias' => 'Bici 1'],
+            ['make' => 'Renault', 'model' => 'Master', 'plate' => '1111AAA', 'type' => 'Ambulancia', 'alias' => 'SVB 1'],
+        ];
+
+        foreach ($vehicleData as $v) {
+            $veh = $this->entityManager->getRepository(\App\Entity\Vehicle::class)->findOneBy(['licensePlate' => $v['plate']]);
+            if (!$veh) {
+                $veh = new \App\Entity\Vehicle();
+                $veh->setMake($v['make']);
+                $veh->setModel($v['model']);
+                $veh->setLicensePlate($v['plate']);
+                $veh->setType($v['type']);
+                $veh->setAlias($v['alias']);
+                $this->entityManager->persist($veh);
+            }
+        }
+
         $this->entityManager->flush();
 
-        $io->success('Service hierarchy and materials seeded successfully!');
+        $io->success('Service hierarchy, materials, and vehicles seeded successfully!');
 
         return Command::SUCCESS;
     }
