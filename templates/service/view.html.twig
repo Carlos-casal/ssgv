@@ -23,22 +23,66 @@
             </a>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <h3 class="text-lg font-semibold text-gray-700">Detalles</h3>
-                <p><strong>Lugar:</strong> {{ service.locality }}</p>
-                <p><strong>Inicio:</strong> {{ service.startDate|date('d/m/Y H:i') }}</p>
-                <p><strong>Fin:</strong> {{ service.endDate|date('d/m/Y H:i') }}</p>
-                <p><strong>Hora en Base:</strong> {{ service.timeAtBase|date('H:i') }}</p>
-                <p><strong>Hora de Salida:</strong> {{ service.departureTime|date('H:i') }}</p>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Detalles Generales</h3>
+                <div class="space-y-2 text-sm text-slate-700">
+                    <p><strong class="text-slate-900">Tipo:</strong> {{ service.type }}</p>
+                    <p><strong class="text-slate-900">Subcategoría:</strong> {{ service.subcategory }}</p>
+                    <p><strong class="text-slate-900">Lugar:</strong> {{ service.locality }}</p>
+                    <p><strong class="text-slate-900">Afluencia:</strong> {{ service.afluencia|capitalize }}</p>
+                </div>
             </div>
-            <div>
-                <h3 class="text-lg font-semibold text-gray-700">Recursos</h3>
-                <p><strong>Ambulancias:</strong> {{ service.numSvb|default(0) }} SVB, {{ service.numSva|default(0) }} SVA, {{ service.numSvae|default(0) }} SVAE</p>
-                <p><strong>Personal:</strong> {{ service.numDoctors|default(0) }} Médicos, {{ service.numNurses|default(0) }} Enfermeros</p>
-                <p><strong>Afluencia:</strong> {{ service.afluencia|capitalize }}</p>
-                <p><strong>Hospital de Campaña:</strong> {{ service.hasFieldHospital ? 'Sí' : 'No' }}</p>
-                <p><strong>Avituallamiento:</strong> {{ service.hasProvisions ? 'Sí' : 'No' }}</p>
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Cronología</h3>
+                <div class="space-y-2 text-sm text-slate-700">
+                    <p><strong class="text-slate-900">Inicio:</strong> {{ service.startDate|date('d/m/Y H:i') }}</p>
+                    <p><strong class="text-slate-900">Fin:</strong> {{ service.endDate|date('d/m/Y H:i') }}</p>
+                    <p><strong class="text-slate-900">Hora en Base:</strong> {{ service.timeAtBase|date('H:i') }}</p>
+                    <p><strong class="text-slate-900">Hora de Salida:</strong> {{ service.departureTime|date('H:i') }}</p>
+                </div>
+            </div>
+            <div class="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Recursos Requeridos</h3>
+                <div class="space-y-2 text-sm text-slate-700">
+                    <p><strong class="text-slate-900">Ambulancias:</strong> {{ service.numSvb|default(0) }} SVB, {{ service.numSva|default(0) }} SVA</p>
+                    <p><strong class="text-slate-900">Personal:</strong> {{ service.numTes|default(0) }} TES, {{ service.numTts|default(0) }} TTS, {{ service.numDue|default(0) }} DUE, {{ service.numDoctors|default(0) }} Médico</p>
+                    <p><strong class="text-slate-900">Inscripciones:</strong> {{ service.maxAttendees|default('∞') }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Vehículos Asignados</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for vehicle in service.vehicles %}
+                        <span class="px-3 py-1 bg-blue-50 text-blue-700 rounded-full text-xs font-bold">{{ vehicle.brand }} {{ vehicle.model }} ({{ vehicle.plate }})</span>
+                    {% else %}
+                        <p class="text-sm text-slate-400 italic">No hay vehículos asignados</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl border border-slate-200">
+                <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 mb-4">Material y Logística</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Avituallamiento'] %}
+                        {% set cat_materials = service.serviceMaterials|filter(sm => sm.material.category == category) %}
+                        {% if cat_materials|length > 0 %}
+                            <div>
+                                <h4 class="text-[10px] font-black uppercase text-slate-500 mb-2">{{ category }}</h4>
+                                <ul class="text-xs space-y-1">
+                                    {% for sm in cat_materials %}
+                                        <li><span class="font-bold">{{ sm.quantity }}x</span> {{ sm.material.name }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+                {% if service.serviceMaterials|length == 0 %}
+                    <p class="text-sm text-slate-400 italic">No hay material asignado</p>
+                {% endif %}
             </div>
         </div>
 

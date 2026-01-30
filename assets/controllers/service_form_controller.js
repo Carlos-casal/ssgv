@@ -71,6 +71,8 @@ export default class extends Controller {
         if (this.hasFormTarget) {
             this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
         }
+
+        this.filterExistingMaterials();
     }
 
     disconnect() {
@@ -158,8 +160,21 @@ export default class extends Controller {
         const wrapper = document.createElement('div');
         wrapper.innerHTML = newForm;
 
+        // Filter the material dropdown by category
+        const select = wrapper.querySelector('select');
+        if (select) {
+            Array.from(select.options).forEach(option => {
+                // If the option has a category and it doesn't match, remove it
+                if (option.value && option.dataset.category && option.dataset.category !== category) {
+                    option.remove();
+                }
+            });
+        }
+
         const column = container.querySelector(`[data-material-category="${category}"]`);
-        column.appendChild(wrapper.firstChild);
+        if (column) {
+            column.appendChild(wrapper.firstChild);
+        }
 
         if (window.lucide) {
             window.lucide.createIcons();
@@ -168,6 +183,25 @@ export default class extends Controller {
 
     removeMaterial(event) {
         event.currentTarget.closest('.material-item').remove();
+    }
+
+    filterExistingMaterials() {
+        if (!this.hasMaterialsContainerTarget) return;
+
+        const container = this.materialsContainerTarget;
+        const columns = container.querySelectorAll('[data-material-category]');
+
+        columns.forEach(column => {
+            const category = column.dataset.materialCategory;
+            const selects = column.querySelectorAll('select');
+            selects.forEach(select => {
+                Array.from(select.options).forEach(option => {
+                    if (option.value && option.dataset.category && option.dataset.category !== category) {
+                        option.remove();
+                    }
+                });
+            });
+        });
     }
 
     openMaterialModal(event) {

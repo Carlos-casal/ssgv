@@ -97,6 +97,9 @@ class SeedServicesCommand extends Command
             ['name' => 'VHF', 'category' => 'Comunicaciones'],
             ['name' => 'Vallas', 'category' => 'Logística'],
             ['name' => 'Carpas', 'category' => 'Logística'],
+            ['name' => 'Comida', 'category' => 'Avituallamiento'],
+            ['name' => 'Agua', 'category' => 'Avituallamiento'],
+            ['name' => 'Raciones', 'category' => 'Avituallamiento'],
         ];
 
         foreach ($materials as $m) {

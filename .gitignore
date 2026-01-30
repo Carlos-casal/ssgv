@@ -32,4 +32,5 @@ yarn-error.log
 ###< symfony/webpack-encore-bundle ###
 tailwindcss.exe
 /var/cache/
+/var/*.db
 test-results/

@@ -47,7 +47,7 @@
                         <th class="p-2 text-left text-sm font-semibold text-gray-600">Fecha</th>
                         <th class="p-2 text-left text-sm font-semibold text-gray-600">Limite inscripción</th>
                         <th class="p-2 text-left text-sm font-semibold text-gray-600">Tipo</th>
-                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Categoría</th>
+                        <th class="p-2 text-left text-sm font-semibold text-gray-600">Subcategoría</th>
                         <th class="p-2 text-left text-sm font-semibold text-gray-600"></th>
                     </tr>
                 </thead>
@@ -61,7 +61,7 @@
                                 <td class="p-2 text-sm">{{ service.startDate ? service.startDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.registrationLimitDate ? service.registrationLimitDate|date('d/m/Y H:i') : 'N/A' }}</td>
                                 <td class="p-2 text-sm">{{ service.type ?? 'N/A' }}</td>
-                                <td class="p-2 text-sm">{{ service.category ?? 'N/A' }}</td>
+                                <td class="p-2 text-sm">{{ service.subcategory ?? 'N/A' }}</td>
                                 <td class="p-2 text-sm">
                                     {% if is_granted('ROLE_VOLUNTEER') %}
                                         {% if assistanceByService[service.id] is defined and assistanceByService[service.id] %}

@@ -105,9 +105,9 @@ class ServiceFormType extends AbstractType
                 'html5' => true,
             ])
             ->add('maxAttendees', IntegerType::class, [
-                'label' => 'Asistentes',
+                'label' => 'Límite de Inscripciones',
                 'required' => false,
-                'attr' => ['min' => 1, 'placeholder' => 'Ej: 50'],
+                'attr' => ['min' => 0, 'placeholder' => 'Ej: 50'],
             ])
             ->add('type', EntityType::class, [
                 'class' => EntityServiceType::class,
@@ -218,6 +218,7 @@ class ServiceFormType extends AbstractType
                     return sprintf('%s (%s)', $vehicle->getAlias() ?: $vehicle->getModel(), $vehicle->getLicensePlate());
                 },
                 'multiple' => true,
+                'expanded' => true,
                 'label' => 'Vehículos',
                 'required' => false,
             ])
