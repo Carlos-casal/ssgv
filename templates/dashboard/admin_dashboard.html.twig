@@ -1,211 +1,174 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Panel de Control{% endblock %}
-{% block page_title %}Panel de Control{% endblock %}
+{% block title %}Command Center{% endblock %}
+{% block page_title %}Dashboard de Gestión{% endblock %}
 
 {% block content %}
-<div class="p-8 space-y-10 w-full max-w-none">
-    <!-- Stats cards (KPIs) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
-        <!-- Voluntarios Activos -->
-        <a href="{{ path('app_volunteer_list') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Voluntarios Activos</p>
-                    <p class="text-4xl font-bold text-slate-900">{{ active_volunteers_count }}</p>
-                    <div class="flex items-center pt-1">
-                        <span class="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">+{{ new_volunteers_this_month }}</span>
-                        <span class="text-[10px] text-slate-400 ml-2 font-medium">este mes</span>
+<div class="p-8 w-full max-w-none">
+    <div class="flex flex-col lg:flex-row gap-10">
+
+        <!-- ZONA DE DATOS (9/12 approx) -->
+        <div class="flex-1 space-y-10">
+
+            <!-- KPIs con Bordes Laterales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Voluntarios -->
+                <a href="{{ path('app_volunteer_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Voluntarios</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ active_volunteers_count }}</p>
+                            <span class="text-[10px] font-bold text-green-600">+{{ new_volunteers_this_month }} este mes</span>
+                        </div>
+                        <i data-lucide="users" class="w-8 h-8 text-blue-100 group-hover:text-blue-500 transition-colors"></i>
+                    </div>
+                </a>
+
+                <!-- Servicios -->
+                <a href="{{ path('app_services_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-green-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Servicios Mes</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ services_this_month }}</p>
+                            <span class="text-[10px] font-bold text-slate-400">Activos actualmente</span>
+                        </div>
+                        <i data-lucide="activity" class="w-8 h-8 text-green-100 group-hover:text-green-500 transition-colors"></i>
+                    </div>
+                </a>
+
+                <!-- Vehículos -->
+                <a href="{{ path('app_vehicle_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Parque Móvil</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ available_vehicles_count }}</p>
+                            <span class="text-[10px] font-bold text-amber-600">Disponibles</span>
+                        </div>
+                        <i data-lucide="truck" class="w-8 h-8 text-amber-100 group-hover:text-amber-500 transition-colors"></i>
+                    </div>
+                </a>
+
+                <!-- Horas -->
+                <div class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Horas Anuales</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ total_annual_service_hours }}</p>
+                            <span class="text-[10px] font-bold text-slate-400">{{ completed_services_count }} finalizados</span>
+                        </div>
+                        <i data-lucide="clock" class="w-8 h-8 text-indigo-100 transition-colors"></i>
                     </div>
                 </div>
-                <div class="p-4 bg-blue-50 rounded-full group-hover:scale-110 transition-transform duration-300">
-                    <i data-lucide="users" class="w-8 h-8 text-blue-600"></i>
-                </div>
             </div>
-        </a>
 
-        <!-- Servicios del Mes -->
-        <a href="{{ path('app_services_list') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Servicios del Mes</p>
-                    <p class="text-4xl font-bold text-slate-900">{{ services_this_month }}</p>
-                    <div class="flex items-center pt-1">
-                        <span class="text-[10px] text-slate-400 font-medium italic">Actividad mensual</span>
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <!-- Actividad Reciente -->
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Log de Actividad</h3>
+                            <p class="text-xs text-slate-400">Últimos movimientos del sistema</p>
+                        </div>
+                        <div class="p-2 bg-slate-50 rounded-xl">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-slate-400"></i>
+                        </div>
                     </div>
-                </div>
-                <div class="p-4 bg-green-50 rounded-full group-hover:scale-110 transition-transform duration-300">
-                    <i data-lucide="calendar-days" class="w-8 h-8 text-green-600"></i>
-                </div>
-            </div>
-        </a>
 
-        <!-- Vehículos Disponibles -->
-        <a href="{{ path('app_vehicle_index') }}" class="group bg-white rounded-2xl p-6 shadow-sm border border-slate-100 hover:shadow-md transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Vehículos Disp.</p>
-                    <p class="text-4xl font-bold text-slate-900">{{ available_vehicles_count }}</p>
-                     <div class="flex items-center pt-1">
-                        <span class="text-[10px] text-slate-400 font-medium">Flota operativa</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-purple-50 rounded-full group-hover:scale-110 transition-transform duration-300">
-                    <i data-lucide="truck" class="w-8 h-8 text-purple-600"></i>
-                </div>
-            </div>
-        </a>
-
-        <!-- Horas anuales -->
-        <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-100 transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div class="space-y-1">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Horas Anuales</p>
-                    <p class="text-4xl font-bold text-slate-900">{{ total_annual_service_hours }}</p>
-                    <div class="flex items-center pt-1">
-                        <span class="text-[10px] text-slate-400 font-medium">{{ completed_services_count }} servicios finalizados</span>
-                    </div>
-                </div>
-                <div class="p-4 bg-orange-50 rounded-full transition-transform duration-300">
-                    <i data-lucide="clock-3" class="w-8 h-8 text-orange-600"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        <!-- Recent activities (Vertical Timeline) -->
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="text-lg font-bold text-slate-800">Actividad Reciente</h3>
-                <i data-lucide="history" class="w-5 h-5 text-slate-400"></i>
-            </div>
-
-            <div class="relative">
-                <!-- Línea vertical del timeline -->
-                <div class="absolute left-4 top-0 bottom-0 w-0.5 bg-slate-100"></div>
-
-                <div class="space-y-8 relative">
-                    {% for activity in recent_activities|slice(0, 5) %}
-                        <div class="flex items-start gap-6 group">
-                            <!-- Icono/Punto del timeline -->
-                            <div class="relative z-10">
-                                {% if attribute(activity, 'joinDate') is defined %}
-                                    {% if activity.status == 'Baja' %}
-                                        <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
-                                            <i data-lucide="user-minus" class="w-4 h-4 text-red-600"></i>
-                                        </div>
-                                    {% elseif activity.status == 'Suspensión' %}
-                                        <div class="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
-                                            <i data-lucide="user-x" class="w-4 h-4 text-orange-600"></i>
-                                        </div>
-                                    {% else %}
-                                        <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
-                                            <i data-lucide="user-plus" class="w-4 h-4 text-green-600"></i>
-                                        </div>
-                                    {% endif %}
-                                {% else %}
-                                    <div class="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center border-2 border-white shadow-sm ring-4 ring-white group-hover:scale-110 transition-transform">
-                                        <i data-lucide="check" class="w-4 h-4 text-green-600"></i>
-                                    </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Contenido -->
-                            <div class="flex-1 pt-0.5">
-                                {% if attribute(activity, 'joinDate') is defined %}
-                                    {% set joinDate = activity.joinDate %}
-                                    {% set statusChangeDate = attribute(activity, 'statusChangeDate') %}
-                                    {% set event_date = (statusChangeDate and statusChangeDate > joinDate) ? statusChangeDate : joinDate %}
-
-                                    <p class="text-sm font-bold text-slate-800">
-                                        {% if activity.status == 'Baja' %}Voluntario dado de baja{% elseif activity.status == 'Suspensión' %}Voluntario en suspensión{% else %}Nuevo voluntario{% endif %}
+                    <div class="space-y-6">
+                        {% for activity in recent_activities|slice(0, 5) %}
+                            <div class="flex items-center gap-4 group">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {{ attribute(activity, 'joinDate') is defined ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600' }}">
+                                    <i data-lucide="{{ attribute(activity, 'joinDate') is defined ? 'user-plus' : 'check-circle' }}" class="w-5 h-5"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 truncate">
+                                        {% if attribute(activity, 'joinDate') is defined %}
+                                            Registro: {{ activity.name }}
+                                        {% else %}
+                                            Servicio: {{ activity.title }}
+                                        {% endif %}
                                     </p>
-                                    <p class="text-sm text-slate-600 mt-0.5">{{ activity.name }}</p>
-                                    <p class="text-[10px] font-semibold text-slate-400 mt-1 uppercase tracking-tight">{{ event_date|date('d/m/Y H:i') }}</p>
-                                {% else %}
-                                    <p class="text-sm font-bold text-slate-800">Servicio completado</p>
-                                    <p class="text-sm text-slate-600 mt-0.5">{{ activity.title }}</p>
-                                    <p class="text-[10px] font-semibold text-slate-400 mt-1 uppercase tracking-tight">{{ activity.endDate|date('d/m/Y H:i') }}</p>
-                                {% endif %}
+                                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-tight">
+                                        {% if attribute(activity, 'joinDate') is defined %}
+                                            {{ activity.joinDate|date('d M, H:i') }}
+                                        {% else %}
+                                            {{ activity.endDate|date('d M, H:i') }}
+                                        {% endif %}
+                                    </p>
+                                </div>
                             </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Próximos Eventos -->
+                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800">Próximos Servicios</h3>
+                            <p class="text-xs text-slate-400">Agenda operativa inmediata</p>
                         </div>
-                    {% else %}
-                        <div class="text-center py-10">
-                            <div class="bg-slate-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <i data-lucide="info" class="w-8 h-8 text-slate-300"></i>
+                        <div class="p-2 bg-slate-50 rounded-xl">
+                            <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for service in upcoming_services %}
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex flex-col items-center justify-center flex-shrink-0">
+                                    <span class="text-sm font-black leading-none">{{ service.startDate|date('d') }}</span>
+                                    <span class="text-[8px] font-bold uppercase">{{ service.startDate|date('M') }}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-800">{{ service.title }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ service.startDate|date('H:i') }} · {{ service.maxAttendees }} voluntarios</p>
+                                </div>
                             </div>
-                            <p class="text-sm font-medium text-slate-400">Sin actividad registrada</p>
-                        </div>
-                    {% endfor %}
+                        {% else %}
+                            <div class="text-center py-8">
+                                <p class="text-sm text-slate-400 font-medium italic">Sin servicios programados</p>
+                            </div>
+                        {% endfor %}
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Upcoming events (Date Blocks) -->
-        <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-            <div class="flex items-center justify-between mb-8">
-                <h3 class="text-lg font-bold text-slate-800">Próximos Eventos</h3>
-                <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
-            </div>
+        <!-- ACCIONES RÁPIDAS (BANNERS) -->
+        <div class="lg:w-80 space-y-6">
+            <h3 class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 ml-4">Acciones Rápidas</h3>
 
-            <div class="space-y-6">
-                {% for service in upcoming_services %}
-                    <div class="flex items-center gap-6 group hover:bg-slate-50 p-3 -m-3 rounded-2xl transition-all duration-300 border border-transparent hover:border-slate-100">
-                        <!-- Bloque de Fecha -->
-                        <div class="w-16 h-16 rounded-2xl bg-blue-50 flex flex-col items-center justify-center flex-shrink-0 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                            <span class="text-xl font-black leading-none">{{ service.startDate|date('d') }}</span>
-                            <span class="text-[10px] font-bold uppercase tracking-widest mt-1">{{ service.startDate|date('M') }}</span>
-                        </div>
-
-                        <!-- Detalles -->
-                        <div class="flex-1">
-                            <h4 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">{{ service.title }}</h4>
-                            <div class="flex items-center gap-4 mt-1 text-xs font-medium text-slate-500">
-                                <div class="flex items-center gap-1">
-                                    <i data-lucide="clock" class="w-3.5 h-3.5"></i>
-                                    <span>{{ service.startDate|date('H:i') }}</span>
-                                </div>
-                                <div class="flex items-center gap-1">
-                                    <i data-lucide="users-2" class="w-3.5 h-3.5"></i>
-                                    <span>{{ service.maxAttendees }} plazas</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <i data-lucide="chevron-right" class="w-5 h-5 text-slate-300 group-hover:text-blue-500 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0"></i>
+            <!-- Banner: Nuevo Servicio -->
+            <a href="{{ path('app_service_new') }}" class="block group bg-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-600/20 hover:scale-[1.02] transition-all relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                    <i data-lucide="plus-circle" class="w-24 h-24"></i>
+                </div>
+                <div class="relative z-10">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                        <i data-lucide="plus" class="w-6 h-6"></i>
                     </div>
-                {% else %}
-                    <!-- Empty State -->
-                    <div class="text-center py-12">
-                        <div class="relative w-32 h-32 mx-auto mb-6">
-                            <div class="absolute inset-0 bg-blue-50 rounded-full animate-pulse"></div>
-                            <i data-lucide="calendar-x" class="absolute inset-0 m-auto w-12 h-12 text-slate-300"></i>
-                        </div>
-                        <p class="text-slate-500 font-medium mb-6">No hay eventos programados</p>
-                        <a href="{{ path('app_service_new') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-95 transition-all">
-                            <i data-lucide="plus" class="w-5 h-5"></i>
-                            <span>Crear Evento</span>
-                        </a>
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-    </div>
+                    <p class="text-xl font-black leading-tight">Nuevo<br>Servicio</p>
+                    <p class="text-blue-100 text-[10px] mt-2 font-medium">Planifica preventivos o emergencias</p>
+                </div>
+            </a>
 
-    <!-- Quick actions (Refined UI) -->
-    <div class="bg-white rounded-2xl p-8 shadow-sm border border-slate-100">
-        <h3 class="text-lg font-bold text-slate-800 mb-8">Acciones Rápidas</h3>
-        <div class="flex flex-wrap items-center gap-6">
-            <!-- Add Volunteer Modal Controller -->
-            <div data-controller="modal" class="flex-1 min-w-[200px]">
-                <button data-action="click->modal#open" class="w-full group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 transition-all duration-300">
-                    <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
-                        <i data-lucide="user-plus" class="w-6 h-6"></i>
+            <!-- Banner: Invitar Voluntario -->
+            <div data-controller="modal">
+                <button data-action="click->modal#open" class="w-full text-left group bg-green-600 rounded-3xl p-8 text-white shadow-xl shadow-green-600/20 hover:scale-[1.02] transition-all relative overflow-hidden">
+                    <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                        <i data-lucide="user-plus" class="w-24 h-24"></i>
                     </div>
-                    <span class="font-bold text-slate-700 group-hover:text-blue-600">Añadir Voluntario</span>
+                    <div class="relative z-10">
+                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                            <i data-lucide="mail" class="w-6 h-6"></i>
+                        </div>
+                        <p class="text-xl font-black leading-tight">Invitar<br>Voluntario</p>
+                        <p class="text-green-100 text-[10px] mt-2 font-medium">Enviar enlace de registro rápido</p>
+                    </div>
                 </button>
-                <!-- Add Volunteer Modal -->
+
+                <!-- Modal (reused from existing logic) -->
                 <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center hidden">
                     <div data-modal-target="content" class="relative p-10 bg-white w-full max-w-md m-auto flex-col flex rounded-2xl shadow-2xl">
                         <div data-modal-target="invitationForm">
@@ -234,31 +197,25 @@
                                 </div>
                             </div>
                         </div>
-                        <div data-modal-target="emailPreview" class="hidden">
-                            <div class="flex justify-between items-center mb-6">
-                                <h2 class="text-xl font-bold text-slate-800">Vista previa del correo</h2>
-                                <button data-action="click->modal#closeButton" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-all">&times;</button>
-                            </div>
-                            <div data-modal-target="emailBody" class="prose max-w-none bg-slate-50 p-6 rounded-xl border border-slate-200 text-slate-600 text-sm italic"></div>
-                        </div>
                     </div>
                 </div>
             </div>
 
-            <a href="{{ path('app_service_new') }}" class="flex-1 min-w-[200px] group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-green-500 hover:shadow-xl hover:shadow-green-500/10 transition-all duration-300">
-                <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
-                    <i data-lucide="calendar-plus" class="w-6 h-6"></i>
+            <!-- Banner: Estadísticas -->
+            <a href="#" class="block group bg-slate-800 rounded-3xl p-8 text-white shadow-xl shadow-slate-800/20 hover:scale-[1.02] transition-all relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                    <i data-lucide="bar-chart-2" class="w-24 h-24"></i>
                 </div>
-                <span class="font-bold text-slate-700 group-hover:text-green-600">Programar Servicio</span>
+                <div class="relative z-10">
+                    <div class="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center mb-6">
+                        <i data-lucide="trending-up" class="w-6 h-6 text-slate-400"></i>
+                    </div>
+                    <p class="text-xl font-black leading-tight">Métricas &<br>Reportes</p>
+                    <p class="text-slate-400 text-[10px] mt-2 font-medium">Análisis de actividad y rendimiento</p>
+                </div>
             </a>
-
-            <button class="flex-1 min-w-[200px] group flex flex-col items-center justify-center gap-3 p-6 bg-slate-50 border border-slate-200 rounded-2xl hover:bg-white hover:border-purple-500 hover:shadow-xl hover:shadow-purple-500/10 transition-all duration-300">
-                <div class="p-3 bg-white rounded-xl shadow-sm group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
-                    <i data-lucide="bar-chart-big" class="w-6 h-6"></i>
-                </div>
-                <span class="font-bold text-slate-700 group-hover:text-purple-600">Ver Estadísticas</span>
-            </button>
         </div>
+
     </div>
 </div>
 {% endblock %}
