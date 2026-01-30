@@ -18,6 +18,9 @@ class ServiceMaterialFormType extends AbstractType
             ->add('material', EntityType::class, [
                 'class' => Material::class,
                 'choice_label' => 'name',
+                'choice_attr' => function(Material $material) {
+                    return ['data-category' => $material->getCategory()];
+                },
                 'placeholder' => 'Selecciona un material',
             ])
             ->add('quantity', IntegerType::class, [
