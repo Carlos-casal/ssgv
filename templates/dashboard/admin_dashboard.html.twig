@@ -11,7 +11,7 @@
         <div class="flex-1 space-y-10">
 
             <!-- KPIs con Bordes Laterales -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ low_stock_materials_count > 0 ? '5' : '4' }} gap-6">
                 <!-- Voluntarios -->
                 <a href="{{ path('app_volunteer_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
                     <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Voluntarios</p>
@@ -59,6 +59,20 @@
                         <i data-lucide="clock" class="w-8 h-8 text-indigo-100 transition-colors"></i>
                     </div>
                 </div>
+
+                <!-- Materiales (Low Stock Alert) -->
+                {% if low_stock_materials_count > 0 %}
+                <a href="{{ path('app_material_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-red-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reposición</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-red-600">{{ low_stock_materials_count }}</p>
+                            <span class="text-[10px] font-bold text-red-600">Necesaria</span>
+                        </div>
+                        <i data-lucide="package" class="w-8 h-8 text-red-100 group-hover:text-red-500 transition-colors"></i>
+                    </div>
+                </a>
+                {% endif %}
             </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">

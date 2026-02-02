@@ -1,0 +1,29 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Nuevo Material{% endblock %}
+
+{% block page_title %}Registrar Nuevo Material{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            {{ form_start(form) }}
+                <div class="row">
+                    <div class="col-md-6">{{ form_row(form.name) }}</div>
+                    <div class="col-md-6">{{ form_row(form.category) }}</div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-4">{{ form_row(form.nature) }}</div>
+                    <div class="col-md-4">{{ form_row(form.stock) }}</div>
+                    <div class="col-md-4">{{ form_row(form.safetyStock) }}</div>
+                </div>
+                <div class="mt-4">
+                    <button class="btn btn-primary btn-lg px-5 font-weight-bold">Guardar</button>
+                    <a href="{{ path('app_material_index') }}" class="btn btn-link text-secondary ml-3">Cancelar</a>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}

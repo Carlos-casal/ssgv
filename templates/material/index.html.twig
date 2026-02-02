@@ -1,0 +1,80 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Gestión de Materiales{% endblock %}
+
+{% block page_title %}Inventario de Materiales{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="h4 mb-0 text-gray-800">Listado General</h2>
+        <a href="{{ path('app_material_new') }}" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i> Nuevo Material
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+                    <thead class="bg-light text-primary">
+                        <tr>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Naturaleza</th>
+                            <th>Stock / Unidades</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for material in materials %}
+                        <tr>
+                            <td class="font-weight-bold">{{ material.name }}</td>
+                            <td>{{ material.category }}</td>
+                            <td>
+                                <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {{ material.nature == 'CONSUMIBLE' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700' }}">
+                                    {{ material.nature }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if material.nature == 'CONSUMIBLE' %}
+                                    <span class="font-mono font-bold">{{ material.stock }}</span>
+                                {% else %}
+                                    <span class="font-bold">{{ material.units|length }}</span> <span class="text-xs text-slate-400">unidades</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if material.isLowStock %}
+                                    <span class="px-3 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-black uppercase flex items-center w-fit">
+                                        <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Reposición
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-lg bg-green-50 text-green-600 text-xs font-black uppercase flex items-center w-fit">
+                                        <i data-lucide="check" class="w-3 h-3 mr-1"></i> OK
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{{ path('app_material_show', {'id': material.id}) }}" class="btn btn-sm btn-outline-primary" title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ path('app_material_edit', {'id': material.id}) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-4 text-muted">No se encontraron materiales.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

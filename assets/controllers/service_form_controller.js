@@ -42,6 +42,14 @@ export default class extends Controller {
         // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
         tinymce.remove('textarea#service_tasks');
 
+        // Date Listeners for Availability Check
+        const startDateInput = document.getElementById('service_startDate');
+        const endDateInput = document.getElementById('service_endDate');
+        if (startDateInput && endDateInput) {
+            startDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+            endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+        }
+
         // TinyMCE configuration for Description
         tinymce.init({
             selector: '#service_form_description',
@@ -193,15 +201,111 @@ export default class extends Controller {
 
         columns.forEach(column => {
             const category = column.dataset.materialCategory;
-            const selects = column.querySelectorAll('select');
+            const selects = column.querySelectorAll('select.material-selector');
             selects.forEach(select => {
                 Array.from(select.options).forEach(option => {
                     if (option.value && option.dataset.category && option.dataset.category !== category) {
                         option.remove();
                     }
                 });
+
+                // Initial check for unit container visibility
+                const nature = select.options[select.selectedIndex]?.dataset.nature;
+                if (nature === 'EQUIPO_TECNICO') {
+                    select.closest('.material-item')?.querySelector('.unit-selection-container')?.classList.remove('hidden');
+                }
             });
         });
+
+        this.updateAllMaterialAvailability();
+    }
+
+    onMaterialRowChange(event) {
+        const row = event.currentTarget;
+        this.checkMaterialAvailability(row);
+    }
+
+    onMaterialSelectChange(event) {
+        const select = event.currentTarget;
+        const nature = select.options[select.selectedIndex]?.dataset.nature;
+        const unitContainer = select.closest('.material-item')?.querySelector('.unit-selection-container');
+
+        if (nature === 'EQUIPO_TECNICO') {
+            unitContainer?.classList.remove('hidden');
+        } else {
+            unitContainer?.classList.add('hidden');
+        }
+    }
+
+    async updateAllMaterialAvailability() {
+        if (!this.hasMaterialsContainerTarget) return;
+        const rows = this.materialsContainerTarget.querySelectorAll('.material-item');
+        for (const row of rows) {
+            await this.checkMaterialAvailability(row);
+        }
+    }
+
+    async checkMaterialAvailability(row) {
+        const materialSelect = row.querySelector('.material-selector');
+        const quantityInput = row.querySelector('.quantity-input');
+        const startDateInput = document.getElementById('service_startDate');
+        const endDateInput = document.getElementById('service_endDate');
+
+        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
+
+        const materialId = materialSelect.value;
+        const quantity = quantityInput?.value || 1;
+        const start = startDateInput.value;
+        const end = endDateInput.value;
+        const serviceId = this.element.dataset.serviceId || '';
+
+        try {
+            const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${start}&end=${end}&quantity=${quantity}&excludeServiceId=${serviceId}`);
+            const data = await response.json();
+
+            const statusLabel = row.querySelector('.availability-status');
+            const unitSelector = row.querySelector('.unit-selector');
+
+            if (data.available) {
+                materialSelect.classList.remove('border-red-500');
+                if (statusLabel) {
+                    statusLabel.textContent = '✓ Disponible';
+                    statusLabel.className = 'availability-status text-[10px] font-bold text-green-600 mt-1';
+                }
+
+                if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
+                    this.updateUnitSelector(unitSelector, data.suggestedUnits);
+                }
+            } else {
+                materialSelect.classList.add('border-red-500');
+                if (statusLabel) {
+                    statusLabel.textContent = '✗ ' + data.message;
+                    statusLabel.className = 'availability-status text-[10px] font-bold text-red-600 mt-1';
+                }
+            }
+        } catch (error) {
+            console.error('Error checking availability:', error);
+        }
+    }
+
+    updateUnitSelector(selector, units) {
+        const currentValue = selector.value;
+
+        // Save current options that are NOT suggested (maybe manually selected)
+        // But the requirement says suggest based on rotation.
+
+        selector.innerHTML = '<option value="">Selección Automática</option>';
+        units.forEach(unit => {
+            const option = new Option(unit.serialNumber || `ID: ${unit.id}`, unit.id);
+            selector.appendChild(option);
+        });
+
+        if (currentValue && Array.from(selector.options).some(o => o.value == currentValue)) {
+            selector.value = currentValue;
+        } else if (units.length > 0) {
+            // Auto-select the first suggested unit (the oldest one)
+            selector.value = units[0].id;
+        }
     }
 
     openMaterialModal(event) {

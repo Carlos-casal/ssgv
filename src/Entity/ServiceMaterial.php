@@ -21,6 +21,10 @@ class ServiceMaterial
     #[ORM\JoinColumn(nullable: false)]
     private ?Material $material = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?MaterialUnit $materialUnit = null;
+
     #[ORM\Column]
     private ?int $quantity = 0;
 
@@ -49,6 +53,18 @@ class ServiceMaterial
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
+
+        return $this;
+    }
+
+    public function getMaterialUnit(): ?MaterialUnit
+    {
+        return $this->materialUnit;
+    }
+
+    public function setMaterialUnit(?MaterialUnit $materialUnit): static
+    {
+        $this->materialUnit = $materialUnit;
 
         return $this;
     }

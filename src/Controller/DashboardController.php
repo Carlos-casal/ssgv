@@ -38,6 +38,7 @@ class DashboardController extends AbstractController
         ServiceRepository $serviceRepository,
         VehicleRepository $vehicleRepository,
         AssistanceConfirmationRepository $assistanceConfirmationRepository,
+        \App\Repository\MaterialRepository $materialRepository,
         Security $security
     ): Response {
         if ($this->getUser() && $this->isGranted('ROLE_ADMIN')) {
@@ -81,12 +82,20 @@ class DashboardController extends AbstractController
                 return $dateB <=> $dateA;
             });
 
+            $lowStockMaterials = $materialRepository->createQueryBuilder('m')
+                ->where('m.nature = :nature')
+                ->andWhere('m.stock <= m.safetyStock')
+                ->setParameter('nature', \App\Entity\Material::NATURE_CONSUMABLE)
+                ->getQuery()
+                ->getResult();
+
             return $this->render('dashboard/admin_dashboard.html.twig', [
                 'current_section' => 'inicio',
                 'active_volunteers_count' => $volunteerRepository->countActiveVolunteers(),
                 'new_volunteers_this_month' => $volunteerRepository->countNewVolunteersThisMonth(),
                 'services_this_month' => $serviceRepository->countServicesThisMonth(),
                 'available_vehicles_count' => $vehicleRepository->countAvailableVehicles(),
+                'low_stock_materials_count' => count($lowStockMaterials),
                 'total_annual_service_hours' => round($totalAnnualServiceMinutes / 60),
                 'completed_services_count' => count($completedServicesThisYear),
                 'recent_activities' => $recentActivities,

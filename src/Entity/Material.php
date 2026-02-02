@@ -11,6 +11,9 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Table(name: 'maestro_material')]
 class Material
 {
+    public const NATURE_CONSUMABLE = 'CONSUMIBLE';
+    public const NATURE_TECHNICAL = 'EQUIPO_TECNICO';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -22,12 +25,25 @@ class Material
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $category = null; // e.g. 'Sanitario', 'Comunicaciones', 'Logística'
 
+    #[ORM\Column(length: 20, options: ["default" => self::NATURE_CONSUMABLE])]
+    private string $nature = self::NATURE_CONSUMABLE;
+
+    #[ORM\Column(options: ["default" => 0])]
+    private int $stock = 0;
+
+    #[ORM\Column(name: "safety_stock", options: ["default" => 0])]
+    private int $safetyStock = 0;
+
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: ServiceMaterial::class, orphanRemoval: true)]
     private Collection $serviceMaterials;
+
+    #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialUnit::class, orphanRemoval: true)]
+    private Collection $units;
 
     public function __construct()
     {
         $this->serviceMaterials = new ArrayCollection();
+        $this->units = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -59,6 +75,42 @@ class Material
         return $this;
     }
 
+    public function getNature(): string
+    {
+        return $this->nature;
+    }
+
+    public function setNature(string $nature): static
+    {
+        $this->nature = $nature;
+
+        return $this;
+    }
+
+    public function getStock(): int
+    {
+        return $this->stock;
+    }
+
+    public function setStock(int $stock): static
+    {
+        $this->stock = $stock;
+
+        return $this;
+    }
+
+    public function getSafetyStock(): int
+    {
+        return $this->safetyStock;
+    }
+
+    public function setSafetyStock(int $safetyStock): static
+    {
+        $this->safetyStock = $safetyStock;
+
+        return $this;
+    }
+
     /**
      * @return Collection<int, ServiceMaterial>
      */
@@ -86,6 +138,40 @@ class Material
         }
 
         return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialUnit>
+     */
+    public function getUnits(): Collection
+    {
+        return $this->units;
+    }
+
+    public function addUnit(MaterialUnit $unit): static
+    {
+        if (!$this->units->contains($unit)) {
+            $this->units->add($unit);
+            $unit->setMaterial($this);
+        }
+
+        return $this;
+    }
+
+    public function removeUnit(MaterialUnit $unit): static
+    {
+        if ($this->units->removeElement($unit)) {
+            if ($unit->getMaterial() === $this) {
+                $unit->setMaterial(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function isLowStock(): bool
+    {
+        return $this->nature === self::NATURE_CONSUMABLE && $this->stock <= $this->safetyStock;
     }
 
     public function __toString(): string

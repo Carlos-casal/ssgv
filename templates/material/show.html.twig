@@ -1,0 +1,119 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Detalle de Material{% endblock %}
+
+{% block page_title %}{{ material.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Información General</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ material.category }}</div>
+                            <div class="mt-2">
+                                <span class="badge {{ material.nature == 'CONSUMIBLE' ? 'badge-info' : 'badge-dark' }}">
+                                    {{ material.nature }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-info-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if material.nature == 'CONSUMIBLE' %}
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card {{ material.isLowStock ? 'border-left-danger' : 'border-left-success' }} shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold {{ material.isLowStock ? 'text-danger' : 'text-success' }} text-uppercase mb-1">Stock Actual</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ material.stock }}</div>
+                            <div class="text-xs text-muted">Mínimo: {{ material.safetyStock }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-boxes fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                    {% if material.isLowStock %}
+                        <div class="mt-2 text-danger font-weight-bold small">
+                            <i class="fas fa-exclamation-triangle"></i> Reposición Necesaria
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if material.nature == 'EQUIPO_TECNICO' %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Unidades Individuales (Activos)</h6>
+            <a href="{{ path('app_material_unit_new', {'id': material.id}) }}" class="btn btn-sm btn-primary">
+                <i class="fas fa-plus"></i> Añadir Unidad
+            </a>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Nº Serie / ID</th>
+                            <th>Último Uso</th>
+                            <th>Mantenimiento</th>
+                            {% if material.category == 'Comunicaciones' %}
+                                <th>PTT/Funda/Bat</th>
+                            {% endif %}
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for unit in material.units %}
+                        <tr class="{{ unit.isInMaintenance ? 'table-warning' : '' }}">
+                            <td>{{ unit.serialNumber }}</td>
+                            <td>{{ unit.lastUsedAt ? unit.lastUsedAt|date('d/m/Y H:i') : 'Nunca usado' }}</td>
+                            <td>
+                                {% if unit.isInMaintenance %}
+                                    <span class="badge badge-warning">En Mantenimiento</span>
+                                {% else %}
+                                    <span class="badge badge-success">Operativo</span>
+                                {% endif %}
+                            </td>
+                            {% if material.category == 'Comunicaciones' %}
+                                <td>
+                                    <span class="small">{{ unit.pttStatus }} / {{ unit.coverStatus }} / {{ unit.batteryStatus }}</span>
+                                </td>
+                            {% endif %}
+                            <td>
+                                <a href="{{ path('app_material_unit_edit', {'id': unit.id}) }}" class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Editar
+                                </a>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-3">No hay unidades registradas.</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mt-4">
+        <a href="{{ path('app_material_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
+        </a>
+    </div>
+</div>
+{% endblock %}
