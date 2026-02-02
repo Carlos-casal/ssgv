@@ -191,6 +191,7 @@ export default class extends Controller {
 
     removeMaterial(event) {
         event.currentTarget.closest('.material-item').remove();
+        this.updateAllMaterialAvailability();
     }
 
     filterExistingMaterials() {
@@ -221,8 +222,20 @@ export default class extends Controller {
     }
 
     onMaterialRowChange(event) {
-        const row = event.currentTarget;
+        const row = event.currentTarget.closest('.material-item');
         this.checkMaterialAvailability(row);
+    }
+
+    onQuantityInput(event) {
+        const input = event.currentTarget;
+        const row = input.closest('.material-item');
+        const max = parseInt(input.getAttribute('max'));
+
+        if (max !== undefined && !isNaN(max) && parseInt(input.value) > max) {
+            input.value = max;
+        }
+
+        this.updateAllMaterialAvailability();
     }
 
     onMaterialSelectChange(event) {
@@ -235,17 +248,30 @@ export default class extends Controller {
         } else {
             unitContainer?.classList.add('hidden');
         }
+
+        this.updateAllMaterialAvailability();
     }
 
     async updateAllMaterialAvailability() {
         if (!this.hasMaterialsContainerTarget) return;
         const rows = this.materialsContainerTarget.querySelectorAll('.material-item');
+
+        // Group rows by material to calculate usage
+        const materialUsage = {};
+        rows.forEach(row => {
+            const materialId = row.querySelector('.material-selector')?.value;
+            const qty = parseInt(row.querySelector('.quantity-input')?.value || 0);
+            if (materialId) {
+                materialUsage[materialId] = (materialUsage[materialId] || 0) + qty;
+            }
+        });
+
         for (const row of rows) {
-            await this.checkMaterialAvailability(row);
+            await this.checkMaterialAvailability(row, materialUsage);
         }
     }
 
-    async checkMaterialAvailability(row) {
+    async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
         const startDateInput = document.getElementById('service_startDate');
@@ -254,23 +280,36 @@ export default class extends Controller {
         if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
 
         const materialId = materialSelect.value;
-        const quantity = quantityInput?.value || 1;
+        const quantity = parseInt(quantityInput?.value || 1);
         const start = startDateInput.value;
         const end = endDateInput.value;
         const serviceId = this.element.dataset.serviceId || '';
 
         try {
-            const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${start}&end=${end}&quantity=${quantity}&excludeServiceId=${serviceId}`);
+            // We fetch availability based on TOTAL requested in form to see if the global pool is exceeded
+            let totalRequestedInForm = quantity;
+            if (globalUsage && globalUsage[materialId]) {
+                totalRequestedInForm = globalUsage[materialId];
+            }
+
+            const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${start}&end=${end}&quantity=${totalRequestedInForm}&excludeServiceId=${serviceId}`);
             const data = await response.json();
 
             const statusLabel = row.querySelector('.availability-status');
             const unitSelector = row.querySelector('.unit-selector');
 
+            // Calculate "remaining" for this specific input limit
+            const othersUsage = (globalUsage?.[materialId] || quantity) - quantity;
+            const remainingForThisRow = Math.max(0, data.totalAvailable - othersUsage);
+
+            // Set dynamic max attribute
+            quantityInput.setAttribute('max', remainingForThisRow);
+
             if (data.available) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
-                    statusLabel.textContent = '✓ Disponible';
-                    statusLabel.className = 'availability-status text-[10px] font-bold text-green-600 mt-1';
+                    statusLabel.innerHTML = `<span class="text-slate-400">${quantity} / </span><span class="text-blue-600 font-black">${data.totalAvailable}</span> disponible`;
+                    statusLabel.className = 'availability-status text-[10px] font-bold mt-1';
                 }
 
                 if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
@@ -279,8 +318,8 @@ export default class extends Controller {
             } else {
                 materialSelect.classList.add('border-red-500');
                 if (statusLabel) {
-                    statusLabel.textContent = '✗ ' + data.message;
-                    statusLabel.className = 'availability-status text-[10px] font-bold text-red-600 mt-1';
+                    statusLabel.innerHTML = `<span class="text-red-600">✗ ${quantity} / ${data.totalAvailable}</span>`;
+                    statusLabel.className = 'availability-status text-[10px] font-bold mt-1';
                 }
             }
         } catch (error) {

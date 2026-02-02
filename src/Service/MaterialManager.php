@@ -51,7 +51,7 @@ class MaterialManager
     /**
      * Suggests the best available units for a material based on the rotation algorithm.
      */
-    public function suggestUnits(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, int $quantity = 1, ?int $excludeServiceId = null): array
+    public function suggestUnits(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, ?int $quantity = null, ?int $excludeServiceId = null): array
     {
         if ($material->getNature() !== Material::NATURE_TECHNICAL) {
             return [];
@@ -63,13 +63,21 @@ class MaterialManager
         foreach ($allUnits as $unit) {
             if ($this->isUnitAvailable($unit, $start, $end, $excludeServiceId)) {
                 $availableUnits[] = $unit;
-                if (count($availableUnits) >= $quantity) {
+                if ($quantity !== null && count($availableUnits) >= $quantity) {
                     break;
                 }
             }
         }
 
         return $availableUnits;
+    }
+
+    /**
+     * Counts how many units are available for a given material and timeframe.
+     */
+    public function countAvailableUnits(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, ?int $excludeServiceId = null): int
+    {
+        return count($this->suggestUnits($material, $start, $end, null, $excludeServiceId));
     }
 
     /**
