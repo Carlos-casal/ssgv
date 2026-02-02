@@ -25,7 +25,9 @@ class MaterialType extends AbstractType
                     'Sanitario' => 'Sanitario',
                     'Comunicaciones' => 'Comunicaciones',
                     'Logística' => 'Logística',
-                    'Avituallamiento' => 'Avituallamiento'
+                    'Mar' => 'Mar',
+                    'Uniformidad' => 'Uniformidad',
+                    'Varios' => 'Varios'
                 ],
                 'attr' => ['class' => 'form-control']
             ])

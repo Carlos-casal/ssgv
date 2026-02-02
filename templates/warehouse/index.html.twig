@@ -1,0 +1,138 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Gestión de Almacén{% endblock %}
+
+{% block body %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">Gestión de Almacén</h1>
+            <p class="text-muted">Control centralizado de recursos y materiales</p>
+        </div>
+        <div class="dropdown">
+            <button class="btn btn-primary btn-lg shadow-sm dropdown-toggle" type="button" id="addMaterialDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i data-lucide="plus" class="w-5 h-5 me-2"></i>
+                Añadir Material
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="addMaterialDropdown">
+                <li><h6 class="dropdown-header">Seleccionar Sección</h6></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Sanitario'}) }}"><i data-lucide="cross" class="w-4 h-4 me-2 text-danger"></i> Sanitario</a></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Comunicaciones'}) }}"><i data-lucide="radio" class="w-4 h-4 me-2 text-primary"></i> Comunicaciones</a></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_vehicle_new') }}"><i data-lucide="truck" class="w-4 h-4 me-2 text-warning"></i> Vehículos (Alta Flota)</a></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Logística'}) }}"><i data-lucide="package" class="w-4 h-4 me-2 text-info"></i> Logística</a></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Mar'}) }}"><i data-lucide="anchor" class="w-4 h-4 me-2 text-info"></i> Mar</a></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Uniformidad'}) }}"><i data-lucide="shirt" class="w-4 h-4 me-2 text-secondary"></i> Uniformidad</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item py-2" href="{{ path('app_material_new', {category: 'Varios'}) }}"><i data-lucide="more-horizontal" class="w-4 h-4 me-2"></i> Varios</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row g-4 mb-4">
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="p-3 bg-blue-100 rounded-lg me-3">
+                            <i data-lucide="box" class="w-6 h-6 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 mb-0">Total Artículos</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.total_items }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="p-3 bg-red-100 rounded-lg me-3">
+                            <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 mb-0">Bajo Stock</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.low_stock }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-4 col-md-6">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="p-3 bg-green-100 rounded-lg me-3">
+                            <i data-lucide="truck" class="w-6 h-6 text-green-600"></i>
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-slate-500 mb-0">Flota Operativa</p>
+                            <h3 class="mb-0 fw-bold">{{ stats.total_vehicles }}</h3>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sections Grid -->
+    <h5 class="fw-bold mb-3">Secciones del Almacén</h5>
+    <div class="row g-4">
+        {% for name, config in categories %}
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="{{ path('app_material_index', {category: name}) }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-shadow transition-all">
+                    <div class="card-body text-center p-4">
+                        <div class="w-16 h-16 bg-{{ config.color }}-100 rounded-circle d-flex align-items-center justify-center mx-auto mb-3 text-{{ config.color }}-600">
+                            <i data-lucide="{{ config.icon }}" class="w-8 h-8"></i>
+                        </div>
+                        <h5 class="fw-bold text-slate-900 mb-1">{{ name }}</h5>
+                        <p class="text-sm text-slate-500 mb-0">{{ config.count }} artículos registrados</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+
+        <!-- Special Card for Vehicles -->
+        <div class="col-xl-3 col-lg-4 col-md-6">
+            <a href="{{ path('app_vehicle_index') }}" class="text-decoration-none">
+                <div class="card border-0 shadow-sm h-100 hover-shadow transition-all border-top border-4 border-warning">
+                    <div class="card-body text-center p-4">
+                        <div class="w-16 h-16 bg-warning bg-opacity-10 rounded-circle d-flex align-items-center justify-center mx-auto mb-3 text-warning">
+                            <i data-lucide="truck" class="w-8 h-8"></i>
+                        </div>
+                        <h5 class="fw-bold text-slate-900 mb-1">Vehículos</h5>
+                        <p class="text-sm text-slate-500 mb-1">Control de flota y mantenimiento</p>
+                        <span class="badge bg-warning text-dark">{{ vehicle_count }} unidades</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-shadow:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+    }
+    .transition-all {
+        transition: all 0.3s ease;
+    }
+    .bg-red-100 { background-color: #fee2e2; }
+    .text-red-600 { color: #dc2626; }
+    .bg-blue-100 { background-color: #dbeafe; }
+    .text-blue-600 { color: #2563eb; }
+    .bg-amber-100 { background-color: #fef3c7; }
+    .text-amber-600 { color: #d97706; }
+    .bg-cyan-100 { background-color: #cffafe; }
+    .text-cyan-600 { color: #0891b2; }
+    .bg-indigo-100 { background-color: #e0e7ff; }
+    .text-indigo-600 { color: #4f46e5; }
+    .bg-slate-100 { background-color: #f1f5f9; }
+    .text-slate-600 { color: #475569; }
+</style>
+{% endblock %}
