@@ -4,7 +4,11 @@
             {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm material-selector', 'data-action': 'change->service-form#onMaterialSelectChange'}}) }}
         </div>
         <div class="me-2" style="width: 80px;">
-            {{ form_widget(form.quantity, {'attr': {'class': 'form-control form-control-sm mini-input quantity-input', 'placeholder': '1'}}) }}
+            {{ form_widget(form.quantity, {'attr': {
+                'class': 'form-control form-control-sm mini-input quantity-input',
+                'placeholder': '1',
+                'data-action': 'input->service-form#onQuantityInput'
+            }}) }}
         </div>
         <button type="button" class="btn btn-outline-danger btn-sm p-1 border-0" data-action="click->service-form#removeMaterial" title="Eliminar material">
             <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i>

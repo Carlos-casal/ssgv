@@ -55,4 +55,42 @@ class MaterialManagerTest extends TestCase
 
         $this->assertFalse($this->materialManager->isUnitAvailable($unit, $start, $end));
     }
+
+    public function testCountAvailableUnits(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_TECHNICAL);
+
+        $unit1 = new MaterialUnit();
+        $unit1->setMaterial($material);
+        $unit1->setIsInMaintenance(false);
+
+        $unit2 = new MaterialUnit();
+        $unit2->setMaterial($material);
+        $unit2->setIsInMaintenance(true);
+
+        $this->unitRepository->expects($this->any())
+            ->method('findBy')
+            ->willReturn([$unit1, $unit2]);
+
+        // Mock the query builder for isUnitAvailable
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->method('getResult')->willReturn([]);
+
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('join')->willReturnSelf();
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('setParameter')->willReturnSelf();
+        $qb->method('getQuery')->willReturn($query);
+
+        $this->serviceMaterialRepository->method('createQueryBuilder')->willReturn($qb);
+
+        $start = new \DateTime('2025-01-01 10:00:00');
+        $end = new \DateTime('2025-01-01 12:00:00');
+
+        $this->assertEquals(1, $this->materialManager->countAvailableUnits($material, $start, $end));
+    }
 }

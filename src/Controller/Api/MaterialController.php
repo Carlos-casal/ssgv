@@ -88,12 +88,17 @@ class MaterialController extends AbstractController
             return $this->json([
                 'available' => $available,
                 'stock' => $material->getStock(),
+                'totalAvailable' => $material->getStock(),
                 'nature' => 'CONSUMIBLE',
                 'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
             ]);
         } else {
-            $suggested = $materialManager->suggestUnits($material, $start, $end, $quantity, $excludeServiceId);
-            $available = count($suggested) >= $quantity;
+            $allAvailable = $materialManager->suggestUnits($material, $start, $end, null, $excludeServiceId);
+            $totalAvailable = count($allAvailable);
+
+            // Re-run with quantity limit for suggestions if needed, or just take first N
+            $suggested = array_slice($allAvailable, 0, $quantity);
+            $available = count($allAvailable) >= $quantity;
 
             $suggestedData = [];
             foreach ($suggested as $unit) {
@@ -105,9 +110,10 @@ class MaterialController extends AbstractController
 
             return $this->json([
                 'available' => $available,
+                'totalAvailable' => $totalAvailable,
                 'suggestedUnits' => $suggestedData,
                 'nature' => 'EQUIPO_TECNICO',
-                'message' => $available ? 'OK' : 'Conflicto de disponibilidad para las fechas seleccionadas'
+                'message' => $available ? 'OK' : 'Solo hay ' . $totalAvailable . ' unidades disponibles para estas fechas'
             ]);
         }
     }
