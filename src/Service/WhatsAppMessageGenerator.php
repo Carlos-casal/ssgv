@@ -81,28 +81,34 @@ class WhatsAppMessageGenerator
         }
 
         $ambulances = [];
-        if ($service->getNumSvb() > 0) {
-            $ambulances[] = "SVB (" . $service->getNumSvb() . ")";
+        if ($service->getNumSvb()) {
+            $ambulances[] = "SVB";
         }
-        if ($service->getNumSva() > 0) {
-            $ambulances[] = "SVA (" . $service->getNumSva() . ")";
+        if ($service->getNumSva()) {
+            $ambulances[] = "SVA";
         }
-        if ($service->getNumSvae() > 0) {
-            $ambulances[] = "SVAE (" . $service->getNumSvae() . ")";
+        if ($service->getNumColectiva()) {
+            $ambulances[] = "Colectiva";
         }
         if (!empty($ambulances)) {
             $resources[] = "Ambulancias: " . implode(', ', $ambulances);
         }
 
-        $medicalStaff = [];
-        if ($service->getNumDoctors() > 0) {
-            $medicalStaff[] = "Médicos (" . $service->getNumDoctors() . ")";
+        $personnel = [];
+        if ($service->getNumTes()) {
+            $personnel[] = "TES";
         }
-        if ($service->getNumNurses() > 0) {
-            $medicalStaff[] = "Enfermería (" . $service->getNumNurses() . ")";
+        if ($service->getNumTts()) {
+            $personnel[] = "TTS";
         }
-        if (!empty($medicalStaff)) {
-            $resources[] = "Personal Sanitario: " . implode(', ', $medicalStaff);
+        if ($service->getNumDue()) {
+            $personnel[] = "DUE/Enfermería";
+        }
+        if ($service->getNumDoctors()) {
+            $personnel[] = "Médico";
+        }
+        if (!empty($personnel)) {
+            $resources[] = "Personal: " . implode(', ', $personnel);
         }
 
         if ($service->getAfluencia()) {
