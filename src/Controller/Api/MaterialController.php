@@ -104,7 +104,8 @@ class MaterialController extends AbstractController
             foreach ($suggested as $unit) {
                 $suggestedData[] = [
                     'id' => $unit->getId(),
-                    'serialNumber' => $unit->getSerialNumber()
+                    'serialNumber' => $unit->getSerialNumber(),
+                    'collectiveNumber' => $unit->getCollectiveNumber()
                 ];
             }
 

@@ -229,8 +229,28 @@ export default class extends Controller {
     onQuantityInput(event) {
         const input = event.currentTarget;
         const row = input.closest('.material-item');
-        const max = parseInt(input.getAttribute('max'));
+        const qty = parseInt(input.value);
+        const materialSelect = row.querySelector('.material-selector');
+        const nature = materialSelect.options[materialSelect.selectedIndex]?.dataset.nature;
 
+        // Special behavior for Technical Assets: split into multiple rows
+        if (nature === 'EQUIPO_TECNICO' && qty > 1) {
+            const category = materialSelect.options[materialSelect.selectedIndex]?.dataset.category;
+            const materialId = materialSelect.value;
+
+            // Set current row quantity to 1
+            input.value = 1;
+
+            // Add (qty - 1) more rows with same material
+            for (let i = 0; i < qty - 1; i++) {
+                this.addMaterialWithData(category, materialId, 1);
+            }
+
+            this.updateAllMaterialAvailability();
+            return;
+        }
+
+        const max = parseInt(input.getAttribute('max'));
         if (max !== undefined && !isNaN(max) && parseInt(input.value) > max) {
             input.value = max;
         }
@@ -238,13 +258,61 @@ export default class extends Controller {
         this.updateAllMaterialAvailability();
     }
 
+    addMaterialWithData(category, materialId, quantity) {
+        const container = this.materialsContainerTarget;
+        const index = container.dataset.index;
+        const prototype = container.dataset.prototype;
+
+        const newForm = prototype.replace(/__name__/g, index);
+        container.dataset.index = parseInt(index) + 1;
+
+        const wrapper = document.createElement('div');
+        wrapper.innerHTML = newForm;
+
+        const select = wrapper.querySelector('select.material-selector');
+        if (select) {
+            Array.from(select.options).forEach(option => {
+                if (option.value && option.dataset.category && option.dataset.category !== category) {
+                    option.remove();
+                }
+            });
+            select.value = materialId;
+        }
+
+        const qtyInput = wrapper.querySelector('.quantity-input');
+        if (qtyInput) {
+            qtyInput.value = quantity;
+        }
+
+        const column = container.querySelector(`[data-material-category="${category}"]`);
+        if (column) {
+            column.appendChild(wrapper.firstChild);
+        }
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    }
+
     onMaterialSelectChange(event) {
         const select = event.currentTarget;
         const nature = select.options[select.selectedIndex]?.dataset.nature;
         const unitContainer = select.closest('.material-item')?.querySelector('.unit-selection-container');
+        const qtyInput = select.closest('.material-item')?.querySelector('.quantity-input');
+        const qty = parseInt(qtyInput?.value || 0);
 
         if (nature === 'EQUIPO_TECNICO') {
             unitContainer?.classList.remove('hidden');
+
+            // If selecting technical material and quantity is > 1, trigger split
+            if (qty > 1) {
+                const category = select.options[select.selectedIndex]?.dataset.category;
+                const materialId = select.value;
+                qtyInput.value = 1;
+                for (let i = 0; i < qty - 1; i++) {
+                    this.addMaterialWithData(category, materialId, 1);
+                }
+            }
         } else {
             unitContainer?.classList.add('hidden');
         }
@@ -308,8 +376,8 @@ export default class extends Controller {
             if (data.available) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<span class="text-slate-400">${quantity} / </span><span class="text-blue-600 font-black">${data.totalAvailable}</span> disponible`;
-                    statusLabel.className = 'availability-status text-[10px] font-bold mt-1';
+                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles</span>`;
+                    statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
                 }
 
                 if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
@@ -318,9 +386,13 @@ export default class extends Controller {
             } else {
                 materialSelect.classList.add('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<span class="text-red-600">✗ ${quantity} / ${data.totalAvailable}</span>`;
-                    statusLabel.className = 'availability-status text-[10px] font-bold mt-1';
+                    statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Soli: ${quantity} / Disp: ${data.totalAvailable})</span>`;
+                    statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
+            }
+
+            if (window.lucide) {
+                window.lucide.createIcons();
             }
         } catch (error) {
             console.error('Error checking availability:', error);
@@ -330,12 +402,10 @@ export default class extends Controller {
     updateUnitSelector(selector, units) {
         const currentValue = selector.value;
 
-        // Save current options that are NOT suggested (maybe manually selected)
-        // But the requirement says suggest based on rotation.
-
-        selector.innerHTML = '<option value="">Selección Automática</option>';
+        selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
         units.forEach(unit => {
-            const option = new Option(unit.serialNumber || `ID: ${unit.id}`, unit.id);
+            const label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
+            const option = new Option(label, unit.id);
             selector.appendChild(option);
         });
 
