@@ -25,17 +25,20 @@ class WarehouseController extends AbstractController
 
         // Group materials by category for the cards
         $categories = [
-            'Sanitario' => ['count' => 0, 'icon' => 'cross', 'color' => 'red'],
-            'Comunicaciones' => ['count' => 0, 'icon' => 'radio', 'color' => 'blue'],
-            'Logística' => ['count' => 0, 'icon' => 'truck', 'color' => 'amber'],
-            'Mar' => ['count' => 0, 'icon' => 'anchor', 'color' => 'cyan'],
-            'Uniformidad' => ['count' => 0, 'icon' => 'shirt', 'color' => 'indigo'],
-            'Varios' => ['count' => 0, 'icon' => 'more-horizontal', 'color' => 'slate'],
+            'Sanitario' => ['count' => 0, 'low_stock' => 0, 'icon' => 'cross', 'color' => 'red'],
+            'Comunicaciones' => ['count' => 0, 'low_stock' => 0, 'icon' => 'radio', 'color' => 'blue'],
+            'Logística' => ['count' => 0, 'low_stock' => 0, 'icon' => 'truck', 'color' => 'amber'],
+            'Mar' => ['count' => 0, 'low_stock' => 0, 'icon' => 'anchor', 'color' => 'cyan'],
+            'Uniformidad' => ['count' => 0, 'low_stock' => 0, 'icon' => 'shirt', 'color' => 'indigo'],
+            'Varios' => ['count' => 0, 'low_stock' => 0, 'icon' => 'more-horizontal', 'color' => 'slate'],
         ];
 
         foreach ($materials as $material) {
             if (isset($categories[$material->getCategory()])) {
                 $categories[$material->getCategory()]['count']++;
+                if ($material->isLowStock()) {
+                    $categories[$material->getCategory()]['low_stock']++;
+                }
             }
         }
 

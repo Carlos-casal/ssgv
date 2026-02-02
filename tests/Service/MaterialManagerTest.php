@@ -6,31 +6,46 @@ use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
+use App\Repository\MaterialStockRepository;
+use App\Repository\MaterialMovementRepository;
 use App\Repository\ServiceMaterialRepository;
 use App\Service\MaterialManager;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\TestCase;
+use Symfony\Bundle\SecurityBundle\Security;
+use App\Entity\User;
+use App\Entity\MaterialStock;
+use App\Entity\MaterialMovement;
 
 class MaterialManagerTest extends TestCase
 {
     private $materialRepository;
     private $unitRepository;
+    private $stockRepository;
+    private $movementRepository;
     private $serviceMaterialRepository;
     private $entityManager;
+    private $security;
     private $materialManager;
 
     protected function setUp(): void
     {
         $this->materialRepository = $this->createMock(MaterialRepository::class);
         $this->unitRepository = $this->createMock(MaterialUnitRepository::class);
+        $this->stockRepository = $this->createMock(MaterialStockRepository::class);
+        $this->movementRepository = $this->createMock(MaterialMovementRepository::class);
         $this->serviceMaterialRepository = $this->createMock(ServiceMaterialRepository::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->security = $this->createMock(Security::class);
 
         $this->materialManager = new MaterialManager(
             $this->materialRepository,
             $this->unitRepository,
+            $this->stockRepository,
+            $this->movementRepository,
             $this->serviceMaterialRepository,
-            $this->entityManager
+            $this->entityManager,
+            $this->security
         );
     }
 
@@ -92,5 +107,40 @@ class MaterialManagerTest extends TestCase
         $end = new \DateTime('2025-01-01 12:00:00');
 
         $this->assertEquals(1, $this->materialManager->countAvailableUnits($material, $start, $end));
+    }
+
+    public function testAdjustStockCreatesMovement(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $user = new User();
+        $this->security->method('getUser')->willReturn($user);
+
+        $this->entityManager->expects($this->atLeastOnce())
+            ->method('persist')
+            ->with($this->isInstanceOf(MaterialMovement::class));
+
+        $this->materialManager->adjustStock($material, 5, 'Test reason');
+
+        $this->assertEquals(15, $material->getStock());
+    }
+
+    public function testAdjustStockWithSizes(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $this->stockRepository->method('findOneBy')
+            ->willReturn(null);
+
+        $this->entityManager->expects($this->atLeast(2))
+            ->method('persist'); // Movement and new Stock
+
+        $this->materialManager->adjustStock($material, 3, 'New size', 'XL');
+
+        $this->assertEquals(13, $material->getStock());
     }
 }

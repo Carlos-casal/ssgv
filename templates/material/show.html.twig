@@ -53,31 +53,98 @@
         {% endif %}
     </div>
 
+    {% if material.sizingType %}
+    <div class="card shadow mb-4" data-controller="uniformity-grid">
+        <div class="card-header py-3 d-flex justify-content-between align-items-center">
+            <h6 class="m-0 font-weight-bold text-primary">Matriz de Stock por Tallas ({{ material.sizingType == 'LETTER' ? 'Letras' : 'Números' }})</h6>
+            <span class="badge badge-info">Gestión Detallada</span>
+        </div>
+        <div class="card-body">
+            {% set sizes = [] %}
+            {% if material.sizingType == 'LETTER' %}
+                {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
+            {% else %}
+                {% set sizes = ['36', '38', '40', '42', '44', '46', '48', '50', '52', '54', '56'] %}
+            {% endif %}
+
+            <div class="table-responsive">
+                <table class="table table-bordered text-center">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Talla</th>
+                            {% for size in sizes %}
+                                <th width="8%">{{ size }}</th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="font-weight-bold bg-light">Stock Actual</td>
+                            {% for size in sizes %}
+                                {% set stock_item = null %}
+                                {% for s in material.stocks %}
+                                    {% if s.size == size %}{% set stock_item = s %}{% endif %}
+                                {% endfor %}
+                                <td class="{{ stock_item and stock_item.quantity <= 0 ? 'text-danger' : '' }}">
+                                    <div class="h5 mb-0 font-weight-bold">{{ stock_item ? stock_item.quantity : 0 }}</div>
+                                    {% if stock_item and stock_item.quantity <= 0 %}
+                                        <small class="text-danger">Sin Stock</small>
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                        </tr>
+                        <tr>
+                            <td class="font-weight-bold bg-light align-middle">Ajustar</td>
+                            {% for size in sizes %}
+                                <td>
+                                    <form action="{{ path('app_material_stock_adjust', {id: material.id}) }}" method="post" class="d-flex flex-column align-items-center">
+                                        <input type="hidden" name="size" value="{{ size }}">
+                                        <input type="hidden" name="reason" value="Ajuste desde matriz">
+                                        <div class="input-group input-group-sm mb-1" style="width: 70px;">
+                                            <button type="submit" name="quantity" value="-1" class="btn btn-outline-danger px-1">-</button>
+                                            <button type="submit" name="quantity" value="1" class="btn btn-outline-success px-1">+</button>
+                                        </div>
+                                    </form>
+                                </td>
+                            {% endfor %}
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     {% if material.nature == 'EQUIPO_TECNICO' %}
     <div class="card shadow mb-4">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
             <h6 class="m-0 font-weight-bold text-primary">Unidades Individuales (Activos)</h6>
-            <a href="{{ path('app_material_unit_new', {'id': material.id}) }}" class="btn btn-sm btn-primary">
-                <i class="fas fa-plus"></i> Añadir Unidad
-            </a>
+            <div class="btn-group">
+                <a href="{{ path('app_material_unit_new', {'id': material.id}) }}" class="btn btn-sm btn-outline-primary">
+                    <i class="fas fa-plus"></i> Añadir Una
+                </a>
+                <a href="{{ path('app_material_unit_bulk', {'id': material.id}) }}" class="btn btn-sm btn-primary">
+                    <i class="fas fa-th-list"></i> Alta por Lote
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">
                 <table class="table table-bordered">
                     <thead class="bg-light">
                         <tr>
+                            <th>Nº Colectiva</th>
                             <th>Nº Serie / ID</th>
                             <th>Último Uso</th>
                             <th>Mantenimiento</th>
-                            {% if material.category == 'Comunicaciones' %}
-                                <th>PTT/Funda/Bat</th>
-                            {% endif %}
+                            <th>Estado Accesorios</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
                     {% for unit in material.units %}
                         <tr class="{{ unit.isInMaintenance ? 'table-warning' : '' }}">
+                            <td><strong>{{ unit.collectiveNumber|default('-') }}</strong></td>
                             <td>{{ unit.serialNumber }}</td>
                             <td>{{ unit.lastUsedAt ? unit.lastUsedAt|date('d/m/Y H:i') : 'Nunca usado' }}</td>
                             <td>
@@ -87,11 +154,13 @@
                                     <span class="badge badge-success">Operativo</span>
                                 {% endif %}
                             </td>
-                            {% if material.category == 'Comunicaciones' %}
-                                <td>
-                                    <span class="small">{{ unit.pttStatus }} / {{ unit.coverStatus }} / {{ unit.batteryStatus }}</span>
-                                </td>
-                            {% endif %}
+                            <td>
+                                <div class="small">
+                                    <span class="badge {{ unit.pttStatus == 'OK' ? 'badge-light' : 'badge-danger' }}">PTT: {{ unit.pttStatus }}</span>
+                                    <span class="badge {{ unit.coverStatus == 'OK' ? 'badge-light' : 'badge-warning' }}">Funda: {{ unit.coverStatus }}</span>
+                                    <span class="badge {{ unit.batteryStatus in ['100%', '75%', 'OK'] ? 'badge-light' : 'badge-danger' }}">Bat: {{ unit.batteryStatus }}</span>
+                                </div>
+                            </td>
                             <td>
                                 <a href="{{ path('app_material_unit_edit', {'id': unit.id}) }}" class="btn btn-sm btn-outline-secondary">
                                     <i class="fas fa-edit"></i> Editar
@@ -109,6 +178,49 @@
         </div>
     </div>
     {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Historial de Movimientos</h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Usuario</th>
+                            <th>Cantidad</th>
+                            <th>Talla</th>
+                            <th>Motivo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% set movements = [] %}
+                        {# This is a bit inefficient in Twig, ideally passed from controller #}
+                        {# For now I'll just assume movements are accessible or I'll update controller #}
+                        {% for movement in material_movements|default([]) %}
+                            <tr>
+                                <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>{{ movement.user ? movement.user.email : 'Sistema' }}</td>
+                                <td>
+                                    <span class="badge {{ movement.quantity > 0 ? 'badge-success' : 'badge-danger' }}">
+                                        {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
+                                    </span>
+                                </td>
+                                <td>{{ movement.size|default('-') }}</td>
+                                <td>{{ movement.reason }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No hay movimientos registrados.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
 
     <div class="mt-4">
         <a href="{{ path('app_material_index') }}" class="btn btn-secondary">

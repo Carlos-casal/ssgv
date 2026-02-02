@@ -89,7 +89,18 @@
                             <i data-lucide="{{ config.icon }}" class="w-8 h-8"></i>
                         </div>
                         <h5 class="fw-bold text-slate-900 mb-1">{{ name }}</h5>
-                        <p class="text-sm text-slate-500 mb-0">{{ config.count }} artículos registrados</p>
+                        <p class="text-sm text-slate-500 mb-2">{{ config.count }} artículos registrados</p>
+                        {% if config.low_stock > 0 %}
+                            <span class="badge bg-danger rounded-pill">
+                                <i data-lucide="alert-circle" class="w-3 h-3 me-1"></i>
+                                {{ config.low_stock }} bajo stock
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success rounded-pill">
+                                <i data-lucide="check" class="w-3 h-3 me-1"></i>
+                                Stock OK
+                            </span>
+                        {% endif %}
                     </div>
                 </div>
             </a>
