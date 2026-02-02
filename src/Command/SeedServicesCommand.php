@@ -98,6 +98,10 @@ class SeedServicesCommand extends Command
             ['name' => 'Vallas', 'category' => 'Logística', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 50, 'safety' => 10],
             ['name' => 'Carpas', 'category' => 'Logística', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'Gasas', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 10, 'safety' => 20], // Low stock!
+            ['name' => 'Chaleco Salvavidas', 'category' => 'Mar', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 15, 'safety' => 5],
+            ['name' => 'Zodiac', 'category' => 'Mar', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Pantalón Uniforme', 'category' => 'Uniformidad', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 30, 'safety' => 10],
+            ['name' => 'Linterna', 'category' => 'Varios', 'nature' => Material::NATURE_TECHNICAL],
         ];
 
         foreach ($materials as $m) {

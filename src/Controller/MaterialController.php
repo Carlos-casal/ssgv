@@ -18,10 +18,18 @@ use Symfony\Component\Routing\Annotation\Route;
 class MaterialController extends AbstractController
 {
     #[Route('/', name: 'app_material_index', methods: ['GET'])]
-    public function index(MaterialRepository $materialRepository): Response
+    public function index(Request $request, MaterialRepository $materialRepository): Response
     {
+        $category = $request->query->get('category');
+        if ($category) {
+            $materials = $materialRepository->findBy(['category' => $category]);
+        } else {
+            $materials = $materialRepository->findAll();
+        }
+
         return $this->render('material/index.html.twig', [
-            'materials' => $materialRepository->findAll(),
+            'materials' => $materials,
+            'current_category' => $category,
             'current_section' => 'recursos'
         ]);
     }
@@ -30,6 +38,13 @@ class MaterialController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $material = new Material();
+
+        // Pre-fill category if provided in URL
+        $category = $request->query->get('category');
+        if ($category) {
+            $material->setCategory($category);
+        }
+
         $form = $this->createForm(MaterialType::class, $material);
         $form->handleRequest($request);
 
