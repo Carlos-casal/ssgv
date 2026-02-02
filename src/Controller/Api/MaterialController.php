@@ -3,6 +3,8 @@
 namespace App\Controller\Api;
 
 use App\Entity\Material;
+use App\Repository\MaterialRepository;
+use App\Service\MaterialManager;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -18,6 +20,7 @@ class MaterialController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $name = $data['name'] ?? null;
         $category = $data['category'] ?? null;
+        $nature = $data['nature'] ?? Material::NATURE_CONSUMABLE;
 
         if (!$name) {
             return $this->json(['error' => 'Nombre es requerido'], Response::HTTP_BAD_REQUEST);
@@ -26,6 +29,7 @@ class MaterialController extends AbstractController
         $material = new Material();
         $material->setName($name);
         $material->setCategory($category);
+        $material->setNature($nature);
 
         $entityManager->persist($material);
         $entityManager->flush();
@@ -34,6 +38,7 @@ class MaterialController extends AbstractController
             'id' => $material->getId(),
             'name' => $material->getName(),
             'category' => $material->getCategory(),
+            'nature' => $material->getNature()
         ], Response::HTTP_CREATED);
     }
 
@@ -47,8 +52,63 @@ class MaterialController extends AbstractController
                 'id' => $material->getId(),
                 'name' => $material->getName(),
                 'category' => $material->getCategory(),
+                'nature' => $material->getNature()
             ];
         }
         return $this->json($data);
+    }
+
+    #[Route('/check-availability', name: 'api_material_check_availability', methods: ['GET'])]
+    public function checkAvailability(Request $request, MaterialManager $materialManager, MaterialRepository $materialRepository): Response
+    {
+        $id = $request->query->get('id');
+        $startStr = $request->query->get('start');
+        $endStr = $request->query->get('end');
+        $quantity = (int)$request->query->get('quantity', 1);
+        $excludeServiceId = $request->query->get('excludeServiceId') ? (int)$request->query->get('excludeServiceId') : null;
+
+        if (!$id || !$startStr || !$endStr) {
+            return $this->json(['error' => 'Missing parameters'], Response::HTTP_BAD_REQUEST);
+        }
+
+        $material = $materialRepository->find($id);
+        if (!$material) {
+            return $this->json(['error' => 'Material not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        try {
+            $start = new \DateTime($startStr);
+            $end = new \DateTime($endStr);
+        } catch (\Exception $e) {
+            return $this->json(['error' => 'Invalid dates'], Response::HTTP_BAD_REQUEST);
+        }
+
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $available = $materialManager->hasEnoughStock($material, $quantity);
+            return $this->json([
+                'available' => $available,
+                'stock' => $material->getStock(),
+                'nature' => 'CONSUMIBLE',
+                'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
+            ]);
+        } else {
+            $suggested = $materialManager->suggestUnits($material, $start, $end, $quantity, $excludeServiceId);
+            $available = count($suggested) >= $quantity;
+
+            $suggestedData = [];
+            foreach ($suggested as $unit) {
+                $suggestedData[] = [
+                    'id' => $unit->getId(),
+                    'serialNumber' => $unit->getSerialNumber()
+                ];
+            }
+
+            return $this->json([
+                'available' => $available,
+                'suggestedUnits' => $suggestedData,
+                'nature' => 'EQUIPO_TECNICO',
+                'message' => $available ? 'OK' : 'Conflicto de disponibilidad para las fechas seleccionadas'
+            ]);
+        }
     }
 }

@@ -6,6 +6,7 @@ use App\Entity\ServiceType;
 use App\Entity\ServiceCategory;
 use App\Entity\ServiceSubcategory;
 use App\Entity\Material;
+use App\Entity\MaterialUnit;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -90,15 +91,13 @@ class SeedServicesCommand extends Command
 
         // 4. Seed Materials
         $materials = [
-            ['name' => 'Botiquín', 'category' => 'Sanitario'],
-            ['name' => 'DESA', 'category' => 'Sanitario'],
-            ['name' => 'Camilla', 'category' => 'Sanitario'],
-            ['name' => 'Walkies', 'category' => 'Comunicaciones'],
-            ['name' => 'Vallas', 'category' => 'Logística'],
-            ['name' => 'Carpas', 'category' => 'Logística'],
-            ['name' => 'Comida', 'category' => 'Avituallamiento'],
-            ['name' => 'Agua', 'category' => 'Avituallamiento'],
-            ['name' => 'Raciones', 'category' => 'Avituallamiento'],
+            ['name' => 'Botiquín', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 5, 'safety' => 2],
+            ['name' => 'DESA', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Camilla', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Walkies', 'category' => 'Comunicaciones', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Vallas', 'category' => 'Logística', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 50, 'safety' => 10],
+            ['name' => 'Carpas', 'category' => 'Logística', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Gasas', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 10, 'safety' => 20], // Low stock!
         ];
 
         foreach ($materials as $m) {
@@ -107,17 +106,26 @@ class SeedServicesCommand extends Command
                 $mat = new Material();
                 $mat->setName($m['name']);
                 $mat->setCategory($m['category']);
+                $mat->setNature($m['nature'] ?? Material::NATURE_CONSUMABLE);
+                $mat->setStock($m['stock'] ?? 0);
+                $mat->setSafetyStock($m['safety'] ?? 0);
                 $this->entityManager->persist($mat);
+
+                // If technical, add some units
+                if ($mat->getNature() === Material::NATURE_TECHNICAL) {
+                    for ($i = 1; $i <= 3; $i++) {
+                        $unit = new MaterialUnit();
+                        $unit->setMaterial($mat);
+                        $unit->setSerialNumber($mat->getName() . '-0' . $i);
+                        $this->entityManager->persist($unit);
+                    }
+                }
             }
         }
 
         // 5. Seed Vehicles
         $vehicleData = [
             ['make' => 'Toyota', 'model' => 'Land Cruiser', 'plate' => '1234BBB', 'type' => 'Coche urbano', 'alias' => 'Urbano 1'],
-            ['make' => 'Ford', 'model' => 'Ranger', 'plate' => '5678CCC', 'type' => 'Pickup', 'alias' => 'Rescate 1'],
-            ['make' => 'Yamaha', 'model' => 'XT660', 'plate' => '9012DDD', 'type' => 'Moto', 'alias' => 'Moto 1'],
-            ['make' => 'Zodiac', 'model' => 'Pro', 'plate' => '3456EEE', 'type' => 'Embarcación', 'alias' => 'Lancha 1'],
-            ['make' => 'Orbea', 'model' => 'Wild', 'plate' => '7890FFF', 'type' => 'Bicicleta', 'alias' => 'Bici 1'],
             ['make' => 'Renault', 'model' => 'Master', 'plate' => '1111AAA', 'type' => 'Ambulancia', 'alias' => 'SVB 1'],
         ];
 
@@ -136,7 +144,7 @@ class SeedServicesCommand extends Command
 
         $this->entityManager->flush();
 
-        $io->success('Service hierarchy, materials, and vehicles seeded successfully!');
+        $io->success('Service hierarchy, materials (with nature), and vehicles seeded successfully!');
 
         return Command::SUCCESS;
     }
