@@ -31,6 +31,16 @@ class MaterialType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control']
             ])
+            ->add('sizingType', ChoiceType::class, [
+                'label' => 'Tipo de Tallaje (Solo Uniformidad)',
+                'choices' => [
+                    'No aplica' => null,
+                    'Talla por Letra (XS, S, M...)' => Material::SIZING_LETTER,
+                    'Talla por Número (36, 38, 40...)' => Material::SIZING_NUMBER
+                ],
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
             ->add('nature', ChoiceType::class, [
                 'label' => 'Naturaleza',
                 'choices' => [

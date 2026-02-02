@@ -9,10 +9,14 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MaterialRepository::class)]
 #[ORM\Table(name: 'maestro_material')]
+#[ORM\HasLifecycleCallbacks]
 class Material
 {
     public const NATURE_CONSUMABLE = 'CONSUMIBLE';
     public const NATURE_TECHNICAL = 'EQUIPO_TECNICO';
+
+    public const SIZING_LETTER = 'LETTER';
+    public const SIZING_NUMBER = 'NUMBER';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -28,6 +32,9 @@ class Material
     #[ORM\Column(length: 20, options: ["default" => self::NATURE_CONSUMABLE])]
     private string $nature = self::NATURE_CONSUMABLE;
 
+    #[ORM\Column(length: 20, nullable: true)]
+    private ?string $sizingType = null;
+
     #[ORM\Column(options: ["default" => 0])]
     private int $stock = 0;
 
@@ -40,10 +47,14 @@ class Material
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialUnit::class, orphanRemoval: true)]
     private Collection $units;
 
+    #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialStock::class, orphanRemoval: true)]
+    private Collection $stocks;
+
     public function __construct()
     {
         $this->serviceMaterials = new ArrayCollection();
         $this->units = new ArrayCollection();
+        $this->stocks = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -61,6 +72,16 @@ class Material
         $this->name = $name;
 
         return $this;
+    }
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function syncNatureWithCategory(): void
+    {
+        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
+        if (in_array($this->category, $technicalCategories)) {
+            $this->nature = self::NATURE_TECHNICAL;
+        }
     }
 
     public function getCategory(): ?string
@@ -87,6 +108,18 @@ class Material
         return $this;
     }
 
+    public function getSizingType(): ?string
+    {
+        return $this->sizingType;
+    }
+
+    public function setSizingType(?string $sizingType): static
+    {
+        $this->sizingType = $sizingType;
+
+        return $this;
+    }
+
     public function getStock(): int
     {
         return $this->stock;
@@ -95,6 +128,35 @@ class Material
     public function setStock(int $stock): static
     {
         $this->stock = $stock;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialStock>
+     */
+    public function getStocks(): Collection
+    {
+        return $this->stocks;
+    }
+
+    public function addStock(MaterialStock $stock): static
+    {
+        if (!$this->stocks->contains($stock)) {
+            $this->stocks->add($stock);
+            $stock->setMaterial($this);
+        }
+
+        return $this;
+    }
+
+    public function removeStock(MaterialStock $stock): static
+    {
+        if ($this->stocks->removeElement($stock)) {
+            if ($stock->getMaterial() === $this) {
+                $stock->setMaterial(null);
+            }
+        }
 
         return $this;
     }

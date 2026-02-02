@@ -1,0 +1,48 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Alta de Unidades - {{ material.name }}{% endblock %}
+
+{% block page_title %}Alta de Unidades: {{ material.name }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4" data-controller="bulk-unit">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Generar Activos por Lote</h6>
+        </div>
+        <div class="card-body">
+            <div class="row mb-4">
+                <div class="col-md-4">
+                    <label class="form-label font-weight-bold">Cantidad de Unidades a dar de alta:</label>
+                    <div class="input-group">
+                        <input type="number" class="form-control" placeholder="Ej: 5" data-bulk-unit-target="quantity">
+                        <button class="btn btn-primary" type="button" data-action="click->bulk-unit#generateRows">
+                            <i class="fas fa-sync-alt mr-1"></i> Generar Filas
+                        </button>
+                    </div>
+                    <small class="text-muted">Introduce el número de unidades para desplegar el formulario individual.</small>
+                </div>
+            </div>
+
+            <form method="post">
+                <div data-bulk-unit-target="container">
+                    <!-- Dynamic rows will appear here -->
+                    <div class="text-center py-5 text-muted">
+                        <i class="fas fa-arrow-up fa-2x mb-3"></i>
+                        <p>Introduce una cantidad arriba para empezar</p>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-top">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-save mr-2"></i> Guardar todas las unidades
+                    </button>
+                    <a href="{{ path('app_material_show', {id: material.id}) }}" class="btn btn-outline-secondary btn-lg px-4 ms-2">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

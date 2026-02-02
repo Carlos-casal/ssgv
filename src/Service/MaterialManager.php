@@ -4,19 +4,28 @@ namespace App\Service;
 
 use App\Entity\Material;
 use App\Entity\MaterialUnit;
+use App\Entity\MaterialStock;
+use App\Entity\MaterialMovement;
 use App\Entity\Service;
+use App\Entity\User;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
+use App\Repository\MaterialStockRepository;
+use App\Repository\MaterialMovementRepository;
 use App\Repository\ServiceMaterialRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 
 class MaterialManager
 {
     public function __construct(
         private MaterialRepository $materialRepository,
         private MaterialUnitRepository $unitRepository,
+        private MaterialStockRepository $stockRepository,
+        private MaterialMovementRepository $movementRepository,
         private ServiceMaterialRepository $serviceMaterialRepository,
-        private EntityManagerInterface $entityManager
+        private EntityManagerInterface $entityManager,
+        private Security $security
     ) {}
 
     /**
@@ -81,12 +90,52 @@ class MaterialManager
     }
 
     /**
+     * Adjusts stock for a material and records a movement.
+     */
+    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null): void
+    {
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
+        $movement = new MaterialMovement();
+        $movement->setMaterial($material);
+        $movement->setQuantity($quantity);
+        $movement->setReason($reason);
+        $movement->setSize($size);
+        $movement->setUser($currentUser);
+        $this->entityManager->persist($movement);
+
+        if ($size) {
+            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size]);
+            if (!$stock) {
+                $stock = new MaterialStock();
+                $stock->setMaterial($material);
+                $stock->setSize($size);
+                $this->entityManager->persist($stock);
+            }
+            $stock->setQuantity($stock->getQuantity() + $quantity);
+        }
+
+        // Sync global stock if it's not a technical unit
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $material->setStock($material->getStock() + $quantity);
+        }
+
+        $this->entityManager->flush();
+    }
+
+    /**
      * Checks if a consumable has enough stock.
      */
-    public function hasEnoughStock(Material $material, int $requestedQuantity): bool
+    public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null): bool
     {
         if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
             return true;
+        }
+
+        if ($size) {
+            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size]);
+            return $stock && $stock->getQuantity() >= $requestedQuantity;
         }
 
         return $material->getStock() >= $requestedQuantity;

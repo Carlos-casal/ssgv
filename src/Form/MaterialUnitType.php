@@ -19,6 +19,11 @@ class MaterialUnitType extends AbstractType
                 'attr' => ['class' => 'form-control'],
                 'required' => false
             ])
+            ->add('collectiveNumber', TextType::class, [
+                'label' => 'Nº Colectiva',
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
             ->add('isInMaintenance', CheckboxType::class, [
                 'label' => 'Modo Mantenimiento',
                 'attr' => ['class' => 'form-check-input'],

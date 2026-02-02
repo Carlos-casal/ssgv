@@ -20,6 +20,9 @@ class MaterialUnit
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $serialNumber = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $collectiveNumber = null;
+
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $lastUsedAt = null;
 
@@ -61,6 +64,18 @@ class MaterialUnit
     public function setSerialNumber(?string $serialNumber): static
     {
         $this->serialNumber = $serialNumber;
+
+        return $this;
+    }
+
+    public function getCollectiveNumber(): ?string
+    {
+        return $this->collectiveNumber;
+    }
+
+    public function setCollectiveNumber(?string $collectiveNumber): static
+    {
+        $this->collectiveNumber = $collectiveNumber;
 
         return $this;
     }
