@@ -51,7 +51,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/new', name: 'app_material_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $material = new Material();
 
@@ -67,6 +67,23 @@ class MaterialController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->persist($material);
             $entityManager->flush();
+
+            // Handle initial stock from grid
+            if ($request->request->has('initial_stock')) {
+                $adjustments = $request->request->all('initial_stock');
+                $reason = 'Inicialización de stock';
+                foreach ($adjustments as $size => $quantity) {
+                    if ($quantity > 0) {
+                        $materialManager->adjustStock($material, (int)$quantity, $reason, (string)$size);
+                    }
+                }
+                // Handle custom
+                $customSize = $request->request->get('custom_size');
+                $customQty = (int)$request->request->get('custom_qty');
+                if ($customSize && $customQty > 0) {
+                    $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+                }
+            }
 
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -91,13 +108,30 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'app_material_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Material $material, EntityManagerInterface $entityManager): Response
+    public function edit(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $form = $this->createForm(MaterialType::class, $material);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $entityManager->flush();
+
+            // Handle initial stock from grid (even in edit, it acts as an addition)
+            if ($request->request->has('initial_stock')) {
+                $adjustments = $request->request->all('initial_stock');
+                $reason = 'Ajuste desde edición';
+                foreach ($adjustments as $size => $quantity) {
+                    if ($quantity > 0) {
+                        $materialManager->adjustStock($material, (int)$quantity, $reason, (string)$size);
+                    }
+                }
+                // Handle custom
+                $customSize = $request->request->get('custom_size');
+                $customQty = (int)$request->request->get('custom_qty');
+                if ($customSize && $customQty > 0) {
+                    $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+                }
+            }
 
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -161,12 +195,24 @@ class MaterialController extends AbstractController
     #[Route('/{id}/stock/adjust', name: 'app_material_stock_adjust', methods: ['POST'])]
     public function adjustStock(Request $request, Material $material, MaterialManager $materialManager): Response
     {
-        $quantity = (int)$request->request->get('quantity');
         $reason = $request->request->get('reason', 'Ajuste manual');
-        $size = $request->request->get('size');
 
-        if ($quantity !== 0) {
-            $materialManager->adjustStock($material, $quantity, $reason, $size);
+        if ($request->request->has('adjustments')) {
+            $adjustments = $request->request->all('adjustments');
+            $materialManager->bulkAdjustStock($material, $adjustments, $reason);
+
+            // Handle custom size if provided
+            $customSize = $request->request->get('custom_size');
+            $customQty = (int)$request->request->get('custom_qty');
+            if ($customSize && $customQty !== 0) {
+                $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+            }
+        } else {
+            $quantity = (int)$request->request->get('quantity');
+            $size = $request->request->get('size');
+            if ($quantity !== 0) {
+                $materialManager->adjustStock($material, $quantity, $reason, $size);
+            }
         }
 
         return $this->redirectToRoute('app_material_show', ['id' => $material->getId()], Response::HTTP_SEE_OTHER);

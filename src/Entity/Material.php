@@ -16,7 +16,8 @@ class Material
     public const NATURE_TECHNICAL = 'EQUIPO_TECNICO';
 
     public const SIZING_LETTER = 'LETTER';
-    public const SIZING_NUMBER = 'NUMBER';
+    public const SIZING_NUMBER_CLOTHING = 'NUMBER_CLOTHING';
+    public const SIZING_NUMBER_SHOES = 'NUMBER_SHOES';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]

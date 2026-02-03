@@ -11,6 +11,7 @@ import ForgotPasswordController from './controllers/forgot_password_controller.j
 import PasswordValidationController from './controllers/password_validation_controller.js';
 import BulkUnitController from './controllers/bulk_unit_controller.js';
 import UniformityGridController from './controllers/uniformity_grid_controller.js';
+import MaterialSizingController from './controllers/material_sizing_controller.js';
 
 const app = startStimulusApp();
 
@@ -25,3 +26,4 @@ app.register('forgot-password', ForgotPasswordController);
 app.register('password-validation', PasswordValidationController);
 app.register('bulk-unit', BulkUnitController);
 app.register('uniformity-grid', UniformityGridController);
+app.register('material-sizing', MaterialSizingController);

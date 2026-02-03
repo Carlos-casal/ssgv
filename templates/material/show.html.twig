@@ -56,61 +56,82 @@
     {% if material.sizingType %}
     <div class="card shadow mb-4" data-controller="uniformity-grid">
         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Matriz de Stock por Tallas ({{ material.sizingType == 'LETTER' ? 'Letras' : 'Números' }})</h6>
-            <span class="badge badge-info">Gestión Detallada</span>
+            <h6 class="m-0 font-weight-bold text-primary">Gestión de Stock por Tallas</h6>
+            <span class="badge badge-info">Tallaje: {{
+                material.sizingType == 'LETTER' ? 'Textil (Letras)' :
+                (material.sizingType == 'NUMBER_CLOTHING' ? 'Ropa (Números)' : 'Calzado (Números)')
+            }}</span>
         </div>
         <div class="card-body">
             {% set sizes = [] %}
             {% if material.sizingType == 'LETTER' %}
                 {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
-            {% else %}
-                {% set sizes = ['36', '38', '40', '42', '44', '46', '48', '50', '52', '54', '56'] %}
+            {% elif material.sizingType == 'NUMBER_CLOTHING' %}
+                {% set sizes = range(32, 60, 2) %}
+            {% elif material.sizingType == 'NUMBER_SHOES' %}
+                {% set sizes = range(35, 48) %}
             {% endif %}
 
-            <div class="table-responsive">
-                <table class="table table-bordered text-center">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Talla</th>
-                            {% for size in sizes %}
-                                <th width="8%">{{ size }}</th>
-                            {% endfor %}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td class="font-weight-bold bg-light">Stock Actual</td>
-                            {% for size in sizes %}
-                                {% set stock_item = null %}
-                                {% for s in material.stocks %}
-                                    {% if s.size == size %}{% set stock_item = s %}{% endif %}
+            <form action="{{ path('app_material_stock_adjust', {id: material.id}) }}" method="post">
+                <input type="hidden" name="reason" value="Entrada de stock (Matriz)">
+
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered text-center align-middle">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="text-start ps-3">Talla</th>
+                                {% for size in sizes %}
+                                    <th width="60">{{ size }}</th>
                                 {% endfor %}
-                                <td class="{{ stock_item and stock_item.quantity <= 0 ? 'text-danger' : '' }}">
-                                    <div class="h5 mb-0 font-weight-bold">{{ stock_item ? stock_item.quantity : 0 }}</div>
-                                    {% if stock_item and stock_item.quantity <= 0 %}
-                                        <small class="text-danger">Sin Stock</small>
-                                    {% endif %}
-                                </td>
-                            {% endfor %}
-                        </tr>
-                        <tr>
-                            <td class="font-weight-bold bg-light align-middle">Ajustar</td>
-                            {% for size in sizes %}
-                                <td>
-                                    <form action="{{ path('app_material_stock_adjust', {id: material.id}) }}" method="post" class="d-flex flex-column align-items-center">
-                                        <input type="hidden" name="size" value="{{ size }}">
-                                        <input type="hidden" name="reason" value="Ajuste desde matriz">
-                                        <div class="input-group input-group-sm mb-1" style="width: 70px;">
-                                            <button type="submit" name="quantity" value="-1" class="btn btn-outline-danger px-1">-</button>
-                                            <button type="submit" name="quantity" value="1" class="btn btn-outline-success px-1">+</button>
+                                <th width="120">Manual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="text-start ps-3 font-weight-bold">Existencias</td>
+                                {% for size in sizes %}
+                                    {% set stock_item = null %}
+                                    {% for s in material.stocks %}{% if s.size == size %}{% set stock_item = s %}{% endif %}{% endfor %}
+                                    <td class="{{ stock_item and stock_item.quantity <= 0 ? 'bg-red-50' : '' }}">
+                                        <div class="font-bold {{ stock_item and stock_item.quantity <= 0 ? 'text-danger' : 'text-slate-700' }}">
+                                            {{ stock_item ? stock_item.quantity : 0 }}
                                         </div>
-                                    </form>
+                                    </td>
+                                {% endfor %}
+                                <td class="bg-light">
+                                    <select class="form-select form-select-sm border-0 bg-transparent text-center font-bold" disabled>
+                                        <option>N/A</option>
+                                    </select>
                                 </td>
-                            {% endfor %}
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
+                            </tr>
+                            <tr>
+                                <td class="text-start ps-3 font-bold text-primary">Añadir Stock</td>
+                                {% for size in sizes %}
+                                    <td>
+                                        <input type="number" name="adjustments[{{ size }}]" class="form-control form-control-sm text-center border-primary-subtle" value="0" min="0">
+                                    </td>
+                                {% endfor %}
+                                <td>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" name="custom_size" class="form-control" placeholder="Talla">
+                                        <input type="number" name="custom_qty" class="form-control w-25" value="0">
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="mt-3 flex justify-end gap-2">
+                    <div class="input-group w-auto">
+                        <span class="input-group-text bg-white"><i data-lucide="info" class="w-4 h-4 mr-2"></i> Motivo</span>
+                        <input type="text" name="reason" class="form-control" placeholder="Ej: Reposición stock" value="Reposición de stock">
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="fas fa-save mr-2"></i> Guardar Cantidades
+                        </button>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
     {% endif %}

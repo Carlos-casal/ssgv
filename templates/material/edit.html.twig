@@ -8,14 +8,25 @@
 <div class="container-fluid py-4">
     <div class="card shadow mb-4">
         <div class="card-body">
-            {{ form_start(form) }}
+            {{ form_start(form, {'attr': {'data-controller': 'material-sizing'}}) }}
                 <div class="row">
-                    <div class="col-md-6">{{ form_row(form.name) }}</div>
-                    <div class="col-md-6">{{ form_row(form.category) }}</div>
+                    <div class="col-md-4">{{ form_row(form.name) }}</div>
+                    <div class="col-md-4">{{ form_row(form.category) }}</div>
+                    <div class="col-md-4">
+                        {{ form_row(form.sizingType, {'attr': {
+                            'data-material-sizing-target': 'sizingType',
+                            'data-action': 'change->material-sizing#updateGrid'
+                        }}) }}
+                    </div>
                 </div>
+
+                <div data-material-sizing-target="gridContainer"></div>
+
                 <div class="row mt-3">
                     <div class="col-md-4">{{ form_row(form.nature) }}</div>
-                    <div class="col-md-4">{{ form_row(form.stock) }}</div>
+                    <div class="col-md-4">
+                        {{ form_row(form.stock, {'attr': {'data-material-sizing-target': 'stockInput'}}) }}
+                    </div>
                     <div class="col-md-4">{{ form_row(form.safetyStock) }}</div>
                 </div>
                 <div class="mt-4">
