@@ -72,6 +72,14 @@
                 {% set sizes = range(35, 48) %}
             {% endif %}
 
+            {# Collect manual/extra sizes that have stock #}
+            {% set extra_sizes = [] %}
+            {% for s in material.stocks %}
+                {% if s.size not in sizes and s.quantity > 0 %}
+                    {% set extra_sizes = extra_sizes|merge([s.size]) %}
+                {% endif %}
+            {% endfor %}
+
             <form action="{{ path('app_material_stock_adjust', {id: material.id}) }}" method="post">
                 <input type="hidden" name="reason" value="Entrada de stock (Matriz)">
 
@@ -82,6 +90,9 @@
                                 <th class="text-start ps-3">Talla</th>
                                 {% for size in sizes %}
                                     <th width="60">{{ size }}</th>
+                                {% endfor %}
+                                {% for size in extra_sizes %}
+                                    <th width="60" class="table-info">{{ size }}*</th>
                                 {% endfor %}
                                 <th width="120">Manual</th>
                             </tr>
@@ -98,17 +109,25 @@
                                         </div>
                                     </td>
                                 {% endfor %}
-                                <td class="bg-light">
-                                    <select class="form-select form-select-sm border-0 bg-transparent text-center font-bold" disabled>
-                                        <option>N/A</option>
-                                    </select>
-                                </td>
+                                {% for size in extra_sizes %}
+                                    {% set stock_item = null %}
+                                    {% for s in material.stocks %}{% if s.size == size %}{% set stock_item = s %}{% endif %}{% endfor %}
+                                    <td class="table-info font-bold text-slate-700">
+                                        {{ stock_item ? stock_item.quantity : 0 }}
+                                    </td>
+                                {% endfor %}
+                                <td class="bg-light text-muted small">Nuevas...</td>
                             </tr>
                             <tr>
                                 <td class="text-start ps-3 font-bold text-primary">Añadir Stock</td>
                                 {% for size in sizes %}
                                     <td>
                                         <input type="number" name="adjustments[{{ size }}]" class="form-control form-control-sm text-center border-primary-subtle" value="0" min="0">
+                                    </td>
+                                {% endfor %}
+                                {% for size in extra_sizes %}
+                                    <td>
+                                        <input type="number" name="adjustments[{{ size }}]" class="form-control form-control-sm text-center border-info-subtle" value="0" min="0">
                                     </td>
                                 {% endfor %}
                                 <td>
