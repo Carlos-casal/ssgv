@@ -66,9 +66,9 @@
             {% set sizes = [] %}
             {% if material.sizingType == 'LETTER' %}
                 {% set sizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
-            {% elif material.sizingType == 'NUMBER_CLOTHING' %}
+            {% elseif material.sizingType == 'NUMBER_CLOTHING' %}
                 {% set sizes = range(32, 60, 2) %}
-            {% elif material.sizingType == 'NUMBER_SHOES' %}
+            {% elseif material.sizingType == 'NUMBER_SHOES' %}
                 {% set sizes = range(35, 48) %}
             {% endif %}
 
