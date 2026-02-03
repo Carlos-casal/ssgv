@@ -197,22 +197,24 @@ class MaterialController extends AbstractController
     {
         $reason = $request->request->get('reason', 'Ajuste manual');
 
-        if ($request->request->has('adjustments')) {
-            $adjustments = $request->request->all('adjustments');
+        // 1. Bulk adjustments from standard grid
+        $adjustments = $request->request->all('adjustments');
+        if (!empty($adjustments)) {
             $materialManager->bulkAdjustStock($material, $adjustments, $reason);
+        }
 
-            // Handle custom size if provided
-            $customSize = $request->request->get('custom_size');
-            $customQty = (int)$request->request->get('custom_qty');
-            if ($customSize && $customQty !== 0) {
-                $materialManager->adjustStock($material, $customQty, $reason, $customSize);
-            }
-        } else {
-            $quantity = (int)$request->request->get('quantity');
-            $size = $request->request->get('size');
-            if ($quantity !== 0) {
-                $materialManager->adjustStock($material, $quantity, $reason, $size);
-            }
+        // 2. Manual entry from custom column
+        $customSize = trim((string)$request->request->get('custom_size'));
+        $customQty = (int)$request->request->get('custom_qty');
+        if ($customSize !== '' && $customQty !== 0) {
+            $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+        }
+
+        // 3. Individual adjustments (from old logic or API-like single calls)
+        $quantity = (int)$request->request->get('quantity');
+        $size = $request->request->get('size');
+        if ($quantity !== 0 && $size && empty($adjustments)) {
+            $materialManager->adjustStock($material, $quantity, $reason, $size);
         }
 
         return $this->redirectToRoute('app_material_show', ['id' => $material->getId()], Response::HTTP_SEE_OTHER);
