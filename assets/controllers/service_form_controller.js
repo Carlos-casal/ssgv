@@ -757,7 +757,7 @@ export default class extends Controller {
 
     async fetchVolunteers(page = 1, search = '') {
         const serviceId = this.element.dataset.serviceId;
-        const limit = this.itemsPerPageSelectTarget.value;
+        const limit = this.hasItemsPerPageSelectTarget ? this.itemsPerPageSelectTarget.value : 10;
         const url = `/services/${serviceId}/volunteers?page=${page}&search=${encodeURIComponent(search)}&limit=${limit}`;
         try {
             const response = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
@@ -826,7 +826,8 @@ export default class extends Controller {
     renderPagination(pagination, items) {
         if (this.hasPaginationSummaryTarget) {
             if (pagination.totalCount > 0) {
-                const start = (pagination.currentPage - 1) * this.itemsPerPageSelectTarget.value + 1;
+                const limit = this.hasItemsPerPageSelectTarget ? this.itemsPerPageSelectTarget.value : 10;
+                const start = (pagination.currentPage - 1) * limit + 1;
                 const end = start + items.length - 1;
                 this.paginationSummaryTarget.textContent = `Mostrando ${start}-${end} de ${pagination.totalCount}`;
             } else {
@@ -834,7 +835,9 @@ export default class extends Controller {
             }
         }
 
-        this.paginationContainerTarget.innerHTML = '';
+        if (this.hasPaginationContainerTarget) {
+            this.paginationContainerTarget.innerHTML = '';
+        }
         const { currentPage, totalPages } = pagination;
 
         const createButton = (text, page, disabled = false, active = false) => {
@@ -848,7 +851,9 @@ export default class extends Controller {
             return button;
         };
 
-        this.paginationContainerTarget.appendChild(createButton('&larr; Anterior', currentPage - 1, currentPage === 1));
+        if (this.hasPaginationContainerTarget) {
+            this.paginationContainerTarget.appendChild(createButton('&larr; Anterior', currentPage - 1, currentPage === 1));
+        }
     }
 
     search() {

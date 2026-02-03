@@ -90,6 +90,17 @@ class MaterialManager
     }
 
     /**
+     * Bulk adjusts stock for multiple sizes and records movements.
+     */
+    public function bulkAdjustStock(Material $material, array $adjustments, string $reason): void
+    {
+        foreach ($adjustments as $size => $quantity) {
+            if ($quantity == 0) continue;
+            $this->adjustStock($material, $quantity, $reason, $size);
+        }
+    }
+
+    /**
      * Adjusts stock for a material and records a movement.
      */
     public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null): void

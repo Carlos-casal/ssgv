@@ -35,8 +35,9 @@ class MaterialType extends AbstractType
                 'label' => 'Tipo de Tallaje (Solo Uniformidad)',
                 'choices' => [
                     'No aplica' => null,
-                    'Talla por Letra (XS, S, M...)' => Material::SIZING_LETTER,
-                    'Talla por Número (36, 38, 40...)' => Material::SIZING_NUMBER
+                    'Tallaje Textil (Letras: XS, S, M...)' => Material::SIZING_LETTER,
+                    'Tallaje Ropa (Números: 32-60)' => Material::SIZING_NUMBER_CLOTHING,
+                    'Tallaje Calzado (Números: 35-48)' => Material::SIZING_NUMBER_SHOES,
                 ],
                 'attr' => ['class' => 'form-control'],
                 'required' => false
