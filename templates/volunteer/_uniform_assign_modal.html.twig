@@ -1,0 +1,55 @@
+{# Modal for Assigning Uniform #}
+<div class="modal fade" id="assignUniformModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    Nueva Entrega de Uniformidad
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{{ path('app_volunteer_uniform_assign', {'id': volunteer.id}) }}">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="material_id">Material <span class="text-danger">*</span></label>
+                        <select class="form-control" id="material_id" name="material_id" required>
+                            <option value="">Seleccionar material...</option>
+                            {# Filter materials by Uniformidad category #}
+                            {% for material in app.user ? [] : [] %} {# TODO: Pass materials from controller #}
+                                <option value="{{ material.id }}">{{ material.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">Solo se muestran materiales de categoría Uniformidad</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="size">Talla</label>
+                        <input type="text" class="form-control" id="size" name="size" placeholder="Ej: M, 42, 43...">
+                        <small class="form-text text-muted">Introduce la talla del material</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="quantity">Cantidad <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="quantity" name="quantity" value="1" min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="notes">Notas</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check mr-2"></i>Registrar Entrega
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

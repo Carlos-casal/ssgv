@@ -66,6 +66,31 @@
             </div>
         </div>
         {% endif %}
+
+        {% if material.barcode or material.description %}
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    {% if material.barcode %}
+                    <div class="mb-3">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            <i class="fas fa-barcode mr-1"></i>Código de Barras
+                        </div>
+                        <div class="h6 mb-0 font-weight-bold text-gray-800">{{ material.barcode }}</div>
+                    </div>
+                    {% endif %}
+                    {% if material.description %}
+                    <div>
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            <i class="fas fa-align-left mr-1"></i>Descripción
+                        </div>
+                        <div class="small text-gray-700">{{ material.description|nl2br }}</div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
     {% if material.sizingType %}

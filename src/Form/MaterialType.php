@@ -7,6 +7,7 @@ use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -20,6 +21,24 @@ class MaterialType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nombre del Material',
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('barcode', TextType::class, [
+                'label' => 'Código de Barras / QR',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'EAN-13, QR, o código interno'
+                ],
+                'help' => 'Escanea o introduce el código de barras del artículo'
+            ])
+            ->add('description', TextareaType::class, [
+                'label' => 'Descripción Detallada',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 4,
+                    'placeholder' => 'Describe las características, especificaciones técnicas, o detalles relevantes del material...'
+                ]
             ])
             ->add('imageFile', FileType::class, [
                 'label' => 'Imagen del Material',

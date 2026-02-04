@@ -2,39 +2,97 @@
 
 {% block title %}Nuevo Material{% endblock %}
 
-{% block page_title %}Registrar Nuevo Material{% endblock %}
+{% block page_title %}<span data-material-dynamic-form-target="title">Registrar Nuevo Material</span>{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
     <div class="card shadow mb-4">
         <div class="card-body">
-            {{ form_start(form, {'attr': {'data-controller': 'material-sizing', 'enctype': 'multipart/form-data'}}) }}
+            {{ form_start(form, {'attr': {'data-controller': 'material-dynamic-form', 'enctype': 'multipart/form-data'}}) }}
                 <div class="row">
-                    <div class="col-md-4">{{ form_row(form.name) }}</div>
-                    <div class="col-md-4">{{ form_row(form.category) }}</div>
-                    <div class="col-md-4">
-                        {{ form_row(form.sizingType, {'attr': {
-                            'data-material-sizing-target': 'sizingType',
-                            'data-action': 'change->material-sizing#updateGrid'
-                        }}) }}
+                    <div class="col-md-6">{{ form_row(form.name) }}</div>
+                    <div class="col-md-3">{{ form_row(form.category, {'attr': {
+                        'data-material-sizing-target': 'category',
+                        'data-action': 'change->material-sizing#updateFieldVisibility'
+                    }}) }}</div>
+                    <div class="col-md-3">{{ form_row(form.nature, {'attr': {
+                        'data-material-sizing-target': 'nature',
+                        'data-action': 'change->material-sizing#updateFieldVisibility'
+                    }}) }}</div>
+                </div>
+
+                {# Barcode field - prominent for generic items, visible for technical equipment #}
+                <div class="row" data-material-sizing-target="barcodeRow">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            {{ form_label(form.barcode) }}
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text bg-primary text-white">
+                                        <i class="fas fa-barcode"></i>
+                                    </span>
+                                </div>
+                                {{ form_widget(form.barcode, {'attr': {'class': 'form-control form-control-lg'}}) }}
+                            </div>
+                            <small class="form-text text-muted">{{ form_help(form.barcode) }}</small>
+                        </div>
                     </div>
                 </div>
 
+                {# Description field - large for generic items #}
+                <div class="row" data-material-sizing-target="descriptionRow">
+                    <div class="col-md-12">{{ form_row(form.description) }}</div>
+                </div>
+
+                {# Image upload #}
                 <div class="row">
                     <div class="col-md-12">{{ form_row(form.imageFile) }}</div>
+                </div>
+
+                {# Sizing type - only for Uniformidad category #}
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form_row(form.sizingType, {'attr': {
+                            'data-material-dynamic-form-target': 'sizingType',
+                            'data-action': 'change->material-dynamic-form#updateFieldVisibility'
+                        }}) }}
+                    </div>
+                    <div class="col-md-6" id="uniformity-subtype-field" style="display: none;">
+                        <label class="form-label">Tipo de Prenda</label>
+                        <select class="form-control" name="uniformity_subtype" 
+                                data-material-dynamic-form-target="subtypeField"
+                                data-action="change->material-dynamic-form#updateSizeField">
+                            <option value="">Seleccionar tipo...</option>
+                            <option value="ropa_superior">Ropa Superior (Polo, Chaqueta)</option>
+                            <option value="pantalon">Pantalón</option>
+                            <option value="calzado">Calzado</option>
+                            <option value="complemento">Complemento (Gorra, etc.)</option>
+                        </select>
+                    </div>
+                </div>
+
+                {# Dynamic size field container #}
+                <div class="row" id="size-field-container" style="display: none;">
+                    <div class="col-md-12">
+                        <label class="form-label">Talla</label>
+                        <div data-material-dynamic-form-target="sizeField">
+                            {# Size field will be dynamically generated here #}
+                        </div>
+                    </div>
                 </div>
 
                 <div data-material-sizing-target="gridContainer"></div>
 
                 <div class="row mt-3">
-                    <div class="col-md-4">{{ form_row(form.nature) }}</div>
-                    <div class="col-md-4">
+                    <div class="col-md-6">
                         {{ form_row(form.stock, {'attr': {'data-material-sizing-target': 'stockInput'}}) }}
                     </div>
-                    <div class="col-md-4">{{ form_row(form.safetyStock) }}</div>
+                    <div class="col-md-6">{{ form_row(form.safetyStock) }}</div>
                 </div>
                 <div class="mt-4">
-                    <button class="btn btn-primary btn-lg px-5 font-weight-bold">Guardar</button>
+                    <button class="btn btn-primary btn-lg px-5 font-weight-bold">
+                        <i class="fas fa-save mr-2"></i>Guardar
+                    </button>
                     <a href="{{ path('app_material_index') }}" class="btn btn-link text-secondary ml-3">Cancelar</a>
                 </div>
             {{ form_end(form) }}

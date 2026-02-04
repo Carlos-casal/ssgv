@@ -1,0 +1,111 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Vista Previa de Importación{% endblock %}
+
+{% block page_title %}Vista Previa de Importación Excel{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-primary text-white">
+            <h6 class="m-0 font-weight-bold">
+                <i class="fas fa-file-excel mr-2"></i>
+                Resumen de Importación
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle mr-2"></i>
+                <strong>Se han detectado {{ preview.total_rows }} filas</strong> en el archivo Excel.
+            </div>
+
+            {% if preview.existing_items|length > 0 %}
+            <div class="mb-4">
+                <h5 class="text-success">
+                    <i class="fas fa-check-circle mr-2"></i>
+                    {{ preview.existing_items|length }} ítems existen (se sumará el stock)
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Código de Barras</th>
+                                <th>Stock Actual</th>
+                                <th>Stock a Añadir</th>
+                                <th>Stock Final</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in preview.existing_items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td><code>{{ item.barcode }}</code></td>
+                                <td>{{ item.current_stock }}</td>
+                                <td class="text-success font-weight-bold">+{{ item.stock_to_add }}</td>
+                                <td class="font-weight-bold">{{ item.current_stock + item.stock_to_add }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if preview.new_items|length > 0 %}
+            <div class="mb-4">
+                <h5 class="text-primary">
+                    <i class="fas fa-plus-circle mr-2"></i>
+                    {{ preview.new_items|length }} ítems son nuevos (se crearán con sus fotos)
+                </h5>
+                <div class="table-responsive">
+                    <table class="table table-sm table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Nombre</th>
+                                <th>Código de Barras</th>
+                                <th>Categoría</th>
+                                <th>Stock Inicial</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in preview.new_items %}
+                            <tr>
+                                <td>{{ item.name }}</td>
+                                <td><code>{{ item.barcode|default('Sin código') }}</code></td>
+                                <td><span class="badge badge-secondary">{{ item.category }}</span></td>
+                                <td class="font-weight-bold">{{ item.initial_stock }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if preview.errors|length > 0 %}
+            <div class="alert alert-danger">
+                <h6><i class="fas fa-exclamation-triangle mr-2"></i>Errores Detectados:</h6>
+                <ul>
+                    {% for error in preview.errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <div class="mt-4 d-flex justify-content-between">
+                <a href="{{ path('app_material_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-times mr-2"></i>Cancelar
+                </a>
+                <form method="post" action="{{ path('app_material_import_process') }}">
+                    <input type="hidden" name="temp_filename" value="{{ temp_filename }}">
+                    <button type="submit" class="btn btn-success btn-lg px-5">
+                        <i class="fas fa-check mr-2"></i>Confirmar Importación
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

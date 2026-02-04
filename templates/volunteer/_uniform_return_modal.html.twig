@@ -1,0 +1,108 @@
+{# Modal for Returning/Exchanging Uniform #}
+<div class="modal fade" id="returnUniformModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="fas fa-undo mr-2"></i>
+                    Gestionar Devolución/Cambio
+                </h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" action="{{ path('app_volunteer_uniform_return', {'id': volunteer.id}) }}">
+                <div class="modal-body">
+                    <input type="hidden" id="uniform_id" name="uniform_id">
+                    
+                    <div class="alert alert-info">
+                        <strong>Material:</strong> <span id="return_material_name"></span><br>
+                        <strong>Talla actual:</strong> <span id="return_size"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Motivo <span class="text-danger">*</span></label>
+                        <select class="form-control" id="reason" name="reason" required onchange="toggleExchangeFields(this.value)">
+                            <option value="">Seleccionar motivo...</option>
+                            <option value="size_change">Cambio de Talla</option>
+                            <option value="damage">Rotura/Desperfecto</option>
+                            <option value="resignation">Devolución por Baja</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="exchange_size_group" style="display: none;">
+                        <label for="new_size">Nueva Talla <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="new_size" name="new_size" placeholder="Ej: L, 44...">
+                        <small class="form-text text-muted">Solo para cambios de talla</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label>¿El material vuelve al stock?</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="return_to_stock" id="return_yes" value="yes" checked>
+                            <label class="form-check-label" for="return_yes">
+                                <i class="fas fa-check-circle text-success mr-1"></i>
+                                Sí, está en buen estado
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="return_to_stock" id="return_no" value="no">
+                            <label class="form-check-label" for="return_no">
+                                <i class="fas fa-times-circle text-danger mr-1"></i>
+                                No, está dañado (se da de baja)
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="return_notes">Notas</label>
+                        <textarea class="form-control" id="return_notes" name="notes" rows="3" placeholder="Detalles adicionales..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="fas fa-check mr-2"></i>Procesar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Populate modal with uniform data when opened - VANILLA JS (no jQuery)
+document.addEventListener('DOMContentLoaded', function() {
+    var returnModal = document.getElementById('returnUniformModal');
+    if (returnModal) {
+        returnModal.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;
+            if (!button) return;
+            
+            var uniformId = button.getAttribute('data-uniform-id');
+            var materialName = button.getAttribute('data-material-name');
+            var size = button.getAttribute('data-size');
+            
+            document.getElementById('uniform_id').value = uniformId || '';
+            document.getElementById('return_material_name').textContent = materialName || '';
+            document.getElementById('return_size').textContent = size || 'N/A';
+        });
+    }
+});
+
+function toggleExchangeFields(reason) {
+    var exchangeGroup = document.getElementById('exchange_size_group');
+    var newSizeInput = document.getElementById('new_size');
+    
+    if (reason === 'size_change') {
+        exchangeGroup.style.display = 'block';
+        newSizeInput.required = true;
+    } else {
+        exchangeGroup.style.display = 'none';
+        newSizeInput.required = false;
+        newSizeInput.value = '';
+    }
+}
+</script>

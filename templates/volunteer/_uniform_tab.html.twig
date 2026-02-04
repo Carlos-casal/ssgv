@@ -1,0 +1,131 @@
+{# Volunteer Uniform Tab Content #}
+<div class="card shadow mb-4">
+    <div class="card-header py-3 bg-gradient-primary text-white d-flex justify-content-between align-items-center">
+        <h6 class="m-0 font-weight-bold">
+            <i class="fas fa-tshirt mr-2"></i>
+            Dotación Actual
+        </h6>
+        <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#assignUniformModal">
+            <i class="fas fa-plus mr-2"></i>Nueva Entrega
+        </button>
+    </div>
+    <div class="card-body">
+        {% if volunteer.uniforms|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Material</th>
+                        <th>Talla</th>
+                        <th>Cantidad</th>
+                        <th>Fecha Entrega</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for uniform in volunteer.uniforms %}
+                    <tr>
+                        <td>
+                            <strong>{{ uniform.material.name }}</strong>
+                            <br><small class="text-muted">{{ uniform.material.category }}</small>
+                        </td>
+                        <td><span class="badge badge-info">{{ uniform.size|default('N/A') }}</span></td>
+                        <td>{{ uniform.quantity }}</td>
+                        <td>{{ uniform.assignedAt|date('d/m/Y') }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning" 
+                                    data-toggle="modal" 
+                                    data-target="#returnUniformModal"
+                                    data-uniform-id="{{ uniform.id }}"
+                                    data-material-name="{{ uniform.material.name }}"
+                                    data-size="{{ uniform.size }}">
+                                <i class="fas fa-undo mr-1"></i>Devolver/Cambiar
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+            <p class="text-muted">No hay uniformidad asignada actualmente</p>
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignUniformModal">
+                <i class="fas fa-plus mr-2"></i>Registrar Primera Entrega
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{# Movement History #}
+<div class="card shadow">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-history mr-2"></i>
+            Historial de Movimientos
+        </h6>
+    </div>
+    <div class="card-body">
+        {% if volunteer.uniformMovements|length > 0 %}
+        <div class="table-responsive">
+            <table class="table table-sm">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Acción</th>
+                        <th>Material</th>
+                        <th>Talla</th>
+                        <th>Cant.</th>
+                        <th>Motivo</th>
+                        <th>Usuario</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for movement in volunteer.uniformMovements|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                    <tr>
+                        <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
+                        <td>
+                            {% if movement.movementType == 'delivery' %}
+                                <span class="badge badge-success">
+                                    <i class="fas fa-arrow-down mr-1"></i>Entrega
+                                </span>
+                            {% elseif movement.movementType == 'exchange' %}
+                                <span class="badge badge-warning">
+                                    <i class="fas fa-exchange-alt mr-1"></i>Cambio
+                                </span>
+                            {% else %}
+                                <span class="badge badge-danger">
+                                    <i class="fas fa-arrow-up mr-1"></i>Devolución
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>{{ movement.material.name }}</td>
+                        <td><span class="badge badge-secondary">{{ movement.size|default('N/A') }}</span></td>
+                        <td>{{ movement.quantity }}</td>
+                        <td>
+                            {% if movement.reason == 'new_assignment' %}
+                                Nueva asignación
+                            {% elseif movement.reason == 'size_change' %}
+                                <span class="text-warning">Cambio de talla</span>
+                            {% elseif movement.reason == 'damage' %}
+                                <span class="text-danger">Rotura/Desperfecto</span>
+                            {% elseif movement.reason == 'resignation' %}
+                                <span class="text-info">Baja voluntario</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ movement.createdBy ? movement.createdBy.email : 'Sistema' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center py-3">No hay movimientos registrados</p>
+        {% endif %}
+    </div>
+</div>
+
+{% include 'volunteer/_uniform_assign_modal.html.twig' %}
+{% include 'volunteer/_uniform_return_modal.html.twig' %}

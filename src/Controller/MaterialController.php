@@ -11,10 +11,13 @@ use App\Repository\MaterialUnitRepository;
 use App\Repository\MaterialStockRepository;
 use App\Repository\MaterialMovementRepository;
 use App\Service\MaterialManager;
+use App\Service\ExcelImportService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/material')]
@@ -282,5 +285,89 @@ class MaterialController extends AbstractController
             'form' => $form,
             'current_section' => 'recursos'
         ]);
+    }
+
+    #[Route('/import/template', name: 'app_material_import_template', methods: ['GET'])]
+    public function downloadTemplate(ExcelImportService $importService): Response
+    {
+        $templatePath = $importService->generateTemplate();
+        
+        $response = new BinaryFileResponse($templatePath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'plantilla_materiales.xlsx'
+        );
+        
+        return $response;
+    }
+
+    #[Route('/import/preview', name: 'app_material_import_preview', methods: ['POST'])]
+    public function importPreview(Request $request, ExcelImportService $importService): Response
+    {
+        $file = $request->files->get('import_file');
+        
+        if (!$file) {
+            $this->addFlash('error', 'Por favor selecciona un archivo Excel.');
+            return $this->redirectToRoute('app_material_index');
+        }
+        
+        try {
+            $preview = $importService->previewImport($file);
+            
+            // Store file temporarily for later processing
+            $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/';
+            if (!is_dir($tempPath)) {
+                mkdir($tempPath, 0777, true);
+            }
+            $tempFilename = uniqid('import_') . '.xlsx';
+            $file->move($tempPath, $tempFilename);
+            
+            return $this->render('material/import_preview.html.twig', [
+                'preview' => $preview,
+                'temp_filename' => $tempFilename,
+                'current_section' => 'recursos'
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error al procesar el archivo: ' . $e->getMessage());
+            return $this->redirectToRoute('app_material_index');
+        }
+    }
+
+    #[Route('/import/process', name: 'app_material_import_process', methods: ['POST'])]
+    public function importProcess(Request $request, ExcelImportService $importService): Response
+    {
+        $tempFilename = $request->request->get('temp_filename');
+        $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/' . $tempFilename;
+        
+        if (!file_exists($tempPath)) {
+            $this->addFlash('error', 'Archivo temporal no encontrado. Por favor intenta de nuevo.');
+            return $this->redirectToRoute('app_material_index');
+        }
+        
+        try {
+            $file = new \Symfony\Component\HttpFoundation\File\File($tempPath);
+            $result = $importService->processImport($file);
+            
+            // Delete temp file
+            unlink($tempPath);
+            
+            $message = sprintf(
+                'Importación completada: %d materiales creados, %d actualizados.',
+                $result['created'],
+                $result['updated']
+            );
+            
+            if (!empty($result['errors'])) {
+                $message .= ' Errores: ' . implode(', ', $result['errors']);
+                $this->addFlash('warning', $message);
+            } else {
+                $this->addFlash('success', $message);
+            }
+            
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
+        }
+        
+        return $this->redirectToRoute('app_material_index');
     }
 }

@@ -281,12 +281,26 @@ class Volunteer
     private Collection $volunteerServices;
 
     /**
+     * @var Collection<int, VolunteerUniform> A collection of this volunteer's uniform assignments.
+     */
+    #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: VolunteerUniform::class, orphanRemoval: true)]
+    private Collection $uniforms;
+
+    /**
+     * @var Collection<int, UniformMovement> A collection of this volunteer's uniform movement history.
+     */
+    #[ORM\OneToMany(mappedBy: 'volunteer', targetEntity: UniformMovement::class)]
+    private Collection $uniformMovements;
+
+    /**
      * Initializes collections.
      */
     public function __construct()
     {
         $this->assistanceConfirmations = new ArrayCollection();
         $this->volunteerServices = new ArrayCollection();
+        $this->uniforms = new ArrayCollection();
+        $this->uniformMovements = new ArrayCollection();
     }
 
     /**
@@ -1084,4 +1098,53 @@ class Volunteer
         }
         return null;
     }
+
+    /**
+ * @return Collection<int, VolunteerUniform>
+ */
+public function getUniforms(): Collection
+{
+    return $this->uniforms;
+}
+public function addUniform(VolunteerUniform $uniform): static
+{
+    if (!$this->uniforms->contains($uniform)) {
+        $this->uniforms->add($uniform);
+        $uniform->setVolunteer($this);
+    }
+    return $this;
+}
+public function removeUniform(VolunteerUniform $uniform): static
+{
+    if ($this->uniforms->removeElement($uniform)) {
+        if ($uniform->getVolunteer() === $this) {
+            $uniform->setVolunteer(null);
+        }
+    }
+    return $this;
+}
+/**
+ * @return Collection<int, UniformMovement>
+ */
+public function getUniformMovements(): Collection
+{
+    return $this->uniformMovements;
+}
+public function addUniformMovement(UniformMovement $uniformMovement): static
+{
+    if (!$this->uniformMovements->contains($uniformMovement)) {
+        $this->uniformMovements->add($uniformMovement);
+        $uniformMovement->setVolunteer($this);
+    }
+    return $this;
+}
+public function removeUniformMovement(UniformMovement $uniformMovement): static
+{
+    if ($this->uniformMovements->removeElement($uniformMovement)) {
+        if ($uniformMovement->getVolunteer() === $this) {
+                $uniformMovement->setVolunteer(null);
+        }
+    }
+    return $this;
+}
 }

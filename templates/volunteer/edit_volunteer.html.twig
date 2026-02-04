@@ -4,15 +4,32 @@
 
 {% block content %}
 <div class="w-full p-4 lg:p-6">
-    {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-controller': 'form-validation'}}) }}
-
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-gray-800">
             Editando a Voluntari@: <span class="text-blue-600">{{ volunteer.name }} {{ volunteer.lastName }}</span>
         </h1>
     </div>
 
-    {# --- Section: Profile Picture --- #}
+    {# --- TABS AT THE TOP --- #}
+    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-6">
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" href="#datos-tab" onclick="switchTab(event, 'datos-tab')">
+                    <i class="fas fa-user mr-2"></i>Datos del Voluntario
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="#uniformidad-tab" onclick="switchTab(event, 'uniformidad-tab')">
+                    <i class="fas fa-tshirt mr-2"></i>Dotación y Uniformidad
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content">
+            {# TAB 1: DATOS DEL VOLUNTARIO #}
+            <div id="datos-tab" class="tab-pane fade show active">
+                {{ form_start(form, {'attr': {'class': 'space-y-8', 'novalidate': 'novalidate', 'data-controller': 'form-validation'}}) }}
+
     <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
         <h2 class="text-xl font-semibold text-gray-900 border-b pb-3 mb-6">Foto de Perfil</h2>
         <img id="preview-element" src="{{ volunteer.profilePicture ? asset('uploads/profile_pictures/' ~ volunteer.profilePicture) : asset('images/placeholder-avatar.png') }}" alt="Vista previa" class="w-32 h-32 rounded-full object-cover mb-4 border-2 border-gray-200 shadow-sm mx-auto">
@@ -117,5 +134,42 @@
     </div>
 
     {{ form_end(form) }}
+            </div>
+
+            {# TAB 2: DOTACIÓN Y UNIFORMIDAD #}
+            <div id="uniformidad-tab" class="tab-pane fade">
+                {% include 'volunteer/_uniform_tab.html.twig' %}
+            </div>
+        </div>
+    </div>
 </div>
+
+<script>
+function switchTab(event, tabId) {
+    event.preventDefault();
+    console.log('Switching to tab:', tabId);
+    
+    // Remove active from all tabs
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+        link.classList.remove('active');
+    });
+    
+    // Remove active from all panes
+    document.querySelectorAll('.tab-pane').forEach(function(pane) {
+        pane.classList.remove('show', 'active');
+    });
+    
+    // Add active to clicked tab
+    event.currentTarget.classList.add('active');
+    
+    // Show target pane
+    var targetPane = document.getElementById(tabId);
+    if (targetPane) {
+        targetPane.classList.add('show', 'active');
+        console.log('Tab switched successfully');
+    } else {
+        console.error('Tab not found:', tabId);
+    }
+}
+</script>
 {% endblock %}
