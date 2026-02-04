@@ -42,6 +42,9 @@ class Material
     #[ORM\Column(name: "safety_stock", options: ["default" => 0])]
     private int $safetyStock = 0;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $imagePath = null;
+
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: ServiceMaterial::class, orphanRemoval: true)]
     private Collection $serviceMaterials;
 
@@ -235,6 +238,18 @@ class Material
     public function isLowStock(): bool
     {
         return $this->nature === self::NATURE_CONSUMABLE && $this->stock <= $this->safetyStock;
+    }
+
+    public function getImagePath(): ?string
+    {
+        return $this->imagePath;
+    }
+
+    public function setImagePath(?string $imagePath): static
+    {
+        $this->imagePath = $imagePath;
+
+        return $this;
     }
 
     public function __toString(): string

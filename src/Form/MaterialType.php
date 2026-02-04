@@ -5,10 +5,12 @@ namespace App\Form;
 use App\Entity\Material;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
+use Symfony\Component\Validator\Constraints\File;
 
 class MaterialType extends AbstractType
 {
@@ -18,6 +20,23 @@ class MaterialType extends AbstractType
             ->add('name', TextType::class, [
                 'label' => 'Nombre del Material',
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('imageFile', FileType::class, [
+                'label' => 'Imagen del Material',
+                'mapped' => false,
+                'required' => false,
+                'constraints' => [
+                    new File([
+                        'maxSize' => '2M',
+                        'mimeTypes' => [
+                            'image/jpeg',
+                            'image/png',
+                        ],
+                        'mimeTypesMessage' => 'Por favor sube una imagen válida (JPG o PNG)',
+                    ])
+                ],
+                'attr' => ['class' => 'form-control', 'accept' => 'image/jpeg,image/png'],
+                'help' => 'Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB'
             ])
             ->add('category', ChoiceType::class, [
                 'label' => 'Categoría',

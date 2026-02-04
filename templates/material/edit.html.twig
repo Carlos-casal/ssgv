@@ -8,7 +8,7 @@
 <div class="container-fluid py-4">
     <div class="card shadow mb-4">
         <div class="card-body">
-            {{ form_start(form, {'attr': {'data-controller': 'material-sizing'}}) }}
+            {{ form_start(form, {'attr': {'data-controller': 'material-sizing', 'enctype': 'multipart/form-data'}}) }}
                 <div class="row">
                     <div class="col-md-4">{{ form_row(form.name) }}</div>
                     <div class="col-md-4">{{ form_row(form.category) }}</div>
@@ -17,6 +17,23 @@
                             'data-material-sizing-target': 'sizingType',
                             'data-action': 'change->material-sizing#updateGrid'
                         }}) }}
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12">
+                        {% if material.imagePath %}
+                            <div class="mb-3">
+                                <label class="form-label font-weight-bold">Imagen Actual</label>
+                                <div>
+                                    <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" 
+                                         alt="{{ material.name }}" 
+                                         class="img-thumbnail" 
+                                         style="max-width: 200px;">
+                                </div>
+                            </div>
+                        {% endif %}
+                        {{ form_row(form.imageFile) }}
                     </div>
                 </div>
 

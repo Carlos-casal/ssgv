@@ -65,6 +65,24 @@ class MaterialController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle image upload
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('material_images_directory'),
+                        $newFilename
+                    );
+                    $material->setImagePath($newFilename);
+                } catch (FileException $e) {
+                    // Handle exception if something happens during file upload
+                }
+            }
+
             $entityManager->persist($material);
             $entityManager->flush();
 
@@ -114,6 +132,33 @@ class MaterialController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // Handle image upload
+            $imageFile = $form->get('imageFile')->getData();
+            if ($imageFile) {
+                $originalFilename = pathinfo($imageFile->getClientOriginalName(), PATHINFO_FILENAME);
+                $safeFilename = transliterator_transliterate('Any-Latin; Latin-ASCII; [^A-Za-z0-9_] remove; Lower()', $originalFilename);
+                $newFilename = $safeFilename . '-' . uniqid() . '.' . $imageFile->guessExtension();
+
+                try {
+                    $imageFile->move(
+                        $this->getParameter('material_images_directory'),
+                        $newFilename
+                    );
+                    
+                    // Delete old image if exists
+                    if ($material->getImagePath()) {
+                        $oldImagePath = $this->getParameter('material_images_directory') . '/' . $material->getImagePath();
+                        if (file_exists($oldImagePath)) {
+                            unlink($oldImagePath);
+                        }
+                    }
+                    
+                    $material->setImagePath($newFilename);
+                } catch (FileException $e) {
+                    // Handle exception if something happens during file upload
+                }
+            }
+
             $entityManager->flush();
 
             // Handle initial stock from grid (even in edit, it acts as an addition)

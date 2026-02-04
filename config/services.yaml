@@ -6,6 +6,7 @@
 parameters:
     profile_pictures_directory: '%kernel.project_dir%/public/uploads/profile_pictures'
     vehicle_photos_directory: '%kernel.project_dir%/public/uploads/vehicles_photos'
+    material_images_directory: '%kernel.project_dir%/public/uploads/material_images'
     app.locales: 'es|en'
 services:
     # default configuration for services in *this* file
