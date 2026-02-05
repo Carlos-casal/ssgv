@@ -6,10 +6,13 @@ use App\Repository\MaterialRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: MaterialRepository::class)]
 #[ORM\Table(name: 'maestro_material')]
 #[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ['serialNumber'], message: 'Este Número de Serie ya está registrado.', ignoreNull: true)]
+#[UniqueEntity(fields: ['networkId'], message: 'Este ID de Red (ISSI/IMEI) ya está registrado.', ignoreNull: true)]
 class Material
 {
     public const NATURE_CONSUMABLE = 'CONSUMIBLE';
@@ -74,6 +77,48 @@ class Material
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ["default" => 21])]
     private string $iva = '21';
+
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $serialNumber = null;
+
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    private ?string $networkId = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $phoneNumber = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $brandModel = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $frequencyBand = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $deviceType = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $purchaseDate = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $warrantyEndDate = null;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasCharger = false;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasClip = false;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasMicrophone = false;
+
+    #[ORM\ManyToOne]
+    private ?Vehicle $assignedVehicle = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $operationalStatus = 'OPERATIVO';
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $batteryStatus = null;
 
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: ServiceMaterial::class, orphanRemoval: true)]
     private Collection $serviceMaterials;
@@ -398,6 +443,174 @@ class Material
     public function setIva(string $iva): static
     {
         $this->iva = $iva;
+
+        return $this;
+    }
+
+    public function getSerialNumber(): ?string
+    {
+        return $this->serialNumber;
+    }
+
+    public function setSerialNumber(?string $serialNumber): static
+    {
+        $this->serialNumber = $serialNumber;
+
+        return $this;
+    }
+
+    public function getNetworkId(): ?string
+    {
+        return $this->networkId;
+    }
+
+    public function setNetworkId(?string $networkId): static
+    {
+        $this->networkId = $networkId;
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): static
+    {
+        $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
+    public function getBrandModel(): ?string
+    {
+        return $this->brandModel;
+    }
+
+    public function setBrandModel(?string $brandModel): static
+    {
+        $this->brandModel = $brandModel;
+
+        return $this;
+    }
+
+    public function getFrequencyBand(): ?string
+    {
+        return $this->frequencyBand;
+    }
+
+    public function setFrequencyBand(?string $frequencyBand): static
+    {
+        $this->frequencyBand = $frequencyBand;
+
+        return $this;
+    }
+
+    public function getDeviceType(): ?string
+    {
+        return $this->deviceType;
+    }
+
+    public function setDeviceType(?string $deviceType): static
+    {
+        $this->deviceType = $deviceType;
+
+        return $this;
+    }
+
+    public function getPurchaseDate(): ?\DateTimeImmutable
+    {
+        return $this->purchaseDate;
+    }
+
+    public function setPurchaseDate(?\DateTimeImmutable $purchaseDate): static
+    {
+        $this->purchaseDate = $purchaseDate;
+
+        return $this;
+    }
+
+    public function getWarrantyEndDate(): ?\DateTimeImmutable
+    {
+        return $this->warrantyEndDate;
+    }
+
+    public function setWarrantyEndDate(?\DateTimeImmutable $warrantyEndDate): static
+    {
+        $this->warrantyEndDate = $warrantyEndDate;
+
+        return $this;
+    }
+
+    public function hasCharger(): bool
+    {
+        return $this->hasCharger;
+    }
+
+    public function setHasCharger(bool $hasCharger): static
+    {
+        $this->hasCharger = $hasCharger;
+
+        return $this;
+    }
+
+    public function hasClip(): bool
+    {
+        return $this->hasClip;
+    }
+
+    public function setHasClip(bool $hasClip): static
+    {
+        $this->hasClip = $hasClip;
+
+        return $this;
+    }
+
+    public function hasMicrophone(): bool
+    {
+        return $this->hasMicrophone;
+    }
+
+    public function setHasMicrophone(bool $hasMicrophone): static
+    {
+        $this->hasMicrophone = $hasMicrophone;
+
+        return $this;
+    }
+
+    public function getAssignedVehicle(): ?Vehicle
+    {
+        return $this->assignedVehicle;
+    }
+
+    public function setAssignedVehicle(?Vehicle $assignedVehicle): static
+    {
+        $this->assignedVehicle = $assignedVehicle;
+
+        return $this;
+    }
+
+    public function getOperationalStatus(): ?string
+    {
+        return $this->operationalStatus;
+    }
+
+    public function setOperationalStatus(?string $operationalStatus): static
+    {
+        $this->operationalStatus = $operationalStatus;
+
+        return $this;
+    }
+
+    public function getBatteryStatus(): ?string
+    {
+        return $this->batteryStatus;
+    }
+
+    public function setBatteryStatus(?string $batteryStatus): static
+    {
+        $this->batteryStatus = $batteryStatus;
 
         return $this;
     }
