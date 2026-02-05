@@ -29,12 +29,18 @@ class MaterialController extends AbstractController
     {
         $category = $request->query->get('category');
         $size = $request->query->get('size');
+        $subFamily = $request->query->get('subFamily');
 
         $qb = $materialRepository->createQueryBuilder('m');
 
         if ($category) {
             $qb->andWhere('m.category = :category')
                ->setParameter('category', $category);
+        }
+
+        if ($subFamily) {
+            $qb->andWhere('m.subFamily = :subFamily')
+               ->setParameter('subFamily', $subFamily);
         }
 
         if ($size) {
@@ -50,6 +56,7 @@ class MaterialController extends AbstractController
             'materials' => $materials,
             'current_category' => $category,
             'current_size' => $size,
+            'current_subfamily' => $subFamily,
             'current_section' => 'recursos'
         ]);
     }
@@ -63,6 +70,11 @@ class MaterialController extends AbstractController
         $category = $request->query->get('category');
         if ($category) {
             $material->setCategory($category);
+        }
+
+        // Context-aware logic for Sanitary
+        if ($category === 'Sanitario') {
+            $material->setCategory('Sanitario');
         }
 
         $form = $this->createForm(MaterialType::class, $material);

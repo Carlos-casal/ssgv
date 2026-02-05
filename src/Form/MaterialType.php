@@ -99,10 +99,36 @@ class MaterialType extends AbstractType
                 'label' => 'Stock Mínimo de Seguridad',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('batch', TextType::class, [
+            ->add('batchNumber', TextType::class, [
                 'label' => 'Lote',
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Nº de lote para fungibles']
+            ])
+            ->add('packagingFormat', TextType::class, [
+                'label' => 'Formato de Envase',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: Caja, Blíster, Rollo...']
+            ])
+            ->add('unitsPerPackage', IntegerType::class, [
+                'label' => 'Unidades por Envase',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'min' => 1]
+            ])
+            ->add('subFamily', ChoiceType::class, [
+                'label' => 'Subfamilia / Clasificación',
+                'required' => false,
+                'choices' => [
+                    'Analgésicos' => 'Analgésicos',
+                    'Curas' => 'Curas',
+                    'Inmovilización' => 'Inmovilización',
+                    'Medicación' => 'Medicación',
+                    'Diagnóstico' => 'Diagnóstico',
+                    'Protección' => 'Protección',
+                    'Oxigenoterapia' => 'Oxigenoterapia',
+                    'Vía Aérea' => 'Vía Aérea',
+                    'Varios' => 'Varios'
+                ],
+                'attr' => ['class' => 'form-control']
             ])
             ->add('expirationDate', DateType::class, [
                 'label' => 'Fecha de Caducidad',

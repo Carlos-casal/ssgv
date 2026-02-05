@@ -258,18 +258,17 @@ class MaterialManager
     }
 
     /**
-     * Returns the Central Warehouse location, creating it if it doesn't exist.
+     * Returns the Central Warehouse location.
+     * Throws an exception if not found, as it should be created during system setup.
      */
     public function getCentralWarehouse(): Location
     {
         $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+
         if (!$warehouse) {
-            $warehouse = new Location();
-            $warehouse->setName('Almacén Central');
-            $warehouse->setType(Location::TYPE_WAREHOUSE);
-            $this->entityManager->persist($warehouse);
-            $this->entityManager->flush();
+            throw new \RuntimeException('El Almacén Central no está configurado. Por favor, créelo en la sección de Ubicaciones.');
         }
+
         return $warehouse;
     }
 }
