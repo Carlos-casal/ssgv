@@ -52,7 +52,16 @@ class Material
     private ?string $description = null;
 
     #[ORM\Column(length: 100, nullable: true)]
-    private ?string $batch = null;
+    private ?string $batchNumber = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $packagingFormat = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?int $unitsPerPackage = null;
+
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $subFamily = null;
 
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $expirationDate = null;
@@ -297,14 +306,50 @@ class Material
         return $this;
     }
 
-    public function getBatch(): ?string
+    public function getBatchNumber(): ?string
     {
-        return $this->batch;
+        return $this->batchNumber;
     }
 
-    public function setBatch(?string $batch): static
+    public function setBatchNumber(?string $batchNumber): static
     {
-        $this->batch = $batch;
+        $this->batchNumber = $batchNumber;
+
+        return $this;
+    }
+
+    public function getPackagingFormat(): ?string
+    {
+        return $this->packagingFormat;
+    }
+
+    public function setPackagingFormat(?string $packagingFormat): static
+    {
+        $this->packagingFormat = $packagingFormat;
+
+        return $this;
+    }
+
+    public function getUnitsPerPackage(): ?int
+    {
+        return $this->unitsPerPackage;
+    }
+
+    public function setUnitsPerPackage(?int $unitsPerPackage): static
+    {
+        $this->unitsPerPackage = $unitsPerPackage;
+
+        return $this;
+    }
+
+    public function getSubFamily(): ?string
+    {
+        return $this->subFamily;
+    }
+
+    public function setSubFamily(?string $subFamily): static
+    {
+        $this->subFamily = $subFamily;
 
         return $this;
     }
@@ -364,10 +409,15 @@ class Material
         }
 
         $now = new \DateTimeImmutable('today');
+        $oneMonth = $now->modify('+30 days');
         $sixMonths = $now->modify('+6 months');
 
         if ($this->expirationDate <= $now) {
             return 'red';
+        }
+
+        if ($this->expirationDate <= $oneMonth) {
+            return 'orange';
         }
 
         if ($this->expirationDate <= $sixMonths) {
