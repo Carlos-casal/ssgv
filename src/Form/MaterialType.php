@@ -3,7 +3,10 @@
 namespace App\Form;
 
 use App\Entity\Material;
+use App\Entity\Vehicle;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
@@ -153,6 +156,104 @@ class MaterialType extends AbstractType
                     '10%' => '10.00',
                     '4%' => '4.00',
                     'Exento' => '0.00'
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('serialNumber', TextType::class, [
+                'label' => 'Número de Serie (S/N)',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Obligatorio para Comunicaciones']
+            ])
+            ->add('networkId', TextType::class, [
+                'label' => 'ID de Red (ISSI / IMEI / MMSI)',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('phoneNumber', TextType::class, [
+                'label' => 'Número de Teléfono',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => '+34...']
+            ])
+            ->add('brandModel', TextType::class, [
+                'label' => 'Marca y Modelo',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: Motorola MTP3550']
+            ])
+            ->add('frequencyBand', ChoiceType::class, [
+                'label' => 'Banda de Frecuencia',
+                'required' => false,
+                'choices' => [
+                    'VHF (Analog/Mar)' => 'VHF',
+                    'UHF' => 'UHF',
+                    'TETRA' => 'TETRA',
+                    'GSM/4G/5G' => 'GSM',
+                    'Satelital' => 'SATELITAL',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('deviceType', ChoiceType::class, [
+                'label' => 'Tipo de Equipo',
+                'required' => false,
+                'choices' => [
+                    'Portátil' => 'PORTATIL',
+                    'Emisora Móvil' => 'MOVIL',
+                    'Base Fija' => 'FIJA',
+                    'Smartphone' => 'SMARTPHONE',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('purchaseDate', DateType::class, [
+                'label' => 'Fecha de Compra',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('warrantyEndDate', DateType::class, [
+                'label' => 'Fin de Garantía',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('hasCharger', CheckboxType::class, [
+                'label' => '¿Incluye cargador?',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input']
+            ])
+            ->add('hasClip', CheckboxType::class, [
+                'label' => '¿Incluye pinza?',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input']
+            ])
+            ->add('hasMicrophone', CheckboxType::class, [
+                'label' => '¿Incluye micro-altavoz?',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input']
+            ])
+            ->add('assignedVehicle', EntityType::class, [
+                'class' => Vehicle::class,
+                'choice_label' => 'alias',
+                'label' => 'Vehículo Asignado (Fijo)',
+                'required' => false,
+                'placeholder' => 'Ninguno',
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('operationalStatus', ChoiceType::class, [
+                'label' => 'Estado Operativo',
+                'required' => false,
+                'choices' => [
+                    'Operativo' => 'OPERATIVO',
+                    'En Taller / Reparación' => 'TALLER',
+                    'Baja Definitiva' => 'BAJA',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('batteryStatus', ChoiceType::class, [
+                'label' => 'Estado de Batería',
+                'required' => false,
+                'choices' => [
+                    'Salud 100% (Nueva)' => '100',
+                    'Salud 80% (Usada)' => '80',
+                    'A sustituir' => 'REPLACE',
                 ],
                 'attr' => ['class' => 'form-control']
             ])
