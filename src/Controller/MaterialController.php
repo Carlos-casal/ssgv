@@ -205,7 +205,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/unit/new', name: 'app_material_unit_new', methods: ['GET', 'POST'])]
-    public function newUnit(Request $request, Material $material, EntityManagerInterface $entityManager): Response
+    public function newUnit(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $unit = new MaterialUnit();
         $unit->setMaterial($material);
@@ -213,7 +213,14 @@ class MaterialController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($unit);
+            $materialManager->createUnit($material, [
+                'collectiveNumber' => $unit->getCollectiveNumber(),
+                'serialNumber' => $unit->getSerialNumber(),
+                'pttStatus' => $unit->getPttStatus(),
+                'coverStatus' => $unit->getCoverStatus(),
+                'batteryStatus' => $unit->getBatteryStatus(),
+            ], $unit->getLocation());
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_material_show', ['id' => $material->getId()], Response::HTTP_SEE_OTHER);
@@ -228,19 +235,12 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/unit/bulk', name: 'app_material_unit_bulk', methods: ['GET', 'POST'])]
-    public function bulkAddUnits(Request $request, Material $material, EntityManagerInterface $entityManager): Response
+    public function bulkAddUnits(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         if ($request->isMethod('POST')) {
             $unitsData = $request->request->all('units');
             foreach ($unitsData as $data) {
-                $unit = new MaterialUnit();
-                $unit->setMaterial($material);
-                $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
-                $unit->setSerialNumber($data['serialNumber'] ?? null);
-                $unit->setPttStatus($data['pttStatus'] ?? 'OK');
-                $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
-                $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
-                $entityManager->persist($unit);
+                $materialManager->createUnit($material, $data);
             }
             $entityManager->flush();
 
@@ -269,7 +269,6 @@ class MaterialController extends AbstractController
                 $data['quantity'],
                 $data['reason'],
                 $data['responsible'],
-                $this->getUser(),
                 $data['size'],
                 $data['materialUnit'] ?? null
             );

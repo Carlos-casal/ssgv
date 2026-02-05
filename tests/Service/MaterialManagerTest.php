@@ -160,4 +160,55 @@ class MaterialManagerTest extends TestCase
 
         $this->assertEquals(13, $material->getStock());
     }
+
+    public function testTransferEntry(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $destination = new \App\Entity\Location();
+        $destination->setName('Warehouse');
+
+        $this->stockRepository->method('findOneBy')
+            ->willReturn(null);
+
+        $this->materialManager->transfer(
+            $material,
+            null, // Origin
+            $destination, // Destination
+            5,
+            'Entry',
+            null
+        );
+
+        $this->assertEquals(15, $material->getStock());
+    }
+
+    public function testTransferMove(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $origin = new \App\Entity\Location();
+        $origin->setName('Origin');
+        $destination = new \App\Entity\Location();
+        $destination->setName('Destination');
+
+        $this->stockRepository->method('findOneBy')
+            ->willReturn(null);
+
+        $this->materialManager->transfer(
+            $material,
+            $origin,
+            $destination,
+            3,
+            'Move',
+            null
+        );
+
+        // Global stock should remain unchanged
+        $this->assertEquals(10, $material->getStock());
+    }
 }
