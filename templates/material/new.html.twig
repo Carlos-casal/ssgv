@@ -22,7 +22,7 @@
             {% endif %}
         </span>
         <div>
-            <button type="button" onclick="document.forms['material'].submit()" class="btn btn-primary shadow-sm px-4">
+            <button type="submit" form="material-form" class="btn btn-primary shadow-sm px-4">
                 <i class="fas fa-save mr-2"></i> Guardar
             </button>
             <a href="{{ path('app_material_index') }}" class="btn btn-outline-secondary ml-2">Cancelar</a>
@@ -32,9 +32,134 @@
 
 {% block content %}
 <div class="container-fluid py-4" data-controller="material-comms-form">
-    {{ form_start(form, {'attr': {'class': 'material-form', 'novalidate': 'novalidate'}}) }}
+    {{ form_start(form, {'attr': {'id': 'material-form', 'class': 'material-form', 'novalidate': 'novalidate'}}) }}
 
-    {% if material.category == 'Comunicaciones' %}
+    {% if material.category == 'Sanitario' %}
+    {# Layout para Sanitario #}
+    <div class="row">
+        {# Columna Izquierda (66%) #}
+        <div class="col-lg-8">
+            {# Datos Clínicos #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-medical mr-2"></i> Datos Clínicos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {{ form_row(form.name, {'label': 'Nombre comercial / Genérico'}) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.subFamily) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.description) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            {{ form_row(form.nature) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.barcode) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Seguridad y Trazabilidad #}
+            <div class="card shadow-sm mb-4 border-left-danger border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">
+                        <i class="fas fa-shield-alt mr-2"></i> Seguridad y Trazabilidad
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.batchNumber) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.expirationDate) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.supplier) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Financial #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.unitPrice) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.iva) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Columna Derecha (33%) #}
+        <div class="col-lg-4">
+            {# Imagen #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-camera fa-3x text-gray-300"></i>
+                    </div>
+                    {{ form_row(form.imageFile, {'label': 'Imagen del Producto'}) }}
+                </div>
+            </div>
+
+            {# Formatos (Logística) #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-boxes mr-2"></i> Logística y Formatos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            {{ form_row(form.packagingFormat, {'label': 'Formato'}) }}
+                        </div>
+                        <div class="col-6">
+                            {{ form_row(form.unitsPerPackage, {'label': 'Uds/Envase'}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Stock #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-warehouse mr-2"></i> Gestión de Inventario
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.stock, {'label': 'Stock Actual (Unidades)'}) }}
+                    {{ form_row(form.safetyStock, {'label': 'Stock Mínimo'}) }}
+
+                    <div class="alert alert-light border mt-3 py-2 small">
+                        <i class="fas fa-info-circle text-info mr-1"></i>
+                        El stock se gestiona en <strong>unidades sueltas</strong>.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% elseif material.category == 'Comunicaciones' %}
     {# Layout para Comunicaciones #}
     <div class="row">
         {# Columna Izquierda #}
@@ -172,28 +297,24 @@
 
     {% else %}
     {# Layout Genérico / Sanitario (Existente) #}
+    {# Layout Genérico #}
     <div class="row">
         {# Columna Izquierda (66%) #}
         <div class="col-lg-8">
-            {# Datos Clínicos / Generales #}
+            {# Información General #}
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-file-medical mr-2"></i>
-                        {{ material.category == 'Sanitario' ? 'Datos Clínicos' : 'Información General' }}
+                        <i class="fas fa-info-circle mr-2"></i> Información General
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-8">
-                            {{ form_row(form.name, {'label': material.category == 'Sanitario' ? 'Nombre comercial / Genérico' : 'Nombre del Material'}) }}
+                            {{ form_row(form.name) }}
                         </div>
                         <div class="col-md-4">
-                            {% if material.category == 'Sanitario' %}
-                                {{ form_row(form.subFamily) }}
-                            {% else %}
-                                {{ form_row(form.category) }}
-                            {% endif %}
+                            {{ form_row(form.category) }}
                         </div>
                     </div>
                     <div class="row mt-2">
@@ -212,31 +333,7 @@
                 </div>
             </div>
 
-            {# Seguridad y Trazabilidad (Solo para Sanitario o cuando sea relevante) #}
-            {% if material.category != 'Comunicaciones' %}
-            <div class="card shadow-sm mb-4 border-left-danger border-0">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-danger">
-                        <i class="fas fa-shield-alt mr-2"></i> Seguridad y Trazabilidad
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            {{ form_row(form.batchNumber) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form.expirationDate) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form.supplier) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            {# Financial and other fields if not sanitary #}
+            {# Financial #}
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-body">
                     <div class="row">
@@ -250,13 +347,11 @@
                 </div>
             </div>
 
-            {% if material.category != 'Sanitario' and material.category != 'Comunicaciones' %}
-                <div class="card shadow-sm mb-4 border-0" id="sizing-card">
-                    <div class="card-body">
-                        {{ form_row(form.sizingType) }}
-                    </div>
+            <div class="card shadow-sm mb-4 border-0" id="sizing-card">
+                <div class="card-body">
+                    {{ form_row(form.sizingType) }}
                 </div>
-            {% endif %}
+            </div>
         </div>
 
         {# Columna Derecha (33%) #}
@@ -271,25 +366,6 @@
                 </div>
             </div>
 
-            {# Formatos (Logística) #}
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-boxes mr-2"></i> Logística y Formatos
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-6">
-                            {{ form_row(form.packagingFormat, {'label': 'Formato'}) }}
-                        </div>
-                        <div class="col-6">
-                            {{ form_row(form.unitsPerPackage, {'label': 'Uds/Envase'}) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             {# Stock #}
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-header bg-white py-3">
@@ -300,11 +376,6 @@
                 <div class="card-body">
                     {{ form_row(form.stock, {'label': 'Stock Actual (Unidades)'}) }}
                     {{ form_row(form.safetyStock, {'label': 'Stock Mínimo'}) }}
-
-                    <div class="alert alert-light border mt-3 py-2 small">
-                        <i class="fas fa-info-circle text-info mr-1"></i>
-                        El stock se gestiona en <strong>unidades sueltas</strong>.
-                    </div>
                 </div>
             </div>
         </div>

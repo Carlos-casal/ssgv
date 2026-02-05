@@ -116,7 +116,7 @@ class MaterialManager
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
-        $movement->setQuantity($quantity);
+        $movement->setQuantity(abs($quantity));
         $movement->setReason($reason);
         $movement->setSize($size);
         $movement->setUser($currentUser);
@@ -125,28 +125,31 @@ class MaterialManager
         $movement->setResponsible($responsible);
         $this->entityManager->persist($movement);
 
-        if ($size || $location) {
-            $stock = $this->stockRepository->findOneBy([
-                'material' => $material,
-                'size' => $size,
-                'location' => $location
-            ]);
-            if (!$stock) {
-                $stock = new MaterialStock();
-                $stock->setMaterial($material);
-                $stock->setSize($size);
-                $stock->setLocation($location);
-                $this->entityManager->persist($stock);
-            }
-            $stock->setQuantity($stock->getQuantity() + $quantity);
-        }
-
-        // Sync global stock if it's not a technical unit
-        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $material->setStock($material->getStock() + $quantity);
-        }
+        $this->updateStockDirectly($material, $location, $quantity, $size);
 
         $this->entityManager->flush();
+    }
+
+    /**
+     * Creates a new material unit and updates global stock.
+     */
+    public function createUnit(Material $material, array $data, ?Location $location = null): MaterialUnit
+    {
+        $unit = new MaterialUnit();
+        $unit->setMaterial($material);
+        $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
+        $unit->setSerialNumber($data['serialNumber'] ?? null);
+        $unit->setPttStatus($data['pttStatus'] ?? 'OK');
+        $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
+        $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
+        $unit->setLocation($location ?: $this->getCentralWarehouse());
+
+        $this->entityManager->persist($unit);
+
+        // Update global stock for technical equipment
+        $material->setStock($material->getStock() + 1);
+
+        return $unit;
     }
 
     /**
@@ -158,12 +161,12 @@ class MaterialManager
     }
 
     /**
-     * Transfer between two locations
+     * Transfer between two locations or handle Entry/Exit
      */
     public function transfer(
         Material $material,
-        Location $origin,
-        Location $destination,
+        ?Location $origin,
+        ?Location $destination,
         int $quantity,
         string $reason,
         ?Volunteer $responsible,
@@ -174,18 +177,24 @@ class MaterialManager
         $currentUser = $this->security->getUser();
 
         if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
-            $unit->setLocation($destination);
+            if ($destination) {
+                $unit->setLocation($destination);
+            }
         } else {
-            // Origin subtraction
-            $this->updateStockDirectly($material, $origin, -$quantity, $size);
-            // Destination addition
-            $this->updateStockDirectly($material, $destination, $quantity, $size);
+            // Origin subtraction (only if it exists)
+            if ($origin) {
+                $this->updateStockDirectly($material, $origin, -$quantity, $size);
+            }
+            // Destination addition (only if it exists)
+            if ($destination) {
+                $this->updateStockDirectly($material, $destination, $quantity, $size);
+            }
         }
 
         // Record movement
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
-        $movement->setQuantity($quantity);
+        $movement->setQuantity(abs($quantity));
         $movement->setReason($reason);
         $movement->setOrigin($origin);
         $movement->setDestination($destination);
@@ -216,10 +225,8 @@ class MaterialManager
 
         $stock->setQuantity($stock->getQuantity() + $delta);
 
-        // Global stock sync for consumables
-        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $material->setStock($material->getStock() + $delta);
-        }
+        // Robust global stock sync (applies to both Consumables and Technical bulk stock)
+        $material->setStock($material->getStock() + $delta);
     }
 
     /**
