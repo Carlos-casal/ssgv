@@ -22,7 +22,7 @@
             {% endif %}
         </span>
         <div>
-            <button type="button" onclick="document.querySelector('form[name=\"material\"]').submit()" class="btn btn-primary shadow-sm px-4">
+            <button type="button" onclick="document.forms['material'].submit()" class="btn btn-primary shadow-sm px-4">
                 <i class="fas fa-save mr-2"></i> Guardar Cambios
             </button>
             <a href="{{ path('app_material_show', {id: material.id}) }}" class="btn btn-outline-secondary ml-2">Cancelar</a>

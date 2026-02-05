@@ -18,7 +18,7 @@ class MaterialStock
     private ?Material $material = null;
 
     #[ORM\ManyToOne(inversedBy: 'stocks')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Location $location = null;
 
     #[ORM\Column(length: 20)]

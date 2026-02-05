@@ -266,7 +266,12 @@ class MaterialManager
         $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
 
         if (!$warehouse) {
-            throw new \RuntimeException('El Almacén Central no está configurado. Por favor, créelo en la sección de Ubicaciones.');
+            // Auto-create central warehouse to avoid crashes during initial usage
+            $warehouse = new Location();
+            $warehouse->setName('Almacén Central');
+            $warehouse->setType(Location::TYPE_WAREHOUSE);
+            $this->entityManager->persist($warehouse);
+            $this->entityManager->flush();
         }
 
         return $warehouse;
