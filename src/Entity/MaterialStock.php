@@ -17,6 +17,10 @@ class MaterialStock
     #[ORM\JoinColumn(nullable: false)]
     private ?Material $material = null;
 
+    #[ORM\ManyToOne(inversedBy: 'stocks')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Location $location = null;
+
     #[ORM\Column(length: 20)]
     private ?string $size = null;
 
@@ -45,7 +49,7 @@ class MaterialStock
         return $this->size;
     }
 
-    public function setSize(string $size): static
+    public function setSize(?string $size): static
     {
         $this->size = $size;
 
@@ -60,6 +64,18 @@ class MaterialStock
     public function setQuantity(int $quantity): static
     {
         $this->quantity = $quantity;
+
+        return $this;
+    }
+
+    public function getLocation(): ?Location
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?Location $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }

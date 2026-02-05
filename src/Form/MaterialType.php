@@ -5,8 +5,11 @@ namespace App\Form;
 use App\Entity\Material;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
+use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -94,6 +97,37 @@ class MaterialType extends AbstractType
             ])
             ->add('safetyStock', IntegerType::class, [
                 'label' => 'Stock Mínimo de Seguridad',
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('batch', TextType::class, [
+                'label' => 'Lote',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Nº de lote para fungibles']
+            ])
+            ->add('expirationDate', DateType::class, [
+                'label' => 'Fecha de Caducidad',
+                'widget' => 'single_text',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('supplier', TextType::class, [
+                'label' => 'Proveedor',
+                'required' => false,
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('unitPrice', MoneyType::class, [
+                'label' => 'Precio Unitario',
+                'currency' => 'EUR',
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('iva', ChoiceType::class, [
+                'label' => 'IVA (%)',
+                'choices' => [
+                    '21%' => '21.00',
+                    '10%' => '10.00',
+                    '4%' => '4.00',
+                    'Exento' => '0.00'
+                ],
                 'attr' => ['class' => 'form-control']
             ])
         ;

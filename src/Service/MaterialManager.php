@@ -2,12 +2,14 @@
 
 namespace App\Service;
 
+use App\Entity\Location;
 use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Entity\MaterialStock;
 use App\Entity\MaterialMovement;
 use App\Entity\Service;
 use App\Entity\User;
+use App\Entity\Volunteer;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
 use App\Repository\MaterialStockRepository;
@@ -92,21 +94,25 @@ class MaterialManager
     /**
      * Bulk adjusts stock for multiple sizes and records movements.
      */
-    public function bulkAdjustStock(Material $material, array $adjustments, string $reason): void
+    public function bulkAdjustStock(Material $material, array $adjustments, string $reason, ?Location $location = null): void
     {
         foreach ($adjustments as $size => $quantity) {
             if ($quantity == 0) continue;
-            $this->adjustStock($material, $quantity, $reason, $size);
+            $this->adjustStock($material, $quantity, $reason, $size, $location);
         }
     }
 
     /**
      * Adjusts stock for a material and records a movement.
      */
-    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null): void
+    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
+
+        if (!$location) {
+            $location = $this->getCentralWarehouse();
+        }
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
@@ -114,14 +120,22 @@ class MaterialManager
         $movement->setReason($reason);
         $movement->setSize($size);
         $movement->setUser($currentUser);
+        $movement->setDestination($quantity > 0 ? $location : null);
+        $movement->setOrigin($quantity < 0 ? $location : null);
+        $movement->setResponsible($responsible);
         $this->entityManager->persist($movement);
 
-        if ($size) {
-            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size]);
+        if ($size || $location) {
+            $stock = $this->stockRepository->findOneBy([
+                'material' => $material,
+                'size' => $size,
+                'location' => $location
+            ]);
             if (!$stock) {
                 $stock = new MaterialStock();
                 $stock->setMaterial($material);
                 $stock->setSize($size);
+                $stock->setLocation($location);
                 $this->entityManager->persist($stock);
             }
             $stock->setQuantity($stock->getQuantity() + $quantity);
@@ -136,12 +150,90 @@ class MaterialManager
     }
 
     /**
+     * Entry from supplier to a location
+     */
+    public function entry(Material $material, Location $destination, int $quantity, ?Volunteer $responsible, ?string $size = null): void
+    {
+        $this->adjustStock($material, $quantity, 'Entrada de proveedor', $size, $destination, $responsible);
+    }
+
+    /**
+     * Transfer between two locations
+     */
+    public function transfer(
+        Material $material,
+        Location $origin,
+        Location $destination,
+        int $quantity,
+        string $reason,
+        ?Volunteer $responsible,
+        ?string $size = null,
+        ?MaterialUnit $unit = null
+    ): void {
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
+        if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
+            $unit->setLocation($destination);
+        } else {
+            // Origin subtraction
+            $this->updateStockDirectly($material, $origin, -$quantity, $size);
+            // Destination addition
+            $this->updateStockDirectly($material, $destination, $quantity, $size);
+        }
+
+        // Record movement
+        $movement = new MaterialMovement();
+        $movement->setMaterial($material);
+        $movement->setQuantity($quantity);
+        $movement->setReason($reason);
+        $movement->setOrigin($origin);
+        $movement->setDestination($destination);
+        $movement->setResponsible($responsible);
+        $movement->setUser($currentUser);
+        $movement->setSize($size);
+
+        $this->entityManager->persist($movement);
+        $this->entityManager->flush();
+    }
+
+    private function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
+    {
+        $stock = $this->stockRepository->findOneBy([
+            'material' => $material,
+            'location' => $location,
+            'size' => $size
+        ]);
+
+        if (!$stock) {
+            $stock = new MaterialStock();
+            $stock->setMaterial($material);
+            $stock->setLocation($location);
+            $stock->setSize($size);
+            $stock->setQuantity(0);
+            $this->entityManager->persist($stock);
+        }
+
+        $stock->setQuantity($stock->getQuantity() + $delta);
+
+        // Global stock sync for consumables
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $material->setStock($material->getStock() + $delta);
+        }
+    }
+
+    /**
      * Checks if a consumable has enough stock.
      */
-    public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null): bool
+    public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null, ?Location $location = null): bool
     {
         if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
             return true;
+        }
+
+        if ($location) {
+            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size, 'location' => $location]);
+            return $stock && $stock->getQuantity() >= $requestedQuantity;
         }
 
         if ($size) {
@@ -163,5 +255,21 @@ class MaterialManager
             ->setParameter('nature', Material::NATURE_CONSUMABLE)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Returns the Central Warehouse location, creating it if it doesn't exist.
+     */
+    public function getCentralWarehouse(): Location
+    {
+        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+        if (!$warehouse) {
+            $warehouse = new Location();
+            $warehouse->setName('Almacén Central');
+            $warehouse->setType(Location::TYPE_WAREHOUSE);
+            $this->entityManager->persist($warehouse);
+            $this->entityManager->flush();
+        }
+        return $warehouse;
     }
 }

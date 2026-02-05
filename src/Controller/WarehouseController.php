@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\LocationReviewRepository;
 use App\Repository\MaterialRepository;
 use App\Repository\VehicleRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -12,15 +13,25 @@ use Symfony\Component\Routing\Annotation\Route;
 class WarehouseController extends AbstractController
 {
     #[Route('/', name: 'app_warehouse_dashboard')]
-    public function index(MaterialRepository $materialRepository, VehicleRepository $vehicleRepository): Response
-    {
+    public function index(
+        MaterialRepository $materialRepository,
+        VehicleRepository $vehicleRepository,
+        LocationReviewRepository $reviewRepository
+    ): Response {
         $materials = $materialRepository->findAll();
         $vehicles = $vehicleRepository->findAll();
+        $recentReviews = $reviewRepository->findBy([], ['reviewDate' => 'DESC'], 5);
+
+        $totalValuation = 0;
+        foreach ($materials as $material) {
+            $totalValuation += (float) $material->getUnitPrice() * $material->getStock();
+        }
 
         $stats = [
             'total_items' => count($materials),
             'low_stock' => count(array_filter($materials, fn($m) => $m->isLowStock())),
             'total_vehicles' => count($vehicles),
+            'total_valuation' => $totalValuation,
         ];
 
         // Group materials by category for the cards
@@ -46,6 +57,8 @@ class WarehouseController extends AbstractController
             'stats' => $stats,
             'categories' => $categories,
             'vehicle_count' => count($vehicles),
+            'materials' => $materials,
+            'recent_reviews' => $recentReviews,
         ]);
     }
 }

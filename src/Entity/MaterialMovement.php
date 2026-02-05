@@ -29,6 +29,15 @@ class MaterialMovement
     #[ORM\ManyToOne]
     private ?User $user = null;
 
+    #[ORM\ManyToOne]
+    private ?Location $origin = null;
+
+    #[ORM\ManyToOne]
+    private ?Location $destination = null;
+
+    #[ORM\ManyToOne]
+    private ?Volunteer $responsible = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -110,6 +119,42 @@ class MaterialMovement
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getOrigin(): ?Location
+    {
+        return $this->origin;
+    }
+
+    public function setOrigin(?Location $origin): static
+    {
+        $this->origin = $origin;
+
+        return $this;
+    }
+
+    public function getDestination(): ?Location
+    {
+        return $this->destination;
+    }
+
+    public function setDestination(?Location $destination): static
+    {
+        $this->destination = $destination;
+
+        return $this;
+    }
+
+    public function getResponsible(): ?Volunteer
+    {
+        return $this->responsible;
+    }
+
+    public function setResponsible(?Volunteer $responsible): static
+    {
+        $this->responsible = $responsible;
 
         return $this;
     }
