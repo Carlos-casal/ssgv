@@ -67,6 +67,39 @@
         </div>
         {% endif %}
 
+        <div class="col-xl-4 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Trazabilidad y Finanzas</div>
+                    <div class="mb-2">
+                        <span class="small text-muted">Lote:</span>
+                        <span class="font-weight-bold">{{ material.batch|default('N/A') }}</span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="small text-muted">Caducidad:</span>
+                        {% set status = material.expirationStatus %}
+                        <span class="badge badge-{{
+                            status == 'green' ? 'success' :
+                            (status == 'yellow' ? 'warning' :
+                            (status == 'red' ? 'danger' : 'secondary'))
+                        }}">
+                            <i class="fas fa-calendar-alt mr-1"></i>
+                            {{ material.expirationDate ? material.expirationDate|date('d/m/Y') : 'Sin fecha' }}
+                        </span>
+                    </div>
+                    <div class="mb-2">
+                        <span class="small text-muted">Proveedor:</span>
+                        <span class="small">{{ material.supplier|default('Desconocido') }}</span>
+                    </div>
+                    <div>
+                        <span class="small text-muted">Valor Unitario:</span>
+                        <span class="font-weight-bold text-gray-800">{{ material.unitPrice|number_format(2, ',', '.') }}€</span>
+                        <span class="text-xs text-muted">(IVA {{ material.iva }}%)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         {% if material.barcode or material.description %}
         <div class="col-xl-4 col-md-6 mb-4">
             <div class="card border-left-info shadow h-100 py-2">
@@ -302,7 +335,10 @@
         </div>
     </div>
 
-    <div class="mt-4">
+    <div class="mt-4 d-flex gap-2">
+        <a href="{{ path('app_material_transfer', {id: material.id}) }}" class="btn btn-primary">
+            <i class="fas fa-exchange-alt mr-2"></i> Registrar Movimiento / Transferencia
+        </a>
         <a href="{{ path('app_material_index') }}" class="btn btn-secondary">
             <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
         </a>

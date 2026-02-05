@@ -51,6 +51,21 @@ class Material
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $batch = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $expirationDate = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $supplier = null;
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, options: ["default" => 0])]
+    private string $unitPrice = '0';
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ["default" => 21])]
+    private string $iva = '21';
+
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: ServiceMaterial::class, orphanRemoval: true)]
     private Collection $serviceMaterials;
 
@@ -280,6 +295,86 @@ class Material
         $this->description = $description;
 
         return $this;
+    }
+
+    public function getBatch(): ?string
+    {
+        return $this->batch;
+    }
+
+    public function setBatch(?string $batch): static
+    {
+        $this->batch = $batch;
+
+        return $this;
+    }
+
+    public function getExpirationDate(): ?\DateTimeImmutable
+    {
+        return $this->expirationDate;
+    }
+
+    public function setExpirationDate(?\DateTimeImmutable $expirationDate): static
+    {
+        $this->expirationDate = $expirationDate;
+
+        return $this;
+    }
+
+    public function getSupplier(): ?string
+    {
+        return $this->supplier;
+    }
+
+    public function setSupplier(?string $supplier): static
+    {
+        $this->supplier = $supplier;
+
+        return $this;
+    }
+
+    public function getUnitPrice(): string
+    {
+        return $this->unitPrice;
+    }
+
+    public function setUnitPrice(string $unitPrice): static
+    {
+        $this->unitPrice = $unitPrice;
+
+        return $this;
+    }
+
+    public function getIva(): string
+    {
+        return $this->iva;
+    }
+
+    public function setIva(string $iva): static
+    {
+        $this->iva = $iva;
+
+        return $this;
+    }
+
+    public function getExpirationStatus(): string
+    {
+        if ($this->expirationDate === null) {
+            return 'gray';
+        }
+
+        $now = new \DateTimeImmutable('today');
+        $sixMonths = $now->modify('+6 months');
+
+        if ($this->expirationDate <= $now) {
+            return 'red';
+        }
+
+        if ($this->expirationDate <= $sixMonths) {
+            return 'yellow';
+        }
+
+        return 'green';
     }
 
     public function __toString(): string

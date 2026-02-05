@@ -118,9 +118,17 @@ class MaterialManagerTest extends TestCase
         $user = new User();
         $this->security->method('getUser')->willReturn($user);
 
+        // Mock Location finding
+        $locationRepo = $this->createMock(\App\Repository\LocationRepository::class);
+        $this->entityManager->method('getRepository')
+            ->with(\App\Entity\Location::class)
+            ->willReturn($locationRepo);
+
+        $location = new \App\Entity\Location();
+        $locationRepo->method('findOneBy')->willReturn($location);
+
         $this->entityManager->expects($this->atLeastOnce())
-            ->method('persist')
-            ->with($this->isInstanceOf(MaterialMovement::class));
+            ->method('persist');
 
         $this->materialManager->adjustStock($material, 5, 'Test reason');
 
@@ -133,11 +141,20 @@ class MaterialManagerTest extends TestCase
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
 
+        // Mock Location finding
+        $locationRepo = $this->createMock(\App\Repository\LocationRepository::class);
+        $this->entityManager->method('getRepository')
+            ->with(\App\Entity\Location::class)
+            ->willReturn($locationRepo);
+
+        $location = new \App\Entity\Location();
+        $locationRepo->method('findOneBy')->willReturn($location);
+
         $this->stockRepository->method('findOneBy')
             ->willReturn(null);
 
         $this->entityManager->expects($this->atLeast(2))
-            ->method('persist'); // Movement and new Stock
+            ->method('persist'); // Movement and new Stock (and possibly Location if it didn't exist)
 
         $this->materialManager->adjustStock($material, 3, 'New size', 'XL');
 

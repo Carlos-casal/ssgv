@@ -6,6 +6,7 @@ use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Form\MaterialType;
 use App\Form\MaterialUnitType;
+use App\Form\MaterialTransferType;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
 use App\Repository\MaterialStockRepository;
@@ -236,6 +237,39 @@ class MaterialController extends AbstractController
 
         return $this->render('material/bulk_unit_new.html.twig', [
             'material' => $material,
+            'current_section' => 'recursos'
+        ]);
+    }
+
+    #[Route('/{id}/transfer', name: 'app_material_transfer', methods: ['GET', 'POST'])]
+    public function transfer(Request $request, Material $material, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(MaterialTransferType::class, null, ['material' => $material]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+
+            $materialManager->transfer(
+                $material,
+                $data['origin'],
+                $data['destination'],
+                $data['quantity'],
+                $data['reason'],
+                $data['responsible'],
+                $this->getUser(),
+                $data['size'],
+                $data['materialUnit'] ?? null
+            );
+
+            $this->addFlash('success', 'Movimiento registrado correctamente.');
+
+            return $this->redirectToRoute('app_material_show', ['id' => $material->getId()]);
+        }
+
+        return $this->render('material/transfer.html.twig', [
+            'material' => $material,
+            'form' => $form,
             'current_section' => 'recursos'
         ]);
     }
