@@ -2,12 +2,14 @@
 
 namespace App\Service;
 
+use App\Entity\Location;
 use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Entity\MaterialStock;
 use App\Entity\MaterialMovement;
 use App\Entity\Service;
 use App\Entity\User;
+use App\Entity\Volunteer;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
 use App\Repository\MaterialStockRepository;
@@ -92,56 +94,153 @@ class MaterialManager
     /**
      * Bulk adjusts stock for multiple sizes and records movements.
      */
-    public function bulkAdjustStock(Material $material, array $adjustments, string $reason): void
+    public function bulkAdjustStock(Material $material, array $adjustments, string $reason, ?Location $location = null): void
     {
         foreach ($adjustments as $size => $quantity) {
             if ($quantity == 0) continue;
-            $this->adjustStock($material, $quantity, $reason, $size);
+            $this->adjustStock($material, $quantity, $reason, $size, $location);
         }
     }
 
     /**
      * Adjusts stock for a material and records a movement.
      */
-    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null): void
+    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
 
+        if (!$location) {
+            $location = $this->getCentralWarehouse();
+        }
+
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
-        $movement->setQuantity($quantity);
+        $movement->setQuantity(abs($quantity));
         $movement->setReason($reason);
         $movement->setSize($size);
         $movement->setUser($currentUser);
+        $movement->setDestination($quantity > 0 ? $location : null);
+        $movement->setOrigin($quantity < 0 ? $location : null);
+        $movement->setResponsible($responsible);
         $this->entityManager->persist($movement);
 
-        if ($size) {
-            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size]);
-            if (!$stock) {
-                $stock = new MaterialStock();
-                $stock->setMaterial($material);
-                $stock->setSize($size);
-                $this->entityManager->persist($stock);
-            }
-            $stock->setQuantity($stock->getQuantity() + $quantity);
-        }
-
-        // Sync global stock if it's not a technical unit
-        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $material->setStock($material->getStock() + $quantity);
-        }
+        $this->updateStockDirectly($material, $location, $quantity, $size);
 
         $this->entityManager->flush();
     }
 
     /**
+     * Creates a new material unit and updates global stock.
+     */
+    public function createUnit(Material $material, array $data, ?Location $location = null): MaterialUnit
+    {
+        $unit = new MaterialUnit();
+        $unit->setMaterial($material);
+        $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
+        $unit->setSerialNumber($data['serialNumber'] ?? null);
+        $unit->setPttStatus($data['pttStatus'] ?? 'OK');
+        $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
+        $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
+        $unit->setLocation($location ?: $this->getCentralWarehouse());
+
+        $this->entityManager->persist($unit);
+
+        // Update global stock for technical equipment
+        $material->setStock($material->getStock() + 1);
+
+        return $unit;
+    }
+
+    /**
+     * Entry from supplier to a location
+     */
+    public function entry(Material $material, Location $destination, int $quantity, ?Volunteer $responsible, ?string $size = null): void
+    {
+        $this->adjustStock($material, $quantity, 'Entrada de proveedor', $size, $destination, $responsible);
+    }
+
+    /**
+     * Transfer between two locations or handle Entry/Exit
+     */
+    public function transfer(
+        Material $material,
+        ?Location $origin,
+        ?Location $destination,
+        int $quantity,
+        string $reason,
+        ?Volunteer $responsible,
+        ?string $size = null,
+        ?MaterialUnit $unit = null
+    ): void {
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
+        if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
+            if ($destination) {
+                $unit->setLocation($destination);
+            }
+        } else {
+            // Origin subtraction (only if it exists)
+            if ($origin) {
+                $this->updateStockDirectly($material, $origin, -$quantity, $size);
+            }
+            // Destination addition (only if it exists)
+            if ($destination) {
+                $this->updateStockDirectly($material, $destination, $quantity, $size);
+            }
+        }
+
+        // Record movement
+        $movement = new MaterialMovement();
+        $movement->setMaterial($material);
+        $movement->setQuantity(abs($quantity));
+        $movement->setReason($reason);
+        $movement->setOrigin($origin);
+        $movement->setDestination($destination);
+        $movement->setResponsible($responsible);
+        $movement->setUser($currentUser);
+        $movement->setSize($size);
+
+        $this->entityManager->persist($movement);
+        $this->entityManager->flush();
+    }
+
+    private function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
+    {
+        $stock = $this->stockRepository->findOneBy([
+            'material' => $material,
+            'location' => $location,
+            'size' => $size
+        ]);
+
+        if (!$stock) {
+            $stock = new MaterialStock();
+            $stock->setMaterial($material);
+            $stock->setLocation($location);
+            $stock->setSize($size);
+            $stock->setQuantity(0);
+            $this->entityManager->persist($stock);
+        }
+
+        $stock->setQuantity($stock->getQuantity() + $delta);
+
+        // Robust global stock sync (applies to both Consumables and Technical bulk stock)
+        $material->setStock($material->getStock() + $delta);
+    }
+
+    /**
      * Checks if a consumable has enough stock.
      */
-    public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null): bool
+    public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null, ?Location $location = null): bool
     {
         if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
             return true;
+        }
+
+        if ($location) {
+            $stock = $this->stockRepository->findOneBy(['material' => $material, 'size' => $size, 'location' => $location]);
+            return $stock && $stock->getQuantity() >= $requestedQuantity;
         }
 
         if ($size) {
@@ -163,5 +262,25 @@ class MaterialManager
             ->setParameter('nature', Material::NATURE_CONSUMABLE)
             ->getQuery()
             ->getResult();
+    }
+
+    /**
+     * Returns the Central Warehouse location.
+     * Throws an exception if not found, as it should be created during system setup.
+     */
+    public function getCentralWarehouse(): Location
+    {
+        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+
+        if (!$warehouse) {
+            // Auto-create central warehouse to avoid crashes during initial usage
+            $warehouse = new Location();
+            $warehouse->setName('Almacén Central');
+            $warehouse->setType(Location::TYPE_WAREHOUSE);
+            $this->entityManager->persist($warehouse);
+            $this->entityManager->flush();
+        }
+
+        return $warehouse;
     }
 }

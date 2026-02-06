@@ -1,5 +1,6 @@
 // webpack.config.js
 const Encore = require('@symfony/webpack-encore');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 if (!Encore.isProduction()) {
     Encore.enableSourceMaps();
@@ -33,29 +34,18 @@ Encore
     .enableStimulusBridge('./assets/controllers.json')
 
     // Copia los assets de TinyMCE
-    .copyFiles({
-        from: './node_modules/tinymce/models',
-        to: 'tinymce/models/[path][name].[ext]'
-    })
-    .copyFiles({
-        from: './node_modules/tinymce/skins',
-        to: 'tinymce/skins/[path][name].[ext]'
-    })
+    .addPlugin(new CopyWebpackPlugin({
+        patterns: [
+            { from: './node_modules/tinymce/models', to: 'tinymce/models' },
+            { from: './node_modules/tinymce/skins', to: 'tinymce/skins' },
+            { from: './node_modules/tinymce/icons', to: 'tinymce/icons' },
+            { from: './node_modules/tinymce/plugins', to: 'tinymce/plugins' },
+            { from: './node_modules/tinymce/themes', to: 'tinymce/themes' },
+        ],
+    }))
     .copyFiles({
         from: './assets/images',
         to: 'images/[path][name].[ext]'
-    })
-    .copyFiles({
-        from: './node_modules/tinymce/icons',
-        to: 'tinymce/icons/[path][name].[ext]'
-    })
-    .copyFiles({
-        from: './node_modules/tinymce/plugins',
-        to: 'tinymce/plugins/[path][name].[ext]'
-    })
-    .copyFiles({
-        from: './node_modules/tinymce/themes',
-        to: 'tinymce/themes/[path][name].[ext]'
     })
 ;
 

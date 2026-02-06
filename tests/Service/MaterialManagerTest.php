@@ -118,9 +118,17 @@ class MaterialManagerTest extends TestCase
         $user = new User();
         $this->security->method('getUser')->willReturn($user);
 
+        // Mock Location finding
+        $locationRepo = $this->createMock(\App\Repository\LocationRepository::class);
+        $this->entityManager->method('getRepository')
+            ->with(\App\Entity\Location::class)
+            ->willReturn($locationRepo);
+
+        $location = new \App\Entity\Location();
+        $locationRepo->method('findOneBy')->willReturn($location);
+
         $this->entityManager->expects($this->atLeastOnce())
-            ->method('persist')
-            ->with($this->isInstanceOf(MaterialMovement::class));
+            ->method('persist');
 
         $this->materialManager->adjustStock($material, 5, 'Test reason');
 
@@ -133,14 +141,74 @@ class MaterialManagerTest extends TestCase
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
 
+        // Mock Location finding
+        $locationRepo = $this->createMock(\App\Repository\LocationRepository::class);
+        $this->entityManager->method('getRepository')
+            ->with(\App\Entity\Location::class)
+            ->willReturn($locationRepo);
+
+        $location = new \App\Entity\Location();
+        $locationRepo->method('findOneBy')->willReturn($location);
+
         $this->stockRepository->method('findOneBy')
             ->willReturn(null);
 
         $this->entityManager->expects($this->atLeast(2))
-            ->method('persist'); // Movement and new Stock
+            ->method('persist'); // Movement and new Stock (and possibly Location if it didn't exist)
 
         $this->materialManager->adjustStock($material, 3, 'New size', 'XL');
 
         $this->assertEquals(13, $material->getStock());
+    }
+
+    public function testTransferEntry(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $destination = new \App\Entity\Location();
+        $destination->setName('Warehouse');
+
+        $this->stockRepository->method('findOneBy')
+            ->willReturn(null);
+
+        $this->materialManager->transfer(
+            $material,
+            null, // Origin
+            $destination, // Destination
+            5,
+            'Entry',
+            null
+        );
+
+        $this->assertEquals(15, $material->getStock());
+    }
+
+    public function testTransferMove(): void
+    {
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $origin = new \App\Entity\Location();
+        $origin->setName('Origin');
+        $destination = new \App\Entity\Location();
+        $destination->setName('Destination');
+
+        $this->stockRepository->method('findOneBy')
+            ->willReturn(null);
+
+        $this->materialManager->transfer(
+            $material,
+            $origin,
+            $destination,
+            3,
+            'Move',
+            null
+        );
+
+        // Global stock should remain unchanged
+        $this->assertEquals(10, $material->getStock());
     }
 }

@@ -1,16 +1,17 @@
 <div class="material-item border border-slate-100 rounded-xl p-3 mb-3 bg-white shadow-sm" data-action="change->service-form#onMaterialRowChange">
     <div class="d-flex align-items-center justify-content-between mb-2">
         <div class="flex-grow-1 me-2">
-            {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm material-selector', 'data-action': 'change->service-form#onMaterialSelectChange'}}) }}
+            {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm material-selector', 'data-action': 'change->service-form#onMaterialSelectChange', 'aria-label': 'Seleccionar Material'}}) }}
         </div>
         <div class="me-2" style="width: 80px;">
             {{ form_widget(form.quantity, {'attr': {
                 'class': 'form-control form-control-sm mini-input quantity-input',
                 'placeholder': '1',
-                'data-action': 'input->service-form#onQuantityInput'
+                'data-action': 'input->service-form#onQuantityInput',
+                'aria-label': 'Cantidad'
             }}) }}
         </div>
-        <button type="button" class="btn btn-outline-danger btn-sm p-1 border-0" data-action="click->service-form#removeMaterial" title="Eliminar material">
+        <button type="button" class="btn btn-outline-danger btn-sm p-1 border-0" data-action="click->service-form#removeMaterial" title="Eliminar material" aria-label="Eliminar material">
             <i data-lucide="trash-2" class="w-4 h-4 text-red-400"></i>
         </button>
     </div>
@@ -19,6 +20,6 @@
 
     <div class="unit-selection-container mt-2 hidden">
         <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1 d-block">Identificar Unidad (Opcional)</label>
-        {{ form_widget(form.materialUnit, {'attr': {'class': 'form-select form-select-sm unit-selector'}}) }}
+        {{ form_widget(form.materialUnit, {'attr': {'class': 'form-select form-select-sm unit-selector', 'aria-label': 'Identificar Unidad'}}) }}
     </div>
 </div>

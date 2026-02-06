@@ -13,20 +13,31 @@
                 {% if current_category %}
                     <input type="hidden" name="category" value="{{ current_category }}">
                 {% endif %}
-                <select name="size" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                    <option value="">Filtrar por talla...</option>
-                    <optgroup label="Letras">
-                        {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
-                            <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
+
+                {% if current_category == 'Sanitario' %}
+                    <select name="subFamily" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                        <option value="">Todas las familias...</option>
+                        {% for f in ['Analgésicos', 'Curas', 'Inmovilización', 'Medicación', 'Diagnóstico', 'Protección', 'Oxigenoterapia', 'Vía Aérea', 'Varios'] %}
+                            <option value="{{ f }}" {{ current_subfamily == f ? 'selected' : '' }}>{{ f }}</option>
                         {% endfor %}
-                    </optgroup>
-                    <optgroup label="Números">
-                        {% for s in range(36, 56, 2) %}
-                            <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
-                        {% endfor %}
-                    </optgroup>
-                </select>
-                {% if current_size %}
+                    </select>
+                {% else %}
+                    <select name="size" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                        <option value="">Filtrar por talla...</option>
+                        <optgroup label="Letras">
+                            {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
+                                <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
+                            {% endfor %}
+                        </optgroup>
+                        <optgroup label="Números">
+                            {% for s in range(36, 56, 2) %}
+                                <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
+                            {% endfor %}
+                        </optgroup>
+                    </select>
+                {% endif %}
+
+                {% if current_size or current_subfamily %}
                     <a href="{{ path('app_material_index', {category: current_category}) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
                 {% endif %}
             </form>
@@ -49,7 +60,12 @@
                         <tr>
                             <th>Imagen</th>
                             <th>Nombre</th>
-                            <th>Categoría</th>
+                            {% if current_category == 'Sanitario' %}
+                                <th>Subfamilia</th>
+                                <th>Caducidad</th>
+                            {% else %}
+                                <th>Categoría</th>
+                            {% endif %}
                             <th>Naturaleza</th>
                             <th>Stock / Unidades</th>
                             <th>Estado</th>
@@ -58,7 +74,8 @@
                     </thead>
                     <tbody>
                     {% for material in materials %}
-                        <tr>
+                        {% set status = material.expirationStatus %}
+                        <tr class="{{ current_category == 'Sanitario' and status == 'red' ? 'table-danger' : '' }}">
                             <td>
                                 {% if material.imagePath %}
                                     <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" 
@@ -73,7 +90,20 @@
                                 {% endif %}
                             </td>
                             <td class="font-weight-bold">{{ material.name }}</td>
-                            <td>{{ material.category }}</td>
+                            {% if current_category == 'Sanitario' %}
+                                <td><span class="badge bg-light text-primary">{{ material.subFamily|default('N/A') }}</span></td>
+                                <td>
+                                    {% if material.expirationDate %}
+                                        <span class="badge {{ status == 'red' ? 'bg-danger' : (status in ['orange', 'yellow'] ? 'bg-warning text-dark' : 'bg-success') }}">
+                                            {{ material.expirationDate|date('d/m/Y') }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted small">N/A</span>
+                                    {% endif %}
+                                </td>
+                            {% else %}
+                                <td>{{ material.category }}</td>
+                            {% endif %}
                             <td>
                                 <span class="px-2 py-1 rounded-full text-[10px] font-black uppercase tracking-wider {{ material.nature == 'CONSUMIBLE' ? 'bg-blue-100 text-blue-700' : 'bg-slate-100 text-slate-700' }}">
                                     {{ material.nature }}

@@ -17,6 +17,9 @@ class MaterialUnit
     #[ORM\JoinColumn(nullable: false)]
     private ?Material $material = null;
 
+    #[ORM\ManyToOne(inversedBy: 'units')]
+    private ?Location $location = null;
+
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $serialNumber = null;
 
@@ -136,6 +139,18 @@ class MaterialUnit
     public function setBatteryStatus(?string $batteryStatus): static
     {
         $this->batteryStatus = $batteryStatus;
+
+        return $this;
+    }
+
+    public function getLocation(): ?Location
+    {
+        return $this->location;
+    }
+
+    public function setLocation(?Location $location): static
+    {
+        $this->location = $location;
 
         return $this;
     }

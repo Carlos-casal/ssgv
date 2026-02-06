@@ -1,93 +1,410 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Editar Material{% endblock %}
+{% block title %}
+    {% if material.category == 'Sanitario' %}
+        Editar Material Sanitario
+    {% elseif material.category == 'Comunicaciones' %}
+        Editar Equipo de Comunicaciones
+    {% else %}
+        Editar Material
+    {% endif %}
+{% endblock %}
 
-{% block page_title %}<span data-material-dynamic-form-target="title">Editar: {{ material.name }}</span>{% endblock %}
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <span>
+            {% if material.category == 'Sanitario' %}
+                Edición de Material Sanitario / Farmacia
+            {% elseif material.category == 'Comunicaciones' %}
+                Edición de Equipo de Comunicaciones / Telefonía
+            {% else %}
+                Editar Material
+            {% endif %}
+        </span>
+        <div>
+            <button type="submit" form="material-form" class="btn btn-primary shadow-sm px-4">
+                <i class="fas fa-save mr-2"></i> Guardar Cambios
+            </button>
+            <a href="{{ path('app_material_show', {id: material.id}) }}" class="btn btn-outline-secondary ml-2">Cancelar</a>
+        </div>
+    </div>
+{% endblock %}
 
 {% block content %}
 <div class="container-fluid py-4">
-    <div class="card shadow mb-4">
-        <div class="card-body">
-            {{ form_start(form, {'attr': {'data-controller': 'material-dynamic-form', 'enctype': 'multipart/form-data'}}) }}
-                <div class="row">
-                    <div class="col-md-6">{{ form_row(form.name) }}</div>
-                    <div class="col-md-3">{{ form_row(form.category, {'attr': {
-                        'data-material-sizing-target': 'category',
-                        'data-action': 'change->material-sizing#updateFieldVisibility'
-                    }}) }}</div>
-                    <div class="col-md-3">{{ form_row(form.nature, {'attr': {
-                        'data-material-sizing-target': 'nature',
-                        'data-action': 'change->material-sizing#updateFieldVisibility'
-                    }}) }}</div>
-                </div>
+    {{ form_start(form, {'attr': {'id': 'material-form', 'class': 'material-form', 'novalidate': 'novalidate'}}) }}
 
-                {# Barcode field with scanner icon #}
-                <div class="row" data-material-sizing-target="barcodeRow">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            {{ form_label(form.barcode) }}
-                            <div class="input-group">
-                                <div class="input-group-prepend">
-                                    <span class="input-group-text bg-primary text-white">
-                                        <i class="fas fa-barcode"></i>
-                                    </span>
-                                </div>
-                                {{ form_widget(form.barcode, {'attr': {'class': 'form-control form-control-lg'}}) }}
-                            </div>
-                            <small class="form-text text-muted">{{ form_help(form.barcode) }}</small>
+    {% if material.category == 'Sanitario' %}
+    {# Layout para Sanitario #}
+    <div class="row">
+        {# Columna Izquierda (66%) #}
+        <div class="col-lg-8">
+            {# Datos Clínicos #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-medical mr-2"></i> Datos Clínicos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {{ form_row(form.name, {'label': 'Nombre comercial / Genérico'}) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.subFamily) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.description) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            {{ form_row(form.nature) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.barcode) }}
                         </div>
                     </div>
                 </div>
+            </div>
 
-                {# Description field #}
-                <div class="row" data-material-sizing-target="descriptionRow">
-                    <div class="col-md-12">{{ form_row(form.description) }}</div>
+            {# Seguridad y Trazabilidad #}
+            <div class="card shadow-sm mb-4 border-left-danger border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-danger">
+                        <i class="fas fa-shield-alt mr-2"></i> Seguridad y Trazabilidad
+                    </h6>
                 </div>
-
-                {# Image upload with current image preview #}
-                <div class="row">
-                    <div class="col-md-12">
-                        {% if material.imagePath %}
-                            <div class="mb-3">
-                                <label class="form-label font-weight-bold">Imagen Actual</label>
-                                <div>
-                                    <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" 
-                                         alt="{{ material.name }}" 
-                                         class="img-thumbnail" 
-                                         style="max-width: 200px;">
-                                </div>
-                            </div>
-                        {% endif %}
-                        {{ form_row(form.imageFile) }}
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            {{ form_row(form.batchNumber) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.expirationDate) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.supplier) }}
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {# Sizing type #}
-                <div class="row">
-                    <div class="col-md-12">
-                        {{ form_row(form.sizingType, {'attr': {
-                            'data-material-sizing-target': 'sizingType',
-                            'data-action': 'change->material-sizing#updateGrid'
-                        }}) }}
+            {# Financial #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.unitPrice) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.iva) }}
+                        </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <div data-material-sizing-target="gridContainer"></div>
+        {# Columna Derecha (33%) #}
+        <div class="col-lg-4">
+            {# Imagen #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body text-center p-4">
+                    {% if material.imagePath %}
+                        <div class="mb-3">
+                            <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" alt="Preview" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <i class="fas fa-camera fa-3x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+                    {{ form_row(form.imageFile, {'label': 'Cambiar Imagen'}) }}
+                </div>
+            </div>
 
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        {{ form_row(form.stock, {'attr': {'data-material-sizing-target': 'stockInput'}}) }}
+            {# Formatos (Logística) #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-boxes mr-2"></i> Logística y Formatos
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-6">
+                            {{ form_row(form.packagingFormat, {'label': 'Formato'}) }}
+                        </div>
+                        <div class="col-6">
+                            {{ form_row(form.unitsPerPackage, {'label': 'Uds/Envase'}) }}
+                        </div>
                     </div>
-                    <div class="col-md-6">{{ form_row(form.safetyStock) }}</div>
                 </div>
-                <div class="mt-4">
-                    <button class="btn btn-primary btn-lg px-5 font-weight-bold">
-                        <i class="fas fa-save mr-2"></i>Actualizar
-                    </button>
-                    <a href="{{ path('app_material_index') }}" class="btn btn-link text-secondary ml-3">Cancelar</a>
+            </div>
+
+            {# Stock #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-warehouse mr-2"></i> Gestión de Inventario
+                    </h6>
                 </div>
-            {{ form_end(form) }}
+                <div class="card-body">
+                    {{ form_row(form.stock, {'label': 'Stock Actual (Unidades)', 'disabled': true}) }}
+                    <small class="text-muted d-block mb-3">Para ajustar el stock use la función de "Ajuste de Stock" en la vista detalle.</small>
+                    {{ form_row(form.safetyStock, {'label': 'Stock Mínimo'}) }}
+                </div>
+            </div>
         </div>
     </div>
+
+    {% elseif material.category == 'Comunicaciones' %}
+    {# Layout para Comunicaciones #}
+    <div class="row">
+        {# Columna Izquierda #}
+        <div class="col-lg-8">
+            {# Panel A: Datos del Equipo (Físico) #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-radio mr-2"></i> Panel A: Datos del Equipo (Físico)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">{{ form_row(form.deviceType) }}</div>
+                        <div class="col-md-6">{{ form_row(form.brandModel) }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <div class="bg-yellow-50 p-2 rounded border border-warning-subtle">
+                                {{ form_row(form.serialNumber, {'label': 'Número de Serie (S/N) *'}) }}
+                            </div>
+                        </div>
+                        <div class="col-md-6">{{ form_row(form.operationalStatus) }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">{{ form_row(form.name, {'label': 'Nombre / Alias en Red'}) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Panel B: Datos de Red (Lógico) #}
+            <div class="card shadow-sm mb-4 border-0 border-left-info">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-info">
+                        <i class="fas fa-network-wired mr-2"></i> Panel B: Datos de Red (Lógico)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">{{ form_row(form.frequencyBand) }}</div>
+                        <div class="col-md-6">{{ form_row(form.networkId, {'label': 'ID de Red (ISSI / IMEI / MMSI)'}) }}</div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">{{ form_row(form.phoneNumber) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            {# Panel C: Mantenimiento y Accesorios #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-secondary">
+                        <i class="fas fa-tools mr-2"></i> Panel C: Mantenimiento y Accesorios
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">{{ form_row(form.purchaseDate) }}</div>
+                        <div class="col-md-6">{{ form_row(form.warrantyEndDate, {'label': 'Fin de Garantía'}) }}</div>
+                    </div>
+                    <hr class="my-4">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="form-check custom-checkbox">
+                                {{ form_widget(form.hasCharger) }}
+                                {{ form_label(form.hasCharger) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check custom-checkbox">
+                                {{ form_widget(form.hasClip) }}
+                                {{ form_label(form.hasClip) }}
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-check custom-checkbox">
+                                {{ form_widget(form.hasMicrophone) }}
+                                {{ form_label(form.hasMicrophone) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {# Columna Derecha #}
+        <div class="col-lg-4">
+            {# Imagen #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body text-center p-4">
+                    {% if material.imagePath %}
+                        <div class="mb-3">
+                            <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" alt="Preview" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <i class="fas fa-camera fa-3x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+                    {{ form_row(form.imageFile, {'label': 'Cambiar Foto'}) }}
+                </div>
+            </div>
+
+            {# Batería #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-battery-three-quarters mr-2"></i> Estado de Energía
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.batteryStatus) }}
+                </div>
+            </div>
+
+            {# Asignación #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-truck mr-2"></i> Instalación / Asignación
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.assignedVehicle) }}
+                </div>
+            </div>
+
+            {# Hidden fields for Comms #}
+            <div class="hidden">
+                {{ form_row(form.stock) }}
+                {{ form_row(form.nature) }}
+                {{ form_row(form.category) }}
+            </div>
+        </div>
+    </div>
+
+    {% else %}
+    {# Layout Genérico #}
+    <div class="row">
+        {# Columna Izquierda (66%) #}
+        <div class="col-lg-8">
+            {# Información General #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle mr-2"></i> Información General
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            {{ form_row(form.name) }}
+                        </div>
+                        <div class="col-md-4">
+                            {{ form_row(form.category) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.description) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            {{ form_row(form.nature) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.barcode) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# Financial #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.unitPrice) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.iva) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body">
+                    {{ form_row(form.sizingType) }}
+                </div>
+            </div>
+        </div>
+
+        {# Columna Derecha (33%) #}
+        <div class="col-lg-4">
+            {# Imagen #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-body text-center p-4">
+                    {% if material.imagePath %}
+                        <div class="mb-3">
+                            <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" alt="Preview" class="img-fluid rounded mb-2" style="max-height: 150px;">
+                        </div>
+                    {% else %}
+                        <div class="mb-3">
+                            <i class="fas fa-camera fa-3x text-gray-300"></i>
+                        </div>
+                    {% endif %}
+                    {{ form_row(form.imageFile, {'label': 'Cambiar Imagen'}) }}
+                </div>
+            </div>
+
+            {# Stock #}
+            <div class="card shadow-sm mb-4 border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-warehouse mr-2"></i> Gestión de Inventario
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {{ form_row(form.stock, {'label': 'Stock Actual (Unidades)', 'disabled': true}) }}
+                    <small class="text-muted d-block mb-3">Para ajustar el stock use la función de "Ajuste de Stock" en la vista detalle.</small>
+                    {{ form_row(form.safetyStock, {'label': 'Stock Mínimo'}) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {{ form_end(form) }}
 </div>
+
+<style>
+    .border-left-danger {
+        border-left: 0.25rem solid #e74a3b !important;
+    }
+    .material-form .form-group {
+        margin-bottom: 1rem;
+    }
+    .material-form label {
+        font-weight: 600;
+        color: #4e73df;
+        font-size: 0.85rem;
+        text-transform: uppercase;
+    }
+</style>
 {% endblock %}

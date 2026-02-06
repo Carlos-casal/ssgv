@@ -6,6 +6,7 @@ use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Form\MaterialType;
 use App\Form\MaterialUnitType;
+use App\Form\MaterialTransferType;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
 use App\Repository\MaterialStockRepository;
@@ -28,12 +29,18 @@ class MaterialController extends AbstractController
     {
         $category = $request->query->get('category');
         $size = $request->query->get('size');
+        $subFamily = $request->query->get('subFamily');
 
         $qb = $materialRepository->createQueryBuilder('m');
 
         if ($category) {
             $qb->andWhere('m.category = :category')
                ->setParameter('category', $category);
+        }
+
+        if ($subFamily) {
+            $qb->andWhere('m.subFamily = :subFamily')
+               ->setParameter('subFamily', $subFamily);
         }
 
         if ($size) {
@@ -49,6 +56,7 @@ class MaterialController extends AbstractController
             'materials' => $materials,
             'current_category' => $category,
             'current_size' => $size,
+            'current_subfamily' => $subFamily,
             'current_section' => 'recursos'
         ]);
     }
@@ -62,6 +70,11 @@ class MaterialController extends AbstractController
         $category = $request->query->get('category');
         if ($category) {
             $material->setCategory($category);
+        }
+
+        // Context-aware logic for Sanitary
+        if ($category === 'Sanitario') {
+            $material->setCategory('Sanitario');
         }
 
         $form = $this->createForm(MaterialType::class, $material);
@@ -192,7 +205,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/unit/new', name: 'app_material_unit_new', methods: ['GET', 'POST'])]
-    public function newUnit(Request $request, Material $material, EntityManagerInterface $entityManager): Response
+    public function newUnit(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $unit = new MaterialUnit();
         $unit->setMaterial($material);
@@ -200,7 +213,14 @@ class MaterialController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($unit);
+            $materialManager->createUnit($material, [
+                'collectiveNumber' => $unit->getCollectiveNumber(),
+                'serialNumber' => $unit->getSerialNumber(),
+                'pttStatus' => $unit->getPttStatus(),
+                'coverStatus' => $unit->getCoverStatus(),
+                'batteryStatus' => $unit->getBatteryStatus(),
+            ], $unit->getLocation());
+
             $entityManager->flush();
 
             return $this->redirectToRoute('app_material_show', ['id' => $material->getId()], Response::HTTP_SEE_OTHER);
@@ -215,19 +235,12 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/unit/bulk', name: 'app_material_unit_bulk', methods: ['GET', 'POST'])]
-    public function bulkAddUnits(Request $request, Material $material, EntityManagerInterface $entityManager): Response
+    public function bulkAddUnits(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         if ($request->isMethod('POST')) {
             $unitsData = $request->request->all('units');
             foreach ($unitsData as $data) {
-                $unit = new MaterialUnit();
-                $unit->setMaterial($material);
-                $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
-                $unit->setSerialNumber($data['serialNumber'] ?? null);
-                $unit->setPttStatus($data['pttStatus'] ?? 'OK');
-                $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
-                $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
-                $entityManager->persist($unit);
+                $materialManager->createUnit($material, $data);
             }
             $entityManager->flush();
 
@@ -236,6 +249,38 @@ class MaterialController extends AbstractController
 
         return $this->render('material/bulk_unit_new.html.twig', [
             'material' => $material,
+            'current_section' => 'recursos'
+        ]);
+    }
+
+    #[Route('/{id}/transfer', name: 'app_material_transfer', methods: ['GET', 'POST'])]
+    public function transfer(Request $request, Material $material, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
+    {
+        $form = $this->createForm(MaterialTransferType::class, null, ['material' => $material]);
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+
+            $materialManager->transfer(
+                $material,
+                $data['origin'],
+                $data['destination'],
+                $data['quantity'],
+                $data['reason'],
+                $data['responsible'],
+                $data['size'],
+                $data['materialUnit'] ?? null
+            );
+
+            $this->addFlash('success', 'Movimiento registrado correctamente.');
+
+            return $this->redirectToRoute('app_material_show', ['id' => $material->getId()]);
+        }
+
+        return $this->render('material/transfer.html.twig', [
+            'material' => $material,
+            'form' => $form,
             'current_section' => 'recursos'
         ]);
     }
