@@ -18,3 +18,11 @@
 - **Category Specificity:** Implemented specialized show/edit layouts for Sanitary and Communications items. Sanitary focuses on Batch/Expiration/Clinical families, while Communications focuses on S/N, Network IDs (ISSI/IMEI), and operational status.
 - **Movements:** Added a "Log de Movimientos" section in the material detail view to track every transfer between locations.
 - **Visual Feedback:** Integrated a traffic light semaphore for expiration dates (Red: Expired, Orange: <30 days, Yellow: <6 months) and low-stock alerts.
+
+## 2024-05-23 - Compact 2-Tab Service Management Dashboard
+- **Layout:** Replaced long scrolling forms with a 2-tab Bootstrap structure ('Datos Generales' and 'Recursos').
+- **Header:** Implemented a fixed top header with primary action buttons (Guardar/Cancelar) to maintain context while scrolling.
+- **Tab 1 (Identity & Context):** Uses a 4:8 split grid. Left panel for Identity (Title, ID, Category); Right panel for Chronology (Dates, Times, Location) with horizontal row layouts for time inputs.
+- **Tab 2 (Resource Allocation):** Centralizes all resource management (Materials, Vehicles, Personnel) in a single unified view.
+- **Micro-UX:** Applied a bottom 'Definición Operativa' section for multi-line textareas (Tasks, Description) with fixed-height rows to prevent layout shifts.
+- **Traceability Feedback:** Added 'expiration status' indicators (traffic light dots) in material lists to provide immediate visual warnings for expiring inventory.

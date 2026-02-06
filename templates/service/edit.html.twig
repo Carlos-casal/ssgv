@@ -1,6 +1,6 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Crear Nuevo Servicio{% endblock %}
+{% block title %}Editar Servicio: {{ service.title }}{% endblock %}
 
 {% block stylesheets %}
     {{ parent() }}
@@ -61,15 +61,15 @@
 {% block page_title %}
     <div class="d-flex justify-content-between align-items-center w-100">
         <div class="d-flex align-items-center">
-            <i data-lucide="plus-circle" class="w-6 h-6 text-blue-600 mr-2"></i>
-            <span class="font-black tracking-tight">CREAR NUEVO SERVICIO</span>
+            <i data-lucide="edit" class="w-6 h-6 text-blue-600 mr-2"></i>
+            <span class="font-black tracking-tight uppercase">EDITAR SERVICIO: {{ service.title }}</span>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ path('app_services_list') }}" class="btn btn-outline-secondary btn-sm px-3">
+            <a href="{{ path('app_service_show', {id: service.id}) }}" class="btn btn-outline-secondary btn-sm px-3">
                 <i data-lucide="x" class="w-4 h-4 inline mr-1"></i> Cancelar
             </a>
-            <button type="submit" form="new-service-form-element" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
-                <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> GUARDAR SERVICIO
+            <button type="submit" form="edit-service-form-element" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
+                <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> GUARDAR CAMBIOS
             </button>
         </div>
     </div>
@@ -79,7 +79,7 @@
 <div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full" data-controller="service-form">
     {{ form_start(form, {
         'attr': {
-            'id': 'new-service-form-element',
+            'id': 'edit-service-form-element',
             'data-service-form-target': 'form',
             'novalidate': 'novalidate'
         }
