@@ -26,3 +26,9 @@
 - **Tab 2 (Resource Allocation):** Centralizes all resource management (Materials, Vehicles, Personnel) in a single unified view.
 - **Micro-UX:** Applied a bottom 'Definición Operativa' section for multi-line textareas (Tasks, Description) with fixed-height rows to prevent layout shifts.
 - **Traceability Feedback:** Added 'expiration status' indicators (traffic light dots) in material lists to provide immediate visual warnings for expiring inventory.
+
+## 2025-05-15 - Rediseño de Gestión de Servicios y Trazabilidad
+- **Micro-UX de Pestañas:** Implementado un sistema de navegación por pestañas de alta densidad (4:8 split) para centralizar Datos, Recursos y Asistencia sin perder el foco.
+- **Header Pegajoso (Sticky):** El botón de "Guardar" y "Cancelar" se mantiene siempre visible en la parte superior, reduciendo la carga cognitiva y el scroll innecesario.
+- **Consistencia Visual:** Unificado el diseño entre la creación de servicios y la edición, extendiendo el sistema de pestañas para incluir la gestión de asistencia en el modo edición.
+- **Trazabilidad de Almacén:** Evolución del sistema hacia una arquitectura de movimientos entre ubicaciones (Almacén, Vehículos, Kits) con desgloses automáticos por ubicación y valoración económica en tiempo real.

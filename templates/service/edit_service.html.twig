@@ -40,8 +40,20 @@
             height: 1.25em;
             cursor: pointer;
         }
-        .tab-content-panel.hidden {
-            display: none !important;
+        /* Tabs Styling */
+        .nav-tabs-custom .nav-link {
+            border: none;
+            color: #64748b;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            padding: 1rem 1.5rem;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tabs-custom .nav-link.active {
+            color: #2563eb;
+            background: transparent;
+            border-bottom: 2px solid #2563eb;
         }
     </style>
 {% endblock %}
@@ -53,8 +65,8 @@
             <span class="font-black tracking-tight uppercase">EDITAR SERVICIO: {{ service.title }}</span>
         </div>
         <div class="d-flex gap-2">
-            <a href="{{ path('app_services_list') }}" class="btn btn-outline-secondary btn-sm px-3">
-                <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i> Volver
+            <a href="{{ path('app_service_show', {id: service.id}) }}" class="btn btn-outline-secondary btn-sm px-3">
+                <i data-lucide="x" class="w-4 h-4 inline mr-1"></i> Cancelar
             </a>
             <button type="submit" form="edit-service-form-element" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
                 <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> GUARDAR CAMBIOS
@@ -64,249 +76,177 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-3 bg-[#f8f9fa] min-h-full" data-controller="service-form" data-service-id="{{ service.id }}">
+<div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full" data-controller="service-form" data-service-id="{{ service.id }}">
 
-    <!-- Top Level Navigation: Details vs Attendance -->
-    <div class="mb-4 flex space-x-2 bg-slate-200/50 p-1 rounded-xl w-fit shadow-inner mx-auto">
-        <button type="button" class="whitespace-nowrap py-1.5 px-4 rounded-lg font-bold text-xs transition-all duration-200 bg-white text-blue-600 shadow-sm" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="details-panel">
-            <i data-lucide="file-text" class="w-3.5 h-3.5 inline-block mr-1"></i> Configuración
-        </button>
-        <button type="button" class="whitespace-nowrap py-1.5 px-4 rounded-lg font-bold text-xs transition-all duration-200 text-slate-500 hover:text-slate-700" data-service-form-target="tabLink" data-action="click->service-form#switchTab" data-target="attendance-panel">
-            <i data-lucide="users" class="w-3.5 h-3.5 inline-block mr-1"></i> Asistencia ({{ service.assistanceConfirmations|length }})
-        </button>
-    </div>
+    <!-- Navigation Tabs -->
+    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-4 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos" type="button" role="tab" aria-controls="datos" aria-selected="true">
+                <i data-lucide="file-text" class="w-4 h-4 inline me-2"></i> Datos Generales
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="recursos-tab" data-bs-toggle="tab" data-bs-target="#recursos" type="button" role="tab" aria-controls="recursos" aria-selected="false">
+                <i data-lucide="truck" class="w-4 h-4 inline me-2"></i> Recursos y Dotación
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="asistencia-tab" data-bs-toggle="tab" data-bs-target="#asistencia" type="button" role="tab" aria-controls="asistencia" aria-selected="false">
+                <i data-lucide="users" class="w-4 h-4 inline me-2"></i> Asistencia ({{ service.assistanceConfirmations|length }})
+            </button>
+        </li>
+    </ul>
 
-    <!-- Panel 1: Details (Redesigned Form) -->
-    <div id="details-panel" data-service-form-target="tabContent" class="tab-content-panel">
-        {{ form_start(form, {
-            'attr': {
-                'id': 'edit-service-form-element',
-                'data-service-form-target': 'form',
-                'novalidate': 'novalidate'
-            }
-        }) }}
+    <div class="tab-content" id="serviceFormTabContent">
+        <!-- TAB 1: DATOS GENERALES -->
+        <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
+            {{ form_start(form, {
+                'attr': {
+                    'id': 'edit-service-form-element',
+                    'data-service-form-target': 'form',
+                    'novalidate': 'novalidate'
+                }
+            }) }}
 
-        <div class="row g-3">
-            <!-- COLUMNA IZQUIERDA: Identificación -->
-            <div class="col-md-4">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-header-compact d-flex align-items-center">
-                        <i data-lucide="info" class="w-4 h-4 text-blue-600 mr-2"></i>
-                        <span class="section-title">Datos Identificativos</span>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="mb-2">
-                            <label class="form-label-sm" for="service_title">Título del Servicio <span class="text-danger">*</span></label>
-                            {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError'}}) }}
-                            <div class="invalid-feedback hidden" id="error-service_title"></div>
+            <div class="row g-3">
+                <!-- COLUMNA IZQUIERDA: Identificación -->
+                <div class="col-lg-4">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-header-compact d-flex align-items-center">
+                            <i data-lucide="info" class="w-4 h-4 text-blue-600 mr-2"></i>
+                            <span class="section-title">Datos Identificativos</span>
                         </div>
+                        <div class="card-body p-3">
+                            <div class="mb-2">
+                                <label class="form-label-sm" for="service_title">Título del Servicio <span class="text-danger">*</span></label>
+                                {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError'}}) }}
+                                <div class="invalid-feedback hidden" id="error-service_title"></div>
+                            </div>
 
-                        <div class="mb-2">
-                            <label class="form-label-sm" for="service_numeration">Nº de Registro (ID)</label>
-                            {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-sm font-monospace bg-light'}}) }}
-                        </div>
+                            <div class="mb-2">
+                                <label class="form-label-sm" for="service_numeration">Nº de Registro (ID)</label>
+                                {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-sm font-monospace bg-light'}}) }}
+                            </div>
 
-                        <div class="row g-2 mb-2">
-                            <div class="col-6">
-                                <label class="form-label-sm" for="service_type">Tipo <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
-                                    <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
-                                        <i data-lucide="plus" class="w-3 h-3"></i>
-                                    </button>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <label class="form-label-sm" for="service_type">Tipo <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
+                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div class="col-6">
-                                <label class="form-label-sm" for="service_subcategory">Categoría <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    {{ form_widget(form.subcategory, {'attr': {'class': 'form-select form-select-sm'}}) }}
-                                    <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
-                                        <i data-lucide="plus" class="w-3 h-3"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div>
-                            <label class="form-label-sm" for="service_afluencia">Afluencia Estimada <span class="text-danger">*</span></label>
-                            {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- COLUMNA DERECHA: Cronología y Ubicación -->
-            <div class="col-md-8">
-                <div class="card border-0 shadow-sm rounded-3 h-100">
-                    <div class="card-header-compact d-flex align-items-center">
-                        <i data-lucide="calendar" class="w-4 h-4 text-orange-600 mr-2"></i>
-                        <span class="section-title">Cronología y Ubicación</span>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="row g-3 mb-3">
-                            <div class="col-md-6">
-                                <label class="form-label-sm">Rango de Fechas <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white">Inicio</span>
-                                    {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                    <span class="input-group-text bg-white">Fin</span>
-                                    {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-sm" for="service_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3"></i></span>
-                                    {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <label class="form-label-sm">Hora en Base <span class="text-danger">*</span></label>
-                                {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label-sm">Hora Salida <span class="text-danger">*</span></label>
-                                {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label-sm">Límite Inscripción <span class="text-danger">*</span></label>
-                                {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- FILA 2: Descripción y Tareas -->
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-header-compact d-flex align-items-center">
-                        <i data-lucide="clipboard-list" class="w-4 h-4 text-green-600 mr-2"></i>
-                        <span class="section-title">Definición Operativa</span>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label-sm">Tareas del Servicio</label>
-                                {{ form_widget(form.tasks, {'attr': {'class': 'form-control form-control-sm', 'rows': '3'}}) }}
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label-sm">Descripción Detallada</label>
-                                {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'rows': '3'}}) }}
-                            </div>
-                        </div>
-                        <div class="row g-3 mt-1 align-items-center">
-                            <div class="col-md-3">
-                                <div class="d-flex align-items-center gap-3 bg-light p-2 rounded-2">
-                                    <label class="form-label-sm mb-0">¿Avituallamiento?</label>
-                                    <div class="form-check form-switch p-0 m-0">
-                                        {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                <div class="col-6">
+                                    <label class="form-label-sm" for="service_subcategory">Categoría <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        {{ form_widget(form.subcategory, {'attr': {'class': 'form-select form-select-sm'}}) }}
+                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
+                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        </button>
                                     </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text bg-white"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</span>
-                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control', 'placeholder': '∞'}}) }}
+
+                            <div>
+                                <label class="form-label-sm" for="service_afluencia">Afluencia Estimada <span class="text-danger">*</span></label>
+                                {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: Cronología y Ubicación -->
+                <div class="col-lg-8">
+                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                        <div class="card-header-compact d-flex align-items-center">
+                            <i data-lucide="calendar" class="w-4 h-4 text-orange-600 mr-2"></i>
+                            <span class="section-title">Cronología y Ubicación</span>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-sm">Rango de Fechas <span class="text-danger">*</span></label>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">INICIO</span>
+                                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="input-group input-group-sm">
+                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">FIN</span>
+                                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-sm" for="service_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3"></i></span>
+                                        {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-md-3">
-                                <div class="form-check custom-checkbox">
-                                    {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input'}}) }}
-                                    <label class="form-label-sm mb-0 ms-2">Hospital Campaña</label>
+
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <label class="form-label-sm">Hora en Base <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label-sm">Hora Salida <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label-sm">Límite Inscripción <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- RECURSOS Y DOTACIÓN -->
-            <div class="col-12">
-                <div class="card border-0 shadow-sm rounded-3">
-                    <div class="card-header-compact bg-blue-50/50">
-                        <div class="d-flex align-items-center">
-                            <i data-lucide="package" class="w-4 h-4 text-blue-700 mr-2"></i>
-                            <span class="section-title text-blue-700">Recursos, Materiales y Dotación</span>
+                <!-- FILA 2: Definición Operativa -->
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header-compact d-flex align-items-center">
+                            <i data-lucide="clipboard-list" class="w-4 h-4 text-green-600 mr-2"></i>
+                            <span class="section-title">Definición Operativa</span>
                         </div>
-                    </div>
-                    <div class="card-body p-3">
-                        <div class="row g-3">
-                            <!-- Materiales -->
-                            <div class="col-lg-8 border-end">
-                                <div class="row g-2" id="materials-container"
-                                     data-service-form-target="materialsContainer"
-                                     data-index="{{ form.serviceMaterials|length }}"
-                                     data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
-
-                                    {% for category in ['Sanitario', 'Comunicaciones', 'Logística'] %}
-                                    <div class="col-md-4">
-                                        <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
-                                            <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">
-                                                <i data-lucide="plus-square" class="w-4 h-4"></i>
-                                            </button>
-                                        </div>
-                                        <div class="space-y-2" data-material-category="{{ category }}">
-                                            {% for sm in form.serviceMaterials %}
-                                                {% if sm.vars.data.material and sm.vars.data.material.category == category %}
-                                                    {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
-                                                {% endif %}
-                                            {% endfor %}
-                                        </div>
-                                    </div>
-                                    {% endfor %}
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <label class="form-label-sm">Tareas del Servicio</label>
+                                    {{ form_widget(form.tasks, {'attr': {'class': 'form-control form-control-sm', 'rows': '2'}}) }}
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-sm">Descripción Detallada</label>
+                                    {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'rows': '2'}}) }}
                                 </div>
                             </div>
-
-                            <!-- Dotación y Vehículos -->
-                            <div class="col-lg-4">
-                                <div class="row g-2">
-                                    <!-- Personal -->
-                                    <div class="col-6">
-                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Personal Requerido</span>
-                                        <div class="space-y-1">
-                                            {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
-                                                <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                    <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
-                                                    <div class="form-check form-switch m-0 p-0">
-                                                        {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
-                                                    </div>
-                                                </div>
-                                            {% endfor %}
+                            <div class="row g-3 mt-1 align-items-center">
+                                <div class="col-md-3">
+                                    <div class="d-flex align-items-center gap-3 bg-light p-2 rounded-2">
+                                        <label class="form-label-sm mb-0">¿Avituallamiento?</label>
+                                        <div class="form-check form-switch p-0 m-0">
+                                            {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
                                         </div>
                                     </div>
-                                    <!-- Ambulancias -->
-                                    <div class="col-6">
-                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Tipo Ambulancia</span>
-                                        <div class="space-y-1">
-                                            {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
-                                                <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                    <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
-                                                    <div class="form-check form-switch m-0 p-0">
-                                                        {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
-                                                    </div>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</span>
+                                        {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control', 'placeholder': '∞'}}) }}
                                     </div>
-                                    <!-- Vehículos (Compact list) -->
-                                    <div class="col-12 mt-2">
-                                        <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-1">Asignar Vehículos</span>
-                                        <div class="overflow-y-auto" style="max-height: 100px;">
-                                            {% for key, vehicle_choice in form.vehicles %}
-                                                {% set vehicle = form.vehicles.vars.choices[key].data %}
-                                                <div class="d-flex align-items-center justify-content-between py-1 border-bottom border-slate-100">
-                                                    <span class="text-[11px] text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
-                                                    <div class="form-check form-switch m-0 p-0">
-                                                        <input class="form-check-input ms-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
-                                                    </div>
-                                                </div>
-                                            {% endfor %}
-                                        </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check custom-checkbox">
+                                        {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input'}}) }}
+                                        <label class="form-label-sm mb-0 ms-2">Hospital Campaña</label>
                                     </div>
                                 </div>
                             </div>
@@ -316,151 +256,248 @@
             </div>
         </div>
 
-        <div style="display:none;">
-            {{ form_rest(form) }}
-        </div>
+        <!-- TAB 2: RECURSOS Y DOTACIÓN -->
+        <div class="tab-pane fade" id="recursos" role="tabpanel" aria-labelledby="recursos-tab">
+            <div class="row g-3">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-3">
+                        <div class="card-header-compact bg-blue-50/50">
+                            <div class="d-flex align-items-center">
+                                <i data-lucide="package" class="w-4 h-4 text-blue-700 mr-2"></i>
+                                <span class="section-title text-blue-700">Recursos, Materiales y Dotación</span>
+                            </div>
+                        </div>
+                        <div class="card-body p-3">
+                            <div class="row g-3">
+                                <!-- Materiales -->
+                                <div class="col-lg-8 border-end">
+                                    <div class="row g-2" id="materials-container"
+                                         data-service-form-target="materialsContainer"
+                                         data-index="{{ form.serviceMaterials|length }}"
+                                         data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
 
-        {{ form_end(form) }}
-    </div>
-
-    <!-- Panel 2: Attendance (Stay same structure but maybe more compact) -->
-    <div id="attendance-panel" data-service-form-target="tabContent" class="tab-content-panel hidden">
-        <div class="bg-white shadow-sm border border-slate-200 rounded-3 p-4">
-            <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-                <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                    <i data-lucide="user-check" class="w-5 h-5 mr-2 text-green-600"></i> Gestión de Asistencia
-                </h3>
-                <div class="flex space-x-2">
-                    {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COORDINATOR') %}
-                    <button type="button" data-action="click->service-form#openModal" class="btn btn-primary btn-sm flex items-center">
-                        <i data-lucide="user-plus" class="mr-2 h-4 w-4"></i> Añadir voluntarios
-                    </button>
-                    {% endif %}
-                    <button type="button" id="fichar-todos-btn" class="btn btn-outline-success btn-sm flex items-center">
-                        <i data-lucide="check-square" class="mr-2 h-4 w-4"></i> Fichar todos
-                    </button>
-                </div>
-            </div>
-
-            <div class="row g-4">
-                <!-- Asisten -->
-                <div class="col-md-4">
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                        <h4 class="text-xs font-black uppercase tracking-wider text-green-700 mb-4 flex justify-between items-center">
-                            <span>Asistentes</span>
-                            <span class="bg-green-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
-                        </h4>
-                        <ul class="space-y-2">
-                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
-                                <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 group">
-                                    {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
-                                    <div class="flex items-center justify-between">
-                                        <div class="flex-grow">
-                                            <p class="text-sm font-bold text-slate-800 m-0">
-                                                {% if confirmation.isFichajeResponsible %}
-                                                    <i data-lucide="star" class="h-3 w-3 inline-block text-yellow-500 fill-current mr-1"></i>
-                                                {% endif %}
-                                                {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
-                                            </p>
-                                            {% if vs %}
-                                                {% set totalMinutes = vs.calculateTotalDuration() %}
-                                                {% if totalMinutes > 0 %}
-                                                    {% set hours = (totalMinutes / 60)|round(0, 'floor') %}
-                                                    {% set minutes = totalMinutes % 60 %}
-                                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
-                                                {% endif %}
-                                            {% endif %}
-                                        </div>
-                                        <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {% if vs %}
-                                                {% set last_end_time = null %}
-                                                {% for fichaje_item in vs.fichajes %}
-                                                    {% if fichaje_item.endTime is not null %}
-                                                        {% if last_end_time is null or fichaje_item.endTime > last_end_time %}
-                                                            {% set last_end_time = fichaje_item.endTime %}
-                                                        {% endif %}
+                                        {% for category in ['Sanitario', 'Comunicaciones', 'Logística'] %}
+                                        <div class="col-md-4">
+                                            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
+                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
+                                                <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">
+                                                    <i data-lucide="plus-square" class="w-4 h-4"></i>
+                                                </button>
+                                            </div>
+                                            <div class="space-y-2" data-material-category="{{ category }}">
+                                                {% for sm in form.serviceMaterials %}
+                                                    {% if sm.vars.data.material and sm.vars.data.material.category == category %}
+                                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
                                                     {% endif %}
                                                 {% endfor %}
-                                                <button type="button"
-                                                        class="p-1 rounded hover:bg-blue-50 text-blue-400"
-                                                        title="Añadir fichaje manual"
-                                                        data-action="click->service-form#openIndividualFichajeModal"
-                                                        data-volunteer-service-id="{{ vs.id }}"
-                                                        data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}"
-                                                        data-last-clock-out="{{ last_end_time ? last_end_time|date('Y-m-d H:i:s') : '' }}">
-                                                    <i data-lucide="clock" class="h-3.5 w-3.5"></i>
-                                                </button>
-                                            {% endif %}
-                                            <form method="post" action="{{ path('app_assistance_confirmation_toggle_responsible', {'id': confirmation.id}) }}">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-responsible' ~ confirmation.id) }}">
-                                                <button type="submit" class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-yellow-500" title="Alternar Responsable">
-                                                    <i data-lucide="shield" class="h-3.5 w-3.5"></i>
-                                                </button>
-                                            </form>
-                                            <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Eliminar asistencia?');">
-                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                                <button type="submit" class="p-1 rounded hover:bg-red-50 text-red-400" title="Eliminar">
-                                                    <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
-                                                </button>
-                                            </form>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <!-- Dotación y Vehículos -->
+                                <div class="col-lg-4">
+                                    <div class="row g-2">
+                                        <!-- Personal -->
+                                        <div class="col-6">
+                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Personal Requerido</span>
+                                            <div class="space-y-1">
+                                                {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
+                                                    <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
+                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <div class="form-check form-switch m-0 p-0">
+                                                            {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <!-- Ambulancias -->
+                                        <div class="col-6">
+                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Tipo Ambulancia</span>
+                                            <div class="space-y-1">
+                                                {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
+                                                    <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
+                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <div class="form-check form-switch m-0 p-0">
+                                                            {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <!-- Vehículos (Compact list) -->
+                                        <div class="col-12 mt-2">
+                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-1">Asignar Vehículos</span>
+                                            <div class="overflow-y-auto" style="max-height: 200px;">
+                                                {% for key, vehicle_choice in form.vehicles %}
+                                                    {% set vehicle = form.vehicles.vars.choices[key].data %}
+                                                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom border-slate-100">
+                                                        <span class="text-[11px] text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
+                                                        <div class="form-check form-switch m-0 p-0">
+                                                            <input class="form-check-input ms-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
+                                                        </div>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
                                         </div>
                                     </div>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ASISTENCIA -->
+        <div class="tab-pane fade" id="asistencia" role="tabpanel" aria-labelledby="asistencia-tab">
+            <div class="bg-white shadow-sm border border-slate-200 rounded-3 p-4">
+                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center">
+                        <i data-lucide="user-check" class="w-5 h-5 mr-2 text-green-600"></i> Gestión de Asistencia
+                    </h3>
+                    <div class="flex space-x-2">
+                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COORDINATOR') %}
+                        <button type="button" data-action="click->service-form#openModal" class="btn btn-primary btn-sm flex items-center">
+                            <i data-lucide="user-plus" class="mr-2 h-4 w-4"></i> Añadir voluntarios
+                        </button>
+                        {% endif %}
+                        <button type="button" id="fichar-todos-btn" class="btn btn-outline-success btn-sm flex items-center">
+                            <i data-lucide="check-square" class="mr-2 h-4 w-4"></i> Fichar todos
+                        </button>
                     </div>
                 </div>
 
-                <!-- Reserva -->
-                <div class="col-md-4">
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                        <h4 class="text-xs font-black uppercase tracking-wider text-orange-700 mb-4 flex justify-between items-center">
-                            <span>En Reserva</span>
-                            <span class="bg-orange-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
-                        </h4>
-                        <ul class="space-y-2">
-                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserved') %}
-                                <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                    <span class="text-sm font-bold text-slate-700">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                    <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                        <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
-                                            <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                        </button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                <div class="row g-4">
+                    <!-- Asisten -->
+                    <div class="col-md-4">
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-green-700 mb-4 flex justify-between items-center">
+                                <span>Asistentes</span>
+                                <span class="bg-green-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
+                            </h4>
+                            <ul class="space-y-2">
+                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 group">
+                                        {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
+                                        <div class="flex items-center justify-between">
+                                            <div class="flex-grow">
+                                                <p class="text-sm font-bold text-slate-800 m-0">
+                                                    {% if confirmation.isFichajeResponsible %}
+                                                        <i data-lucide="star" class="h-3 w-3 inline-block text-yellow-500 fill-current mr-1"></i>
+                                                    {% endif %}
+                                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
+                                                </p>
+                                                {% if vs %}
+                                                    {% set totalMinutes = vs.calculateTotalDuration() %}
+                                                    {% if totalMinutes > 0 %}
+                                                        {% set hours = (totalMinutes / 60)|round(0, 'floor') %}
+                                                        {% set minutes = totalMinutes % 60 %}
+                                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
+                                                    {% endif %}
+                                                {% endif %}
+                                            </div>
+                                            <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {% if vs %}
+                                                    {% set last_end_time = null %}
+                                                    {% for fichaje_item in vs.fichajes %}
+                                                        {% if fichaje_item.endTime is not null %}
+                                                            {% if last_end_time is null or fichaje_item.endTime > last_end_time %}
+                                                                {% set last_end_time = fichaje_item.endTime %}
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <button type="button"
+                                                            class="p-1 rounded hover:bg-blue-50 text-blue-400"
+                                                            title="Añadir fichaje manual"
+                                                            data-action="click->service-form#openIndividualFichajeModal"
+                                                            data-volunteer-service-id="{{ vs.id }}"
+                                                            data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}"
+                                                            data-last-clock-out="{{ last_end_time ? last_end_time|date('Y-m-d H:i:s') : '' }}">
+                                                        <i data-lucide="clock" class="h-3.5 w-3.5"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <form method="post" action="{{ path('app_assistance_confirmation_toggle_responsible', {'id': confirmation.id}) }}">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-responsible' ~ confirmation.id) }}">
+                                                    <button type="submit" class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-yellow-500" title="Alternar Responsable">
+                                                        <i data-lucide="shield" class="h-3.5 w-3.5"></i>
+                                                    </button>
+                                                </form>
+                                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Eliminar asistencia?');">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                                    <button type="submit" class="p-1 rounded hover:bg-red-50 text-red-400" title="Eliminar">
+                                                        <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
-                </div>
 
-                <!-- No asisten -->
-                <div class="col-md-4">
-                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                        <h4 class="text-xs font-black uppercase tracking-wider text-red-700 mb-4 flex justify-between items-center">
-                            <span>Bajas</span>
-                            <span class="bg-red-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
-                        </h4>
-                        <ul class="space-y-2">
-                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}
-                                <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                    <span class="text-sm text-slate-500 line-through">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                    <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
-                                        <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                        <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
-                                            <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                        </button>
-                                    </form>
-                                </li>
-                            {% endfor %}
-                        </ul>
+                    <!-- Reserva -->
+                    <div class="col-md-4">
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-orange-700 mb-4 flex justify-between items-center">
+                                <span>En Reserva</span>
+                                <span class="bg-orange-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
+                            </h4>
+                            <ul class="space-y-2">
+                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserved') %}
+                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+                                        <span class="text-sm font-bold text-slate-700">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
+                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- No asisten -->
+                    <div class="col-md-4">
+                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
+                            <h4 class="text-xs font-black uppercase tracking-wider text-red-700 mb-4 flex justify-between items-center">
+                                <span>Bajas</span>
+                                <span class="bg-red-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
+                            </h4>
+                            <ul class="space-y-2">
+                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}
+                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
+                                        <span class="text-sm text-slate-500 line-through">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
+                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
+                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
+                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                            </button>
+                                        </form>
+                                    </li>
+                                {% endfor %}
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modals remain unchanged -->
+    <!-- Hidden Fields -->
+    <div style="display:none;">
+        {{ form_rest(form) }}
+    </div>
+
+    {{ form_end(form) }}
+
+    <!-- Modals -->
+    <!-- Attendance Volunteer Picker Modal -->
     <div class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50" data-service-form-target="modal">
         <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full mx-4 relative">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
@@ -566,40 +603,6 @@
             </form>
         </div>
     </div>
-
-    <!-- Material Modal (Learner) -->
-    <div id="materialModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="materialModal">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-semibold text-gray-700">Añadir Nuevo Material</h3>
-                <button type="button" data-action="click->service-form#closeMaterialModal" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-            <form id="modal-new-material-form" data-action="submit->service-form#handleMaterialSubmit" novalidate>
-                <div class="mb-4">
-                    <label for="material_name" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
-                    <input type="text" id="material_name" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
-                    <div class="invalid-feedback hidden" id="error-material_name"></div>
-                </div>
-                <div class="mb-4">
-                    <label for="material_category" class="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                    <select id="material_category" name="category" class="form-select w-full border-gray-300 rounded-md shadow-sm">
-                        <option value="Sanitario">Sanitario</option>
-                        <option value="Comunicaciones">Comunicaciones</option>
-                        <option value="Logística">Logística</option>
-                        <option value="Mar">Mar</option>
-                        <option value="Uniformidad">Uniformidad</option>
-                        <option value="Varios">Varios</option>
-                    </select>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="btn btn-primary">Aceptar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
 </div>
 {% endblock %}
 
