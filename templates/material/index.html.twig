@@ -94,7 +94,7 @@
                                 <td><span class="badge bg-light text-primary">{{ material.subFamily|default('N/A') }}</span></td>
                                 <td>
                                     {% if material.expirationDate %}
-                                        <span class="badge {{ status == 'red' ? 'bg-danger' : (status == 'orange' ? 'bg-warning text-dark' : 'bg-success') }}">
+                                        <span class="badge {{ status == 'red' ? 'bg-danger' : (status in ['orange', 'yellow'] ? 'bg-warning text-dark' : 'bg-success') }}">
                                             {{ material.expirationDate|date('d/m/Y') }}
                                         </span>
                                     {% else %}

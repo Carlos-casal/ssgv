@@ -6,3 +6,15 @@
 - Uso de semáforos visuales (rojo/naranja/amarillo/verde) para la gestión proactiva de caducidades en el inventario fungible.
 - Asociación estricta de IDs de red (ISSI/IMEI) y Números de Serie como identificadores únicos de activos técnicos.
 - Mejora de la robustez en la sumisión de formularios Twig usando `document.forms['material'].submit()` para evitar conflictos de sintaxis con selectores de comillas.
+
+## 2026-02-05 - [Service Form Compact Redesign]
+- **Structure:** Replaced the multi-tab interface with a single-page "Command Center" dashboard layout.
+- **Header:** Implemented a fixed top header (bg-white/90 with backdrop-blur) containing primary actions (Guardar/Cancelar) to ensure they are always accessible regardless of scroll position.
+- **Grid Layout:** Used a 4:8 split for the top row (Identity vs. Chronology) and a full-width bottom section for Resources.
+- **Fields:** Condensed date and time fields into horizontal rows using 'form-control-sm' and grouped related items (Start/End, Base/Departure) to maximize "above the fold" visibility.
+- **Accessibility:** Added 'aria-label' and 'title' to all icon-only buttons (e.g., adding subcategories or new materials).
+
+## 2026-02-05 - [Warehouse Traceability & Specialized UI]
+- **Category Specificity:** Implemented specialized show/edit layouts for Sanitary and Communications items. Sanitary focuses on Batch/Expiration/Clinical families, while Communications focuses on S/N, Network IDs (ISSI/IMEI), and operational status.
+- **Movements:** Added a "Log de Movimientos" section in the material detail view to track every transfer between locations.
+- **Visual Feedback:** Integrated a traffic light semaphore for expiration dates (Red: Expired, Orange: <30 days, Yellow: <6 months) and low-stock alerts.
