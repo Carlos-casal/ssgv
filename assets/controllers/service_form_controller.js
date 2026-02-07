@@ -49,16 +49,16 @@ export default class extends Controller {
             endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
         }
 
-        // TinyMCE configuration for Description and Tasks
+        // TinyMCE configuration for Description
         tinymce.init({
-            selector: '#service_form_description, #service_tasks',
+            selector: '#service_form_description',
             plugins: 'lists link',
             toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            height: 350,
+            height: 400,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
@@ -83,7 +83,7 @@ export default class extends Controller {
     }
 
     disconnect() {
-        tinymce.remove('#service_form_description, #service_tasks');
+        tinymce.remove('#service_form_description');
     }
 
     switchTab(event) {
