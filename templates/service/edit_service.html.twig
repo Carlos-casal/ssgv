@@ -78,6 +78,14 @@
 {% block content %}
 <div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full" data-controller="service-form" data-service-id="{{ service.id }}">
 
+    {{ form_start(form, {
+        'attr': {
+            'id': 'edit-service-form-element',
+            'data-service-form-target': 'form',
+            'novalidate': 'novalidate'
+        }
+    }) }}
+
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-4 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
         <li class="nav-item" role="presentation">
@@ -90,24 +98,11 @@
                 <i data-lucide="truck" class="w-4 h-4 inline me-2"></i> Recursos y Dotación
             </button>
         </li>
-        <li class="nav-item" role="presentation">
-            <button class="nav-link" id="asistencia-tab" data-bs-toggle="tab" data-bs-target="#asistencia" type="button" role="tab" aria-controls="asistencia" aria-selected="false">
-                <i data-lucide="users" class="w-4 h-4 inline me-2"></i> Asistencia ({{ service.assistanceConfirmations|length }})
-            </button>
-        </li>
     </ul>
 
     <div class="tab-content" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-            {{ form_start(form, {
-                'attr': {
-                    'id': 'edit-service-form-element',
-                    'data-service-form-target': 'form',
-                    'novalidate': 'novalidate'
-                }
-            }) }}
-
             <div class="row g-3">
                 <!-- COLUMNA IZQUIERDA: Identificación -->
                 <div class="col-lg-4">
@@ -119,20 +114,20 @@
                         <div class="card-body p-3">
                             <div class="mb-2">
                                 <label class="form-label-sm" for="service_title">Título del Servicio <span class="text-danger">*</span></label>
-                                {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError'}}) }}
+                                {{ form_widget(form.title, {'attr': {'id': 'service_title', 'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError'}}) }}
                                 <div class="invalid-feedback hidden" id="error-service_title"></div>
                             </div>
 
                             <div class="mb-2">
                                 <label class="form-label-sm" for="service_numeration">Nº de Registro (ID)</label>
-                                {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-sm font-monospace bg-light'}}) }}
+                                {{ form_widget(form.numeration, {'attr': {'id': 'service_numeration', 'class': 'form-control form-control-sm font-monospace bg-light'}}) }}
                             </div>
 
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
                                     <label class="form-label-sm" for="service_type">Tipo <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
-                                        {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
+                                        {{ form_widget(form.type, {'attr': {'id': 'service_type', 'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
                                         <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
                                             <i data-lucide="plus" class="w-3 h-3"></i>
                                         </button>
@@ -141,7 +136,7 @@
                                 <div class="col-6">
                                     <label class="form-label-sm" for="service_subcategory">Categoría <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
-                                        {{ form_widget(form.subcategory, {'attr': {'class': 'form-select form-select-sm'}}) }}
+                                        {{ form_widget(form.subcategory, {'attr': {'id': 'service_subcategory', 'class': 'form-select form-select-sm'}}) }}
                                         <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
                                             <i data-lucide="plus" class="w-3 h-3"></i>
                                         </button>
@@ -151,7 +146,7 @@
 
                             <div>
                                 <label class="form-label-sm" for="service_afluencia">Afluencia Estimada <span class="text-danger">*</span></label>
-                                {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
+                                {{ form_widget(form.afluencia, {'attr': {'id': 'service_afluencia', 'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
                             </div>
                         </div>
                     </div>
@@ -167,18 +162,18 @@
                         <div class="card-body p-3">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label-sm">Rango de Fechas <span class="text-danger">*</span></label>
+                                    <label class="form-label-sm" for="service_startDate">Rango de Fechas <span class="text-danger">*</span></label>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">INICIO</span>
-                                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_startDate">INICIO</label>
+                                                {{ form_widget(form.startDate, {'attr': {'id': 'service_startDate', 'class': 'form-control form-control-sm'}}) }}
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">FIN</span>
-                                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_endDate">FIN</label>
+                                                {{ form_widget(form.endDate, {'attr': {'id': 'service_endDate', 'class': 'form-control form-control-sm'}}) }}
                                             </div>
                                         </div>
                                     </div>
@@ -187,23 +182,23 @@
                                     <label class="form-label-sm" for="service_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3"></i></span>
-                                        {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                        {{ form_widget(form.locality, {'attr': {'id': 'service_locality', 'class': 'form-control form-control-sm'}}) }}
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label-sm">Hora en Base <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_timeAtBase">Hora en Base <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.timeAtBase, {'attr': {'id': 'service_timeAtBase', 'class': 'form-control form-control-sm'}}) }}
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label-sm">Hora Salida <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_departureTime">Hora Salida <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.departureTime, {'attr': {'id': 'service_departureTime', 'class': 'form-control form-control-sm'}}) }}
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label-sm">Límite Inscripción <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_registrationLimitDate">Límite Inscripción <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'id': 'service_registrationLimitDate', 'class': 'form-control form-control-sm'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -220,33 +215,33 @@
                         <div class="card-body p-3">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label-sm">Tareas del Servicio</label>
-                                    {{ form_widget(form.tasks, {'attr': {'class': 'form-control form-control-sm', 'rows': '2'}}) }}
+                                    <label class="form-label-sm" for="service_tasks">Tareas del Servicio</label>
+                                    {{ form_widget(form.tasks, {'attr': {'id': 'service_tasks', 'class': 'form-control form-control-sm', 'rows': '2'}}) }}
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-sm">Descripción Detallada</label>
-                                    {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'rows': '2'}}) }}
+                                    <label class="form-label-sm" for="service_form_description">Descripción Detallada</label>
+                                    {{ form_widget(form.description, {'attr': {'id': 'service_form_description', 'class': 'form-control form-control-sm', 'rows': '2'}}) }}
                                 </div>
                             </div>
                             <div class="row g-3 mt-1 align-items-center">
                                 <div class="col-md-3">
                                     <div class="d-flex align-items-center gap-3 bg-light p-2 rounded-2">
-                                        <label class="form-label-sm mb-0">¿Avituallamiento?</label>
+                                        <label class="form-label-sm mb-0" for="service_hasProvisions">¿Avituallamiento?</label>
                                         <div class="form-check form-switch p-0 m-0">
-                                            {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                            {{ form_widget(form.hasProvisions, {'attr': {'id': 'service_hasProvisions', 'class': 'form-check-input ms-0'}}) }}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-white"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</span>
-                                        {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control', 'placeholder': '∞'}}) }}
+                                        <label class="input-group-text bg-white" for="service_maxAttendees"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</label>
+                                        {{ form_widget(form.maxAttendees, {'attr': {'id': 'service_maxAttendees', 'class': 'form-control', 'placeholder': '∞'}}) }}
                                     </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-check custom-checkbox">
-                                        {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input'}}) }}
-                                        <label class="form-label-sm mb-0 ms-2">Hospital Campaña</label>
+                                        {{ form_widget(form.hasFieldHospital, {'attr': {'id': 'service_hasFieldHospital', 'class': 'form-check-input'}}) }}
+                                        <label class="form-label-sm mb-0 ms-2" for="service_hasFieldHospital">Hospital Campaña</label>
                                     </div>
                                 </div>
                             </div>
@@ -305,7 +300,7 @@
                                             <div class="space-y-1">
                                                 {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <label class="text-[11px] font-bold text-slate-600" for="{{ form[field].vars.id }}">{{ form[field].vars.label }}</label>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                         </div>
@@ -319,7 +314,7 @@
                                             <div class="space-y-1">
                                                 {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <label class="text-[11px] font-bold text-slate-600" for="{{ form[field].vars.id }}">{{ form[field].vars.label }}</label>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                         </div>
@@ -334,7 +329,7 @@
                                                 {% for key, vehicle_choice in form.vehicles %}
                                                     {% set vehicle = form.vehicles.vars.choices[key].data %}
                                                     <div class="d-flex align-items-center justify-content-between py-1 border-bottom border-slate-100">
-                                                        <span class="text-[11px] text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
+                                                        <label class="text-[11px] text-slate-700" for="{{ vehicle_choice.vars.id }}">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></label>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             <input class="form-check-input ms-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
                                                         </div>
@@ -350,143 +345,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- TAB 3: ASISTENCIA -->
-        <div class="tab-pane fade" id="asistencia" role="tabpanel" aria-labelledby="asistencia-tab">
-            <div class="bg-white shadow-sm border border-slate-200 rounded-3 p-4">
-                <div class="flex justify-between items-center mb-6 pb-4 border-b border-slate-100">
-                    <h3 class="text-lg font-bold text-slate-800 flex items-center">
-                        <i data-lucide="user-check" class="w-5 h-5 mr-2 text-green-600"></i> Gestión de Asistencia
-                    </h3>
-                    <div class="flex space-x-2">
-                        {% if is_granted('ROLE_ADMIN') or is_granted('ROLE_COORDINATOR') %}
-                        <button type="button" data-action="click->service-form#openModal" class="btn btn-primary btn-sm flex items-center">
-                            <i data-lucide="user-plus" class="mr-2 h-4 w-4"></i> Añadir voluntarios
-                        </button>
-                        {% endif %}
-                        <button type="button" id="fichar-todos-btn" class="btn btn-outline-success btn-sm flex items-center">
-                            <i data-lucide="check-square" class="mr-2 h-4 w-4"></i> Fichar todos
-                        </button>
-                    </div>
-                </div>
-
-                <div class="row g-4">
-                    <!-- Asisten -->
-                    <div class="col-md-4">
-                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-green-700 mb-4 flex justify-between items-center">
-                                <span>Asistentes</span>
-                                <span class="bg-green-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
-                            </h4>
-                            <ul class="space-y-2">
-                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
-                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 group">
-                                        {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
-                                        <div class="flex items-center justify-between">
-                                            <div class="flex-grow">
-                                                <p class="text-sm font-bold text-slate-800 m-0">
-                                                    {% if confirmation.isFichajeResponsible %}
-                                                        <i data-lucide="star" class="h-3 w-3 inline-block text-yellow-500 fill-current mr-1"></i>
-                                                    {% endif %}
-                                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
-                                                </p>
-                                                {% if vs %}
-                                                    {% set totalMinutes = vs.calculateTotalDuration() %}
-                                                    {% if totalMinutes > 0 %}
-                                                        {% set hours = (totalMinutes / 60)|round(0, 'floor') %}
-                                                        {% set minutes = totalMinutes % 60 %}
-                                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
-                                                    {% endif %}
-                                                {% endif %}
-                                            </div>
-                                            <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {% if vs %}
-                                                    {% set last_end_time = null %}
-                                                    {% for fichaje_item in vs.fichajes %}
-                                                        {% if fichaje_item.endTime is not null %}
-                                                            {% if last_end_time is null or fichaje_item.endTime > last_end_time %}
-                                                                {% set last_end_time = fichaje_item.endTime %}
-                                                            {% endif %}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                    <button type="button"
-                                                            class="p-1 rounded hover:bg-blue-50 text-blue-400"
-                                                            title="Añadir fichaje manual"
-                                                            data-action="click->service-form#openIndividualFichajeModal"
-                                                            data-volunteer-service-id="{{ vs.id }}"
-                                                            data-volunteer-name="{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}"
-                                                            data-last-clock-out="{{ last_end_time ? last_end_time|date('Y-m-d H:i:s') : '' }}">
-                                                        <i data-lucide="clock" class="h-3.5 w-3.5"></i>
-                                                    </button>
-                                                {% endif %}
-                                                <form method="post" action="{{ path('app_assistance_confirmation_toggle_responsible', {'id': confirmation.id}) }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-responsible' ~ confirmation.id) }}">
-                                                    <button type="submit" class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-yellow-500" title="Alternar Responsable">
-                                                        <i data-lucide="shield" class="h-3.5 w-3.5"></i>
-                                                    </button>
-                                                </form>
-                                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Eliminar asistencia?');">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                                    <button type="submit" class="p-1 rounded hover:bg-red-50 text-red-400" title="Eliminar">
-                                                        <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
-                                                    </button>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- Reserva -->
-                    <div class="col-md-4">
-                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-orange-700 mb-4 flex justify-between items-center">
-                                <span>En Reserva</span>
-                                <span class="bg-orange-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
-                            </h4>
-                            <ul class="space-y-2">
-                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserved') %}
-                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                        <span class="text-sm font-bold text-slate-700">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
-                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                            </button>
-                                        </form>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-
-                    <!-- No asisten -->
-                    <div class="col-md-4">
-                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-red-700 mb-4 flex justify-between items-center">
-                                <span>Bajas</span>
-                                <span class="bg-red-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
-                            </h4>
-                            <ul class="space-y-2">
-                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}
-                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                        <span class="text-sm text-slate-500 line-through">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
-                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                            </button>
-                                        </form>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Hidden Fields -->
@@ -497,47 +355,6 @@
     {{ form_end(form) }}
 
     <!-- Modals -->
-    <!-- Attendance Volunteer Picker Modal -->
-    <div class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50" data-service-form-target="modal">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full mx-4 relative">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h3 class="text-2xl font-bold text-slate-900">Añadir Voluntarios</h3>
-                <button type="button" data-action="click->service-form#closeModal" class="text-slate-400 hover:text-slate-600 p-2">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-slate-700 mb-2">Estado de Inscripción</label>
-                <select id="attendance_status_select" data-service-form-target="attendanceStatusSelect" class="form-select w-full rounded-xl border-slate-200" data-action="change->service-form#clearError">
-                    <option value="" selected disabled>Selecciona...</option>
-                    <option value="attends">Confirmar Asistencia</option>
-                    <option value="not_attends">Confirmar Baja</option>
-                </select>
-                <div class="invalid-feedback hidden" id="error-attendance_status_select"></div>
-            </div>
-
-            <div class="mb-4 relative">
-                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="attendance_user_search" data-service-form-target="userSearchInput" data-action="keyup->service-form#search input->service-form#clearError" placeholder="Buscar voluntario por nombre..." class="form-control pl-10 rounded-xl border-slate-200">
-                <div class="invalid-feedback hidden" id="error-attendance_user_search"></div>
-            </div>
-
-            <div data-service-form-target="userList" class="space-y-1 mb-6 border border-slate-100 rounded-xl p-3 max-h-60 overflow-y-auto bg-slate-50 shadow-inner">
-                <!-- List populated via JS -->
-            </div>
-
-            <div class="flex justify-between items-center border-t pt-6">
-                <div data-service-form-target="paginationSummary" class="text-xs font-bold text-slate-400"></div>
-                <div data-service-form-target="paginationContainer" class="flex gap-2"></div>
-                <button type="button" data-action="click->service-form#saveAttendance" class="btn btn-primary px-8">Guardar Cambios</button>
-            </div>
-        </div>
-    </div>
-
-    {{ include('service/_fichar_modal.html.twig') }}
-    {{ include('service/_individual_fichaje_modal.html.twig') }}
-
     <!-- Type Modal -->
     <div id="typeModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" data-service-form-target="typeModal">
         <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
@@ -604,28 +421,4 @@
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block javascripts %}
-    {{ parent() }}
-    <script>
-        document.addEventListener('turbo:load', () => {
-            const ficharTodosBtn = document.getElementById('fichar-todos-btn');
-            const ficharModal = document.getElementById('fichar-modal');
-
-            if (ficharTodosBtn && ficharModal) {
-                ficharTodosBtn.addEventListener('click', () => {
-                    const startDate = new Date("{{ service.startDate|date('Y-m-d H:i:s') }}");
-                    const endDate = new Date("{{ service.endDate|date('Y-m-d H:i:s') }}");
-
-                    document.getElementById('start-date').value = startDate.toISOString().split('T')[0];
-                    document.getElementById('start-time').value = startDate.toTimeString().substring(0, 5);
-                    document.getElementById('end-date').value = endDate.toISOString().split('T')[0];
-                    document.getElementById('end-time').value = endDate.toTimeString().substring(0, 5);
-
-                    ficharModal.classList.remove('hidden');
-                });
-            }
-        });
-    </script>
 {% endblock %}

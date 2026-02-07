@@ -1,9 +1,11 @@
 <div class="material-item border border-slate-100 rounded-xl p-3 mb-3 bg-white shadow-sm" data-action="change->service-form#onMaterialRowChange">
     <div class="d-flex align-items-center justify-content-between mb-2">
         <div class="flex-grow-1 me-2">
+            <label class="visually-hidden" for="{{ form.material.vars.id }}">Material</label>
             {{ form_widget(form.material, {'attr': {'class': 'form-select form-select-sm material-selector', 'data-action': 'change->service-form#onMaterialSelectChange'}}) }}
         </div>
         <div class="me-2" style="width: 80px;">
+            <label class="visually-hidden" for="{{ form.quantity.vars.id }}">Cantidad</label>
             {{ form_widget(form.quantity, {'attr': {
                 'class': 'form-control form-control-sm mini-input quantity-input',
                 'placeholder': '1',
@@ -18,7 +20,7 @@
     <div class="availability-status text-[10px] font-bold mt-1"></div>
 
     <div class="unit-selection-container mt-2 hidden">
-        <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1 d-block">Identificar Unidad (Opcional)</label>
+        <label class="text-[9px] font-black text-slate-400 uppercase tracking-tighter mb-1 d-block" for="{{ form.materialUnit.vars.id }}">Identificar Unidad (Opcional)</label>
         {{ form_widget(form.materialUnit, {'attr': {'class': 'form-select form-select-sm unit-selector'}}) }}
     </div>
 </div>
