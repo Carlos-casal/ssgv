@@ -112,30 +112,48 @@
                         </div>
                         <div class="card-body p-3">
                             <div class="mb-2">
-                                <label class="form-label-sm" for="service_title">Título del Servicio <span class="text-danger">*</span></label>
-                                {{ form_widget(form.title, {'attr': {'id': 'service_title', 'class': 'form-control form-control-sm font-bold', 'placeholder': 'Ej. Dispositivo Maratón', 'data-action': 'input->service-form#clearError'}}) }}
-                                <div class="invalid-feedback hidden" id="error-service_title"></div>
+                                <label class="form-label-sm" for="service_form_title">Título del Servicio <span class="text-danger">*</span></label>
+                                {{ form_widget(form.title, {
+                                    'id': 'service_form_title',
+                                    'attr': {'class': 'form-control form-control-sm font-bold', 'placeholder': 'Ej. Dispositivo Maratón', 'data-action': 'input->service-form#clearError'}
+                                }) }}
+                                <div class="invalid-feedback hidden" id="error-service_form_title"></div>
                             </div>
 
                             <div class="mb-2">
-                                <label class="form-label-sm" for="service_numeration">Nº de Registro (ID)</label>
-                                {{ form_widget(form.numeration, {'attr': {'id': 'service_numeration', 'class': 'form-control form-control-sm font-monospace bg-light', 'placeholder': 'Auto-generado si vacío'}}) }}
+                                <label class="form-label-sm" for="service_form_numeration">Nº de Registro (ID)</label>
+                                {{ form_widget(form.numeration, {
+                                    'id': 'service_form_numeration',
+                                    'attr': {'class': 'form-control form-control-sm font-monospace bg-light', 'placeholder': 'Auto-generado si vacío'}
+                                }) }}
                             </div>
 
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
-                                    <label class="form-label-sm" for="service_type">Tipo <span class="text-danger">*</span></label>
+                                    <label class="form-label-sm" for="service_form_type">Tipo <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
-                                        {{ form_widget(form.type, {'attr': {'id': 'service_type', 'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories'}}) }}
+                                        {{ form_widget(form.type, {
+                                            'id': 'service_form_type',
+                                            'attr': {
+                                                'class': 'form-select form-select-sm',
+                                                'data-action': 'change->service-form#updateCategories'
+                                            }
+                                        }) }}
                                         <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
                                             <i data-lucide="plus" class="w-3 h-3"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="col-6">
-                                    <label class="form-label-sm" for="service_subcategory">Categoría <span class="text-danger">*</span></label>
+                                    <label class="form-label-sm" for="service_form_subcategory">Categoría <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
-                                        {{ form_widget(form.subcategory, {'attr': {'id': 'service_subcategory', 'class': 'form-select form-select-sm'}}) }}
+                                        {{ form_widget(form.subcategory, {
+                                            'id': 'service_form_subcategory',
+                                            'attr': {
+                                                'class': 'form-select form-select-sm',
+                                                'disabled': 'disabled'
+                                            }
+                                        }) }}
                                         <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
                                             <i data-lucide="plus" class="w-3 h-3"></i>
                                         </button>
@@ -144,8 +162,11 @@
                             </div>
 
                             <div>
-                                <label class="form-label-sm" for="service_afluencia">Afluencia Estimada <span class="text-danger">*</span></label>
-                                {{ form_widget(form.afluencia, {'attr': {'id': 'service_afluencia', 'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}}) }}
+                                <label class="form-label-sm" for="service_form_afluencia">Afluencia Estimada <span class="text-danger">*</span></label>
+                                {{ form_widget(form.afluencia, {
+                                    'id': 'service_form_afluencia',
+                                    'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor'}
+                                }) }}
                             </div>
                         </div>
                     </div>
@@ -161,50 +182,50 @@
                         <div class="card-body p-3">
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_startDate">Rango de Fechas <span class="text-danger">*</span></label>
+                                    <label class="form-label-sm" for="service_form_startDate">Rango de Fechas <span class="text-danger">*</span></label>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_startDate">INICIO</label>
-                                                {{ form_widget(form.startDate, {'attr': {'id': 'service_startDate', 'class': 'form-control form-control-sm'}}) }}
+                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_form_startDate">INICIO</label>
+                                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_endDate">FIN</label>
-                                                {{ form_widget(form.endDate, {'attr': {'id': 'service_endDate', 'class': 'form-control form-control-sm'}}) }}
+                                                <label class="input-group-text bg-light text-[10px] py-0 px-2" for="service_form_endDate">FIN</label>
+                                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
+                                    <label class="form-label-sm" for="service_form_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
                                         <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3"></i></span>
-                                        {{ form_widget(form.locality, {'attr': {'id': 'service_locality', 'class': 'form-control form-control-sm', 'placeholder': 'Dirección o punto de encuentro...'}}) }}
+                                        {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Dirección o punto de encuentro...'}}) }}
                                     </div>
                                 </div>
                             </div>
 
                             <div class="row g-3 mb-3">
                                 <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_registrationLimitDate">Límite Inscripción (Fecha) <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.registrationLimitDate, {'attr': {'id': 'service_registrationLimitDate', 'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_form_registrationLimitDate">Límite Inscripción (Fecha) <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                 </div>
                             </div>
 
                             <div class="row g-3">
                                 <div class="col-md-4">
-                                    <label class="form-label-sm" for="service_timeAtBase">Hora en Base <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.timeAtBase, {'attr': {'id': 'service_timeAtBase', 'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_form_timeAtBase">Hora en Base <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label-sm" for="service_departureTime">Hora Salida <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.departureTime, {'attr': {'id': 'service_departureTime', 'class': 'form-control form-control-sm'}}) }}
+                                    <label class="form-label-sm" for="service_form_departureTime">Hora Salida <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                 </div>
                                 <div class="col-md-4">
-                                    <label class="form-label-sm" for="service_maxAttendees">Límite Inscritos (Cupo)</label>
-                                    {{ form_widget(form.maxAttendees, {'attr': {'id': 'service_maxAttendees', 'class': 'form-control form-control-sm', 'placeholder': '∞'}}) }}
+                                    <label class="form-label-sm" for="service_form_maxAttendees">Límite Inscritos (Cupo)</label>
+                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control form-control-sm', 'placeholder': '∞'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -221,12 +242,17 @@
                         <div class="card-body p-3">
                             <div class="row g-3">
                                 <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_tasks">Tareas del Servicio</label>
-                                    {{ form_widget(form.tasks, {'attr': {'id': 'service_tasks', 'class': 'form-control', 'style': 'height: 400px; resize: none;'}}) }}
+                                    <label class="form-label-sm" for="service_form_tasks">Tareas del Servicio</label>
+                                    {{ form_widget(form.tasks, {
+                                        'id': 'service_form_tasks',
+                                        'attr': {'class': 'form-control', 'style': 'height: 450px !important; resize: none;'}
+                                    }) }}
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label-sm" for="service_form_description">Descripción Detallada</label>
-                                    {{ form_widget(form.description, {'attr': {'id': 'service_form_description'}}) }}
+                                    {{ form_widget(form.description, {
+                                        'id': 'service_form_description'
+                                    }) }}
                                 </div>
                             </div>
                         </div>
@@ -255,15 +281,15 @@
                                 </div>
                                 <div class="d-flex gap-5">
                                     <div class="d-flex align-items-center gap-3 bg-white p-2 px-3 rounded-2 border border-slate-200 shadow-sm">
-                                        <label class="form-label-sm mb-0" for="service_hasProvisions">¿Avituallamiento?</label>
+                                        <label class="form-label-sm mb-0" for="service_form_hasProvisions">¿Avituallamiento?</label>
                                         <div class="form-check form-switch p-0 m-0">
-                                            {{ form_widget(form.hasProvisions, {'attr': {'id': 'service_hasProvisions', 'class': 'form-check-input ms-0'}}) }}
+                                            {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
                                         </div>
                                     </div>
                                     <div class="d-flex align-items-center gap-3 bg-white p-2 px-3 rounded-2 border border-slate-200 shadow-sm">
-                                        <label class="form-label-sm mb-0" for="service_hasFieldHospital">Hospital de Campaña</label>
+                                        <label class="form-label-sm mb-0" for="service_form_hasFieldHospital">Hospital de Campaña</label>
                                         <div class="form-check form-switch p-0 m-0">
-                                            {{ form_widget(form.hasFieldHospital, {'attr': {'id': 'service_hasFieldHospital', 'class': 'form-check-input ms-0'}}) }}
+                                            {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input ms-0'}}) }}
                                         </div>
                                     </div>
                                 </div>
