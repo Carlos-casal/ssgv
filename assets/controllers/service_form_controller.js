@@ -41,9 +41,6 @@ export default class extends Controller {
             subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
         }
 
-        // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-        tinymce.remove('textarea#service_tasks');
-
         // Date Listeners for Availability Check
         const startDateInput = document.getElementById('service_startDate');
         const endDateInput = document.getElementById('service_endDate');
@@ -52,16 +49,16 @@ export default class extends Controller {
             endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
         }
 
-        // TinyMCE configuration for Description
+        // TinyMCE configuration for Description and Tasks
         tinymce.init({
-            selector: '#service_form_description',
+            selector: '#service_form_description, #service_tasks',
             plugins: 'lists link',
             toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            height: 250,
+            height: 300,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
@@ -86,7 +83,7 @@ export default class extends Controller {
     }
 
     disconnect() {
-        tinymce.remove('#service_form_description');
+        tinymce.remove('#service_form_description, #service_tasks');
     }
 
     switchTab(event) {
