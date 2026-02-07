@@ -58,7 +58,7 @@ export default class extends Controller {
             statusbar: false,
             branding: false,
             resize: false,
-            height: 300,
+            height: 350,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
