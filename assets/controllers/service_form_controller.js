@@ -5,6 +5,7 @@ import 'tinymce/icons/default';
 import 'tinymce/models/dom';
 import 'tinymce/plugins/lists';
 import 'tinymce/plugins/link';
+import 'tinymce/plugins/autoresize';
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.min.css';
 import 'tinymce/skins/content/default/content.min.css';
@@ -58,14 +59,14 @@ export default class extends Controller {
         // TinyMCE configuration for Description
         tinymce.init({
             selector: '#service_form_description',
-            plugins: 'lists link',
+            plugins: 'lists link autoresize',
             toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            height: 450,
             min_height: 450,
+            autoresize_bottom_margin: 0,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
