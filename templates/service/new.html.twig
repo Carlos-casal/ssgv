@@ -13,6 +13,7 @@
         .tox-tinymce {
             border-radius: 0.5rem !important;
             border: 1px solid #E2E8F0 !important;
+            height: 450px !important;
         }
         /* Custom compact styles */
         .card-header-compact {
@@ -270,7 +271,8 @@
                                 <div class="col-md-6">
                                     <label class="form-label-sm" for="service_form_description">Descripción Detallada</label>
                                     {{ form_widget(form.description, {
-                                        'id': 'service_form_description'
+                                        'id': 'service_form_description',
+                                        'attr': {'class': 'form-control', 'style': 'height: 450px;'}
                                     }) }}
                                 </div>
                             </div>
