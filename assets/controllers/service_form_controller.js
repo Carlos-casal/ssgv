@@ -38,9 +38,13 @@ export default class extends Controller {
         // Initialize Hierarchy Selector
         const typeSelect = document.getElementById('service_form_type');
         const subcategorySelect = document.getElementById('service_form_subcategory');
-        if (typeSelect && subcategorySelect && !typeSelect.value) {
-            subcategorySelect.disabled = true;
-            subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+        if (typeSelect && subcategorySelect) {
+            if (!typeSelect.value) {
+                subcategorySelect.disabled = true;
+                subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+            } else {
+                subcategorySelect.disabled = false;
+            }
         }
 
         // Date Listeners for Availability Check
@@ -60,8 +64,8 @@ export default class extends Controller {
             statusbar: false,
             branding: false,
             resize: false,
-            height: 150,
-            min_height: 150,
+            height: 450,
+            min_height: 450,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',

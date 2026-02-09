@@ -194,30 +194,16 @@
                                 </div>
                             </div>
 
-                            <!-- Fila 2: Fechas y Horas -->
-                            <div class="row g-2 mb-3">
-                                <div class="col-md-3">
+                            <!-- Fila 2: Rango de Fechas -->
+                            <div class="row g-3 mb-3">
+                                <div class="col-md-6">
                                     <label class="form-label-sm" for="service_form_startDate">Fecha Inicio <span class="text-danger">*</span></label>
                                     {{ form_widget(form.startDate, {
                                         'id': 'service_form_startDate',
                                         'attr': {'class': 'form-control form-control-sm'}
                                     }) }}
                                 </div>
-                                <div class="col-md-3">
-                                    <label class="form-label-sm" for="service_form_timeAtBase">Hora en Base <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.timeAtBase, {
-                                        'id': 'service_form_timeAtBase',
-                                        'attr': {'class': 'form-control form-control-sm'}
-                                    }) }}
-                                </div>
-                                <div class="col-md-3">
-                                    <label class="form-label-sm" for="service_form_departureTime">Hora Salida <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.departureTime, {
-                                        'id': 'service_form_departureTime',
-                                        'attr': {'class': 'form-control form-control-sm'}
-                                    }) }}
-                                </div>
-                                <div class="col-md-3">
+                                <div class="col-md-6">
                                     <label class="form-label-sm" for="service_form_endDate">Fecha Fin <span class="text-danger">*</span></label>
                                     {{ form_widget(form.endDate, {
                                         'id': 'service_form_endDate',
@@ -226,20 +212,38 @@
                                 </div>
                             </div>
 
-                            <!-- Fila 3: Límites -->
-                            <div class="row g-3">
-                                <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_form_registrationLimitDate">Fecha Límite Inscripción <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.registrationLimitDate, {
-                                        'id': 'service_form_registrationLimitDate',
+                            <!-- Fila 3: Horarios y Cupo -->
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label-sm" for="service_form_timeAtBase">Hora en Base <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.timeAtBase, {
+                                        'id': 'service_form_timeAtBase',
                                         'attr': {'class': 'form-control form-control-sm'}
                                     }) }}
                                 </div>
-                                <div class="col-md-6">
+                                <div class="col-md-4">
+                                    <label class="form-label-sm" for="service_form_departureTime">Hora Salida <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.departureTime, {
+                                        'id': 'service_form_departureTime',
+                                        'attr': {'class': 'form-control form-control-sm'}
+                                    }) }}
+                                </div>
+                                <div class="col-md-4">
                                     <label class="form-label-sm" for="service_form_maxAttendees">Límite Inscritos (Cupo)</label>
                                     {{ form_widget(form.maxAttendees, {
                                         'id': 'service_form_maxAttendees',
                                         'attr': {'class': 'form-control form-control-sm', 'placeholder': '∞'}
+                                    }) }}
+                                </div>
+                            </div>
+
+                            <!-- Fila 4: Inscripciones -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <label class="form-label-sm" for="service_form_registrationLimitDate">Fecha Límite Inscripción <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.registrationLimitDate, {
+                                        'id': 'service_form_registrationLimitDate',
+                                        'attr': {'class': 'form-control form-control-sm'}
                                     }) }}
                                 </div>
                             </div>
@@ -260,14 +264,13 @@
                                     <label class="form-label-sm" for="service_form_tasks">Tareas del Servicio</label>
                                     {{ form_widget(form.tasks, {
                                         'id': 'service_form_tasks',
-                                        'attr': {'class': 'form-control', 'rows': '4', 'style': 'resize: none;'}
+                                        'attr': {'class': 'form-control', 'style': 'height: 450px !important; resize: none;'}
                                     }) }}
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label-sm" for="service_form_description">Descripción Detallada</label>
                                     {{ form_widget(form.description, {
-                                        'id': 'service_form_description',
-                                        'attr': {'rows': '4'}
+                                        'id': 'service_form_description'
                                     }) }}
                                 </div>
                             </div>

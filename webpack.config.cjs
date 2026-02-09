@@ -60,12 +60,12 @@ Encore
             from: path.join(tinymcePath, 'models'),
             to: 'tinymce/models/[path][name].[ext]',
             context: path.join(tinymcePath, 'models')
-        },
-        {
-            from: './assets/images',
-            to: 'images/[path][name].[ext]'
         }
     ])
+    .copyFiles({
+        from: './assets/images',
+        to: 'images/[path][name].[ext]'
+    })
 ;
 
 module.exports = Encore.getWebpackConfig();
