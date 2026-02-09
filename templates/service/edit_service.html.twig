@@ -132,7 +132,7 @@
                             <div class="row g-2 mb-2">
                                 <div class="col-6">
                                     <label class="form-label-sm" for="service_form_type">Tipo <span class="text-danger">*</span></label>
-                                    <div class="input-group input-group-sm">
+                                    <div class="d-flex align-items-center gap-2">
                                         {{ form_widget(form.type, {
                                             'id': 'service_form_type',
                                             'attr': {
@@ -140,14 +140,14 @@
                                                 'data-action': 'change->service-form#updateCategories'
                                             }
                                         }) }}
-                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        <button type="button" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; min-width: 28px;" data-action="click->service-form#openTypeModal" title="Añadir Tipo">
+                                            <i class="fas fa-plus text-white" style="font-size: 0.75rem;"></i>
                                         </button>
                                     </div>
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label-sm" for="service_form_subcategory">Categoría <span class="text-danger">*</span></label>
-                                    <div class="input-group input-group-sm">
+                                    <div class="d-flex align-items-center gap-2">
                                         {{ form_widget(form.subcategory, {
                                             'id': 'service_form_subcategory',
                                             'attr': {
@@ -155,8 +155,8 @@
                                                 'disabled': 'disabled'
                                             }
                                         }) }}
-                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
+                                        <button type="button" class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 28px; height: 28px; min-width: 28px;" data-action="click->service-form#openSubcategoryModal" title="Añadir Categoría">
+                                            <i class="fas fa-plus text-white" style="font-size: 0.75rem;"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -324,20 +324,37 @@
                                          data-index="{{ form.serviceMaterials|length }}"
                                          data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
 
-                                        {% for category in ['Sanitario', 'Comunicaciones', 'Logística'] %}
+                                        {% set categories = {
+                                            'Sanitario': {'icon': 'fas fa-first-aid', 'color': 'text-danger'},
+                                            'Comunicaciones': {'icon': 'fas fa-walkie-talkie', 'color': 'text-info'},
+                                            'Logística': {'icon': 'fas fa-box-open', 'color': 'text-warning'}
+                                        } %}
+
+                                        {% for category, info in categories %}
                                         <div class="col-md-4">
-                                            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
-                                                <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">
-                                                    <i data-lucide="plus-square" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
-                                            <div class="space-y-2" data-material-category="{{ category }}">
-                                                {% for sm in form.serviceMaterials %}
-                                                    {% if sm.vars.data.material and sm.vars.data.material.category == category %}
-                                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
-                                                    {% endif %}
-                                                {% endfor %}
+                                            <div class="card border shadow-none h-100">
+                                                <div class="card-header bg-light d-flex justify-content-between align-items-center p-2">
+                                                    <span class="text-[10px] font-black uppercase tracking-tighter">
+                                                        <i class="{{ info.icon }} {{ info.color }} me-1"></i> {{ category }}
+                                                    </span>
+                                                    <button type="button" class="btn btn-primary btn-sm add-item-collection d-flex align-items-center gap-1"
+                                                            data-action="click->service-form#addMaterial" data-category="{{ category }}" style="font-size: 0.65rem; padding: 0.1rem 0.4rem;">
+                                                        <i class="fas fa-plus-circle"></i> Añadir {{ category }}
+                                                    </button>
+                                                </div>
+                                                <div class="card-body p-2 space-y-2" data-material-category="{{ category }}">
+                                                    {% set count = 0 %}
+                                                    {% for sm in form.serviceMaterials %}
+                                                        {% if sm.vars.data.material and sm.vars.data.material.category == category %}
+                                                            {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
+                                                            {% set count = count + 1 %}
+                                                        {% endif %}
+                                                    {% endfor %}
+
+                                                    <div class="empty-state text-center py-3 {{ count > 0 ? 'hidden' : '' }}">
+                                                        <span class="text-muted" style="font-size: 0.7rem;">No hay material asignado</span>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
                                         {% endfor %}
@@ -354,8 +371,8 @@
                                                 {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
                                                         <label class="text-[11px] font-bold text-slate-600" for="{{ form[field].vars.id }}">{{ form[field].vars.label }}</label>
-                                                        <div class="form-check form-switch m-0 p-0">
-                                                            {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                                        <div style="width: 50px;">
+                                                            {{ form_widget(form[field]) }}
                                                         </div>
                                                     </div>
                                                 {% endfor %}

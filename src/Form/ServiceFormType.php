@@ -169,21 +169,25 @@ class ServiceFormType extends AbstractType
                 'label' => 'SVA',
                 'required' => false,
             ])
-            ->add('numTes', CheckboxType::class, [
+            ->add('numTes', IntegerType::class, [
                 'label' => 'TES',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'class' => 'form-control form-control-sm'],
             ])
-            ->add('numTts', CheckboxType::class, [
+            ->add('numTts', IntegerType::class, [
                 'label' => 'TTS',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'class' => 'form-control form-control-sm'],
             ])
-            ->add('numDue', CheckboxType::class, [
+            ->add('numDue', IntegerType::class, [
                 'label' => 'DUE',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'class' => 'form-control form-control-sm'],
             ])
-            ->add('numDoctors', CheckboxType::class, [
+            ->add('numDoctors', IntegerType::class, [
                 'label' => 'Médico',
                 'required' => false,
+                'attr' => ['min' => 0, 'max' => 99, 'class' => 'form-control form-control-sm'],
             ])
             ->add('hasFieldHospital', CheckboxType::class, [
                 'label' => 'Hospital de Campaña',
@@ -229,7 +233,7 @@ class ServiceFormType extends AbstractType
             function ($bool) { return $bool ? 1 : 0; }
         );
 
-        foreach (['numSvb', 'numSva', 'numColectiva', 'numTes', 'numTts', 'numDue', 'numDoctors'] as $field) {
+        foreach (['numSvb', 'numSva', 'numColectiva'] as $field) {
             $builder->get($field)->addModelTransformer($transformer);
         }
     }

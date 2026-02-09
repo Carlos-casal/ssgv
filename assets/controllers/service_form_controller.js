@@ -193,6 +193,12 @@ export default class extends Controller {
         const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
+
+            // Hide empty state message
+            const emptyState = column.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.classList.add('hidden');
+            }
         }
 
         if (window.lucide) {
@@ -201,7 +207,18 @@ export default class extends Controller {
     }
 
     removeMaterial(event) {
-        event.currentTarget.closest('.material-item').remove();
+        const item = event.currentTarget.closest('.material-item');
+        const column = item.closest('[data-material-category]');
+        item.remove();
+
+        // Show empty state if no items left in this category
+        if (column && column.querySelectorAll('.material-item').length === 0) {
+            const emptyState = column.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.classList.remove('hidden');
+            }
+        }
+
         this.updateAllMaterialAvailability();
     }
 
@@ -298,6 +315,12 @@ export default class extends Controller {
         const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
+
+            // Hide empty state message
+            const emptyState = column.querySelector('.empty-state');
+            if (emptyState) {
+                emptyState.classList.add('hidden');
+            }
         }
 
         if (window.lucide) {
