@@ -67,6 +67,7 @@ export default class extends Controller {
             resize: false,
             min_height: 450,
             autoresize_bottom_margin: 0,
+            content_style: 'body { overflow-y: hidden !important; }',
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
