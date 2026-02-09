@@ -59,15 +59,14 @@ export default class extends Controller {
         // TinyMCE configuration for Description
         tinymce.init({
             selector: '#service_form_description',
-            plugins: 'lists link autoresize',
+            plugins: 'lists link',
             toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
             menubar: false,
             statusbar: false,
             branding: false,
             resize: false,
-            min_height: 450,
-            autoresize_bottom_margin: 0,
-            content_style: 'body { overflow-y: hidden !important; }',
+            height: 350,
+            min_height: 350,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
