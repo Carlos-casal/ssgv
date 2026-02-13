@@ -1,138 +1,94 @@
-# Protección Civil de Vigo - Volunteer Management System
+Protección Civil de Vigo - Sistema de Gestión del Voluntariado
+1. Descripción general
+Este proyecto es una aplicación web integral diseñada para gestionar los voluntarios y las actividades de Protección Civil de Vigo. Proporciona una plataforma centralizada para que los administradores gestionen los datos de los voluntarios, creen y gestionen servicios, controlen la asistencia y supervisen la asignación de vehículos y recursos. Los voluntarios pueden usar el sistema para consultar e inscribirse en los servicios, y controlar sus horas de participación.
 
-## 1. Overview
+Características principales
+Gestión de voluntarios: cree, edite y visualice perfiles de voluntarios con información detallada sobre su personalidad, contacto y cualificaciones.
+Gestión de servicios: programe y administre servicios, incluidos detalles sobre ubicación, tiempo, recursos necesarios y tareas.
+Seguimiento de asistencia: Los voluntarios pueden confirmar su asistencia a los servicios. Los administradores pueden gestionar las listas de asistencia, incluyendo un sistema de lista de reserva para eventos completos.
+Sistema de Fichaje: Seguimiento detallado del tiempo para cada voluntario por servicio, con opciones tanto para fichajes individuales como masivos.
+Panel de control: paneles de control basados ​​en roles que ofrecen estadísticas generales para administradores y listados de servicios para voluntarios.
+Gestión de recursos: Gestión básica de vehículos y tipos de combustible.
+Roles de usuario: diferencia entre voluntarios regulares, coordinadores y administradores con permisos específicos.
+2. Pila tecnológica
+Backend: PHP 8.2+ / Symfony 6.4+
+Base de datos: MySQL / MariaDB (usando Doctrine ORM)
+Interfaz: Plantillas Twig, JavaScript, Tailwind CSS
+Gestores de paquetes: Composer (PHP), npm (JavaScript)
+Servidor de desarrollo: Symfony CLI
+3. Requisitos previos
+Antes de comenzar, asegúrese de tener lo siguiente instalado en su máquina local:
 
-This project is a comprehensive web application designed to manage the volunteers and activities of the Protección Civil de Vigo. It provides a centralized platform for administrators to handle volunteer data, create and manage services, track attendance, and oversee vehicle and resource allocation. Volunteers can use the system to view and sign up for services, and track their participation hours.
+PHP 8.2 o superior
+Compositor
+Interfaz de línea de comandos de Symfony
+Node.js y npm
+Un servidor de base de datos local (por ejemplo, MariaDB a través de XAMPP, Docker)
+4. Configuración e instalación
+Siga estos pasos para ejecutar el proyecto en su máquina local.
 
-### Key Features
-
-*   **Volunteer Management:** Create, edit, and view volunteer profiles with detailed personal, contact, and qualification information.
-*   **Service Management:** Schedule and manage services, including details on location, timing, required resources, and tasks.
-*   **Attendance Tracking:** Volunteers can confirm their attendance for services. Administrators can manage attendance lists, including a reserve list system for full events.
-*   **Clock-in/Out System (Fichaje):** Detailed time tracking for each volunteer per service, with options for both individual and mass clock-ins.
-*   **Dashboard:** Role-based dashboards providing at-a-glance statistics for administrators and service listings for volunteers.
-*   **Resource Management:** Basic management of vehicles and fuel types.
-*   **User Roles:** Differentiates between regular volunteers, coordinators, and administrators with specific permissions.
-
----
-
-## 2. Tech Stack
-
-*   **Backend:** PHP 8.2+ / Symfony 6.4+
-*   **Database:** MySQL / MariaDB (using Doctrine ORM)
-*   **Frontend:** Twig Templating, JavaScript, Tailwind CSS
-*   **Package Managers:** Composer (PHP), npm (JavaScript)
-*   **Development Server:** Symfony CLI
-
----
-
-## 3. Prerequisites
-
-Before you begin, ensure you have the following installed on your local machine:
-*   PHP 8.2 or higher
-*   Composer
-*   Symfony CLI
-*   Node.js and npm
-*   A local database server (e.g., MariaDB via XAMPP, Docker)
-
----
-
-## 4. Setup and Installation
-
-Follow these steps to get the project running on your local machine.
-
-### Step 1: Clone the Repository
-```bash
+Paso 1: Clonar el repositorio
 git clone <repository-url>
 cd <project-directory>
-```
+Paso 2: Instalar las dependencias de PHP
+Instale todas las bibliotecas de backend necesarias usando Composer.
 
-### Step 2: Install PHP Dependencies
-Install all the required backend libraries using Composer.
-```bash
 composer install
-```
+Paso 3: Configurar el entorno
+Cree un archivo de entorno local copiando el ejemplo:
+cp .env .env.local
+Abra .env.localy configure su DATABASE_URL.
+Ejemplo para XAMPP/MariaDB:
+DATABASE_URL="mysql://root:@127.0.0.1:3306/proteccion_civil_vigo?serverVersion=10.4.32-MariaDB&charset=utf8mb4"
+Nota: Reemplace ` root` con su nombre de usuario de base de datos y `` con su contraseña si tiene una. Ajuste `` serverVersionpara que coincida con su servidor de base de datos.
+Paso 4: Configurar la base de datos
+Crea la base de datos especificada en tu .env.localarchivo. Puedes usar una herramienta como phpMyAdmin o ejecutar el siguiente comando:
+php bin/console doctrine:database:create
+Ejecute las migraciones de bases de datos para crear todas las tablas necesarias:
+php bin/console doctrine:migrations:migrate
+Paso 5: Instalar dependencias de frontend y compilar activos
+Instalar los paquetes Node.js:
+npm install
+Compilar y construir los recursos del frontend (CSS, JS):
+npm run build
+5. Ejecución de la aplicación
+Servidor backend
+Inicie el servidor web local Symfony.
 
-### Step 3: Configure Environment
-1.  Create a local environment file by copying the example:
-    ```bash
-    cp .env .env.local
-    ```
-2.  Open `.env.local` and configure your `DATABASE_URL`.
-    *   **Example for XAMPP/MariaDB:**
-        ```
-        DATABASE_URL="mysql://root:@127.0.0.1:3306/proteccion_civil_vigo?serverVersion=10.4.32-MariaDB&charset=utf8mb4"
-        ```
-    *   **Note:** Replace `root` with your database username and `` with your password if you have one. Adjust the `serverVersion` to match your database server.
-
-### Step 4: Set Up the Database
-1.  Create the database specified in your `.env.local` file. You can use a tool like phpMyAdmin or run the following command:
-    ```bash
-    php bin/console doctrine:database:create
-    ```
-2.  Run the database migrations to create all the necessary tables:
-    ```bash
-    php bin/console doctrine:migrations:migrate
-    ```
-
-### Step 5: Install Frontend Dependencies & Build Assets
-1.  Install the Node.js packages:
-    ```bash
-    npm install
-    ```
-2.  Compile and build the frontend assets (CSS, JS):
-    ```bash
-    npm run build
-    ```
-
----
-
-## 5. Running the Application
-
-### Backend Server
-Start the Symfony local web server.
-```bash
 symfony server:start -d
-```
-The `-d` flag runs the server in the background. You can view the application at the URL provided in the output (usually `https://127.0.0.1:8000`).
+La -dbandera ejecuta el servidor en segundo plano. Puedes ver la aplicación en la URL proporcionada en la salida (normalmente https://127.0.0.1:8000).
 
-### Frontend Development
-If you are making changes to frontend files (CSS or JavaScript), you can run the development server in a separate terminal to enable hot-reloading.
-```bash
+Desarrollo de frontend
+Si está realizando cambios en los archivos frontend (CSS o JavaScript), puede ejecutar el servidor de desarrollo en una terminal separada para habilitar la recarga en caliente.
+
 npm run dev
-```
+Credenciales de acceso
+Se crea una cuenta de administrador de forma predeterminada.
 
-### Access Credentials
-An administrator account is created by default.
-*   **Email:** `admin@voluntarios.org`
-*   **Password:** `admin123`
+Correo electrónico: admin@voluntarios.org
+Contraseña: admin123
+6. Estructura del proyecto
+A continuación se muestra una breve descripción general de los directorios clave del proyecto:
 
----
+src/
+Controller/:Contiene todos los controladores de la aplicación que manejan solicitudes.
+Entity/:Contiene todas las entidades de la base de datos de Doctrine.
+Form/:Contiene todas las clases de tipo formulario de Symfony.
+Repository/:Contiene todos los repositorios de Doctrine para consultas de bases de datos.
+Service/:Contiene servicios de aplicaciones personalizados (por ejemplo, WhatsAppMessageGenerator).
+Security/:Contiene clases relacionadas con la seguridad, como votantes.
+Twig/:Contiene extensiones Twig personalizadas.
+templates/:Contiene todos los archivos de plantilla Twig para renderizar HTML.
+assets/:Contiene archivos fuente del frontend (JavaScript, CSS).
+migrations/:Contiene los archivos de migración de la base de datos de Doctrine.
+public/Directorio raíz web. Aquí se almacenan los recursos compilados y los archivos subidos.
+config/:Contiene todos los archivos de configuración de la aplicación.
+Notas Técnicas de Reconstrucción (Nuevo Servicio)
+Gestión de Activos
+Se ha identificado un error 500 intermitente en el entorno de desarrollo/prueba relacionado con la carga de rutas inexistentes en el sistema AssetMapper. Se confirma que este es un falso positivo inherente a la configuración del sandbox. La aplicación utiliza Webpack Encore para la compilación de recursos (npm run encore:build), y se ha verificado que el sistema de inicio de sesión y la carga de interfaces funcionan correctamente tanto en desarrollo como en producción.
 
-## 6. Project Structure
-
-Here is a brief overview of the key directories in the project:
-
-*   `src/`
-    *   `Controller/`: Contains all the application's controllers that handle requests.
-    *   `Entity/`: Contains all the Doctrine database entities.
-    *   `Form/`: Contains all the Symfony form type classes.
-    *   `Repository/`: Contains all the Doctrine repositories for database queries.
-    *   `Service/`: Contains custom application services (e.g., `WhatsAppMessageGenerator`).
-    *   `Security/`: Contains security-related classes, like Voters.
-    *   `Twig/`: Contains custom Twig extensions.
-*   `templates/`: Contains all the Twig template files for rendering HTML.
-*   `assets/`: Contains frontend source files (JavaScript, CSS).
-*   `migrations/`: Contains the Doctrine database migration files.
-*   `public/`: The web root directory. Compiled assets and uploaded files are stored here.
-*   `config/`: Contains all application configuration files.
-## Notas Técnicas de Reconstrucción (Nuevo Servicio)
-
-### Gestión de Assets
-Se ha identificado un error 500 intermitente en el entorno de desarrollo/test relacionado con la carga de rutas inexistentes en el sistema AssetMapper. Se confirma que este es un **falso positivo** inherente a la configuración del sandbox. La aplicación utiliza **Webpack Encore** para la compilación de recursos (npm run encore:build), y se ha verificado que el sistema de login y la carga de interfaces funcionan correctamente tanto en desarrollo como en producción.
-
-### Jerarquía de 3 Niveles
+Jerarquía de 3 niveles
 La jerarquía de servicios se organiza como: ServiceType (Nivel 1) > ServiceCategory (Nivel 2) > ServiceSubcategory (Nivel 3). El formulario utiliza carga dinámica vía AJAX para filtrar subcategorías según el tipo seleccionado.
 
-### TinyMCE
-El campo Descripción utiliza TinyMCE con license_key: 'gpl' para evitar advertencias de licencia. Se han activado los plugins lists y link para permitir formato Word style.
+TinyMCE
+El campo Descripción utiliza TinyMCE con License_key: 'gpl' para evitar advertencias de licencia. Se han activado las listas de complementos y enlaces para permitir formato estilo Word.
