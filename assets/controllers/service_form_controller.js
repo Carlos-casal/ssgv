@@ -1,11 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 import tinymce from 'tinymce';
 import 'tinymce/themes/silver';
-import 'tinymce/icons/default';
-import 'tinymce/models/dom';
-import 'tinymce/plugins/lists';
-import 'tinymce/plugins/link';
-import 'tinymce/plugins/autoresize';
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.min.css';
 import 'tinymce/skins/content/default/content.min.css';
@@ -37,20 +32,19 @@ export default class extends Controller {
         }
 
         // Initialize Hierarchy Selector
-        const typeSelect = document.getElementById('service_form_type');
-        const subcategorySelect = document.getElementById('service_form_subcategory');
-        if (typeSelect && subcategorySelect) {
-            if (!typeSelect.value) {
-                subcategorySelect.disabled = true;
-                subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
-            } else {
-                subcategorySelect.disabled = false;
-            }
+        const typeSelect = document.getElementById('service_type');
+        const subcategorySelect = document.getElementById('service_subcategory');
+        if (typeSelect && subcategorySelect && !typeSelect.value) {
+            subcategorySelect.disabled = true;
+            subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
         }
 
+        // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
+        tinymce.remove('textarea#service_tasks');
+
         // Date Listeners for Availability Check
-        const startDateInput = document.getElementById('service_form_startDate');
-        const endDateInput = document.getElementById('service_form_endDate');
+        const startDateInput = document.getElementById('service_startDate');
+        const endDateInput = document.getElementById('service_endDate');
         if (startDateInput && endDateInput) {
             startDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
             endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
@@ -65,8 +59,7 @@ export default class extends Controller {
             statusbar: false,
             branding: false,
             resize: false,
-            height: 350,
-            min_height: 350,
+            height: 250,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
@@ -123,10 +116,7 @@ export default class extends Controller {
     // Unified Hierarchy Logic
     async updateCategories(event) {
         const typeId = event.target.value;
-        const subcategorySelect = document.getElementById('service_form_subcategory');
-
-        // Reset state
-        subcategorySelect.innerHTML = '';
+        const subcategorySelect = document.getElementById('service_subcategory');
 
         if (!typeId) {
             subcategorySelect.disabled = true;
@@ -139,7 +129,6 @@ export default class extends Controller {
 
         try {
             const response = await fetch(`/api/subcategories?type_id=${typeId}`);
-            if (!response.ok) throw new Error('API Error');
             const subcategories = await response.json();
 
             subcategorySelect.innerHTML = '<option value="">Selecciona una opción...</option>';
@@ -193,12 +182,6 @@ export default class extends Controller {
         const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
-
-            // Hide empty state message
-            const emptyState = column.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.classList.add('hidden');
-            }
         }
 
         if (window.lucide) {
@@ -207,18 +190,7 @@ export default class extends Controller {
     }
 
     removeMaterial(event) {
-        const item = event.currentTarget.closest('.material-item');
-        const column = item.closest('[data-material-category]');
-        item.remove();
-
-        // Show empty state if no items left in this category
-        if (column && column.querySelectorAll('.material-item').length === 0) {
-            const emptyState = column.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.classList.remove('hidden');
-            }
-        }
-
+        event.currentTarget.closest('.material-item').remove();
         this.updateAllMaterialAvailability();
     }
 
@@ -315,12 +287,6 @@ export default class extends Controller {
         const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
-
-            // Hide empty state message
-            const emptyState = column.querySelector('.empty-state');
-            if (emptyState) {
-                emptyState.classList.add('hidden');
-            }
         }
 
         if (window.lucide) {
@@ -376,8 +342,8 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = document.getElementById('service_form_startDate');
-        const endDateInput = document.getElementById('service_form_endDate');
+        const startDateInput = document.getElementById('service_startDate');
+        const endDateInput = document.getElementById('service_endDate');
 
         if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
 
@@ -502,7 +468,7 @@ export default class extends Controller {
                 this.closeTypeModal();
 
                 // Add to main selector and select it
-                const typeSelect = document.getElementById('service_form_type');
+                const typeSelect = document.getElementById('service_type');
                 const option = new Option(data.name, data.id, true, true);
                 typeSelect.appendChild(option);
 
@@ -517,7 +483,7 @@ export default class extends Controller {
     }
 
     async openSubcategoryModal() {
-        const typeId = document.getElementById('service_form_type').value;
+        const typeId = document.getElementById('service_type').value;
         if (!typeId) {
             this.showToast('Por favor, selecciona primero un Tipo de Servicio.');
             return;
@@ -626,11 +592,11 @@ export default class extends Controller {
                 this.closeSubcategoryModal();
 
                 // Refresh main hierarchy selector
-                const typeSelect = document.getElementById('service_form_type');
+                const typeSelect = document.getElementById('service_type');
                 await this.updateCategories({ target: typeSelect });
 
                 // Select the new subcategory
-                document.getElementById('service_form_subcategory').value = subData.id;
+                document.getElementById('service_subcategory').value = subData.id;
             } else {
                 this.showError('subcategory_name_input', this.humanizeError(subData.errors || 'Error al crear subcategoría'));
             }
