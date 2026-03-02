@@ -35,8 +35,7 @@ final class IsCsrfTokenValidAttributeListener implements EventSubscriberInterfac
 
     public function onKernelControllerArguments(ControllerArgumentsEvent $event): void
     {
-        /** @var IsCsrfTokenValid[] $attributes */
-        if (!\is_array($attributes = $event->getAttributes()[IsCsrfTokenValid::class] ?? null)) {
+        if (!$attributes = $event->getAttributes(IsCsrfTokenValid::class)) {
             return;
         }
 
@@ -45,13 +44,17 @@ final class IsCsrfTokenValidAttributeListener implements EventSubscriberInterfac
 
         foreach ($attributes as $attribute) {
             $id = $this->getTokenId($attribute->id, $request, $arguments);
-            $methods = \array_map('strtoupper', (array) $attribute->methods);
+            $methods = array_map('strtoupper', (array) $attribute->methods);
 
             if ($methods && !\in_array($request->getMethod(), $methods, true)) {
                 continue;
             }
 
-            if (!$this->csrfTokenManager->isTokenValid(new CsrfToken($id, $request->getPayload()->getString($attribute->tokenKey)))) {
+            $tokenValue = $this->getTokenValue($request, $attribute->tokenSource, $attribute->tokenKey);
+            if (
+                null === $tokenValue
+                || !$this->csrfTokenManager->isTokenValid(new CsrfToken($id, $tokenValue))
+            ) {
                 throw new InvalidCsrfTokenException('Invalid CSRF token.');
             }
         }
@@ -74,5 +77,26 @@ final class IsCsrfTokenValidAttributeListener implements EventSubscriberInterfac
             'request' => $request,
             'args' => $arguments,
         ]);
+    }
+
+    private function getTokenValue(Request $request, int $tokenSource, string $tokenKey): ?string
+    {
+        $sources = [
+            IsCsrfTokenValid::SOURCE_PAYLOAD => static fn () => $request->getPayload()->get($tokenKey),
+            IsCsrfTokenValid::SOURCE_QUERY => static fn () => $request->query->get($tokenKey),
+            IsCsrfTokenValid::SOURCE_HEADER => static fn () => $request->headers->get($tokenKey),
+        ];
+
+        foreach ($sources as $source => $getter) {
+            if (!($tokenSource & $source)) {
+                continue;
+            }
+
+            if (null !== $token = $getter()) {
+                return $token;
+            }
+        }
+
+        return null;
     }
 }

@@ -8,14 +8,14 @@ use Doctrine\DBAL\Configuration as DBALConfiguration;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Schema\AbstractAsset;
 use Doctrine\DBAL\Schema\AbstractSchemaManager;
+use Doctrine\DBAL\Schema\ComparatorConfig;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\Migrations\Generator\Exception\NoChangesDetected;
 use Doctrine\Migrations\Provider\SchemaProvider;
 
+use function class_exists;
 use function method_exists;
 use function preg_match;
-use function strpos;
-use function substr;
 
 /**
  * The DiffGenerator class is responsible for comparing two Doctrine\DBAL\Schema\Schema instances and generating a
@@ -77,7 +77,11 @@ class DiffGenerator
             }
         }
 
-        $comparator = $this->schemaManager->createComparator();
+        if (class_exists(ComparatorConfig::class)) {
+            $comparator = $this->schemaManager->createComparator((new ComparatorConfig())->withReportModifiedIndexes(false));
+        } else {
+            $comparator = $this->schemaManager->createComparator();
+        }
 
         $upSql = $this->platform->getAlterSchemaSQL($comparator->compareSchemas($fromSchema, $toSchema));
 
@@ -130,7 +134,7 @@ class DiffGenerator
             foreach ($toSchema->getTables() as $table) {
                 $tableName = $table->getName();
 
-                if ($schemaAssetsFilter($this->resolveTableName($tableName))) {
+                if ($schemaAssetsFilter($tableName)) {
                     continue;
                 }
 
@@ -139,18 +143,5 @@ class DiffGenerator
         }
 
         return $toSchema;
-    }
-
-    /**
-     * Resolve a table name from its fully qualified name. The `$name` argument
-     * comes from Doctrine\DBAL\Schema\Table#getName which can sometimes return
-     * a namespaced name with the form `{namespace}.{tableName}`. This extracts
-     * the table name from that.
-     */
-    private function resolveTableName(string $name): string
-    {
-        $pos = strpos($name, '.');
-
-        return $pos === false ? $name : substr($name, $pos + 1);
     }
 }

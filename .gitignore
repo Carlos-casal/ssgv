@@ -34,3 +34,6 @@ tailwindcss.exe
 /var/cache/
 /var/*.db
 test-results/
+
+/vendor/
+/public/assets/

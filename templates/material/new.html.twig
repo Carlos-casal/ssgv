@@ -39,69 +39,159 @@
     <div class="row">
         {# Columna Izquierda (66%) #}
         <div class="col-lg-8">
-            {# Datos Clínicos #}
+            {# Bloque A: IDENTIDAD DEL MATERIAL #}
             <div class="card shadow-sm mb-4 border-0">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-file-medical mr-2"></i> Datos Clínicos
+                        <i class="fas fa-id-card mr-2"></i> BLOQUE A: IDENTIDAD DEL MATERIAL
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-8">
-                            {{ form_row(form.name, {'label': 'Nombre comercial / Genérico'}) }}
-                        </div>
-                        <div class="col-md-4">
-                            {{ form_row(form.subFamily) }}
+                        <div class="col-md-12">
+                            {{ form_row(form.name, {'label': 'NOMBRE COMERCIAL*'}) }}
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-12">
-                            {{ form_row(form.description) }}
+                            {{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}
+                        </div>
+                        <div class="col-md-6 d-none">
+                            {{ form_row(form.category, {'label': 'CATEGORÍA*'}) }}
                         </div>
                     </div>
                     <div class="row mt-2">
                         <div class="col-md-6">
-                            {{ form_row(form.nature) }}
+                            {{ form_row(form.subFamily, {'label': 'SUBFAMILIA'}) }}
                         </div>
                         <div class="col-md-6">
-                            {{ form_row(form.barcode) }}
+                            {{ form_row(form.barcode, {'label': 'CÓDIGO DE BARRAS / QR'}) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.description, {'label': 'DESCRIPCIÓN DETALLADA'}) }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {# Seguridad y Trazabilidad #}
-            <div class="card shadow-sm mb-4 border-left-danger border-0">
+            {# Bloque B: Seguridad y Trazabilidad #}
+            <div class="card shadow-sm mb-4 border-left-danger border-0" id="bloque-trazabilidad" style="display: none;">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 font-weight-bold text-danger">
-                        <i class="fas fa-shield-alt mr-2"></i> Seguridad y Trazabilidad
+                        Seguridad y Trazabilidad
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4">
-                            {{ form_row(form.batchNumber) }}
+                            {{ form_row(form.batchNumber, {'label': 'LOTE', 'attr': {'class': 'form-control', 'placeholder': 'Nº de lote para fungibles'}}) }}
                         </div>
                         <div class="col-md-4">
-                            {{ form_row(form.expirationDate) }}
+                            {{ form_row(form.expirationDate, {'label': 'FECHA DE CADUCIDAD'}) }}
                         </div>
                         <div class="col-md-4">
-                            {{ form_row(form.supplier) }}
+                            {{ form_row(form.supplier, {'label': 'PROVEEDOR'}) }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {# Financial #}
-            <div class="card shadow-sm mb-4 border-0">
+            {# Bloque C: DATOS TÉCNICOS (SOLO NO FUNGIBLES) #}
+            <div class="card shadow-sm mb-4 border-0" id="bloque-tecnico" style="display: none; background-color: #fffdf5; border-top: 4px solid #f6c23e !important;">
+                <div class="card-header bg-transparent py-3 border-0">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="fas fa-tools mr-2"></i> BLOQUE C: DATOS TÉCNICOS (SOLO NO FUNGIBLES)
+                    </h6>
+                </div>
                 <div class="card-body">
+                    {# Technical Data (Hardware) #}
                     <div class="row">
                         <div class="col-md-6">
-                            {{ form_row(form.unitPrice) }}
+                            {{ form_row(form.serialNumber, {'label': 'NÚMERO DE SERIE (S/N)', 'attr': {'placeholder': 'Obligatorio para Comunicaciones'}}) }}
                         </div>
                         <div class="col-md-6">
-                            {{ form_row(form.iva) }}
+                            {{ form_row(form.brandModel, {'label': 'MARCA Y MODELO', 'attr': {'placeholder': 'Ej: Motorola MTP3550'}}) }}
+                        </div>
+                    </div>
+                    
+                    {# Uniformity Specific #}
+                    <div class="row mt-2" id="bloque-tallas" style="display: none;">
+                        <div class="col-md-12">
+                            {{ form_row(form.sizingType, {'label': 'TIPO DE TALLAJE (SOLO UNIFORMIDAD)'}) }}
+                        </div>
+                    </div>
+
+                    {# Comms Specific #}
+                    <div id="bloque-comunicaciones" style="display: none;">
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.networkId, {'label': 'ID DE RED (ISSI / IMEI / MMSI)'}) }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.phoneNumber, {'label': 'NÚMERO DE TELÉFONO', 'attr': {'placeholder': '+34...'}}) }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.frequencyBand, {'label': 'BANDA DE FRECUENCIA'}) }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.deviceType, {'label': 'TIPO DE EQUIPO'}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Dates and Status (General Technical) #}
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.purchaseDate, {'label': 'FECHA DE COMPRA'}) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.warrantyEndDate, {'label': 'FIN DE GARANTÍA'}) }}
+                        </div>
+                    </div>
+
+                    {# Comms Accessories #}
+                    <div id="bloque-accesorios-comms" style="display: none;">
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.hasCharger, {'label': '¿INCLUYE CARGADOR?'}) }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.hasClip, {'label': '¿INCLUYE PINZA?'}) }}
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-12">
+                                {{ form_row(form.hasMicrophone, {'label': '¿INCLUYE MICRO-ALTAVOZ?'}) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Assignment and Status #}
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.assignedVehicle, {'label': 'VEHÍCULO ASIGNADO (FIJO)'}) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.operationalStatus, {'label': 'ESTADO OPERATIVO'}) }}
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-12">
+                            {{ form_row(form.batteryStatus, {'label': 'ESTADO DE BATERÍA'}) }}
                         </div>
                     </div>
                 </div>
@@ -110,50 +200,59 @@
 
         {# Columna Derecha (33%) #}
         <div class="col-lg-4">
-            {# Imagen #}
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-body text-center p-4">
-                    <div class="mb-3">
-                        <i class="fas fa-camera fa-3x text-gray-300"></i>
-                    </div>
-                    {{ form_row(form.imageFile, {'label': 'Imagen del Producto'}) }}
-                </div>
-            </div>
-
-            {# Formatos (Logística) #}
-            <div class="card shadow-sm mb-4 border-0">
+            {# Bloque D: STOCK Y COSTES #}
+            <div class="card shadow-sm mb-4 border-0 bg-success-light" style="border-top: 4px solid #1cc88a !important;">
                 <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-boxes mr-2"></i> Logística y Formatos
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-calculator mr-2"></i> BLOQUE D: STOCK Y COSTES
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="row">
+                        <div class="col-12 mb-3">
+                            {{ form_row(form.packagingFormat, {'label': 'FORMATO (Ej: Caja, Litro)'}) }}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
                         <div class="col-6">
-                            {{ form_row(form.packagingFormat, {'label': 'Formato'}) }}
+                            {{ form_row(form.unitsPerPackage, {'label': 'Uds/Envase', 'attr': {'class': 'form-control calc-trigger', 'id': 'calc_uds_envase'}}) }}
                         </div>
                         <div class="col-6">
-                            {{ form_row(form.unitsPerPackage, {'label': 'Uds/Envase'}) }}
+                            {{ form_row(form.packagesQuantity, {'label': 'Nº Envases', 'attr': {'class': 'form-control calc-trigger', 'id': 'calc_cant_envases'}}) }}
+                        </div>
+                    </div>
+                    
+                    <div class="p-3 bg-light border border-success rounded mb-3">
+                        {{ form_row(form.stock, {'label': 'STOCK TOTAL CALCULADO*', 'attr': {'class': 'form-control text-success font-weight-bold', 'readonly': true, 'id': 'calc_stock_actual'}}) }}
+                        <small class="text-muted">Calculado: Uds x Envases.</small>
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_row(form.safetyStock, {'label': 'STOCK MÍNIMO (ENVASES)*'}) }}
+                    </div>
+
+                    <hr class="mb-3">
+
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            {{ form_row(form.totalPrice, {'label': 'COSTE TOTAL DE LA COMPRA (€)*', 'attr': {'class': 'form-control calc-trigger border-success', 'id': 'calc_precio_total', 'placeholder': 'Ej: 15.50'}}) }}
+                        </div>
+                    </div>
+                    <div class="row mt-3">
+                        <div class="col-6">
+                            {{ form_row(form.unitPrice, {'label': 'PRECIO/Ud (€)', 'attr': {'class': 'form-control', 'readonly': true, 'id': 'calc_unit_price'}}) }}
+                        </div>
+                        <div class="col-6">
+                            {{ form_row(form.iva, {'label': 'IVA (%)*'}) }}
                         </div>
                     </div>
                 </div>
             </div>
-
-            {# Stock #}
+            
+            {# Imagen #}
             <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-warehouse mr-2"></i> Gestión de Inventario
-                    </h6>
-                </div>
-                <div class="card-body">
-                    {{ form_row(form.stock, {'label': 'Stock Actual (Unidades)'}) }}
-                    {{ form_row(form.safetyStock, {'label': 'Stock Mínimo'}) }}
-
-                    <div class="alert alert-light border mt-3 py-2 small">
-                        <i class="fas fa-info-circle text-info mr-1"></i>
-                        El stock se gestiona en <strong>unidades sueltas</strong>.
-                    </div>
+                <div class="card-body text-center p-3">
+                    {{ form_row(form.imageFile, {'label': 'Imagen del Producto'}) }}
                 </div>
             </div>
         </div>
@@ -398,4 +497,139 @@
         text-transform: uppercase;
     }
 </style>
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function initMaterialFormLogic() {
+            var categorySelect = document.querySelector('select[name="material[category]"]');
+            var natureSelect = document.querySelector('select[name="material[nature]"]');
+            
+            // Trazabilidad 
+            var bloqueTrazabilidad = document.getElementById('bloque-trazabilidad');
+            var loteInput = document.querySelector('input[name="material[batchNumber]"]');
+            var caducidadInput = document.querySelector('input[name="material[expirationDate]"]');
+
+            // Technical Block
+            var bloqueTecnico = document.getElementById('bloque-tecnico');
+            var bloqueTallas = document.getElementById('bloque-tallas');
+            var bloqueComms = document.getElementById('bloque-comunicaciones');
+            var bloqueAccesoriosComms = document.getElementById('bloque-accesorios-comms');
+            var serialInput = document.querySelector('input[name="material[serialNumber]"]');
+
+            function updateUI() {
+                var category = categorySelect ? categorySelect.value : 'Sanitario'; 
+                var nature = natureSelect ? natureSelect.value : '';
+
+                // --- 1. Trazabilidad ---
+                if (category === 'Sanitario' && nature === 'CONSUMIBLE') {
+                    if (bloqueTrazabilidad) bloqueTrazabilidad.style.display = 'block';
+                    if (loteInput) { loteInput.disabled = false; loteInput.required = true; }
+                    if (caducidadInput) { caducidadInput.disabled = false; caducidadInput.required = true; }
+                } else {
+                    if (bloqueTrazabilidad) bloqueTrazabilidad.style.display = 'none';
+                    if (loteInput) { loteInput.disabled = true; loteInput.required = false; loteInput.value = ''; }
+                    if (caducidadInput) { caducidadInput.disabled = true; caducidadInput.required = false; caducidadInput.value = ''; }
+                }
+
+                // --- 2. Bloque Técnico (Bloque C) ---
+                if (nature === 'EQUIPO_TECNICO') {
+                    if (bloqueTecnico) bloqueTecnico.style.display = 'block';
+
+                    // Toggle specific sub-blocks inside Block C based on Category
+                    if (category === 'Uniformidad') {
+                        if (bloqueTallas) bloqueTallas.style.display = 'flex';
+                        if (bloqueComms) bloqueComms.style.display = 'none';
+                        if (bloqueAccesoriosComms) bloqueAccesoriosComms.style.display = 'none';
+                        if (serialInput) serialInput.required = false;
+                    } else if (category === 'Comunicaciones') {
+                        if (bloqueTallas) bloqueTallas.style.display = 'none';
+                        if (bloqueComms) bloqueComms.style.display = 'block';
+                        if (bloqueAccesoriosComms) bloqueAccesoriosComms.style.display = 'block';
+                        if (serialInput) serialInput.required = true;
+                    } else {
+                        // Generic Technical Equipment
+                        if (bloqueTallas) bloqueTallas.style.display = 'none';
+                        if (bloqueComms) bloqueComms.style.display = 'none';
+                        if (bloqueAccesoriosComms) bloqueAccesoriosComms.style.display = 'none';
+                        if (serialInput) serialInput.required = false;
+                    }
+                    
+                    // Asegurar que los inputs técnicos se puedan usar
+                    if (bloqueTecnico) {
+                        var techInputs = bloqueTecnico.querySelectorAll('input, select');
+                        techInputs.forEach(input => input.disabled = false);
+                    }
+
+                } else {
+                    // Si es CONSUMIBLE, todo el bloque técnico desaparece y se deshabilita
+                    if (bloqueTecnico) {
+                        bloqueTecnico.style.display = 'none';
+                        var techInputs = bloqueTecnico.querySelectorAll('input, select');
+                        techInputs.forEach(input => {
+                            if (input.type === 'checkbox' || input.type === 'radio') {
+                                input.checked = false;
+                            } else {
+                                input.value = '';
+                            }
+                            input.disabled = true;
+                            input.required = false;
+                        });
+                    }
+                }
+            }
+
+            if (categorySelect) categorySelect.addEventListener('change', updateUI);
+            if (natureSelect) natureSelect.addEventListener('change', updateUI);
+            updateUI(); 
+
+            // --- Calculations ---
+            var udsEnvaseInput = document.querySelector('input[name="material[unitsPerPackage]"]');
+            var cantEnvasesInput = document.querySelector('input[name="material[packagesQuantity]"]');
+            var stockActualInput = document.querySelector('input[name="material[stock]"]');
+            var unitPriceInput = document.querySelector('input[name="material[unitPrice]"]');
+            var precioTotalInput = document.querySelector('input[name="material[totalPrice]"]');
+
+            function getFloatVal(val) {
+                if (!val) return 0;
+                return parseFloat(val.toString().replace(',', '.')) || 0;
+            }
+
+            function updateCalculations() {
+                var uds = getFloatVal(udsEnvaseInput ? udsEnvaseInput.value : 0);
+                var cant = getFloatVal(cantEnvasesInput ? cantEnvasesInput.value : 0);
+                
+                var stock = uds * cant;
+                if (stockActualInput) {
+                    stockActualInput.value = stock;
+                }
+
+                var total = getFloatVal(precioTotalInput ? precioTotalInput.value : 0);
+                if (stock > 0 && unitPriceInput) {
+                    unitPriceInput.value = (total / stock).toFixed(2);
+                } else if (unitPriceInput) {
+                    unitPriceInput.value = '0.00';
+                }
+            }
+
+            // Bind events to trigger calculation updates
+            [udsEnvaseInput, cantEnvasesInput, precioTotalInput].forEach(function(el) {
+                if (el) {
+                    el.addEventListener('input', updateCalculations);
+                }
+            });
+            updateCalculations();
+        }
+
+        // Initialize immediately if DOM is ready, otherwise wait for DOMContentLoaded
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initMaterialFormLogic);
+        } else {
+            initMaterialFormLogic();
+        }
+        
+        // Setup for Turbo/Hotwire if used in the project
+        document.addEventListener('turbo:load', initMaterialFormLogic);
+    </script>
+{% endblock %}
 {% endblock %}

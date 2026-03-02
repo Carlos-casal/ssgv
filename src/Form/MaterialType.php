@@ -18,6 +18,7 @@ use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
+use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 
 class MaterialType extends AbstractType
 {
@@ -117,6 +118,12 @@ class MaterialType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'min' => 1]
             ])
+            ->add('packagesQuantity', IntegerType::class, [
+                'label' => 'Cantidad de Envases',
+                'mapped' => false,
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'min' => 0]
+            ])
             ->add('subFamily', ChoiceType::class, [
                 'label' => 'Subfamilia / Clasificación',
                 'required' => false,
@@ -137,6 +144,12 @@ class MaterialType extends AbstractType
                 'label' => 'Fecha de Caducidad',
                 'widget' => 'single_text',
                 'required' => false,
+                'constraints' => [
+                    new GreaterThanOrEqual([
+                        'value' => 'today',
+                        'message' => 'El material no puede estar ya caducado al momento del registro.'
+                    ])
+                ],
                 'attr' => ['class' => 'form-control']
             ])
             ->add('supplier', TextType::class, [
@@ -146,6 +159,13 @@ class MaterialType extends AbstractType
             ])
             ->add('unitPrice', MoneyType::class, [
                 'label' => 'Precio Unitario',
+                'currency' => 'EUR',
+                'attr' => ['class' => 'form-control', 'readonly' => true]
+            ])
+            ->add('totalPrice', MoneyType::class, [
+                'label' => 'Precio Total',
+                'mapped' => false,
+                'required' => false,
                 'currency' => 'EUR',
                 'attr' => ['class' => 'form-control']
             ])

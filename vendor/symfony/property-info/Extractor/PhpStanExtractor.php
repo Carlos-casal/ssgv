@@ -182,7 +182,7 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
         trigger_deprecation('symfony/property-info', '7.3', 'The "%s()" method is deprecated, use "%s::getTypeFromConstructor()" instead.', __METHOD__, self::class);
 
         if (null === $tagDocNode = $this->getDocBlockFromConstructor($class, $property)) {
-            return null;
+            return $this->getTypes($class, $property);
         }
 
         $types = [];
@@ -245,11 +245,12 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
 
     public function getTypeFromConstructor(string $class, string $property): ?Type
     {
-        if (!$tagDocNode = $this->getDocBlockFromConstructor($class, $property)) {
-            return null;
+        $declaringClass = $class;
+        if (!$tagDocNode = $this->getDocBlockFromConstructor($declaringClass, $property)) {
+            return $this->getType($class, $property);
         }
 
-        $typeContext = $this->typeContextFactory->createFromClassName($class);
+        $typeContext = $this->typeContextFactory->createFromClassName($class, $declaringClass);
 
         return $this->stringTypeResolver->resolve((string) $tagDocNode->type, $typeContext);
     }
@@ -287,11 +288,11 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
     }
 
     /**
-     * A docblock is splitted into a template marker, a short description, an optional long description and a tags section.
+     * A docblock is split into a template marker, a short description, an optional long description and a tags section.
      *
-     * - The template marker is either empty, or #@+ or #@-.
+     * - The template marker is either empty, #@+ or #@-.
      * - The short description is started from a non-tag character, and until one or multiple newlines.
-     * - The long description (optional), is started from a non-tag character, and until a new line is encountered followed by a tag.
+     * - The long description (optional) is started from a non-tag character, and until a new line is encountered followed by a tag.
      * - Tags, and the remaining characters
      *
      * This method returns the short and the long descriptions.
@@ -374,7 +375,7 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
         ];
     }
 
-    private function getDocBlockFromConstructor(string $class, string $property): ?ParamTagValueNode
+    private function getDocBlockFromConstructor(string &$class, string $property): ?ParamTagValueNode
     {
         try {
             $reflectionClass = new \ReflectionClass($class);
@@ -389,6 +390,7 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
         if (!$rawDocNode = $reflectionConstructor->getDocComment()) {
             return null;
         }
+        $class = $reflectionConstructor->class;
 
         $phpDocNode = $this->getPhpDocNode($rawDocNode);
 
@@ -488,22 +490,27 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
     {
         $prefixes = self::ACCESSOR === $type ? $this->accessorPrefixes : $this->mutatorPrefixes;
         $prefix = null;
+        $method = null;
 
         foreach ($prefixes as $prefix) {
             $methodName = $prefix.$ucFirstProperty;
 
             try {
-                $reflectionMethod = new \ReflectionMethod($class, $methodName);
-                if ($reflectionMethod->isStatic()) {
+                $method = new \ReflectionMethod($class, $methodName);
+                if ($method->isStatic()) {
+                    continue;
+                }
+
+                if (self::ACCESSOR === $type && \in_array((string) $method->getReturnType(), ['void', 'never'], true)) {
                     continue;
                 }
 
                 if (
                     (
-                        (self::ACCESSOR === $type && 0 === $reflectionMethod->getNumberOfRequiredParameters())
-                        || (self::MUTATOR === $type && $reflectionMethod->getNumberOfParameters() >= 1)
+                        (self::ACCESSOR === $type && !$method->getNumberOfRequiredParameters())
+                        || (self::MUTATOR === $type && $method->getNumberOfParameters() >= 1)
                     )
-                    && $this->canAccessMemberBasedOnItsVisibility($reflectionMethod)
+                    && $this->canAccessMemberBasedOnItsVisibility($method)
                 ) {
                     break;
                 }
@@ -512,17 +519,17 @@ final class PhpStanExtractor implements PropertyDescriptionExtractorInterface, P
             }
         }
 
-        if (!isset($reflectionMethod)) {
+        if (!$method) {
             return null;
         }
 
-        if (null === $rawDocNode = $reflectionMethod->getDocComment() ?: null) {
+        if (null === $rawDocNode = $method->getDocComment() ?: null) {
             return null;
         }
 
         $phpDocNode = $this->getPhpDocNode($rawDocNode);
 
-        return [$phpDocNode, $prefix, $reflectionMethod->class];
+        return [$phpDocNode, $prefix, $method->class];
     }
 
     private function getPhpDocNode(string $rawDocNode): PhpDocNode
