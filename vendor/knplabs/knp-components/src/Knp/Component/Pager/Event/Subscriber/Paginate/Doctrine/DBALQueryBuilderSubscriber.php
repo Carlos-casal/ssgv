@@ -42,13 +42,13 @@ class DBALQueryBuilderSubscriber implements EventSubscriberInterface
                     ->setFirstResult($event->getOffset())
                     ->setMaxResults($event->getLimit())
                 ;
-                
+
                 $event->items = $qb
                     ->executeQuery()
                     ->fetchAllAssociative()
                 ;
             }
-            
+
             $event->stopPropagation();
         }
     }

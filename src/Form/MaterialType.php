@@ -3,8 +3,6 @@
 namespace App\Form;
 
 use App\Entity\Material;
-use App\Entity\Vehicle;
-use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -12,8 +10,6 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
-use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -26,26 +22,8 @@ class MaterialType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nombre del Material',
+                'label' => 'Nombre Comercial',
                 'attr' => ['class' => 'form-control']
-            ])
-            ->add('barcode', TextType::class, [
-                'label' => 'Código de Barras / QR',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'EAN-13, QR, o código interno'
-                ],
-                'help' => 'Escanea o introduce el código de barras del artículo'
-            ])
-            ->add('description', TextareaType::class, [
-                'label' => 'Descripción Detallada',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'rows' => 4,
-                    'placeholder' => 'Describe las características, especificaciones técnicas, o detalles relevantes del material...'
-                ]
             ])
             ->add('imageFile', FileType::class, [
                 'label' => 'Imagen del Material',
@@ -77,14 +55,18 @@ class MaterialType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('sizingType', ChoiceType::class, [
-                'label' => 'Tipo de Tallaje (Solo Uniformidad)',
+                'label' => 'Tipo de Tallaje',
                 'choices' => [
-                    'No aplica' => null,
-                    'Tallaje Textil (Letras: XS, S, M...)' => Material::SIZING_LETTER,
-                    'Tallaje Ropa (Números: 32-60)' => Material::SIZING_NUMBER_CLOTHING,
-                    'Tallaje Calzado (Números: 35-48)' => Material::SIZING_NUMBER_SHOES,
+                    'No aplica' => '',
+                    'Tallaje Textil (XS-3XL)' => Material::SIZING_LETTER,
+                    'Tallaje Ropa (32-60)' => Material::SIZING_NUMBER_CLOTHING,
+                    'Tallaje Calzado (35-48)' => Material::SIZING_NUMBER_SHOES,
                 ],
-                'attr' => ['class' => 'form-control'],
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-material-dynamic-form-target' => 'sizingType',
+                    'data-action' => 'change->material-dynamic-form#handleSizingChange'
+                ],
                 'required' => false
             ])
             ->add('nature', ChoiceType::class, [
@@ -96,36 +78,19 @@ class MaterialType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('stock', IntegerType::class, [
-                'label' => 'Stock Actual',
-                'attr' => ['class' => 'form-control']
+                'label' => 'STOCK TOTAL',
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-material-dynamic-form-target' => 'stock',
+                    'data-action' => 'input->material-dynamic-form#handleStockChange'
+                ]
             ])
             ->add('safetyStock', IntegerType::class, [
-                'label' => 'Stock Mínimo de Seguridad',
+                'label' => 'STOCK MÍNIMO',
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('batchNumber', TextType::class, [
-                'label' => 'Lote',
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Nº de lote para fungibles']
-            ])
-            ->add('packagingFormat', TextType::class, [
-                'label' => 'Formato de Envase',
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: Caja, Blíster, Rollo...']
-            ])
-            ->add('unitsPerPackage', IntegerType::class, [
-                'label' => 'Unidades por Envase',
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'min' => 1]
-            ])
-            ->add('packagesQuantity', IntegerType::class, [
-                'label' => 'Cantidad de Envases',
-                'mapped' => false,
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'min' => 0]
-            ])
             ->add('subFamily', ChoiceType::class, [
-                'label' => 'Subfamilia / Clasificación',
+                'label' => 'Subfamilia',
                 'required' => false,
                 'choices' => [
                     'Analgésicos' => 'Analgésicos',
@@ -144,12 +109,6 @@ class MaterialType extends AbstractType
                 'label' => 'Fecha de Caducidad',
                 'widget' => 'single_text',
                 'required' => false,
-                'constraints' => [
-                    new GreaterThanOrEqual([
-                        'value' => 'today',
-                        'message' => 'El material no puede estar ya caducado al momento del registro.'
-                    ])
-                ],
                 'attr' => ['class' => 'form-control']
             ])
             ->add('supplier', TextType::class, [
@@ -158,12 +117,12 @@ class MaterialType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('unitPrice', MoneyType::class, [
-                'label' => 'Precio Unitario',
+                'label' => 'Precio/Ud',
                 'currency' => 'EUR',
-                'attr' => ['class' => 'form-control', 'readonly' => true]
+                'attr' => ['class' => 'form-control']
             ])
             ->add('totalPrice', MoneyType::class, [
-                'label' => 'Precio Total',
+                'label' => 'Coste Total de la Compra',
                 'mapped' => false,
                 'required' => false,
                 'currency' => 'EUR',
@@ -179,37 +138,10 @@ class MaterialType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('serialNumber', TextType::class, [
-                'label' => 'Número de Serie (S/N)',
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => 'Obligatorio para Comunicaciones']
-            ])
-            ->add('networkId', TextType::class, [
-                'label' => 'ID de Red (ISSI / IMEI / MMSI)',
-                'required' => false,
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('phoneNumber', TextType::class, [
-                'label' => 'Número de Teléfono',
-                'required' => false,
-                'attr' => ['class' => 'form-control', 'placeholder' => '+34...']
-            ])
             ->add('brandModel', TextType::class, [
                 'label' => 'Marca y Modelo',
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: Motorola MTP3550']
-            ])
-            ->add('frequencyBand', ChoiceType::class, [
-                'label' => 'Banda de Frecuencia',
-                'required' => false,
-                'choices' => [
-                    'VHF (Analog/Mar)' => 'VHF',
-                    'UHF' => 'UHF',
-                    'TETRA' => 'TETRA',
-                    'GSM/4G/5G' => 'GSM',
-                    'Satelital' => 'SATELITAL',
-                ],
-                'attr' => ['class' => 'form-control']
             ])
             ->add('deviceType', ChoiceType::class, [
                 'label' => 'Tipo de Equipo',
@@ -235,47 +167,14 @@ class MaterialType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('hasCharger', CheckboxType::class, [
-                'label' => '¿Incluye cargador?',
+                'label' => 'Cargador',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
+                'attr' => ['class' => 'form-check-input', 'data-action' => 'change->material-dynamic-form#handleMaintenanceSync']
             ])
             ->add('hasClip', CheckboxType::class, [
-                'label' => '¿Incluye pinza?',
+                'label' => 'Pinza',
                 'required' => false,
-                'attr' => ['class' => 'form-check-input']
-            ])
-            ->add('hasMicrophone', CheckboxType::class, [
-                'label' => '¿Incluye micro-altavoz?',
-                'required' => false,
-                'attr' => ['class' => 'form-check-input']
-            ])
-            ->add('assignedVehicle', EntityType::class, [
-                'class' => Vehicle::class,
-                'choice_label' => 'alias',
-                'label' => 'Vehículo Asignado (Fijo)',
-                'required' => false,
-                'placeholder' => 'Ninguno',
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('operationalStatus', ChoiceType::class, [
-                'label' => 'Estado Operativo',
-                'required' => false,
-                'choices' => [
-                    'Operativo' => 'OPERATIVO',
-                    'En Taller / Reparación' => 'TALLER',
-                    'Baja Definitiva' => 'BAJA',
-                ],
-                'attr' => ['class' => 'form-control']
-            ])
-            ->add('batteryStatus', ChoiceType::class, [
-                'label' => 'Estado de Batería',
-                'required' => false,
-                'choices' => [
-                    'Salud 100% (Nueva)' => '100',
-                    'Salud 80% (Usada)' => '80',
-                    'A sustituir' => 'REPLACE',
-                ],
-                'attr' => ['class' => 'form-control']
+                'attr' => ['class' => 'form-check-input', 'data-action' => 'change->material-dynamic-form#handleMaintenanceSync']
             ])
         ;
     }

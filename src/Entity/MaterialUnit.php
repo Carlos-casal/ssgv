@@ -42,6 +42,15 @@ class MaterialUnit
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $batteryStatus = '100%';
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $alias = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $networkId = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $phoneNumber = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -143,6 +152,42 @@ class MaterialUnit
         return $this;
     }
 
+    public function getAlias(): ?string
+    {
+        return $this->alias;
+    }
+
+    public function setAlias(?string $alias): static
+    {
+        $this->alias = $alias;
+
+        return $this;
+    }
+
+    public function getNetworkId(): ?string
+    {
+        return $this->networkId;
+    }
+
+    public function setNetworkId(?string $networkId): static
+    {
+        $this->networkId = $networkId;
+
+        return $this;
+    }
+
+    public function getPhoneNumber(): ?string
+    {
+        return $this->phoneNumber;
+    }
+
+    public function setPhoneNumber(?string $phoneNumber): static
+    {
+        $this->phoneNumber = $phoneNumber;
+
+        return $this;
+    }
+
     public function getLocation(): ?Location
     {
         return $this->location;
@@ -157,6 +202,9 @@ class MaterialUnit
 
     public function __toString(): string
     {
+        if ($this->alias) {
+            return sprintf('%s (%s)', $this->alias, $this->serialNumber ?? 'S/N');
+        }
         return sprintf('%s (%s)', $this->material->getName(), $this->serialNumber ?? 'S/N');
     }
 }
