@@ -139,6 +139,9 @@ class MaterialManager
         $unit->setMaterial($material);
         $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
         $unit->setSerialNumber($data['serialNumber'] ?? null);
+        $unit->setAlias($data['alias'] ?? null);
+        $unit->setNetworkId($data['networkId'] ?? null);
+        $unit->setPhoneNumber($data['phoneNumber'] ?? null);
         $unit->setPttStatus($data['pttStatus'] ?? 'OK');
         $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
         $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');

@@ -31,6 +31,9 @@ class ServiceMaterialFormType extends AbstractType
             ->add('materialUnit', EntityType::class, [
                 'class' => MaterialUnit::class,
                 'choice_label' => function(MaterialUnit $unit) {
+                    if ($unit->getAlias()) {
+                        return $unit->getAlias() . ' (' . ($unit->getSerialNumber() ?: 'S/N') . ')';
+                    }
                     $label = $unit->getCollectiveNumber() ? '[' . $unit->getCollectiveNumber() . '] ' : '';
                     $label .= $unit->getSerialNumber() ?: 'ID: ' . $unit->getId();
                     return $label;

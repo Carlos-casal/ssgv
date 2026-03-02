@@ -317,7 +317,7 @@
                     <tbody>
                     {% for unit in material.units %}
                         <tr class="{{ unit.isInMaintenance ? 'table-warning' : '' }}">
-                            <td><strong>{{ unit.collectiveNumber|default('-') }}</strong></td>
+                            <td><strong>{{ unit.alias|default(unit.collectiveNumber|default('-')) }}</strong></td>
                             <td>{{ unit.serialNumber }}</td>
                             <td>{{ unit.lastUsedAt ? unit.lastUsedAt|date('d/m/Y H:i') : 'Nunca usado' }}</td>
                             <td>

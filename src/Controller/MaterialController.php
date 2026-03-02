@@ -70,11 +70,12 @@ class MaterialController extends AbstractController
         $category = $request->query->get('category');
         if ($category) {
             $material->setCategory($category);
-        }
 
-        // Context-aware logic for Sanitary
-        if ($category === 'Sanitario') {
-            $material->setCategory('Sanitario');
+            // Auto-set nature for technical categories
+            $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
+            if (in_array($category, $technicalCategories)) {
+                $material->setNature(Material::NATURE_TECHNICAL);
+            }
         }
 
         $form = $this->createForm(MaterialType::class, $material);
@@ -101,6 +102,22 @@ class MaterialController extends AbstractController
 
             $entityManager->persist($material);
             $entityManager->flush();
+
+            // Handle dynamic unit creation for Communications or Technical Equipment
+            if ($request->request->has('units_data')) {
+                $unitsData = $request->request->all('units_data');
+                foreach ($unitsData as $unitData) {
+                    $materialManager->createUnit($material, [
+                        'alias' => $unitData['alias'] ?? null,
+                        'serialNumber' => $unitData['serialNumber'] ?? null,
+                        'networkId' => $unitData['networkId'] ?? null,
+                        'phoneNumber' => $unitData['phoneNumber'] ?? null,
+                        'hasCharger' => $form->get('hasCharger')->getData(), // Apply from bulk selection
+                        'hasClip' => $form->get('hasClip')->getData(),
+                    ]);
+                }
+                $entityManager->flush();
+            }
 
             // Handle initial stock from grid
             if ($request->request->has('initial_stock')) {
@@ -176,6 +193,32 @@ class MaterialController extends AbstractController
             }
 
             $entityManager->flush();
+
+            // Handle dynamic unit creation in edit (only for NEW units)
+            if ($request->request->has('units_data')) {
+                $unitsData = $request->request->all('units_data');
+                $existingCount = count($material->getUnits());
+
+                // Only create units if the user requested more than already exist
+                // Or if we want to support editing existing ones via units_data.
+                // For now, the UI generates fields for the WHOLE stock.
+                // If we already have 10 units and stock is 10, we shouldn't create more.
+
+                if (count($unitsData) > $existingCount) {
+                    for ($i = $existingCount; $i < count($unitsData); $i++) {
+                        $unitData = $unitsData[$i];
+                        $materialManager->createUnit($material, [
+                            'alias' => $unitData['alias'] ?? null,
+                            'serialNumber' => $unitData['serialNumber'] ?? null,
+                            'networkId' => $unitData['networkId'] ?? null,
+                            'phoneNumber' => $unitData['phoneNumber'] ?? null,
+                            'hasCharger' => $form->get('hasCharger')->getData(),
+                            'hasClip' => $form->get('hasClip')->getData(),
+                        ]);
+                    }
+                    $entityManager->flush();
+                }
+            }
 
             // Handle initial stock from grid (even in edit, it acts as an addition)
             if ($request->request->has('initial_stock')) {
