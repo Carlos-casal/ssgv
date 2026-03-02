@@ -12,23 +12,24 @@
 namespace Symfony\Component\Messenger\Bridge\Doctrine\Transport;
 
 use Doctrine\DBAL\Connection as DBALConnection;
-use Doctrine\DBAL\Driver\Exception as DriverException;
 use Doctrine\DBAL\Exception as DBALException;
 use Doctrine\DBAL\Exception\TableNotFoundException;
 use Doctrine\DBAL\LockMode;
-use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Doctrine\DBAL\Platforms\OraclePlatform;
 use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use Doctrine\DBAL\Query\ForUpdate\ConflictResolutionMode;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Result;
 use Doctrine\DBAL\Schema\AbstractAsset;
+use Doctrine\DBAL\Schema\ComparatorConfig;
 use Doctrine\DBAL\Schema\Name\Identifier;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
+use Doctrine\DBAL\Schema\NamedObject;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Schema\Table;
 use Doctrine\DBAL\Types\Types;
+use Satag\DoctrineFirebirdDriver\Platforms\FirebirdPlatform;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
 use Symfony\Component\Messenger\Exception\TransportException;
 use Symfony\Contracts\Service\ResetInterface;
@@ -158,19 +159,6 @@ class Connection implements ResetInterface
 
     public function get(): ?array
     {
-        if ($this->doMysqlCleanup && $this->driverConnection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
-            try {
-                $this->driverConnection->delete($this->configuration['table_name'], ['delivered_at' => '9999-12-31 23:59:59']);
-                $this->doMysqlCleanup = false;
-            } catch (DriverException $e) {
-                // Ignore the exception
-            } catch (TableNotFoundException $e) {
-                if ($this->autoSetup) {
-                    $this->setup();
-                }
-            }
-        }
-
         get:
         $this->driverConnection->beginTransaction();
         try {
@@ -258,14 +246,6 @@ class Connection implements ResetInterface
     public function ack(string $id): bool
     {
         try {
-            if ($this->driverConnection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
-                if ($updated = $this->driverConnection->update($this->configuration['table_name'], ['delivered_at' => '9999-12-31 23:59:59'], ['id' => $id]) > 0) {
-                    $this->doMysqlCleanup = true;
-                }
-
-                return $updated;
-            }
-
             return $this->driverConnection->delete($this->configuration['table_name'], ['id' => $id]) > 0;
         } catch (DBALException $exception) {
             throw new TransportException($exception->getMessage(), 0, $exception);
@@ -275,14 +255,6 @@ class Connection implements ResetInterface
     public function reject(string $id): bool
     {
         try {
-            if ($this->driverConnection->getDatabasePlatform() instanceof AbstractMySQLPlatform) {
-                if ($updated = $this->driverConnection->update($this->configuration['table_name'], ['delivered_at' => '9999-12-31 23:59:59'], ['id' => $id]) > 0) {
-                    $this->doMysqlCleanup = true;
-                }
-
-                return $updated;
-            }
-
             return $this->driverConnection->delete($this->configuration['table_name'], ['id' => $id]) > 0;
         } catch (DBALException $exception) {
             throw new TransportException($exception->getMessage(), 0, $exception);
@@ -322,7 +294,11 @@ class Connection implements ResetInterface
         $configuration = $this->driverConnection->getConfiguration();
         $assetFilter = $configuration->getSchemaAssetsFilter();
         $configuration->setSchemaAssetsFilter(function ($tableName) {
-            if ($tableName instanceof AbstractAsset) {
+            if ($tableName instanceof NamedObject) {
+                // DBAL 4.4+
+                $tableName = $tableName->getObjectName()->toString();
+            } elseif ($tableName instanceof AbstractAsset) {
+                // DBAL < 4.4
                 $tableName = $tableName->getName();
             }
 
@@ -330,7 +306,9 @@ class Connection implements ResetInterface
                 throw new \TypeError(\sprintf('The table name must be an instance of "%s" or a string ("%s" given).', AbstractAsset::class, get_debug_type($tableName)));
             }
 
-            return $tableName === $this->configuration['table_name'];
+            // SchemaAssetsFilter needs to match the messenger table name and also the messenger sequence name to make $schemaDiff work correctly in updateSchema()
+            // This may also work for other databases if their sequence name is suffixed with '_seq', '_id_seq' or similar.
+            return str_starts_with($tableName, $this->configuration['table_name']); // MESSENGER_MESSAGES*
         });
         $this->updateSchema();
         $configuration->setSchemaAssetsFilter($assetFilter);
@@ -421,7 +399,9 @@ class Connection implements ResetInterface
 
         $alias .= '.';
 
-        if (!$this->driverConnection->getDatabasePlatform() instanceof OraclePlatform) {
+        if (!$this->driverConnection->getDatabasePlatform() instanceof FirebirdPlatform
+            && !$this->driverConnection->getDatabasePlatform() instanceof OraclePlatform
+        ) {
             return $queryBuilder->select($alias.'*');
         }
 
@@ -478,23 +458,17 @@ class Connection implements ResetInterface
 
         try {
             if ($this->driverConnection->getDatabasePlatform() instanceof PostgreSQLPlatform) {
-                $first = $this->driverConnection->fetchFirstColumn($sql, $parameters, $types);
-
-                $id = $first[0] ?? null;
-
-                if (!$id) {
+                if (!$id = $this->driverConnection->fetchFirstColumn($sql, $parameters, $types)[0] ?? null) {
                     throw new TransportException('no id was returned by PostgreSQL from RETURNING clause.');
                 }
+
+                $this->driverConnection->executeStatement('SELECT pg_notify(?, ?)', [$this->configuration['table_name'], $this->configuration['queue_name']]);
             } elseif ($this->driverConnection->getDatabasePlatform() instanceof OraclePlatform) {
                 $sequenceName = $this->configuration['table_name'].self::ORACLE_SEQUENCES_SUFFIX;
 
                 $this->driverConnection->executeStatement($sql, $parameters, $types);
 
-                $result = $this->driverConnection->fetchOne('SELECT '.$sequenceName.'.CURRVAL FROM DUAL');
-
-                $id = (int) $result;
-
-                if (!$id) {
+                if (!$id = (int) $this->driverConnection->fetchOne('SELECT '.$sequenceName.'.CURRVAL FROM DUAL')) {
                     throw new TransportException('no id was returned by Oracle from sequence: '.$sequenceName);
                 }
             } else {
@@ -555,15 +529,17 @@ class Connection implements ResetInterface
         } else {
             $table->setPrimaryKey(['id']);
         }
-        $table->addIndex(['queue_name']);
-        $table->addIndex(['available_at']);
-        $table->addIndex(['delivered_at']);
+        $table->addIndex(['queue_name', 'available_at', 'delivered_at', 'id']);
 
         // We need to create a sequence for Oracle and set the id column to get the correct nextval
         if ($this->driverConnection->getDatabasePlatform() instanceof OraclePlatform) {
-            $idColumn->setDefault($this->configuration['table_name'].self::ORACLE_SEQUENCES_SUFFIX.'.nextval');
+            $serverVersion = $this->driverConnection->executeQuery("SELECT version FROM product_component_version WHERE product LIKE 'Oracle Database%'")->fetchOne();
+            if (version_compare($serverVersion, '12.1.0', '>=')) {
+                $idColumn->setAutoincrement(false); // disable the creation of SEQUENCE and TRIGGER
+                $idColumn->setDefault($this->configuration['table_name'].self::ORACLE_SEQUENCES_SUFFIX.'.nextval');
 
-            $schema->createSequence($this->configuration['table_name'].self::ORACLE_SEQUENCES_SUFFIX);
+                $schema->createSequence($this->configuration['table_name'].self::ORACLE_SEQUENCES_SUFFIX);
+            }
         }
     }
 
@@ -577,8 +553,14 @@ class Connection implements ResetInterface
     private function updateSchema(): void
     {
         $schemaManager = $this->driverConnection->createSchemaManager();
-        $schemaDiff = $schemaManager->createComparator()
-            ->compareSchemas($schemaManager->introspectSchema(), $this->getSchema());
+
+        if (class_exists(ComparatorConfig::class)) {
+            $comparator = $schemaManager->createComparator((new ComparatorConfig())->withReportModifiedIndexes(false));
+        } else {
+            $comparator = $schemaManager->createComparator();
+        }
+
+        $schemaDiff = $comparator->compareSchemas($schemaManager->introspectSchema(), $this->getSchema());
         $platform = $this->driverConnection->getDatabasePlatform();
 
         if ($platform->supportsSchemas()) {

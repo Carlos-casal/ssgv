@@ -62,6 +62,7 @@ use function array_map;
 use function array_sum;
 use function array_values;
 use function assert;
+use function count;
 use function current;
 use function get_debug_type;
 use function implode;
@@ -934,7 +935,9 @@ class UnitOfWork implements PropertyChangedListener
 
         $this->entityStates[$oid] = self::STATE_MANAGED;
 
-        $this->scheduleForInsert($entity);
+        if (! isset($this->entityInsertions[$oid])) {
+            $this->scheduleForInsert($entity);
+        }
     }
 
     /** @param mixed[] $idValue */
@@ -2592,8 +2595,14 @@ class UnitOfWork implements PropertyChangedListener
                     $reflField->setValue($entity, $pColl);
 
                     if ($hints['fetchMode'][$class->name][$field] === ClassMetadata::FETCH_EAGER) {
-                        $isIteration = isset($hints[Query::HINT_INTERNAL_ITERATION]) && $hints[Query::HINT_INTERNAL_ITERATION];
-                        if (! $isIteration && $assoc->isOneToMany() && ! $targetClass->isIdentifierComposite && ! $assoc->isIndexed()) {
+                        if (
+                            $assoc->isOneToMany()
+                            // is iteration
+                            && ! (isset($hints[Query::HINT_INTERNAL_ITERATION]) && $hints[Query::HINT_INTERNAL_ITERATION])
+                            // is foreign key composite
+                            && ! ($targetClass->hasAssociation($assoc->mappedBy) && count($targetClass->getAssociationMapping($assoc->mappedBy)->joinColumns) > 1)
+                            && ! $assoc->isIndexed()
+                        ) {
                             $this->scheduleCollectionForBatchLoading($pColl, $class);
                         } else {
                             $this->loadCollection($pColl);

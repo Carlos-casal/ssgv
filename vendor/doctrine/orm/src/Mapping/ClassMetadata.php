@@ -400,13 +400,9 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
     public DiscriminatorColumnMapping|null $discriminatorColumn = null;
 
     /**
-     * READ-ONLY: The primary table definition. The definition is an array with the
-     * following entries:
+     * READ-ONLY: The primary table definition.
      *
-     * name => <tableName>
-     * schema => <schemaName>
-     * indexes => array
-     * uniqueConstraints => array
+     * "quoted" indicates whether the table name is quoted (with backticks) or not
      *
      * @var mixed[]
      * @phpstan-var array{
@@ -544,11 +540,13 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
     /**
      * The ReflectionProperty instances of the mapped class.
      *
+     * @deprecated Use $propertyAccessors instead.
+     *
      * @var LegacyReflectionFields|array<string, ReflectionProperty>
      */
     public LegacyReflectionFields|array $reflFields = [];
 
-    /** @var array<string, PropertyAccessors\PropertyAccessor> */
+    /** @var array<string, PropertyAccessor> */
     public array $propertyAccessors = [];
 
     private InstantiatorInterface|null $instantiator = null;
@@ -573,6 +571,8 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
     /**
      * Gets the ReflectionProperties of the mapped class.
      *
+     * @deprecated Use getPropertyAccessors() instead.
+     *
      * @return LegacyReflectionFields|ReflectionProperty[] An array of ReflectionProperty instances.
      * @phpstan-return LegacyReflectionFields|array<string, ReflectionProperty>
      */
@@ -584,7 +584,7 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
     /**
      * Gets the ReflectionProperties of the mapped class.
      *
-     * @return PropertyAccessor[] An array of PropertyAccessor instances.
+     * @return array<string, PropertyAccessor> An array of PropertyAccessor instances by name.
      */
     public function getPropertyAccessors(): array
     {
@@ -593,6 +593,8 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
 
     /**
      * Gets a ReflectionProperty for a specific field of the mapped class.
+     *
+     * @deprecated Use getPropertyAccessor() instead.
      */
     public function getReflectionProperty(string $name): ReflectionProperty|null
     {
@@ -604,7 +606,11 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
         return $this->propertyAccessors[$name] ?? null;
     }
 
-    /** @throws BadMethodCallException If the class has a composite identifier. */
+    /**
+     * @deprecated Use getPropertyAccessor() instead.
+     *
+     * @throws BadMethodCallException If the class has a composite identifier.
+     */
     public function getSingleIdReflectionProperty(): ReflectionProperty|null
     {
         if ($this->isIdentifierComposite) {
@@ -818,7 +824,8 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
     public function wakeupReflection(ReflectionService $reflService): void
     {
         // Restore ReflectionClass and properties
-        $this->reflClass    = $reflService->getClass($this->name);
+        $this->reflClass = $reflService->getClass($this->name);
+        /** @phpstan-ignore property.deprecated */
         $this->reflFields   = new LegacyReflectionFields($this, $reflService);
         $this->instantiator = $this->instantiator ?: new Instantiator();
 
@@ -2197,6 +2204,20 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
                 throw MappingException::invalidDiscriminatorColumnType($this->name, $columnDef['type']);
             }
 
+            if (isset($columnDef['enumType'])) {
+                if (! enum_exists($columnDef['enumType'])) {
+                    throw MappingException::nonEnumTypeMapped($this->name, $columnDef['fieldName'], $columnDef['enumType']);
+                }
+
+                if (
+                    defined('Doctrine\DBAL\Types\Types::ENUM')
+                    && $columnDef['type'] === Types::ENUM
+                    && ! isset($columnDef['options']['values'])
+                ) {
+                    $columnDef['options']['values'] = array_column($columnDef['enumType']::cases(), 'value');
+                }
+            }
+
             $this->discriminatorColumn = DiscriminatorColumnMapping::fromMappingArray($columnDef);
         }
     }
@@ -2215,6 +2236,8 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
      * Used for JOINED and SINGLE_TABLE inheritance mapping strategies.
      *
      * @param array<int|string, string> $map
+     *
+     * @throws MappingException
      */
     public function setDiscriminatorMap(array $map): void
     {
@@ -2232,6 +2255,16 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
                     return $value > 1;
                 }))),
             );
+        }
+
+        $values = $this->discriminatorColumn->options['values'] ?? null;
+
+        if ($values !== null) {
+            $diff = array_diff(array_keys($map), $values);
+
+            if ($diff !== []) {
+                throw MappingException::invalidEntriesInDiscriminatorMap(array_values($diff), $this->name, $this->discriminatorColumn->enumType);
+            }
         }
 
         foreach ($map as $value => $className) {
@@ -2447,9 +2480,9 @@ class ClassMetadata implements PersistenceClassMetadata, Stringable
 
         if (! isset($mapping['default'])) {
             if (in_array($mapping['type'], ['integer', 'bigint', 'smallint'], true)) {
-                $mapping['default'] = 1;
+                $mapping['options']['default'] = 1;
             } elseif ($mapping['type'] === 'datetime') {
-                $mapping['default'] = 'CURRENT_TIMESTAMP';
+                $mapping['options']['default'] = 'CURRENT_TIMESTAMP';
             } else {
                 throw MappingException::unsupportedOptimisticLockingType($this->name, $mapping['fieldName'], $mapping['type']);
             }
