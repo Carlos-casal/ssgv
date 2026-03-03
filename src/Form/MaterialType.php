@@ -10,7 +10,9 @@ use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\Extension\Core\Type\MoneyType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
@@ -22,8 +24,11 @@ class MaterialType extends AbstractType
     {
         $builder
             ->add('name', TextType::class, [
-                'label' => 'Nombre Comercial',
-                'attr' => ['class' => 'form-control']
+                'label' => 'NOMBRE COMERCIAL**',
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ej: Paracetamol 500mg'
+                ]
             ])
             ->add('imageFile', FileType::class, [
                 'label' => 'Imagen del Material',
@@ -70,12 +75,16 @@ class MaterialType extends AbstractType
                 'required' => false
             ])
             ->add('nature', ChoiceType::class, [
-                'label' => 'Naturaleza',
+                'label' => 'NATURALEZA**',
                 'choices' => [
                     'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
                     'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL
                 ],
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-material-dynamic-form-target' => 'natureSelect',
+                    'data-action' => 'change->material-dynamic-form#toggleTechnicalBlock'
+                ]
             ])
             ->add('stock', IntegerType::class, [
                 'label' => 'STOCK TOTAL',
@@ -90,20 +99,72 @@ class MaterialType extends AbstractType
                 'attr' => ['class' => 'form-control']
             ])
             ->add('subFamily', ChoiceType::class, [
-                'label' => 'Subfamilia',
+                'label' => 'SUBFAMILIA',
                 'required' => false,
                 'choices' => [
                     'Analgésicos' => 'Analgésicos',
                     'Curas' => 'Curas',
                     'Inmovilización' => 'Inmovilización',
-                    'Medicación' => 'Medicación',
-                    'Diagnóstico' => 'Diagnóstico',
-                    'Protección' => 'Protección',
-                    'Oxigenoterapia' => 'Oxigenoterapia',
-                    'Vía Aérea' => 'Vía Aérea',
-                    'Varios' => 'Varios'
+                    'Vía Aérea' => 'ViaAerea',
+                    'Diagnóstico' => 'Diagnostico',
+                    'Sueroterapia' => 'Sueroterapia',
+                    'Medicación' => 'Medicacion',
+                    'Material de Entrenamiento' => 'Entrenamiento'
                 ],
                 'attr' => ['class' => 'form-control']
+            ])
+            ->add('barcode', TextType::class, [
+                'label' => 'CÓDIGO DE BARRAS / QR',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'EAN-13, QR o código interno'
+                ],
+                'help' => 'Escanea o introduce el código de barras del artículo'
+            ])
+            ->add('description', TextareaType::class, [
+                'label' => 'DESCRIPCIÓN DETALLADA',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'rows' => 3,
+                    'placeholder' => 'Describe las características, especificaciones técnicas, o detalles relevantes del material...'
+                ]
+            ])
+            ->add('batchNumber', TextType::class, [
+                'label' => 'LOTE',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Nº de lote para fungibles'
+                ]
+            ])
+            ->add('packagingFormat', TextType::class, [
+                'label' => 'FORMATO (EJ: CAJA, LITRO)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ej: Caja, Blister, Rollo...'
+                ]
+            ])
+            ->add('unitsPerPackage', IntegerType::class, [
+                'label' => 'UDS/ENVASE',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-material-dynamic-form-target' => 'unitsPerPackageInput',
+                    'data-action' => 'input->material-dynamic-form#calculateStockSanitario change->material-dynamic-form#calculateStockSanitario'
+                ]
+            ])
+            ->add('numPackages', IntegerType::class, [
+                'label' => 'Nº ENVASES',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'data-material-dynamic-form-target' => 'numPackagesInput',
+                    'data-action' => 'input->material-dynamic-form#calculateStockSanitario change->material-dynamic-form#calculateStockSanitario'
+                ]
             ])
             ->add('expirationDate', DateType::class, [
                 'label' => 'Fecha de Caducidad',
@@ -128,6 +189,17 @@ class MaterialType extends AbstractType
                 'currency' => 'EUR',
                 'attr' => ['class' => 'form-control']
             ])
+            ->add('discountPercentage', NumberType::class, [
+                'label' => '% DTO',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'Ej: 10',
+                    'data-material-dynamic-form-target' => 'discountPercentageInput',
+                    'data-action' => 'input->material-dynamic-form#calculateUnitPrice change->material-dynamic-form#calculateUnitPrice'
+                ]
+            ])
             ->add('iva', ChoiceType::class, [
                 'label' => 'IVA (%)',
                 'choices' => [
@@ -151,6 +223,33 @@ class MaterialType extends AbstractType
                     'Emisora Móvil' => 'MOVIL',
                     'Base Fija' => 'FIJA',
                     'Smartphone' => 'SMARTPHONE',
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('serialNumber', TextType::class, [
+                'label' => 'NÚMERO DE SERIE (S/N)',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Identificador único']
+            ])
+            ->add('operationalStatus', ChoiceType::class, [
+                'label' => 'ESTADO OPERATIVO',
+                'required' => false,
+                'choices' => [
+                    'Operativo' => 'OPERATIVO',
+                    'Averiado' => 'AVERIADO',
+                    'En Reparación' => 'REPARACION',
+                    'Baja' => 'BAJA'
+                ],
+                'attr' => ['class' => 'form-control']
+            ])
+            ->add('batteryStatus', ChoiceType::class, [
+                'label' => 'BATERÍA',
+                'required' => false,
+                'choices' => [
+                    'N/A' => 'N/A',
+                    'Óptima (100%)' => 'OPTIMA',
+                    'Buena' => 'BUENA',
+                    'Requiere Cambio' => 'CAMBIO'
                 ],
                 'attr' => ['class' => 'form-control']
             ])

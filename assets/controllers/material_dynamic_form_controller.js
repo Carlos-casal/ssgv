@@ -1,12 +1,13 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['unitsContainer', 'stockInput', 'totalPrice', 'unitPrice', 'sizingType', 'sizingGrid'];
+    static targets = ['unitsContainer', 'stockInput', 'totalPrice', 'unitPrice', 'sizingType', 'sizingGrid', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'discountPercentageInput'];
 
     connect() {
         console.log("Material Dynamic Form Controller Connected");
         this.handleStockChange();
         this.calculateUnitPrice();
+        this.toggleTechnicalBlock();
     }
 
     handleStockChange() {
@@ -23,6 +24,30 @@ export default class extends Controller {
         }
 
         this.calculateUnitPrice();
+    }
+
+    calculateStockSanitario() {
+        if (!this.hasUnitsPerPackageInputTarget || !this.hasNumPackagesInputTarget || !this.hasStockInputTarget) return;
+
+        const unitsPerPackage = parseInt(this.unitsPerPackageInputTarget.value) || 0;
+        const numPackages = parseInt(this.numPackagesInputTarget.value) || 0;
+        const totalStock = unitsPerPackage * numPackages;
+
+        // Update stock input explicitly, as readonly normally prevents user modifications but doesn't block JS updates
+        this.stockInputTarget.value = totalStock;
+
+        // Trigger generic stock change event logic (like unit price calculation)
+        this.handleStockChange();
+    }
+
+    toggleTechnicalBlock() {
+        if (!this.hasNatureSelectTarget || !this.hasTechnicalBlockTarget) return;
+
+        if (this.natureSelectTarget.value === 'EQUIPO_TECNICO') {
+            this.technicalBlockTarget.classList.remove('d-none');
+        } else {
+            this.technicalBlockTarget.classList.add('d-none');
+        }
     }
 
     handleSizingChange() {
@@ -152,9 +177,15 @@ export default class extends Controller {
 
         const total = parseFloat(this.totalPriceTarget.value.replace(',', '.')) || 0;
         const stock = parseInt(this.stockInputTarget.value) || 0;
+        const discount = this.hasDiscountPercentageInputTarget ? (parseFloat(this.discountPercentageInputTarget.value) || 0) : 0;
+
+        let finalTotal = total;
+        if (discount > 0 && discount <= 100) {
+            finalTotal = total - (total * (discount / 100));
+        }
 
         if (stock > 0) {
-            this.unitPriceTarget.value = (total / stock).toFixed(2);
+            this.unitPriceTarget.value = (finalTotal / stock).toFixed(2);
         } else {
             this.unitPriceTarget.value = '0.00';
         }
