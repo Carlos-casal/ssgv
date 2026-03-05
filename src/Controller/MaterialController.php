@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Material;
 use App\Entity\MaterialUnit;
+use App\Entity\MaterialUnitHistory;
 use App\Form\MaterialType;
 use App\Form\MaterialUnitType;
+use App\Form\MaterialUnitStatusType;
 use App\Form\MaterialTransferType;
 use App\Repository\MaterialRepository;
 use App\Repository\MaterialUnitRepository;
@@ -19,6 +21,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/material')]
@@ -35,19 +38,19 @@ class MaterialController extends AbstractController
 
         if ($category) {
             $qb->andWhere('m.category = :category')
-               ->setParameter('category', $category);
+                ->setParameter('category', $category);
         }
 
         if ($subFamily) {
             $qb->andWhere('m.subFamily = :subFamily')
-               ->setParameter('subFamily', $subFamily);
+                ->setParameter('subFamily', $subFamily);
         }
 
         if ($size) {
             $qb->join('m.stocks', 'ms')
-               ->andWhere('ms.size = :size')
-               ->andWhere('ms.quantity > 0')
-               ->setParameter('size', $size);
+                ->andWhere('ms.size = :size')
+                ->andWhere('ms.quantity > 0')
+                ->setParameter('size', $size);
         }
 
         $materials = $qb->getQuery()->getResult();
@@ -106,12 +109,56 @@ class MaterialController extends AbstractController
             // Handle dynamic unit creation for Communications or Technical Equipment
             if ($request->request->has('units_data')) {
                 $unitsData = $request->request->all('units_data');
+
+                // Validate Serial Numbers for uniqueness
+                $seenSNs = [];
+                foreach ($unitsData as $unitData) {
+                    if (!empty($unitData['serialNumber'])) {
+                        // Check if duplicate within the submission
+                        if (in_array($unitData['serialNumber'], $seenSNs)) {
+                            $this->addFlash('error', 'Has introducido el número de serie ' . $unitData['serialNumber'] . ' varias veces.');
+                            return $this->render('material/new.html.twig', [
+                                'material' => $material,
+                                'form' => $form,
+                                'units_data' => $unitsData,
+                                'current_section' => 'recursos'
+                            ]);
+                        }
+                        $seenSNs[] = $unitData['serialNumber'];
+
+                        // Check if exists in DB
+                        $existing = $entityManager->getRepository(MaterialUnit::class)->findOneBy(['serialNumber' => $unitData['serialNumber']]);
+                        if ($existing) {
+                            $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' ya está registrado en otra unidad.');
+                            return $this->render('material/new.html.twig', [
+                                'material' => $material,
+                                'form' => $form,
+                                'units_data' => $unitsData,
+                                'current_section' => 'recursos'
+                            ]);
+                        }
+                    }
+                }
+
+                // Extract common data from the first unit for Technical Equipment
+                if ($material->getNature() === Material::NATURE_TECHNICAL && !empty($unitsData)) {
+                    $first = $unitsData[0];
+                    if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
+                    if (!empty($first['purchaseDate'])) {
+                        $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
+                    }
+                    if (!empty($first['warrantyEndDate'])) {
+                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyEndDate']));
+                    }
+                }
+
                 foreach ($unitsData as $unitData) {
                     $materialManager->createUnit($material, [
                         'alias' => $unitData['alias'] ?? null,
                         'serialNumber' => $unitData['serialNumber'] ?? null,
                         'networkId' => $unitData['networkId'] ?? null,
                         'phoneNumber' => $unitData['phoneNumber'] ?? null,
+                        'batteryStatus' => $unitData['batteryStatus'] ?? null,
                         'hasCharger' => $form->get('hasCharger')->getData(), // Apply from bulk selection
                         'hasClip' => $form->get('hasClip')->getData(),
                     ]);
@@ -139,11 +186,156 @@ class MaterialController extends AbstractController
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
 
+        $unitsData = $request->request->all('units_data');
+
         return $this->render('material/new.html.twig', [
             'material' => $material,
             'form' => $form,
+            'units_data' => $unitsData,
             'current_section' => 'recursos'
         ]);
+    }
+
+    #[Route('/import/template', name: 'app_material_import_template', methods: ['GET'])]
+    public function downloadTemplate(ExcelImportService $importService): Response
+    {
+        $templatePath = $importService->generateTemplate();
+
+        $response = new BinaryFileResponse($templatePath);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            'plantilla_materiales.xlsx'
+        );
+
+        return $response;
+    }
+
+    #[Route('/import/preview', name: 'app_material_import_preview', methods: ['POST'])]
+    public function importPreview(Request $request, ExcelImportService $importService): Response
+    {
+        $file = $request->files->get('import_file');
+
+        if (!$file) {
+            $this->addFlash('error', 'Por favor selecciona un archivo Excel.');
+            return $this->redirectToRoute('app_material_index');
+        }
+
+        try {
+            $preview = $importService->previewImport($file);
+
+            // Store file temporarily for later processing
+            $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/';
+            if (!is_dir($tempPath)) {
+                mkdir($tempPath, 0777, true);
+            }
+            $tempFilename = uniqid('import_') . '.xlsx';
+            $file->move($tempPath, $tempFilename);
+
+            return $this->render('material/import_preview.html.twig', [
+                'preview' => $preview,
+                'temp_filename' => $tempFilename,
+                'current_section' => 'recursos'
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error al procesar el archivo: ' . $e->getMessage());
+            return $this->redirectToRoute('app_material_index');
+        }
+    }
+
+    #[Route('/import/process', name: 'app_material_import_process', methods: ['POST'])]
+    public function importProcess(Request $request, ExcelImportService $importService): Response
+    {
+        $tempFilename = $request->request->get('temp_filename');
+        $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/' . $tempFilename;
+
+        if (!file_exists($tempPath)) {
+            $this->addFlash('error', 'Archivo temporal no encontrado. Por favor intenta de nuevo.');
+            return $this->redirectToRoute('app_material_index');
+        }
+
+        try {
+            $file = new \Symfony\Component\HttpFoundation\File\File($tempPath);
+            $result = $importService->processImport($file);
+
+            // Delete temp file
+            unlink($tempPath);
+
+            $message = sprintf(
+                'Importación completada: %d materiales creados, %d actualizados.',
+                $result['created'],
+                $result['updated']
+            );
+
+            if (!empty($result['errors'])) {
+                $message .= ' Errores: ' . implode(', ', $result['errors']);
+                $this->addFlash('warning', $message);
+            } else {
+                $this->addFlash('success', $message);
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
+        }
+    }
+
+    #[Route('/check-barcode', name: 'app_material_check_barcode', methods: ['GET'])]
+    public function checkBarcode(Request $request, MaterialRepository $materialRepository): JsonResponse
+    {
+        $barcode = $request->query->get('barcode');
+        $excludeId = $request->query->get('excludeId');
+
+        if (!$barcode) {
+            return new JsonResponse(['exists' => false]);
+        }
+
+        $material = $materialRepository->findOneBy(['barcode' => $barcode]);
+
+        $exists = false;
+        $name = null;
+        $id = null;
+        if ($material) {
+            if (!$excludeId || $material->getId() !== (int)$excludeId) {
+                $exists = true;
+                $name = $material->getName();
+                $id = $material->getId();
+            }
+        }
+
+        return new JsonResponse([
+            'exists' => $exists,
+            'name' => $name,
+            'id' => $id
+        ]);
+    }
+
+    #[Route('/check-serial-number', name: 'app_material_check_serial_number', methods: ['GET'])]
+    public function checkSerialNumber(Request $request, MaterialRepository $materialRepository, MaterialUnitRepository $unitRepository): JsonResponse
+    {
+        $serialNumber = $request->query->get('serialNumber');
+        $excludeMaterialId = $request->query->get('excludeMaterialId');
+
+        if (!$serialNumber) {
+            return new JsonResponse(['exists' => false]);
+        }
+
+        $exists = false;
+
+        // Check in global Material level
+        $material = $materialRepository->findOneBy(['serialNumber' => $serialNumber]);
+        if ($material && (!$excludeMaterialId || $material->getId() !== (int)$excludeMaterialId)) {
+            $exists = true;
+        }
+
+        // Check in MaterialUnit level
+        if (!$exists) {
+            $unit = $unitRepository->findOneBy(['serialNumber' => $serialNumber]);
+            // Currently not excluding unit id, as the form usually checks global material or new units
+            // For new units they won't have an ID yet
+            if ($unit) {
+                $exists = true;
+            }
+        }
+
+        return new JsonResponse(['exists' => $exists]);
     }
 
     #[Route('/{id}', name: 'app_material_show', methods: ['GET'])]
@@ -177,7 +369,7 @@ class MaterialController extends AbstractController
                         $this->getParameter('material_images_directory'),
                         $newFilename
                     );
-                    
+
                     // Delete old image if exists
                     if ($material->getImagePath()) {
                         $oldImagePath = $this->getParameter('material_images_directory') . '/' . $material->getImagePath();
@@ -185,7 +377,7 @@ class MaterialController extends AbstractController
                             unlink($oldImagePath);
                         }
                     }
-                    
+
                     $material->setImagePath($newFilename);
                 } catch (FileException $e) {
                     // Handle exception if something happens during file upload
@@ -197,13 +389,90 @@ class MaterialController extends AbstractController
             // Handle dynamic unit creation in edit (only for NEW units)
             if ($request->request->has('units_data')) {
                 $unitsData = $request->request->all('units_data');
+                $existingUnits = $material->getUnits()->toArray();
+                $existingCount = count($existingUnits);
+
+                // Update existing units with submitted data (status, price)
+                foreach ($existingUnits as $idx => $unit) {
+                    if (isset($unitsData[$idx])) {
+                        $uData = $unitsData[$idx];
+                        // Track status change and record traceability
+                        if (isset($uData['operationalStatus'])) {
+                            $newStatus = $uData['operationalStatus'];
+                            if ($newStatus !== $unit->getOperationalStatus()) {
+                                $history = new MaterialUnitHistory();
+                                $history->setMaterialUnit($unit);
+                                $history->setStatus($newStatus);
+                                $history->setReason($uData['statusReason'] ?? null);
+                                $history->setUser($this->getUser());
+                                $entityManager->persist($history);
+                            }
+                            $unit->setOperationalStatus($newStatus);
+                        }
+                        if (isset($uData['purchasePrice']) && $uData['purchasePrice'] !== '') {
+                            $unit->setPurchasePrice(str_replace(',', '.', $uData['purchasePrice']));
+                        }
+                        if (isset($uData['discountPct']) && $uData['discountPct'] !== '') {
+                            $unit->setDiscountPct(str_replace(',', '.', $uData['discountPct']));
+                        }
+                    }
+                }
+                $entityManager->flush();
+
+                // Validate Serial Numbers for uniqueness (only for NEW units being added)
+                if (count($unitsData) > $existingCount) {
+                    $seenSNs = [];
+                    // Add existing unit SNs to seen list
+                    foreach ($material->getUnits() as $unit) {
+                        if ($unit->getSerialNumber()) $seenSNs[] = $unit->getSerialNumber();
+                    }
+
+                    for ($i = $existingCount; $i < count($unitsData); $i++) {
+                        $unitData = $unitsData[$i];
+                        if (!empty($unitData['serialNumber'])) {
+                            // Check if duplicate within the submission
+                            if (in_array($unitData['serialNumber'], $seenSNs)) {
+                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' ya está en uso o repetido.');
+                                return $this->render('material/edit.html.twig', [
+                                    'material' => $material,
+                                    'form' => $form,
+                                    'units_data' => $unitsData,
+                                    'current_section' => 'recursos'
+                                ]);
+                            }
+                            $seenSNs[] = $unitData['serialNumber'];
+
+                            // Check if exists in DB
+                            $existing = $entityManager->getRepository(MaterialUnit::class)->findOneBy(['serialNumber' => $unitData['serialNumber']]);
+                            if ($existing) {
+                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' ya está registrado en otra unidad.');
+                                return $this->render('material/edit.html.twig', [
+                                    'material' => $material,
+                                    'form' => $form,
+                                    'units_data' => $unitsData,
+                                    'current_section' => 'recursos'
+                                ]);
+                            }
+                        }
+                    }
+                }
+
+                // Update common data for Technical Equipment from the first unit block
+                if ($material->getNature() === Material::NATURE_TECHNICAL && !empty($unitsData)) {
+                    $first = $unitsData[0];
+                    if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
+                    if (!empty($first['purchaseDate'])) {
+                        $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
+                    }
+                    if (!empty($first['warrantyEndDate'])) {
+                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyEndDate']));
+                    }
+                    if (isset($first['operationalStatus'])) {
+                        $material->setOperationalStatus($first['operationalStatus']);
+                    }
+                }
+
                 $existingCount = count($material->getUnits());
-
-                // Only create units if the user requested more than already exist
-                // Or if we want to support editing existing ones via units_data.
-                // For now, the UI generates fields for the WHOLE stock.
-                // If we already have 10 units and stock is 10, we shouldn't create more.
-
                 if (count($unitsData) > $existingCount) {
                     for ($i = $existingCount; $i < count($unitsData); $i++) {
                         $unitData = $unitsData[$i];
@@ -212,6 +481,7 @@ class MaterialController extends AbstractController
                             'serialNumber' => $unitData['serialNumber'] ?? null,
                             'networkId' => $unitData['networkId'] ?? null,
                             'phoneNumber' => $unitData['phoneNumber'] ?? null,
+                            'batteryStatus' => $unitData['batteryStatus'] ?? null,
                             'hasCharger' => $form->get('hasCharger')->getData(),
                             'hasClip' => $form->get('hasClip')->getData(),
                         ]);
@@ -240,9 +510,38 @@ class MaterialController extends AbstractController
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
 
+        // Prepare existing units data for the frontend
+        $unitsData = $request->request->all('units_data');
+        if (empty($unitsData)) {
+            $unitsData = [];
+            foreach ($material->getUnits() as $unit) {
+                $unitsData[] = [
+                    'id' => $unit->getId(),
+                    'alias' => $unit->getAlias(),
+                    'serialNumber' => $unit->getSerialNumber(),
+                    'brandModel' => $material->getBrandModel(),
+                    'purchaseDate' => $material->getPurchaseDate() ? $material->getPurchaseDate()->format('Y-m-d') : null,
+                    'warrantyEndDate' => $material->getWarrantyEndDate() ? $material->getWarrantyEndDate()->format('Y-m-d') : null,
+                    'operationalStatus' => $unit->getOperationalStatus(),
+                    'batteryStatus' => $unit->getBatteryStatus(),
+                    'networkId' => $unit->getNetworkId(),
+                    'phoneNumber' => $unit->getPhoneNumber(),
+                    'purchasePrice' => $unit->getPurchasePrice(),
+                    'discountPct' => $unit->getDiscountPct(),
+                    'history' => array_map(fn($h) => [
+                        'date'   => $h->getCreatedAt() ? $h->getCreatedAt()->format('d/m/Y H:i') : '-',
+                        'status' => $h->getStatus(),
+                        'user'   => $h->getUser() ? ($h->getUser()->getName() ?? $h->getUser()->getEmail()) : 'Sistema',
+                        'reason' => $h->getReason(),
+                    ], $unit->getHistory()->toArray()),
+                ];
+            }
+        }
+
         return $this->render('material/edit.html.twig', [
             'material' => $material,
             'form' => $form,
+            'units_data' => $unitsData,
             'current_section' => 'recursos'
         ]);
     }
@@ -375,87 +674,24 @@ class MaterialController extends AbstractController
         ]);
     }
 
-    #[Route('/import/template', name: 'app_material_import_template', methods: ['GET'])]
-    public function downloadTemplate(ExcelImportService $importService): Response
+    #[Route('/unit/{id}/status', name: 'app_material_unit_status', methods: ['GET', 'POST'])]
+    public function changeUnitStatus(Request $request, MaterialUnit $unit, MaterialManager $materialManager): Response
     {
-        $templatePath = $importService->generateTemplate();
-        
-        $response = new BinaryFileResponse($templatePath);
-        $response->setContentDisposition(
-            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
-            'plantilla_materiales.xlsx'
-        );
-        
-        return $response;
-    }
+        $form = $this->createForm(MaterialUnitStatusType::class, ['status' => $unit->getOperationalStatus()]);
+        $form->handleRequest($request);
 
-    #[Route('/import/preview', name: 'app_material_import_preview', methods: ['POST'])]
-    public function importPreview(Request $request, ExcelImportService $importService): Response
-    {
-        $file = $request->files->get('import_file');
-        
-        if (!$file) {
-            $this->addFlash('error', 'Por favor selecciona un archivo Excel.');
-            return $this->redirectToRoute('app_material_index');
-        }
-        
-        try {
-            $preview = $importService->previewImport($file);
-            
-            // Store file temporarily for later processing
-            $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/';
-            if (!is_dir($tempPath)) {
-                mkdir($tempPath, 0777, true);
-            }
-            $tempFilename = uniqid('import_') . '.xlsx';
-            $file->move($tempPath, $tempFilename);
-            
-            return $this->render('material/import_preview.html.twig', [
-                'preview' => $preview,
-                'temp_filename' => $tempFilename,
-                'current_section' => 'recursos'
-            ]);
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Error al procesar el archivo: ' . $e->getMessage());
-            return $this->redirectToRoute('app_material_index');
-        }
-    }
+        if ($form->isSubmitted() && $form->isValid()) {
+            $data = $form->getData();
+            $materialManager->changeUnitStatus($unit, $data['status'], $data['reason']);
 
-    #[Route('/import/process', name: 'app_material_import_process', methods: ['POST'])]
-    public function importProcess(Request $request, ExcelImportService $importService): Response
-    {
-        $tempFilename = $request->request->get('temp_filename');
-        $tempPath = $this->getParameter('kernel.project_dir') . '/var/tmp/' . $tempFilename;
-        
-        if (!file_exists($tempPath)) {
-            $this->addFlash('error', 'Archivo temporal no encontrado. Por favor intenta de nuevo.');
-            return $this->redirectToRoute('app_material_index');
+            $this->addFlash('success', 'Estado modificado correctamente.');
+            return $this->redirectToRoute('app_material_show', ['id' => $unit->getMaterial()->getId()], Response::HTTP_SEE_OTHER);
         }
-        
-        try {
-            $file = new \Symfony\Component\HttpFoundation\File\File($tempPath);
-            $result = $importService->processImport($file);
-            
-            // Delete temp file
-            unlink($tempPath);
-            
-            $message = sprintf(
-                'Importación completada: %d materiales creados, %d actualizados.',
-                $result['created'],
-                $result['updated']
-            );
-            
-            if (!empty($result['errors'])) {
-                $message .= ' Errores: ' . implode(', ', $result['errors']);
-                $this->addFlash('warning', $message);
-            } else {
-                $this->addFlash('success', $message);
-            }
-            
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
-        }
-        
-        return $this->redirectToRoute('app_material_index');
+
+        return $this->render('material/unit_status.html.twig', [
+            'unit' => $unit,
+            'form' => $form,
+            'current_section' => 'recursos'
+        ]);
     }
 }

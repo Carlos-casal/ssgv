@@ -7,6 +7,7 @@ use App\Entity\Material;
 use App\Entity\MaterialUnit;
 use App\Entity\MaterialStock;
 use App\Entity\MaterialMovement;
+use App\Entity\MaterialUnitHistory;
 use App\Entity\Service;
 use App\Entity\User;
 use App\Entity\Volunteer;
@@ -51,7 +52,7 @@ class MaterialManager
 
         if ($excludeServiceId) {
             $qb->andWhere('s.id != :excludeId')
-               ->setParameter('excludeId', $excludeServiceId);
+                ->setParameter('excludeId', $excludeServiceId);
         }
 
         $conflicts = $qb->getQuery()->getResult();
@@ -261,7 +262,7 @@ class MaterialManager
     {
         return $this->materialRepository->createQueryBuilder('m')
             ->where('m.nature = :nature')
-            ->andWhere('m.stock <= m.safetyStock')
+            ->andWhere('m.stock <= (m.safetyStock * COALESCE(m.unitsPerPackage, 1))')
             ->setParameter('nature', Material::NATURE_CONSUMABLE)
             ->getQuery()
             ->getResult();
@@ -285,5 +286,33 @@ class MaterialManager
         }
 
         return $warehouse;
+    }
+
+    /**
+     * Changes the operational status of a unit and logs it to history
+     */
+    public function changeUnitStatus(MaterialUnit $unit, string $status, ?string $reason): void
+    {
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
+        $history = new MaterialUnitHistory();
+        $history->setMaterialUnit($unit);
+        $history->setStatus($status);
+        $history->setReason($reason);
+        $history->setUser($currentUser);
+
+        $this->entityManager->persist($history);
+
+        $unit->setOperationalStatus($status);
+
+        // Depending on status, we might want to automatically set isInMaintenance to true
+        if (in_array($status, ['EN REPARACION', 'AVERIADO'])) {
+            $unit->setIsInMaintenance(true);
+        } else if ($status === 'OPERATIVO') {
+            $unit->setIsInMaintenance(false);
+        }
+
+        $this->entityManager->flush();
     }
 }

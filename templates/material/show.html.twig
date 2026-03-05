@@ -306,25 +306,27 @@
                 <table class="table table-bordered">
                     <thead class="bg-light">
                         <tr>
-                            <th>Nº Colectiva</th>
+                            <th>Alias / Nº Col</th>
                             <th>Nº Serie / ID</th>
                             <th>Último Uso</th>
-                            <th>Mantenimiento</th>
+                            <th>Estado Op.</th>
                             <th>Estado Accesorios</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                    {% for unit in material.units %}
+                        {% for unit in material.units %}
                         <tr class="{{ unit.isInMaintenance ? 'table-warning' : '' }}">
                             <td><strong>{{ unit.alias|default(unit.collectiveNumber|default('-')) }}</strong></td>
                             <td>{{ unit.serialNumber }}</td>
                             <td>{{ unit.lastUsedAt ? unit.lastUsedAt|date('d/m/Y H:i') : 'Nunca usado' }}</td>
                             <td>
-                                {% if unit.isInMaintenance %}
-                                    <span class="badge badge-warning">En Mantenimiento</span>
-                                {% else %}
+                                {% if unit.operationalStatus == 'OPERATIVO' %}
                                     <span class="badge badge-success">Operativo</span>
+                                {% elseif unit.operationalStatus in ['EN REPARACION', 'AVERIADO'] %}
+                                    <span class="badge badge-warning text-dark">{{ unit.operationalStatus }}</span>
+                                {% else %}
+                                    <span class="badge badge-danger">{{ unit.operationalStatus }}</span>
                                 {% endif %}
                             </td>
                             <td>
@@ -335,14 +337,19 @@
                                 </div>
                             </td>
                             <td>
-                                <a href="{{ path('app_material_unit_edit', {'id': unit.id}) }}" class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-edit"></i> Editar
-                                </a>
+                                <div class="btn-group">
+                                    <a href="{{ path('app_material_unit_edit', {'id': unit.id}) }}" class="btn btn-sm btn-outline-secondary" title="Editar Unidad">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{{ path('app_material_unit_status', {'id': unit.id}) }}" class="btn btn-sm btn-outline-info" title="Cambiar Estado / Historial">
+                                        <i class="fas fa-wrench"></i> Historial
+                                    </a>
+                                </div>
                             </td>
                         </tr>
                     {% else %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-3">No hay unidades registradas.</td>
+                            <td colspan="6" class="text-center text-muted py-3">No hay unidades registradas.</td>
                         </tr>
                     {% endfor %}
                     </tbody>

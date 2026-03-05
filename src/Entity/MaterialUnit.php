@@ -3,9 +3,14 @@
 namespace App\Entity;
 
 use App\Repository\MaterialUnitRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+
 #[ORM\Entity(repositoryClass: MaterialUnitRepository::class)]
+#[UniqueEntity(fields: ['serialNumber'], message: 'Este Número de Serie ya está registrado en otra unidad.', ignoreNull: true)]
 class MaterialUnit
 {
     #[ORM\Id]
@@ -20,7 +25,7 @@ class MaterialUnit
     #[ORM\ManyToOne(inversedBy: 'units')]
     private ?Location $location = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $serialNumber = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -50,6 +55,23 @@ class MaterialUnit
 
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $phoneNumber = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $operationalStatus = 'OPERATIVO';
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $purchasePrice = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $discountPct = null;
+
+    #[ORM\OneToMany(mappedBy: 'materialUnit', targetEntity: MaterialUnitHistory::class, orphanRemoval: true)]
+    private Collection $history;
+
+    public function __construct()
+    {
+        $this->history = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -196,6 +218,72 @@ class MaterialUnit
     public function setLocation(?Location $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getOperationalStatus(): ?string
+    {
+        return $this->operationalStatus;
+    }
+
+    public function setOperationalStatus(?string $operationalStatus): static
+    {
+        $this->operationalStatus = $operationalStatus;
+
+        return $this;
+    }
+
+    public function getPurchasePrice(): ?string
+    {
+        return $this->purchasePrice;
+    }
+
+    public function setPurchasePrice(?string $purchasePrice): static
+    {
+        $this->purchasePrice = $purchasePrice;
+
+        return $this;
+    }
+
+    public function getDiscountPct(): ?string
+    {
+        return $this->discountPct;
+    }
+
+    public function setDiscountPct(?string $discountPct): static
+    {
+        $this->discountPct = $discountPct;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialUnitHistory>
+     */
+    public function getHistory(): Collection
+    {
+        return $this->history;
+    }
+
+    public function addHistory(MaterialUnitHistory $history): static
+    {
+        if (!$this->history->contains($history)) {
+            $this->history->add($history);
+            $history->setMaterialUnit($this);
+        }
+
+        return $this;
+    }
+
+    public function removeHistory(MaterialUnitHistory $history): static
+    {
+        if ($this->history->removeElement($history)) {
+            // set the owning side to null (unless already changed)
+            if ($history->getMaterialUnit() === $this) {
+                $history->setMaterialUnit(null);
+            }
+        }
 
         return $this;
     }

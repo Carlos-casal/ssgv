@@ -1,0 +1,182 @@
+/* material_form.css */
+
+/* Core Constants */
+:root {
+    --primary-blue: #4e73df;
+    --success-green: #1cc88a;
+    --danger-red: #e74a3b;
+    --warning-yellow: #f6c23e;
+    --text-muted: #858796;
+    --border-gray: #e3e6f0;
+    --bg-highlight: #f8f9fc;
+}
+
+/* Grid System */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+}
+
+.col-span-2 {
+    grid-column: span 2;
+}
+
+/* Base Form Elements */
+.form-group {
+    margin-bottom: 0.5rem;
+    position: relative;
+}
+
+.form-label {
+    display: block !important;
+    font-size: 11px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    color: var(--primary-blue) !important;
+    margin-bottom: 0.5rem !important;
+    letter-spacing: 0.05em;
+}
+
+.form-input {
+    width: 100% !important;
+    height: 38px !important;
+    /* Perfect standard height */
+    padding: 0.5rem 0.75rem !important;
+    font-size: 0.875rem !important;
+    line-height: normal !important;
+    color: #495057 !important;
+    background-color: #fff !important;
+    background-clip: padding-box !important;
+    border: 1px solid var(--border-gray) !important;
+    border-radius: 0.35rem !important;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.1s ease-in-out !important;
+}
+
+.form-input:focus {
+    border-color: var(--primary-blue) !important;
+    outline: 0 !important;
+    box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25) !important;
+}
+
+.form-input[readonly] {
+    background-color: var(--bg-highlight) !important;
+}
+
+.form-input.input-success {
+    border-color: var(--success-green) !important;
+    background-color: #f6fff9 !important;
+}
+
+.form-input.input-error {
+    border-color: var(--danger-red) !important;
+    background-color: #fff8f7 !important;
+}
+
+/* Currency Integration */
+.currency-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.currency-symbol {
+    position: absolute;
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    font-weight: 600;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.currency-symbol.suffix {
+    right: 0.75rem;
+}
+
+.currency-symbol.prefix {
+    left: 0.75rem;
+}
+
+/* Highlights */
+.highlight-box {
+    padding: 1rem;
+    background-color: #f6fff9;
+    border: 1px solid #d1f7e0;
+    border-radius: 0.5rem;
+}
+
+.text-hint {
+    font-size: 10px;
+    color: var(--text-muted);
+    font-style: italic;
+    margin-top: 0.25rem;
+}
+
+/* Validation Styles */
+.field-message {
+    font-size: 11px;
+    margin-top: 4px;
+    font-weight: 600;
+    display: none;
+}
+
+.field-message.error {
+    color: var(--danger-red);
+}
+
+.field-message.show {
+    display: block;
+}
+
+/* Shake Animation */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    50% {
+        transform: translateX(5px);
+    }
+
+    75% {
+        transform: translateX(-5px);
+    }
+}
+
+.shake {
+    animation: shake 0.3s cubic-bezier(.36, .07, .19, .97) both;
+}
+
+/* Tooltip Styles */
+.error-tooltip {
+    position: absolute;
+    bottom: -18px;
+    left: 0;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--danger-red);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.error-tooltip.show {
+    opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .col-span-2 {
+        grid-column: span 1;
+    }
+}

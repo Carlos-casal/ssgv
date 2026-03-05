@@ -1,8 +1,10 @@
 // Import our custom CSS
 import './styles/app.css';
+import './styles/material_form.css';
 
 // Import Bootstrap JS
-import 'bootstrap';
+import * as bootstrap from 'bootstrap';
+window.bootstrap = bootstrap;
 
 // Import the Stimulus application
 import './bootstrap.js';

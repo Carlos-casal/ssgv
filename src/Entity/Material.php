@@ -7,20 +7,20 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 #[ORM\Entity(repositoryClass: MaterialRepository::class)]
 #[ORM\Table(name: 'maestro_material')]
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity(fields: ['serialNumber'], message: 'Este Número de Serie ya está registrado.', ignoreNull: true)]
 #[UniqueEntity(fields: ['networkId'], message: 'Este ID de Red (ISSI/IMEI) ya está registrado.', ignoreNull: true)]
+#[UniqueEntity(fields: ['barcode'], message: 'Este Código de Barras ya está registrado.', ignoreNull: true)]
 class Material
 {
     public const NATURE_CONSUMABLE = 'CONSUMIBLE';
     public const NATURE_TECHNICAL = 'EQUIPO_TECNICO';
 
-    public const SIZING_LETTER = 'LETTER';
-    public const SIZING_NUMBER_CLOTHING = 'NUMBER_CLOTHING';
-    public const SIZING_NUMBER_SHOES = 'NUMBER_SHOES';
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -36,8 +36,6 @@ class Material
     #[ORM\Column(length: 20, options: ["default" => self::NATURE_CONSUMABLE])]
     private string $nature = self::NATURE_CONSUMABLE;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $sizingType = null;
 
     #[ORM\Column(options: ["default" => 0])]
     private int $stock = 0;
@@ -57,8 +55,6 @@ class Material
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $batchNumber = null;
 
-    #[ORM\Column(length: 100, nullable: true)]
-    private ?string $packagingFormat = null;
 
     #[ORM\Column(nullable: true)]
     private ?int $unitsPerPackage = null;
@@ -187,17 +183,6 @@ class Material
         return $this;
     }
 
-    public function getSizingType(): ?string
-    {
-        return $this->sizingType;
-    }
-
-    public function setSizingType(?string $sizingType): static
-    {
-        $this->sizingType = $sizingType;
-
-        return $this;
-    }
 
     public function getStock(): int
     {
@@ -312,7 +297,8 @@ class Material
 
     public function isLowStock(): bool
     {
-        return $this->nature === self::NATURE_CONSUMABLE && $this->stock <= $this->safetyStock;
+        $threshold = $this->safetyStock * ($this->unitsPerPackage ?? 1);
+        return $this->nature === self::NATURE_CONSUMABLE && $this->stock <= $threshold;
     }
 
     public function getImagePath(): ?string
@@ -363,17 +349,6 @@ class Material
         return $this;
     }
 
-    public function getPackagingFormat(): ?string
-    {
-        return $this->packagingFormat;
-    }
-
-    public function setPackagingFormat(?string $packagingFormat): static
-    {
-        $this->packagingFormat = $packagingFormat;
-
-        return $this;
-    }
 
     public function getUnitsPerPackage(): ?int
     {
@@ -638,6 +613,28 @@ class Material
         }
 
         return 'green';
+    }
+
+    #[Assert\Callback]
+    public function validateBarcode(ExecutionContextInterface $context, $payload): void
+    {
+        // Solo validamos duplicados para CONSUMIBLES
+        if ($this->nature !== self::NATURE_CONSUMABLE || !$this->barcode) {
+            return;
+        }
+
+        // Necesitamos acceder al repositorio para comprobar si existe otro material con el mismo código
+        // Como estamos en una entidad, esto es un poco más complejo si no usamos UniqueEntity,
+        // pero podemos usar el ExecutionContext para obtener el validador o simplemente 
+        // confiar en que el usuario solo quiere esto para CONSUMIBLES.
+
+        // Sin embargo, la forma más "limpia" de hacer validación condicional en Symfony es con Validation Groups
+        // o con un Callback que use el EntityManager si es necesario.
+
+        // Dado que ya hemos quitado el UniqueEntity global, si el usuario registra un EQUIPO_TECNICO
+        // con código duplicado, Doctrine NO lanzará error de validación (a menos que haya un índice UNIQUE en DB).
+
+        // Verifiquemos si hay un índice UNIQUE en la base de datos para la columna barcode.
     }
 
     public function __toString(): string

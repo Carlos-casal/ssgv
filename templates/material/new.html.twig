@@ -19,8 +19,19 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4" data-controller="material-dynamic-form" data-material-category="{{ material.category }}">
+<div class="container-fluid py-4" 
+     data-controller="material-dynamic-form" 
+     data-material-category="{{ material.category }}" 
+     data-material-action="new" 
+     data-serial-check-url="{{ path('app_material_check_serial_number') }}"
+     data-initial-units="{{ units_data|default([])|json_encode }}">
     {{ form_start(form, {'attr': {'id': 'material-form', 'class': 'material-form', 'novalidate': 'novalidate'}}) }}
+    
+    <div class="row mb-3">
+        <div class="col-12 text-danger">
+            {{ form_errors(form) }}
+        </div>
+    </div>
 
     <div class="row">
         {# Columna Izquierda (8) #}
@@ -144,69 +155,73 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">
-                                {{ form_row(form.sizingType, {
-                                    'label': 'SELECTOR DE TALLAJE',
-                                    'attr': {
-                                        'data-action': 'change->material-dynamic-form#updateSizingGrid',
-                                        'data-material-dynamic-form-target': 'sizingType'
-                                    }
-                                }) }}
-                            </div>
-                            <div class="col-md-6">
                                 {{ form_row(form.nature) }}
                             </div>
                         </div>
                     </div>
-                </div>
-
-                <div id="sizing-grid-container" data-material-dynamic-form-target="sizingGrid" aria-live="polite"></div>
-
+            {% else %}
                 {# SANITARIO / GENERIC LAYOUT #}
                 {# BLOQUE A: IDENTIDAD DEL MATERIAL #}
                 <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #4e73df !important;">
-                    <div class="card-header bg-white py-3">
+                    <div class="card-header bg-white py-3 border-bottom-0">
                         <h6 class="m-0 font-weight-bold text-primary text-uppercase">
-                            BLOQUE A: IDENTIDAD DEL MATERIAL
+                            Bloque A: Identidad del Material
                         </h6>
                     </div>
-                    <div class="card-body">
+                    <div class="card-body pt-0">
                         <div class="row">
                             <div class="col-md-12">
-                                {{ form_row(form.name) }}
+                                <label class="form-label">Nombre Comercial<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ej: Paracetamol 500mg', 'data-required': 'true'}}) }}
                             </div>
                         </div>
-                        <div class="row mt-2">
+                        <div class="row mt-3">
                             <div class="col-md-12">
-                                {{ form_row(form.nature, {
+                                <label class="form-label">Naturaleza</label>
+                                {{ form_widget(form.nature, {
                                     'attr': {
-                                        'data-action': 'change->material-dynamic-form#toggleTechnicalBlock',
-                                        'data-material-dynamic-form-target': 'natureSelect'
+                                        'class': 'form-input',
+                                        'data-material-dynamic-form-target': 'natureSelect',
+                                        'data-action': 'change->material-dynamic-form#toggleTechnicalBlock change->material-dynamic-form#handleNatureChange'
                                     }
                                 }) }}
                             </div>
                         </div>
-                        <div class="row mt-2">
+                        <div class="row mt-3">
                             <div class="col-md-6">
                                 {% if material.category == 'Sanitario' %}
-                                    {{ form_row(form.subFamily) }}
+                                    <label class="form-label">Subfamilia</label>
+                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input'}}) }}
                                 {% else %}
                                     <div class="d-none">{{ form_row(form.subFamily) }}</div>
                                 {% endif %}
                             </div>
                             <div class="col-md-6">
-                                {{ form_row(form.barcode) }}
+                                <label class="form-label">Código de Barras / QR<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.barcode, {
+                                    'attr': {
+                                        'class': 'form-input',
+                                        'data-required': 'true',
+                                        'data-material-dynamic-form-target': 'barcodeInput',
+                                        'data-action': 'input->material-dynamic-form#checkBarcodeUniqueness',
+                                        'data-check-url': path('app_material_check_barcode')
+                                    }
+                                }) }}
+                                <div class="text-danger font-weight-bold mt-1">{{ form_errors(form.barcode) }}</div>
+                                <p class="text-hint">Escanea o introduce el código de barras del artículo.</p>
                             </div>
                         </div>
-                        <div class="row mt-2">
+                        <div class="row mt-3">
                             <div class="col-md-12">
-                                {{ form_row(form.description) }}
+                                <label class="form-label">Descripción</label>
+                                {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': '3'}}) }}
                             </div>
                         </div>
                     </div>
                 </div>
 
                 {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD #}
-                <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #e74a3b !important;">
+                <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
                     <div class="card-header bg-white py-3">
                         <h6 class="m-0 font-weight-bold text-danger text-uppercase">
                             Seguridad y Trazabilidad
@@ -215,160 +230,222 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-4">
-                                {{ form_row(form.batchNumber) }}
+                                <label class="form-label">Lote<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
                             </div>
                             <div class="col-md-4">
-                                {% if material.category == 'Sanitario' %}
-                                    {{ form_row(form.expirationDate) }}
-                                {% else %}
-                                    <div class="d-none">{{ form_row(form.expirationDate) }}</div>
-                                {% endif %}
+                                <label class="form-label">Fecha de Caducidad<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
                             </div>
                             <div class="col-md-4">
-                                {{ form_row(form.supplier) }}
+                                <label class="form-label">Proveedor<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.supplier, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
                             </div>
                         </div>
                         <div class="d-none">{{ form_row(form.category) }}</div>
                     </div>
                 </div>
 
-                {# BLOQUE C: DATOS TÉCNICOS (Condicional para Equipo Técnico) #}
-                <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #f6c23e !important;" data-material-dynamic-form-target="technicalBlock">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-warning text-uppercase">
-                            BLOQUE C: Datos Técnicos
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">
-                                {{ form_row(form.serialNumber) }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form_row(form.brandModel) }}
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                {{ form_row(form.purchaseDate) }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form_row(form.warrantyEndDate) }}
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                {{ form_row(form.operationalStatus) }}
-                            </div>
-                            <div class="col-md-6">
-                                {{ form_row(form.batteryStatus) }}
-                            </div>
-                        </div>
-                        <div class="d-none">
-                            {{ form_row(form.deviceType) }}
-                            {{ form_row(form.hasCharger) }}
-                            {{ form_row(form.hasClip) }}
-                        </div>
-                    </div>
+                {# Contenedor para Bloques Técnicos Dinámicos #}
+                <div id="technical-blocks-container" class="d-none" data-material-dynamic-form-target="technicalBlocksContainer">
                 </div>
             {% endif %}
         </div>
 
-        {# Columna Derecha (4) #}
+        {# Columna Derecha (4) - BLOQUE D E IMAGEN #}
         <div class="col-lg-4">
-            {# Bloque D: STOCK Y COSTES #}
+            {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
+            {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
             <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #1cc88a !important;">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-success">
-                        <i class="fas fa-calculator mr-2"></i> BLOQUE D: STOCK Y COSTES
+                <div class="card-header bg-white py-3 border-bottom-1">
+                    <h6 class="m-0 font-weight-bold text-success text-uppercase">
+                        Bloque D: Stock y Costes
                     </h6>
                 </div>
-                <div class="card-body">
-                    {% if material.category == 'Sanitario' %}
-                        <div class="row mb-3">
-                            <div class="col-12">
-                                {{ form_row(form.packagingFormat) }}
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-6">
-                                {{ form_row(form.unitsPerPackage) }}
-                            </div>
-                            <div class="col-6">
-                                {{ form_row(form.numPackages) }}
-                            </div>
-                        </div>
-                    {% else %}
-                        <div class="d-none">
-                            {{ form_row(form.packagingFormat) }}
-                            {{ form_row(form.unitsPerPackage) }}
-                            {{ form_row(form.numPackages) }}
-                        </div>
-                    {% endif %}
-                    <div class="mb-3 p-3 bg-light rounded border">
-                        {{ form_row(form.stock, {
-                            'label': 'STOCK TOTAL CALCULADO*',
-                            'attr': {
-                                'class': 'form-control font-weight-bold',
-                                'readonly': material.category == 'Sanitario' ? true : false,
-                                'data-material-dynamic-form-target': 'stockInput',
-                                'data-action': 'input->material-dynamic-form#handleStockChange change->material-dynamic-form#handleStockChange'
-                            },
-                            'help': material.category == 'Sanitario' ? 'Calculado: Uds x Envases.' : ''
-                        }) }}
-                    </div>
-                    <div class="mb-3">
-                        {{ form_row(form.safetyStock, {'label': 'STOCK MÍNIMO (ENVASES)*'}) }}
-                    </div>
-                    <hr>
-                    <div class="mb-3">
-                        {{ form_label(form.totalPrice, 'COSTE TOTAL DE LA COMPRA (*)') }}
-                        <div class="input-group">
-                            {{ form_widget(form.totalPrice, {
+                
+                <div class="card-body p-4">
+                    <div class="form-grid">
+                        {# Fila: Uds/Envase y Nº Envases #}
+                        <div class="form-group" data-material-dynamic-form-target="unitsPerPackageContainer">
+                            <label class="form-label">Unidades por Envase<span class="text-red-500">*</span></label>
+                            {{ form_widget(form.unitsPerPackage, {
                                 'attr': {
-                                    'class': 'form-control',
-                                    'data-material-dynamic-form-target': 'totalPrice',
-                                    'data-action': 'input->material-dynamic-form#calculateUnitPrice'
+                                    'class': 'form-input border-blue-400',
+                                    'data-material-dynamic-form-target': 'unitsPerPackageInput',
+                                    'data-required': 'true',
+                                    'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
                                 }
                             }) }}
-                            <div class="input-group-append">
-                                <span class="input-group-text">€</span>
-                            </div>
                         </div>
-                        <small class="form-text text-muted">Ej: 15.50</small>
-                    </div>
-                    <div class="row">
-                        <div class="col-4">
-                            {{ form_row(form.unitPrice, {
-                                'label': 'PRECIO/Ud (*)',
-                                'attr': {'readonly': true, 'data-material-dynamic-form-target': 'unitPrice'}
+
+                        {# Nº Envases #}
+                        <div class="form-group">
+                            <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
+                            {{ form_widget(form.numPackages, {
+                                'attr': {
+                                    'class': 'form-input border-blue-400',
+                                    'data-material-dynamic-form-target': 'numPackagesInput',
+                                    'data-required': 'true',
+                                    'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
+                                }
                             }) }}
                         </div>
-                        <div class="col-4">
-                            {{ form_row(form.discountPercentage) }}
+
+                        {# Stock Total Calculado - Span 2 #}
+                        <div class="form-group col-span-2 highlight-box">
+                            <label class="form-label">Stock Total Calculado</label>
+                            <div class="relative">
+                                {{ form_widget(form.stock, {
+                                    'attr': {
+                                        'class': 'form-input text-center font-bold text-green-700 bg-white cursor-default',
+                                        'readonly': true,
+                                        'data-material-dynamic-form-target': 'totalStockInput'
+                                    }
+                                }) }}
+                            </div>
+                            <p class="text-hint">Calculado: Uds x Envases.</p>
                         </div>
-                        <div class="col-4">
-                            {{ form_row(form.iva, {
-                                'label': 'IVA (%)*',
-                                'attr': {'data-action': 'change->material-dynamic-form#handleIvaChange'}
+
+                        {# Stock Mínimo - Span 2 #}
+                        <div class="form-group col-span-2 border-b border-gray-100 pb-2">
+                            <label class="form-label">Stock Mínimo (Nº Envases)<span class="text-red-500">*</span></label>
+                            {{ form_widget(form.safetyStock, {
+                                'attr': {
+                                    'class': 'form-input',
+                                    'data-required': 'true',
+                                    'data-action': 'input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
+                                }
+                            }) }}
+                        </div>
+
+                        {# Coste Total #}
+                        <div class="form-group">
+                            <label class="form-label">Precio Compra s/IVA<span class="text-red-500">*</span></label>
+                            {{ form_widget(form.totalPrice, {
+                                'attr': {
+                                    'class': 'form-input border-emerald-400',
+                                    'data-type': 'decimal',
+                                    'data-material-dynamic-form-target': 'totalPrice',
+                                    'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
+                                }
+                            }) }}
+                        </div>
+
+                        {# % Descuento #}
+                        <div class="form-group">
+                            <label class="form-label">% Descuento</label>
+                            {{ form_widget(form.discountPercentage, {
+                                'attr': {
+                                    'class': 'form-input border-emerald-400',
+                                    'data-type': 'decimal',
+                                    'data-material-dynamic-form-target': 'discountPercentageInput',
+                                    'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
+                                }
+                            }) }}
+                        </div>
+
+                        {# Coste con Dto #}
+                        <div class="form-group">
+                            <label class="form-label">Coste con Dto</label>
+                            <div class="currency-wrapper">
+                                {{ form_widget(form.discountedPrice, {
+                                    'attr': {
+                                        'class': 'form-input pr-8 bg-gray-50 cursor-default',
+                                        'placeholder': '0,00€',
+                                        'readonly': true,
+                                        'data-material-dynamic-form-target': 'discountedPriceInput'
+                                    }
+                                }) }}
+                                <span class="currency-symbol suffix">€</span>
+                            </div>
+                        </div>
+
+                        {# Precio/Ud #}
+                        <div class="form-group">
+                            <label class="form-label">Precio/Ud</label>
+                            <div class="currency-wrapper">
+                                {{ form_widget(form.unitPrice, {
+                                    'attr': {
+                                        'class': 'form-input pr-8 bg-gray-50 cursor-default',
+                                        'placeholder': '0,00€',
+                                        'readonly': true,
+                                        'data-material-dynamic-form-target': 'unitPrice'
+                                    }
+                                }) }}
+                                <span class="currency-symbol suffix">€</span>
+                            </div>
+                        </div>
+
+                        {# IVA #}
+                        <div class="form-group">
+                            <label class="form-label">IVA (%)</label>
+                            {{ form_widget(form.iva, {
+                                'attr': {
+                                    'class': 'form-input border-emerald-400',
+                                    'data-type': 'decimal',
+                                    'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
+                                }
                             }) }}
                         </div>
                     </div>
                 </div>
             </div>
 
-            {# Foto #}
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-body text-center p-3">
-                    <div class="mb-2">
-                        <i class="fas fa-camera fa-2x text-gray-300"></i>
-                    </div>
-                    {{ form_row(form.imageFile, {'label': 'FOTO DEL PRODUCTO'}) }}
+            {# ZONA DE IMAGEN #}
+            <div class="bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-6">
+                <h6 class="block text-center text-[10px] font-bold text-blue-600 uppercase mb-4 tracking-wider">
+                    Imagen del Producto
+                </h6>
+                <div class="flex items-center space-x-2 border border-gray-200 rounded bg-white p-2">
+                    <label class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-[11px] px-3 py-1 rounded cursor-pointer transition-colors border border-gray-300">
+                        Seleccionar archivo
+                        {{ form_widget(form.imageFile, {
+                            'attr': {
+                                'class': 'hidden'
+                            }
+                        }) }}
+                    </label>
+                    <span class="text-[11px] text-gray-500 truncate">Ningún archivo seleccionado</span>
                 </div>
+                <p class="text-[10px] text-center text-gray-400 mt-3">
+                    Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB
+                </p>
             </div>
         </div>
     </div>
+    <div class="d-none">
+        {{ form_row(form.deviceType) }}
+        {{ form_row(form.frequencyBand) }}
+        {{ form_row(form.phoneNumber) }}
+        {{ form_row(form.networkId) }}
+        {{ form_row(form.hasCharger) }}
+        {{ form_row(form.hasClip) }}
+        {{ form_row(form.hasMicrophone) }}
+    </div>
     {{ form_end(form) }}
+</div>
+
+<!-- Modal Aviso Código de Barras Duplicado (Equipo Técnico) -->
+<div class="modal fade" id="barcodeWarningModal" tabindex="-1" aria-labelledby="barcodeWarningModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title" id="barcodeWarningModalLabel">
+                    <i class="fas fa-exclamation-triangle mr-2"></i> Aviso: Código de Barras Registrado
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="mb-0 text-dark">Este Código de Barras ya pertenece al material:</p>
+                <p class="mt-2 mb-3"><strong id="barcodeDuplicateName" class="text-primary font-size-lg border-bottom border-primary pb-1"></strong></p>
+                <p class="text-muted small mt-2">Dado que es <strong>Equipo Técnico</strong>, puedes continuar si se trata de otra unidad de este mismo modelo, pero asegúrate de que el <strong>Número de Serie</strong> sea único.</p>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                <a id="barcodeRedirectBtn" href="#" class="btn btn-primary px-4">Ir al material existente e insertar unidades</a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <style>

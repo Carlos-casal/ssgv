@@ -17,6 +17,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Symfony\Component\Form\CallbackTransformer;
 
 class MaterialType extends AbstractType
 {
@@ -59,21 +60,6 @@ class MaterialType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('sizingType', ChoiceType::class, [
-                'label' => 'Tipo de Tallaje',
-                'choices' => [
-                    'No aplica' => '',
-                    'Tallaje Textil (XS-3XL)' => Material::SIZING_LETTER,
-                    'Tallaje Ropa (32-60)' => Material::SIZING_NUMBER_CLOTHING,
-                    'Tallaje Calzado (35-48)' => Material::SIZING_NUMBER_SHOES,
-                ],
-                'attr' => [
-                    'class' => 'form-control',
-                    'data-material-dynamic-form-target' => 'sizingType',
-                    'data-action' => 'change->material-dynamic-form#handleSizingChange'
-                ],
-                'required' => false
-            ])
             ->add('nature', ChoiceType::class, [
                 'label' => 'NATURALEZA**',
                 'choices' => [
@@ -86,7 +72,7 @@ class MaterialType extends AbstractType
                     'data-action' => 'change->material-dynamic-form#toggleTechnicalBlock'
                 ]
             ])
-            ->add('stock', IntegerType::class, [
+            ->add('stock', TextType::class, [
                 'label' => 'STOCK TOTAL',
                 'attr' => [
                     'class' => 'form-control',
@@ -94,9 +80,13 @@ class MaterialType extends AbstractType
                     'data-action' => 'input->material-dynamic-form#handleStockChange'
                 ]
             ])
-            ->add('safetyStock', IntegerType::class, [
-                'label' => 'STOCK MÍNIMO',
-                'attr' => ['class' => 'form-control']
+            ->add('safetyStock', TextType::class, [
+                'label' => 'STOCK MÍNIMO (Nº ENVASES)',
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'type' => 'text'
+                ]
             ])
             ->add('subFamily', ChoiceType::class, [
                 'label' => 'SUBFAMILIA',
@@ -133,35 +123,29 @@ class MaterialType extends AbstractType
             ])
             ->add('batchNumber', TextType::class, [
                 'label' => 'LOTE',
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Nº de lote para fungibles'
                 ]
             ])
-            ->add('packagingFormat', TextType::class, [
-                'label' => 'FORMATO (EJ: CAJA, LITRO)',
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-control',
-                    'placeholder' => 'Ej: Caja, Blister, Rollo...'
-                ]
-            ])
-            ->add('unitsPerPackage', IntegerType::class, [
+            ->add('unitsPerPackage', TextType::class, [
                 'label' => 'UDS/ENVASE',
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
+                    'type' => 'text',
                     'data-material-dynamic-form-target' => 'unitsPerPackageInput',
                     'data-action' => 'input->material-dynamic-form#calculateStockSanitario change->material-dynamic-form#calculateStockSanitario'
                 ]
             ])
-            ->add('numPackages', IntegerType::class, [
+            ->add('numPackages', TextType::class, [
                 'label' => 'Nº ENVASES',
                 'mapped' => false,
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
+                    'type' => 'text',
                     'data-material-dynamic-form-target' => 'numPackagesInput',
                     'data-action' => 'input->material-dynamic-form#calculateStockSanitario change->material-dynamic-form#calculateStockSanitario'
                 ]
@@ -169,46 +153,67 @@ class MaterialType extends AbstractType
             ->add('expirationDate', DateType::class, [
                 'label' => 'Fecha de Caducidad',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('supplier', TextType::class, [
                 'label' => 'Proveedor',
-                'required' => false,
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('unitPrice', MoneyType::class, [
+            ->add('unitPrice', TextType::class, [
                 'label' => 'Precio/Ud',
-                'currency' => 'EUR',
-                'attr' => ['class' => 'form-control']
+                'attr' => [
+                    'class' => 'form-control',
+                    'type' => 'text',
+                    'readonly' => true,
+                    'data-material-dynamic-form-target' => 'unitPrice'
+                ]
             ])
-            ->add('totalPrice', MoneyType::class, [
+            ->add('totalPrice', TextType::class, [
                 'label' => 'Coste Total de la Compra',
                 'mapped' => false,
-                'required' => false,
-                'currency' => 'EUR',
-                'attr' => ['class' => 'form-control']
+                'required' => true,
+                'attr' => [
+                    'class' => 'form-control',
+                    'type' => 'text',
+                    'placeholder' => '0,00€',
+                    'data-material-dynamic-form-target' => 'totalPrice',
+                    'data-action' => 'input->material-dynamic-form#calculateUnitPrice'
+                ]
             ])
-            ->add('discountPercentage', NumberType::class, [
+            ->add('discountPercentage', TextType::class, [
                 'label' => '% DTO',
                 'mapped' => false,
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',
+                    'type' => 'text',
                     'placeholder' => 'Ej: 10',
                     'data-material-dynamic-form-target' => 'discountPercentageInput',
                     'data-action' => 'input->material-dynamic-form#calculateUnitPrice change->material-dynamic-form#calculateUnitPrice'
                 ]
             ])
-            ->add('iva', ChoiceType::class, [
+            ->add('discountedPrice', TextType::class, [
+                'label' => 'Coste con Descuento',
+                'mapped' => false,
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control font-weight-bold',
+                    'type' => 'text',
+                    'readonly' => true,
+                    'data-material-dynamic-form-target' => 'discountedPriceInput'
+                ]
+            ])
+            ->add('iva', TextType::class, [
                 'label' => 'IVA (%)',
-                'choices' => [
-                    '21%' => '21.00',
-                    '10%' => '10.00',
-                    '4%' => '4.00',
-                    'Exento' => '0.00'
-                ],
-                'attr' => ['class' => 'form-control']
+                'required' => false,
+                'data' => 21,
+                'attr' => [
+                    'class' => 'form-control',
+                    'type' => 'text',
+                    'data-action' => 'input->material-dynamic-form#performCalculations'
+                ]
             ])
             ->add('brandModel', TextType::class, [
                 'label' => 'Marca y Modelo',
@@ -262,7 +267,7 @@ class MaterialType extends AbstractType
             ->add('warrantyEndDate', DateType::class, [
                 'label' => 'Fin de Garantía',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('hasCharger', CheckboxType::class, [
@@ -275,7 +280,70 @@ class MaterialType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-check-input', 'data-action' => 'change->material-dynamic-form#handleMaintenanceSync']
             ])
+            ->add('networkId', TextType::class, [
+                'label' => 'ID de Red (ISSI/IMEI)',
+                'required' => false,
+                'attr' => [
+                    'class' => 'form-control',
+                    'placeholder' => 'ISSI, IMEI, MMSI o TEI'
+                ]
+            ])
+            ->add('hasMicrophone', CheckboxType::class, [
+                'label' => 'Microfonía',
+                'required' => false,
+                'attr' => ['class' => 'form-check-input', 'data-action' => 'change->material-dynamic-form#handleMaintenanceSync']
+            ])
+            ->add('frequencyBand', TextType::class, [
+                'label' => 'Banda de Frecuencia',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: VHF, UHF, TETRA...']
+            ])
+            ->add('phoneNumber', TextType::class, [
+                'label' => 'Nº Teléfono',
+                'required' => false,
+                'attr' => ['class' => 'form-control', 'placeholder' => '+34...']
+            ])
         ;
+
+        $spanishNumericTransformer = new CallbackTransformer(
+            function ($value) {
+                // Transform normalized form data (float/int) to formatted Spanish string for the view
+                if ($value === null || $value === '') return '';
+                return number_format($value, 2, ',', '.');
+            },
+            function ($value) {
+                // Transform formatted string from the view back to normalized form data
+                if ($value === null || $value === '') return null;
+                // Strip thousand separators (dots)
+                $value = str_replace('.', '', $value);
+                // Replace decimal separator (comma) with dot
+                $value = str_replace(',', '.', $value);
+                return (float) $value;
+            }
+        );
+
+        $spanishIntegerTransformer = new CallbackTransformer(
+            function ($value) {
+                if ($value === null || $value === '') return '';
+                return number_format($value, 0, ',', '.');
+            },
+            function ($value) {
+                if ($value === null || $value === '') return null;
+                $value = str_replace('.', '', $value);
+                return (int) preg_replace('/[^0-9]/', '', $value);
+            }
+        );
+
+        $builder->get('safetyStock')->addModelTransformer($spanishIntegerTransformer);
+        $builder->get('unitsPerPackage')->addModelTransformer($spanishIntegerTransformer);
+        $builder->get('numPackages')->addModelTransformer($spanishIntegerTransformer);
+        $builder->get('stock')->addModelTransformer($spanishIntegerTransformer);
+        $builder->get('iva')->addModelTransformer($spanishIntegerTransformer);
+
+        $builder->get('unitPrice')->addModelTransformer($spanishNumericTransformer);
+        $builder->get('totalPrice')->addModelTransformer($spanishNumericTransformer);
+        $builder->get('discountPercentage')->addModelTransformer($spanishNumericTransformer);
+        $builder->get('discountedPrice')->addModelTransformer($spanishNumericTransformer);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

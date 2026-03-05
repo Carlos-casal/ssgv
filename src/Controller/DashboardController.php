@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
- 
+
 use App\Repository\VolunteerRepository;
 use App\Repository\ServiceRepository;
 use App\Repository\VehicleRepository;
@@ -84,7 +84,7 @@ class DashboardController extends AbstractController
 
             $lowStockMaterials = $materialRepository->createQueryBuilder('m')
                 ->where('m.nature = :nature')
-                ->andWhere('m.stock <= m.safetyStock')
+                ->andWhere('m.stock <= (m.safetyStock * COALESCE(m.unitsPerPackage, 1))')
                 ->setParameter('nature', \App\Entity\Material::NATURE_CONSUMABLE)
                 ->getQuery()
                 ->getResult();

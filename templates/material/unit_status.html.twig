@@ -1,0 +1,93 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Cambiar Estado de Unidad{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <div class="col-12 col-xl-8 offset-xl-2">
+        <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
+            <div class="card-header bg-white border-bottom p-4 d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="mb-1 text-primary fw-bold">
+                        <i class="fas fa-wrench me-2"></i>Cambiar Estado de Unidad
+                    </h5>
+                    <p class="text-muted small mb-0">Unidad: {{ unit.serialNumber ?? 'S/N' }} - {{ unit.material.name }}</p>
+                </div>
+                <a href="{{ path('app_material_show', {'id': unit.material.id}) }}" class="btn btn-light rounded-3 btn-sm shadow-sm">
+                    <i class="fas fa-arrow-left me-2"></i>Volver al Material
+                </a>
+            </div>
+            
+            <div class="card-body p-4">
+                {{ form_start(form, {'attr': {'id': 'unit-status-form'}}) }}
+                    
+                    <div class="mb-4">
+                        {{ form_row(form.status) }}
+                    </div>
+
+                    <div class="mb-4">
+                        {{ form_row(form.reason) }}
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4 pt-3 border-top">
+                        <button class="btn btn-primary rounded-3 px-4 shadow-sm">
+                            <i class="fas fa-save me-2"></i>Guardar Cambios
+                        </button>
+                    </div>
+
+                {{ form_end(form) }}
+            </div>
+        </div>
+
+        {% if unit.history|length > 0 %}
+            <div class="card border-0 shadow-sm rounded-4 overflow-hidden mt-4">
+                <div class="card-header bg-white border-bottom p-4 d-flex align-items-center">
+                    <h5 class="mb-0 text-secondary fw-bold">
+                        <i class="fas fa-history me-2"></i>Historial de Estados
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th class="ps-4">Fecha</th>
+                                    <th>Estado</th>
+                                    <th>Usuario</th>
+                                    <th class="pe-4">Motivo</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for event in unit.history|sort((a, b) => b.createdAt <=> a.createdAt) %}
+                                    <tr>
+                                        <td class="ps-4">{{ event.createdAt|date('d/m/Y H:i') }}</td>
+                                        <td>
+                                            {% if event.status == 'OPERATIVO' %}
+                                                <span class="badge bg-success rounded-pill px-3">{{ event.status }}</span>
+                                            {% elseif event.status in ['EN REPARACION', 'AVERIADO'] %}
+                                                <span class="badge bg-warning text-dark rounded-pill px-3">{{ event.status }}</span>
+                                            {% else %}
+                                                <span class="badge bg-danger rounded-pill px-3">{{ event.status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                <div class="avatar-sm bg-light text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                                    <i class="fas fa-user small"></i>
+                                                </div>
+                                                <span class="fw-medium text-dark">{{ event.user.email ?? 'Sistema' }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="pe-4"><small class="text-muted">{{ event.reason ?? '-' }}</small></td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

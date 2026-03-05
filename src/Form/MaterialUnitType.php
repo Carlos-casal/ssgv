@@ -14,6 +14,11 @@ class MaterialUnitType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('alias', TextType::class, [
+                'label' => 'Alias / Nombre en Red',
+                'attr' => ['class' => 'form-control'],
+                'required' => false
+            ])
             ->add('serialNumber', TextType::class, [
                 'label' => 'Nº de Serie / ID',
                 'attr' => ['class' => 'form-control'],
