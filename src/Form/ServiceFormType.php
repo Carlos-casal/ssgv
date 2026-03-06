@@ -250,4 +250,9 @@ class ServiceFormType extends AbstractType
             'data_class' => Service::class,
         ]);
     }
+
+    public function getBlockPrefix(): string
+    {
+        return 'service_form';
+    }
 }
