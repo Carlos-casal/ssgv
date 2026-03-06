@@ -356,6 +356,22 @@ class MaterialController extends AbstractController
     public function edit(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $form = $this->createForm(MaterialType::class, $material);
+
+        if (!$request->isMethod('POST')) {
+            // Populate unmapped fields for Block D
+            if ($material->getUnitsPerPackage() > 0) {
+                $numPacks = floor($material->getStock() / $material->getUnitsPerPackage());
+            } else {
+                $numPacks = $material->getStock();
+            }
+            $form->get('numPackages')->setData($numPacks);
+
+            $totalPrice = (float)$material->getTotalPrice();
+            $discount = (float)$material->getDiscountPercentage();
+            $discounted = $totalPrice - ($totalPrice * ($discount / 100));
+            $form->get('discountedPrice')->setData($discounted);
+        }
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

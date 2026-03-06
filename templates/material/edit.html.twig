@@ -272,9 +272,7 @@
                         {# Nº Envases #}
                         <div class="form-group">
                             <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
-                            {% set num_packs = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
                             {{ form_widget(form.numPackages, {
-                                'value': num_packs,
                                 'attr': {
                                     'class': 'form-input border-blue-400',
                                     'data-material-dynamic-form-target': 'numPackagesInput',

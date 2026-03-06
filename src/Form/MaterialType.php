@@ -69,8 +69,19 @@ class MaterialType extends AbstractType
                 'attr' => [
                     'class' => 'form-control',
                     'data-material-dynamic-form-target' => 'natureSelect',
-                    'data-action' => 'change->material-dynamic-form#toggleTechnicalBlock'
+                    'data-action' => 'change->material-dynamic-form#toggleTechnicalBlock change->material-dynamic-form#handleNatureChange'
                 ]
+            ])
+            ->add('sizingType', ChoiceType::class, [
+                'label' => 'TIPO DE TALLAJE',
+                'required' => false,
+                'choices' => [
+                    'Letras (XS-3XL)' => 'LETTER',
+                    'Ropa (32-60)' => 'NUMBER_CLOTHING',
+                    'Calzado (35-48)' => 'NUMBER_SHOES'
+                ],
+                'attr' => ['class' => 'form-control'],
+                'placeholder' => 'Sin tallaje (Unico)'
             ])
             ->add('stock', TextType::class, [
                 'label' => 'STOCK TOTAL',

@@ -263,11 +263,11 @@ export default class extends Controller {
         const unitsVal = this.unitsPerPackageInputTarget.value;
         const packagesVal = this.numPackagesInputTarget.value;
 
-        const unitsPerPackage = parseInt(unitsVal) || 0;
-        const numPackages = parseInt(packagesVal) || 0;
-        const totalStock = unitsPerPackage * numPackages;
+        const unitsPerPackage = this.parseFormattedNumber(unitsVal);
+        const numPackages = this.parseFormattedNumber(packagesVal);
+        const totalStock = Math.round(unitsPerPackage * numPackages);
 
-        this.totalStockInputTarget.value = totalStock;
+        this.totalStockInputTarget.value = this.formatToUserLocale(totalStock, 0);
 
         // Trigger unit fields generation if needed
         if (this.element.dataset.materialCategory === 'Comunicaciones') {
@@ -279,7 +279,7 @@ export default class extends Controller {
         if (!this.hasTotalPriceTarget || !this.hasUnitPriceTarget || !this.hasTotalStockInputTarget) return;
 
         const totalCost = this.parseFormattedNumber(this.totalPriceTarget.value);
-        const stock = parseInt(this.totalStockInputTarget.value) || 0;
+        const stock = this.parseFormattedNumber(this.totalStockInputTarget.value);
 
         const discount = this.hasDiscountPercentageInputTarget ? this.parseFormattedNumber(this.discountPercentageInputTarget.value) : 0;
 
@@ -401,8 +401,8 @@ export default class extends Controller {
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
                 currentData[`units_data[${i}][warrantyEndDate]`] = unit.warrantyEndDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
-                currentData[`units_data[${i}][purchasePrice]`] = unit.purchasePrice;
-                currentData[`units_data[${i}][discountPct]`] = unit.discountPct;
+                currentData[`units_data[${i}][purchasePrice]`] = this.formatToUserLocale(unit.purchasePrice);
+                currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
                 currentData[`units_data[${i}][history]`] = unit.history;
             });
         }
@@ -551,6 +551,8 @@ export default class extends Controller {
                 currentData[`units_data[${i}][serialNumber]`] = unit.serialNumber;
                 currentData[`units_data[${i}][networkId]`] = unit.networkId;
                 currentData[`units_data[${i}][phoneNumber]`] = unit.phoneNumber;
+                currentData[`units_data[${i}][purchasePrice]` ] = this.formatToUserLocale(unit.purchasePrice);
+                currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
             });
         }
 
@@ -558,6 +560,7 @@ export default class extends Controller {
             currentData[input.name] = input.value;
         });
 
+        const isEdit = this.element.dataset.materialAction === 'edit';
         let html = '';
         if (count > 0) {
             html += `<div class="card shadow-sm mb-4 border-0 border-left-warning">
@@ -573,30 +576,86 @@ export default class extends Controller {
                 const snName = `units_data[${i}][serialNumber]`;
                 const netName = `units_data[${i}][networkId]`;
                 const phoneName = `units_data[${i}][phoneNumber]`;
+                const statusName = `units_data[${i}][operationalStatus]`;
+                const priceName = `units_data[${i}][purchasePrice]`;
+                const discountName = `units_data[${i}][discountPct]`;
 
                 html += `
-                    <div class="unit-row p-3 mb-3 border rounded bg-light">
+                    <div class="unit-row p-3 mb-4 border rounded bg-light shadow-sm">
                         <div class="row">
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-2">
                                 <label class="small font-weight-bold">NOMBRE / ALIAS EN RED</label>
                                 <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm" placeholder="Ej: ALFA 1">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-2">
                                 <label class="small font-weight-bold">Nº SERIE (S/N)</label>
                                 <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm"
                                     data-material-dynamic-form-target="serialNumberInput"
                                     data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
                                     data-check-url="${this.element.dataset.serialCheckUrl}">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-2">
                                 <label class="small font-weight-bold">ID RED (ISSI/IMEI)</label>
                                 <input type="text" name="${netName}" value="${currentData[netName] || ''}" class="form-control form-control-sm">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-3 mb-2">
                                 <label class="small font-weight-bold">Nº TELÉFONO</label>
                                 <input type="text" name="${phoneName}" value="${currentData[phoneName] || ''}" class="form-control form-control-sm" placeholder="+34...">
                             </div>
                         </div>
+                        <div class="row mt-2 border-top pt-2">
+                            <div class="col-md-4 mb-2">
+                                <label class="small font-weight-bold">ESTADO OPERATIVO</label>
+                                <select name="${statusName}" class="form-control form-control-sm">
+                                    <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
+                                    <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
+                                    <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
+                                    <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="small font-weight-bold">PRECIO COMPRA (IVA inc.)</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
+                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                    <span class="input-group-text">€</span>
+                                </div>
+                            </div>
+                            <div class="col-md-4 mb-2">
+                                <label class="small font-weight-bold">% MARGEN</label>
+                                <div class="input-group input-group-sm">
+                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
+                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                    <span class="input-group-text">%</span>
+                                </div>
+                            </div>
+                        </div>
+                        ${isEdit ? `
+                        <div class="row mt-1">
+                            <div class="col-12">
+                                <label class="small text-muted">Motivo cambio estado (opcional)</label>
+                                <input type="text" name="units_data[${i}][statusReason]" class="form-control form-control-sm" placeholder="Describe el motivo si cambias el estado...">
+                            </div>
+                        </div>
+                        ${(currentData['history'] && currentData['history'].length > 0) ? `
+                        <div class="mt-2 small">
+                            <div class="font-weight-bold text-muted mb-1 text-uppercase" style="font-size: 0.65rem;">Historial de estados:</div>
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered mb-0" style="font-size: 0.7rem;">
+                                    <tbody>
+                                        ${currentData['history'].map(h => `
+                                            <tr>
+                                                <td width="25%">${h.date || '-'}</td>
+                                                <td width="20%"><span class="badge ${h.status === 'OPERATIVO' ? 'bg-success' : 'bg-warning text-dark'}" style="font-size: 0.6rem;">${h.status}</span></td>
+                                                <td width="20%">${h.user || 'Sistema'}</td>
+                                                <td>${h.reason || '-'}</td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>` : ''}
+                        ` : ''}
                     </div>`;
             }
             html += `</div></div>`;
