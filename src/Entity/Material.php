@@ -74,6 +74,12 @@ class Material
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ["default" => 21])]
     private string $iva = '21';
 
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $totalPrice = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $discountPercentage = null;
+
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $serialNumber = null;
 
@@ -145,6 +151,30 @@ class Material
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getTotalPrice(): ?string
+    {
+        return $this->totalPrice;
+    }
+
+    public function setTotalPrice(?string $totalPrice): static
+    {
+        $this->totalPrice = $totalPrice;
+
+        return $this;
+    }
+
+    public function getDiscountPercentage(): ?string
+    {
+        return $this->discountPercentage;
+    }
+
+    public function setDiscountPercentage(?string $discountPercentage): static
+    {
+        $this->discountPercentage = $discountPercentage;
 
         return $this;
     }

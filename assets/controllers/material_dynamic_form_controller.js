@@ -383,6 +383,7 @@ export default class extends Controller {
         if (!this.hasTechnicalBlocksContainerTarget) return;
 
         const isEdit = this.element.dataset.materialAction === 'edit';
+        const isTechnical = this.natureSelectTarget.value === 'EQUIPO_TECNICO';
         const defaultBrand = this.element.dataset.materialBrand || '';
         const defaultPurchase = this.element.dataset.materialPurchase || '';
         const defaultWarranty = this.element.dataset.materialWarranty || '';
@@ -400,6 +401,9 @@ export default class extends Controller {
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
                 currentData[`units_data[${i}][warrantyEndDate]`] = unit.warrantyEndDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
+                currentData[`units_data[${i}][purchasePrice]`] = unit.purchasePrice;
+                currentData[`units_data[${i}][discountPct]`] = unit.discountPct;
+                currentData[`units_data[${i}][history]`] = unit.history;
             });
         }
 
@@ -468,14 +472,16 @@ export default class extends Controller {
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Precio de Compra (IVA inc.)</label>
                                 <div class="input-group">
-                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-input" placeholder="0,00">
+                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-input" placeholder="0,00"
+                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
                                     <span class="input-group-text">€</span>
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">% Descuento</label>
+                                <label class="form-label">% Margen</label>
                                 <div class="input-group">
-                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-input" placeholder="0">
+                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-input" placeholder="0"
+                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>

@@ -172,7 +172,6 @@ class MaterialType extends AbstractType
             ])
             ->add('totalPrice', TextType::class, [
                 'label' => 'Coste Total de la Compra',
-                'mapped' => false,
                 'required' => true,
                 'attr' => [
                     'class' => 'form-control',
@@ -184,7 +183,6 @@ class MaterialType extends AbstractType
             ])
             ->add('discountPercentage', TextType::class, [
                 'label' => '% DTO',
-                'mapped' => false,
                 'required' => false,
                 'attr' => [
                     'class' => 'form-control',

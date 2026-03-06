@@ -125,7 +125,7 @@
                             <td>
                                 {% if material.nature == 'CONSUMIBLE' %}
                                     {% set numPacks = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
-                                    <span class="font-mono font-bold">{{ numPacks }}</span> <span class="text-xs text-slate-400">envases</span>
+                                    <span class="font-mono font-bold">{{ numPacks }}</span> <span class="text-xs text-slate-400">nº envases</span>
                                 {% else %}
                                     <span class="font-bold">{{ material.units|length }}</span> <span class="text-xs text-slate-400">unidades</span>
                                 {% endif %}
