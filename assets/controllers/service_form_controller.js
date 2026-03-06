@@ -23,68 +23,103 @@ export default class extends Controller {
         "materialModal",
         "form",
         "typeModal",
-        "subcategoryModal"
+        "subcategoryModal",
+        "typeSelect",
+        "subcategorySelect",
+        "descriptionInput",
+        "tasksInput",
+        "title",
+        "numeration",
+        "startDateInput",
+        "endDateInput",
+        "afluenciaSelect",
+        "estimatedPeopleInput"
     ];
 
     connect() {
-        if (this.hasModalTarget) {
-            this.setupAttendanceModal();
-        }
+        console.log("Service Form Controller: Connecting...");
+        try {
+            if (this.hasModalTarget) {
+                this.setupAttendanceModal();
+            }
 
-        // Initialize Hierarchy Selector
-        const typeSelect = document.getElementById('service_type');
-        const subcategorySelect = document.getElementById('service_subcategory');
-        if (typeSelect && subcategorySelect && !typeSelect.value) {
-            subcategorySelect.disabled = true;
-            subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
-        }
+            // Initialize Hierarchy Selector
+            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : document.getElementById('service_type');
+            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : document.getElementById('service_subcategory');
 
-        // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-        tinymce.remove('textarea#service_tasks');
+            if (typeSelect && subcategorySelect && !typeSelect.value) {
+                subcategorySelect.disabled = true;
+                subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+            }
 
-        // Date Listeners for Availability Check
-        const startDateInput = document.getElementById('service_startDate');
-        const endDateInput = document.getElementById('service_endDate');
-        if (startDateInput && endDateInput) {
-            startDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
-            endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
-        }
+            // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
+            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : document.getElementById('service_tasks');
+            if (tasksInput && typeof tinymce !== 'undefined') {
+                tinymce.remove(tasksInput);
+            }
 
-        // TinyMCE configuration for Description
-        tinymce.init({
-            selector: '#service_form_description',
-            plugins: 'lists link',
-            toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
-            menubar: false,
-            statusbar: false,
-            branding: false,
-            resize: false,
-            height: 250,
-            toolbar_mode: 'floating',
-            promotion: false,
-            base_url: '/build/tinymce',
-            suffix: '.min',
-            license_key: 'gpl',
-            'api-key': 'no-api-key',
-            setup: function(editor) {
-                editor.on('init', function() {
-                    editor.getContainer().style.borderRadius = "1rem";
+            // Date Listeners for Availability Check
+            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
+            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+            if (startInput && endInput) {
+                startInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+                endInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+            }
+
+            // TinyMCE configuration for Description
+            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_description');
+            if (descInput && typeof tinymce !== 'undefined') {
+                console.log("Initializing TinyMCE for description...");
+                tinymce.init({
+                    target: descInput,
+                    plugins: 'lists link',
+                    toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
+                    menubar: false,
+                    statusbar: false,
+                    branding: false,
+                    resize: false,
+                    height: 350,
+                    toolbar_mode: 'floating',
+                    promotion: false,
+                    base_url: '/build/tinymce',
+                    suffix: '.min',
+                    license_key: 'gpl',
+                    'api-key': 'no-api-key',
+                    setup: function(editor) {
+                        editor.on('init', function() {
+                            if (editor.getContainer()) {
+                                editor.getContainer().style.borderRadius = "1rem";
+                            }
+                        });
+                    }
                 });
             }
-        });
 
-        this.updateAllAfluenciaColors();
+            this.updateAllAfluenciaColors();
 
-        // Bind main form submission if present
-        if (this.hasFormTarget) {
-            this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
+            // Bind main form submission if present
+            if (this.hasFormTarget) {
+                this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
+            }
+
+            this.filterExistingMaterials();
+
+            // Trigger category update on load if a type is already selected (for edit mode)
+            if (typeSelect && typeSelect.value && subcategorySelect && subcategorySelect.options.length <= 1) {
+                console.log("Triggering initial category load...");
+                this.updateCategories();
+            }
+
+            console.log("Service Form Controller: Connected successfully.");
+        } catch (error) {
+            console.error("Error in Service Form Connect:", error);
         }
-
-        this.filterExistingMaterials();
     }
 
     disconnect() {
-        tinymce.remove('#service_form_description');
+        if (this.hasDescriptionInputTarget) {
+            tinymce.remove(this.descriptionInputTarget);
+        }
     }
 
     switchTab(event) {
@@ -115,8 +150,36 @@ export default class extends Controller {
 
     // Unified Hierarchy Logic
     async updateCategories(event) {
-        const typeId = event.target.value;
-        const subcategorySelect = document.getElementById('service_subcategory');
+        console.log("Updating categories action triggered", event);
+
+        // Comprehensive selector discovery
+        let typeSelect = null;
+        if (event && event.target) {
+            typeSelect = event.target;
+        } else if (this.hasTypeSelectTarget) {
+            typeSelect = this.typeSelectTarget;
+        } else {
+            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+        }
+
+        if (!typeSelect) {
+            console.error("Type select element not found");
+            return;
+        }
+
+        const typeId = typeSelect.value;
+
+        let subcategorySelect = null;
+        if (this.hasSubcategorySelectTarget) {
+            subcategorySelect = this.subcategorySelectTarget;
+        } else {
+            subcategorySelect = document.getElementById('service_subcategory') || document.querySelector('select[id$="_subcategory"]');
+        }
+
+        if (!subcategorySelect) {
+            console.error("Subcategory select element not found");
+            return;
+        }
 
         if (!typeId) {
             subcategorySelect.disabled = true;
@@ -128,15 +191,24 @@ export default class extends Controller {
         subcategorySelect.innerHTML = '<option value="">Cargando...</option>';
 
         try {
+            console.log(`Fetching subcategories for type ID: ${typeId}`);
             const response = await fetch(`/api/subcategories?type_id=${typeId}`);
+            if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
             const subcategories = await response.json();
+            console.log("Subcategories received:", subcategories);
 
             subcategorySelect.innerHTML = '<option value="">Selecciona una opción...</option>';
 
+            if (!subcategories || subcategories.length === 0) {
+                subcategorySelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
+                return;
+            }
+
             // Group subcategories by categoryName
             const grouped = subcategories.reduce((acc, sub) => {
-                if (!acc[sub.categoryName]) acc[sub.categoryName] = [];
-                acc[sub.categoryName].push(sub);
+                const catName = sub.categoryName || 'General';
+                if (!acc[catName]) acc[catName] = [];
+                acc[catName].push(sub);
                 return acc;
             }, {});
 
@@ -144,7 +216,7 @@ export default class extends Controller {
                 const optgroup = document.createElement('optgroup');
                 optgroup.label = categoryName;
                 subs.forEach(sub => {
-                    const option = new Option('\u00A0\u00A0\u00A0' + sub.name, sub.id); // Add indentation for subcategories
+                    const option = new Option('\u00A0\u00A0' + sub.name, sub.id);
                     optgroup.appendChild(option);
                 });
                 subcategorySelect.appendChild(optgroup);
@@ -342,8 +414,8 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = document.getElementById('service_startDate');
-        const endDateInput = document.getElementById('service_endDate');
+        const startDateInput = this.startDateInputTarget;
+        const endDateInput = this.endDateInputTarget;
 
         if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
 
@@ -430,11 +502,19 @@ export default class extends Controller {
 
     // Hierarchy Creation Logic
     openTypeModal() {
+        console.log("openTypeModal triggered");
+        if (!this.hasTypeModalTarget) {
+            console.error("Type modal target not found");
+            return;
+        }
         this.typeModalTarget.classList.remove('hidden');
+        this.typeModalTarget.style.setProperty('display', 'flex', 'important');
     }
 
     closeTypeModal() {
+        if (!this.hasTypeModalTarget) return;
         this.typeModalTarget.classList.add('hidden');
+        this.typeModalTarget.style.setProperty('display', 'none', 'important');
         this.clearAllModalErrors(this.typeModalTarget);
     }
 
@@ -468,7 +548,7 @@ export default class extends Controller {
                 this.closeTypeModal();
 
                 // Add to main selector and select it
-                const typeSelect = document.getElementById('service_type');
+                const typeSelect = this.typeSelectTarget;
                 const option = new Option(data.name, data.id, true, true);
                 typeSelect.appendChild(option);
 
@@ -483,39 +563,70 @@ export default class extends Controller {
     }
 
     async openSubcategoryModal() {
-        const typeId = document.getElementById('service_type').value;
+        console.log("openSubcategoryModal triggered");
+
+        // Comprehensive selector discovery
+        let typeSelect = null;
+        if (this.hasTypeSelectTarget) {
+            typeSelect = this.typeSelectTarget;
+        } else {
+            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+        }
+
+        if (!typeSelect) {
+            console.error("Type select element not found for subcategory modal");
+            this.showToast("Error interno: No se encuentra el selector de Tipo.");
+            return;
+        }
+
+        const typeId = typeSelect.value;
         if (!typeId) {
             this.showToast('Por favor, selecciona primero un Tipo de Servicio.');
             return;
         }
 
+        if (!this.hasSubcategoryModalTarget) {
+            console.error("Subcategory modal target not found");
+            return;
+        }
+
         const modal = this.subcategoryModalTarget;
-        modal.querySelector('#modal_type_id').value = typeId;
+        modal.classList.remove('hidden');
+        modal.style.setProperty('display', 'flex', 'important');
+
+        const typeInput = modal.querySelector('#modal_type_id');
+        if (typeInput) typeInput.value = typeId;
 
         // Fetch categories for this type
         const categorySelect = modal.querySelector('#modal_category_select');
-        categorySelect.innerHTML = '<option value="">Cargando...</option>';
+        if (categorySelect) {
+            categorySelect.innerHTML = '<option value="">Cargando...</option>';
 
-        try {
-            const response = await fetch(`/api/service-category/list?type=${typeId}`);
-            const categories = await response.json();
+            try {
+                const response = await fetch(`/api/service-category/list?type=${typeId}`);
+                if (!response.ok) throw new Error('API request failed');
+                const categories = await response.json();
 
-            categorySelect.innerHTML = '<option value="">Selecciona...</option>';
-            categories.forEach(cat => {
-                const option = new Option(cat.name, cat.id);
-                categorySelect.appendChild(option);
-            });
-
-            modal.classList.remove('hidden');
-        } catch (error) {
-            console.error('Error fetching categories:', error);
+                categorySelect.innerHTML = '<option value="">Selecciona...</option>';
+                categories.forEach(cat => {
+                    const option = new Option(cat.name, cat.id);
+                    categorySelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+                categorySelect.innerHTML = '<option value="">Error al cargar</option>';
+            }
         }
     }
 
     closeSubcategoryModal() {
+        if (!this.hasSubcategoryModalTarget) return;
         this.subcategoryModalTarget.classList.add('hidden');
-        this.subcategoryModalTarget.querySelector('#new_category_input_container').classList.add('hidden');
-        this.subcategoryModalTarget.querySelector('#modal_new_category_name').value = '';
+        this.subcategoryModalTarget.style.setProperty('display', 'none', 'important');
+        const newCatContainer = this.subcategoryModalTarget.querySelector('#new_category_input_container');
+        if (newCatContainer) newCatContainer.classList.add('hidden');
+        const newCatName = this.subcategoryModalTarget.querySelector('#modal_new_category_name');
+        if (newCatName) newCatName.value = '';
         this.clearAllModalErrors(this.subcategoryModalTarget);
     }
 
@@ -592,11 +703,11 @@ export default class extends Controller {
                 this.closeSubcategoryModal();
 
                 // Refresh main hierarchy selector
-                const typeSelect = document.getElementById('service_type');
+                const typeSelect = this.typeSelectTarget;
                 await this.updateCategories({ target: typeSelect });
 
                 // Select the new subcategory
-                document.getElementById('service_subcategory').value = subData.id;
+                this.subcategorySelectTarget.value = subData.id;
             } else {
                 this.showError('subcategory_name_input', this.humanizeError(subData.errors || 'Error al crear subcategoría'));
             }
@@ -642,15 +753,22 @@ export default class extends Controller {
 
     // Visual Validation Helpers
     showError(inputId, message) {
-        const input = document.getElementById(inputId);
+        let input = null;
+        if (this[`has${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Target`]) {
+            input = this[`${inputId}Target`];
+        } else {
+            input = document.getElementById(inputId);
+        }
+
         if (!input) return;
 
         input.classList.add('is-invalid');
 
         // Find or create invalid-feedback
-        let errorDiv = document.getElementById(`error-${inputId}`);
+        let errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4, .mb-2, .mb-3')?.querySelector('.invalid-feedback');
+
         if (!errorDiv) {
-            errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4')?.querySelector('.invalid-feedback');
+            errorDiv = document.getElementById(`error-${inputId}`);
         }
 
         if (errorDiv) {
@@ -664,7 +782,16 @@ export default class extends Controller {
     validateForm(form) {
         form.querySelectorAll('[required]').forEach(input => {
             if (!input.value) {
-                this.showError(input.id, 'Este campo es obligatorio');
+                // If the input has a target name, use that for showError
+                let targetName = null;
+                for (let key in this.constructor.targets) {
+                    let target = this.constructor.targets[key];
+                    if (this[`${target}Target`] === input) {
+                        targetName = target;
+                        break;
+                    }
+                }
+                this.showError(targetName || input.id, 'Este campo es obligatorio');
             } else {
                 this.clearError({ currentTarget: input });
             }
@@ -691,13 +818,20 @@ export default class extends Controller {
 
     clearError(event) {
         const input = event.currentTarget;
-        const inputId = input.id;
-        const errorDiv = document.getElementById(`error-${inputId}`);
         input.classList.remove('is-invalid');
         input.classList.remove('border-red-500');
+
+        const errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4, .mb-2, .mb-3')?.querySelector('.invalid-feedback');
         if (errorDiv) {
             errorDiv.textContent = '';
             errorDiv.classList.add('hidden');
+            errorDiv.classList.remove('d-block');
+        } else {
+            const errorDivById = document.getElementById(`error-${input.id}`);
+            if (errorDivById) {
+                errorDivById.textContent = '';
+                errorDivById.classList.add('hidden');
+            }
         }
     }
 
@@ -724,8 +858,14 @@ export default class extends Controller {
     }
 
     updateAllAfluenciaColors() {
-        this.element.querySelectorAll('select[id$="_afluencia"]').forEach(select => {
-            this.applyAfluenciaClass(select);
+        if (this.hasAfluenciaSelectTarget) {
+            this.applyAfluenciaClass(this.afluenciaSelectTarget);
+        }
+        // Also find by ID as fallback for any legacy rows
+        document.querySelectorAll('select[id$="_afluencia"]').forEach(select => {
+            if (select !== this.afluenciaSelectTarget) {
+                this.applyAfluenciaClass(select);
+            }
         });
     }
 
@@ -734,7 +874,14 @@ export default class extends Controller {
         const val = select.value;
         if (val === 'baja') select.classList.add('afluencia-baja');
         else if (val === 'media') select.classList.add('afluencia-media');
-        else if (val === 'alta') select.classList.add('afluencia-alta');
+        else if (val === 'alta') {
+            select.classList.add('afluencia-alta');
+            select.style.color = '#dc2626'; // Red-600 for intense High affluence
+            select.style.fontWeight = '900';
+        } else {
+            select.style.color = '';
+            select.style.fontWeight = '';
+        }
     }
 
     // Attendance Logic
@@ -745,14 +892,14 @@ export default class extends Controller {
 
     openModal() {
         this.modalTarget.classList.remove('hidden');
-        this.modalTarget.classList.add('flex');
+        this.modalTarget.style.setProperty('display', 'flex', 'important');
         this.attendanceStatusSelectTarget.value = '';
         this.fetchVolunteers(1, '');
     }
 
     closeModal() {
         this.modalTarget.classList.add('hidden');
-        this.modalTarget.classList.remove('flex');
+        this.modalTarget.style.setProperty('display', 'none', 'important');
     }
 
     async fetchVolunteers(page = 1, search = '') {

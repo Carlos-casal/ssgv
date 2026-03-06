@@ -125,7 +125,7 @@
                             <td>
                                 {% if material.nature == 'CONSUMIBLE' %}
                                     {% set numPacks = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
-                                    <span class="font-mono font-bold">{{ numPacks }}</span> <span class="text-xs text-slate-400">envases</span>
+                                    <span class="font-mono font-bold">{{ numPacks }}</span> <span class="text-xs text-slate-400">nº envases</span>
                                 {% else %}
                                     <span class="font-bold">{{ material.units|length }}</span> <span class="text-xs text-slate-400">unidades</span>
                                 {% endif %}
@@ -153,64 +153,6 @@
                             </td>
                         </tr>
                         
-                        {# Fila de unidades siempre visible para equipo técnico #}
-                        {% if material.nature == 'EQUIPO_TECNICO' and material.units|length > 0 %}
-                        <tr class="bg-light" id="units-{{ material.id }}">
-                            <td colspan="7" class="p-0 border-top-0">
-                                <div class="px-5 py-4 bg-white border-bottom" style="box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);">
-                                    <div class="d-flex align-items-center mb-3">
-                                        <div class="badge bg-primary text-white px-3 py-2 rounded-pill mr-3">
-                                            <i class="fas fa-boxes mr-2"></i>
-                                            <span class="font-weight-bold">Unidades Individuales</span>
-                                        </div>
-                                        <hr class="flex-grow-1 my-0 opacity-10">
-                                    </div>
-                                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-                                        {% for unit in material.units %}
-                                            <div class="col mb-3">
-                                                <div class="card h-100 border-0 shadow-sm" style="transition: transform 0.2s; cursor: default;">
-                                                    <div class="card-body p-3">
-                                                        <div class="d-flex justify-content-between align-items-center mb-3">
-                                                            <div class="d-flex align-items-center">
-                                                                <div class="bg-light rounded p-2 mr-2">
-                                                                    <i class="fas fa-microchip text-muted small"></i>
-                                                                </div>
-                                                                <h6 class="mb-0 font-weight-bold text-dark small">
-                                                                    {{ unit.alias|default('Unidad #' ~ loop.index) }}
-                                                                </h6>
-                                                            </div>
-                                                            <span class="badge {{ unit.operationalStatus == 'OPERATIVO' ? 'bg-success' : 'bg-danger' }} small px-2 py-1">
-                                                                {{ unit.operationalStatus }}
-                                                            </span>
-                                                        </div>
-                                                        
-                                                        <div class="unit-info-grid">
-                                                            <div class="d-flex justify-content-between py-1 border-bottom border-light">
-                                                                <span class="text-muted small">S/N:</span>
-                                                                <span class="small font-weight-bold">{{ unit.serialNumber|default('N/D') }}</span>
-                                                            </div>
-                                                            {% if unit.networkId %}
-                                                            <div class="d-flex justify-content-between py-1 border-bottom border-light">
-                                                                <span class="text-muted small">ISSI/IMEI:</span>
-                                                                <span class="small font-weight-bold">{{ unit.networkId }}</span>
-                                                            </div>
-                                                            {% endif %}
-                                                            <div class="d-flex justify-content-between py-1">
-                                                                <span class="text-muted small">Batería:</span>
-                                                                <span class="small {{ unit.batteryStatus == 'CAMBIO' ? 'text-danger' : 'text-success' }} font-weight-bold">
-                                                                    {{ unit.batteryStatus|default('ÓPTIMA') }}
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        {% endfor %}
-                                    </div>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endif %}
                     {% else %}
                         <tr>
                             <td colspan="7" class="text-center py-4 text-muted">No se encontraron materiales.</td>

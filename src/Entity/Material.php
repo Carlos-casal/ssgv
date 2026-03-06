@@ -62,6 +62,9 @@ class Material
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $subFamily = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $sizingType = null; // 'LETTER', 'NUMBER_CLOTHING', 'NUMBER_SHOES'
+
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $expirationDate = null;
 
@@ -73,6 +76,12 @@ class Material
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ["default" => 21])]
     private string $iva = '21';
+
+    #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
+    private ?string $totalPrice = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $discountPercentage = null;
 
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $serialNumber = null;
@@ -145,6 +154,42 @@ class Material
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    public function getSizingType(): ?string
+    {
+        return $this->sizingType;
+    }
+
+    public function setSizingType(?string $sizingType): static
+    {
+        $this->sizingType = $sizingType;
+
+        return $this;
+    }
+
+    public function getTotalPrice(): ?string
+    {
+        return $this->totalPrice;
+    }
+
+    public function setTotalPrice(?string $totalPrice): static
+    {
+        $this->totalPrice = $totalPrice;
+
+        return $this;
+    }
+
+    public function getDiscountPercentage(): ?string
+    {
+        return $this->discountPercentage;
+    }
+
+    public function setDiscountPercentage(?string $discountPercentage): static
+    {
+        $this->discountPercentage = $discountPercentage;
 
         return $this;
     }

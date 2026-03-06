@@ -165,6 +165,12 @@ class Service
     private ?string $afluencia = null;
 
     /**
+     * @var int|null The estimated number of people attending.
+     */
+    #[ORM\Column(type: Types::INTEGER, nullable: true)]
+    private ?int $estimatedPeople = null;
+
+    /**
      * @var int|null The number of Basic Life Support (SVB) units required.
      */
     #[ORM\Column(nullable: true)]
@@ -384,6 +390,27 @@ class Service
             $this->volunteerServices->add($volunteerService);
             $volunteerService->setService($this);
         }
+
+        return $this;
+    }
+
+    /**
+     * Gets the estimated number of people.
+     * @return int|null
+     */
+    public function getEstimatedPeople(): ?int
+    {
+        return $this->estimatedPeople;
+    }
+
+    /**
+     * Sets the estimated number of people.
+     * @param int|null $estimatedPeople The number of people.
+     * @return static
+     */
+    public function setEstimatedPeople(?int $estimatedPeople): static
+    {
+        $this->estimatedPeople = $estimatedPeople;
 
         return $this;
     }

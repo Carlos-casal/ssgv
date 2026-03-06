@@ -61,6 +61,7 @@ class ServiceSubcategoryController extends AbstractController
         if ($categoryId) {
             $subcategories = $repository->findBy(['category' => $categoryId]);
         } elseif ($typeId) {
+            // Some JS sends IDs as strings, ensure it's treated correctly
             $subcategories = $repository->createQueryBuilder('s')
                 ->join('s.category', 'c')
                 ->where('c.type = :typeId')

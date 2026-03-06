@@ -272,9 +272,7 @@
                         {# Nº Envases #}
                         <div class="form-group">
                             <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
-                            {% set num_packs = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
                             {{ form_widget(form.numPackages, {
-                                'value': num_packs,
                                 'attr': {
                                     'class': 'form-input border-blue-400',
                                     'data-material-dynamic-form-target': 'numPackagesInput',
@@ -311,9 +309,9 @@
                             }) }}
                         </div>
 
-                        {# Precio Compra s/IVA #}
+                        {# Precio Compra (IVA inc.) #}
                         <div class="form-group col-span-2">
-                            <label class="form-label">Precio Compra s/IVA<span class="text-red-500">*</span></label>
+                            <label class="form-label">Precio Compra (IVA inc.)<span class="text-red-500">*</span></label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.totalPrice, {
                                     'attr': {
@@ -329,9 +327,9 @@
                             </div>
                         </div>
 
-                        {# % Descuento #}
+                        {# % Margen #}
                         <div class="form-group">
-                            <label class="form-label">% Descuento</label>
+                            <label class="form-label">% Margen</label>
                             {{ form_widget(form.discountPercentage, {
                                 'attr': {
                                     'class': 'form-input border-emerald-400',
@@ -417,19 +415,19 @@
         </div>
     </div>
     <div class="d-none">
-        {{ form_row(form.serialNumber) }}
-        {{ form_row(form.brandModel) }}
-        {{ form_row(form.purchaseDate) }}
-        {{ form_row(form.warrantyEndDate) }}
-        {{ form_row(form.operationalStatus) }}
-        {{ form_row(form.batteryStatus) }}
-        {{ form_row(form.deviceType) }}
-        {{ form_row(form.frequencyBand) }}
-        {{ form_row(form.phoneNumber) }}
-        {{ form_row(form.networkId) }}
-        {{ form_row(form.hasCharger) }}
-        {{ form_row(form.hasClip) }}
-        {{ form_row(form.hasMicrophone) }}
+        {% if form.serialNumber is defined and not form.serialNumber.rendered %}{{ form_row(form.serialNumber) }}{% endif %}
+        {% if form.brandModel is defined and not form.brandModel.rendered %}{{ form_row(form.brandModel) }}{% endif %}
+        {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}{{ form_row(form.purchaseDate) }}{% endif %}
+        {% if form.warrantyEndDate is defined and not form.warrantyEndDate.rendered %}{{ form_row(form.warrantyEndDate) }}{% endif %}
+        {% if form.operationalStatus is defined and not form.operationalStatus.rendered %}{{ form_row(form.operationalStatus) }}{% endif %}
+        {% if form.batteryStatus is defined and not form.batteryStatus.rendered %}{{ form_row(form.batteryStatus) }}{% endif %}
+        {% if form.deviceType is defined and not form.deviceType.rendered %}{{ form_row(form.deviceType) }}{% endif %}
+        {% if form.frequencyBand is defined and not form.frequencyBand.rendered %}{{ form_row(form.frequencyBand) }}{% endif %}
+        {% if form.phoneNumber is defined and not form.phoneNumber.rendered %}{{ form_row(form.phoneNumber) }}{% endif %}
+        {% if form.networkId is defined and not form.networkId.rendered %}{{ form_row(form.networkId) }}{% endif %}
+        {% if form.hasCharger is defined and not form.hasCharger.rendered %}{{ form_row(form.hasCharger) }}{% endif %}
+        {% if form.hasClip is defined and not form.hasClip.rendered %}{{ form_row(form.hasClip) }}{% endif %}
+        {% if form.hasMicrophone is defined and not form.hasMicrophone.rendered %}{{ form_row(form.hasMicrophone) }}{% endif %}
     </div>
     {{ form_end(form) }}
 </div>

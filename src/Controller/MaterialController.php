@@ -161,6 +161,8 @@ class MaterialController extends AbstractController
                         'batteryStatus' => $unitData['batteryStatus'] ?? null,
                         'hasCharger' => $form->get('hasCharger')->getData(), // Apply from bulk selection
                         'hasClip' => $form->get('hasClip')->getData(),
+                        'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', $unitData['purchasePrice']) : null,
+                        'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
                     ]);
                 }
                 $entityManager->flush();
@@ -354,6 +356,22 @@ class MaterialController extends AbstractController
     public function edit(Request $request, Material $material, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         $form = $this->createForm(MaterialType::class, $material);
+
+        if (!$request->isMethod('POST')) {
+            // Populate unmapped fields for Block D
+            if ($material->getUnitsPerPackage() > 0) {
+                $numPacks = floor($material->getStock() / $material->getUnitsPerPackage());
+            } else {
+                $numPacks = $material->getStock();
+            }
+            $form->get('numPackages')->setData($numPacks);
+
+            $totalPrice = (float)$material->getTotalPrice();
+            $discount = (float)$material->getDiscountPercentage();
+            $discounted = $totalPrice - ($totalPrice * ($discount / 100));
+            $form->get('discountedPrice')->setData($discounted);
+        }
+
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -400,20 +418,14 @@ class MaterialController extends AbstractController
                         if (isset($uData['operationalStatus'])) {
                             $newStatus = $uData['operationalStatus'];
                             if ($newStatus !== $unit->getOperationalStatus()) {
-                                $history = new MaterialUnitHistory();
-                                $history->setMaterialUnit($unit);
-                                $history->setStatus($newStatus);
-                                $history->setReason($uData['statusReason'] ?? null);
-                                $history->setUser($this->getUser());
-                                $entityManager->persist($history);
+                                $materialManager->changeUnitStatus($unit, $newStatus, $uData['statusReason'] ?? null);
                             }
-                            $unit->setOperationalStatus($newStatus);
                         }
-                        if (isset($uData['purchasePrice']) && $uData['purchasePrice'] !== '') {
-                            $unit->setPurchasePrice(str_replace(',', '.', $uData['purchasePrice']));
+                        if (isset($uData['purchasePrice'])) {
+                            $unit->setPurchasePrice($uData['purchasePrice'] !== '' ? str_replace(',', '.', $uData['purchasePrice']) : null);
                         }
-                        if (isset($uData['discountPct']) && $uData['discountPct'] !== '') {
-                            $unit->setDiscountPct(str_replace(',', '.', $uData['discountPct']));
+                        if (isset($uData['discountPct'])) {
+                            $unit->setDiscountPct($uData['discountPct'] !== '' ? str_replace(',', '.', $uData['discountPct']) : null);
                         }
                     }
                 }
@@ -484,6 +496,8 @@ class MaterialController extends AbstractController
                             'batteryStatus' => $unitData['batteryStatus'] ?? null,
                             'hasCharger' => $form->get('hasCharger')->getData(),
                             'hasClip' => $form->get('hasClip')->getData(),
+                            'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', $unitData['purchasePrice']) : null,
+                            'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
                         ]);
                     }
                     $entityManager->flush();

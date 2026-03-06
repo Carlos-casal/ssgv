@@ -50,8 +50,9 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold {{ material.isLowStock ? 'text-danger' : 'text-success' }} text-uppercase mb-1">Stock Actual</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ material.stock }}</div>
-                            <div class="text-xs text-muted">Mínimo: {{ material.safetyStock }}</div>
+                            {% set numPacks = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ numPacks }} <span class="text-xs text-muted">nº envases</span></div>
+                            <div class="text-xs text-muted">Total Unidades: {{ material.stock }} | Mínimo: {{ material.safetyStock }} envases</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-boxes fa-2x text-gray-300"></i>
@@ -288,76 +289,6 @@
     </div>
     {% endif %}
 
-    {% if material.nature == 'EQUIPO_TECNICO' %}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex justify-content-between align-items-center">
-            <h6 class="m-0 font-weight-bold text-primary">Unidades Individuales (Activos)</h6>
-            <div class="btn-group">
-                <a href="{{ path('app_material_unit_new', {'id': material.id}) }}" class="btn btn-sm btn-outline-primary">
-                    <i class="fas fa-plus"></i> Añadir Una
-                </a>
-                <a href="{{ path('app_material_unit_bulk', {'id': material.id}) }}" class="btn btn-sm btn-primary">
-                    <i class="fas fa-th-list"></i> Alta por Lote
-                </a>
-            </div>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered">
-                    <thead class="bg-light">
-                        <tr>
-                            <th>Alias / Nº Col</th>
-                            <th>Nº Serie / ID</th>
-                            <th>Último Uso</th>
-                            <th>Estado Op.</th>
-                            <th>Estado Accesorios</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for unit in material.units %}
-                        <tr class="{{ unit.isInMaintenance ? 'table-warning' : '' }}">
-                            <td><strong>{{ unit.alias|default(unit.collectiveNumber|default('-')) }}</strong></td>
-                            <td>{{ unit.serialNumber }}</td>
-                            <td>{{ unit.lastUsedAt ? unit.lastUsedAt|date('d/m/Y H:i') : 'Nunca usado' }}</td>
-                            <td>
-                                {% if unit.operationalStatus == 'OPERATIVO' %}
-                                    <span class="badge badge-success">Operativo</span>
-                                {% elseif unit.operationalStatus in ['EN REPARACION', 'AVERIADO'] %}
-                                    <span class="badge badge-warning text-dark">{{ unit.operationalStatus }}</span>
-                                {% else %}
-                                    <span class="badge badge-danger">{{ unit.operationalStatus }}</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="small">
-                                    <span class="badge {{ unit.pttStatus == 'OK' ? 'badge-light' : 'badge-danger' }}">PTT: {{ unit.pttStatus }}</span>
-                                    <span class="badge {{ unit.coverStatus == 'OK' ? 'badge-light' : 'badge-warning' }}">Funda: {{ unit.coverStatus }}</span>
-                                    <span class="badge {{ unit.batteryStatus in ['100%', '75%', 'OK'] ? 'badge-light' : 'badge-danger' }}">Bat: {{ unit.batteryStatus }}</span>
-                                </div>
-                            </td>
-                            <td>
-                                <div class="btn-group">
-                                    <a href="{{ path('app_material_unit_edit', {'id': unit.id}) }}" class="btn btn-sm btn-outline-secondary" title="Editar Unidad">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    <a href="{{ path('app_material_unit_status', {'id': unit.id}) }}" class="btn btn-sm btn-outline-info" title="Cambiar Estado / Historial">
-                                        <i class="fas fa-wrench"></i> Historial
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-3">No hay unidades registradas.</td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% endif %}
 
     <div class="card shadow mb-4">
         <div class="card-header py-3">

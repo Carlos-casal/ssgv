@@ -148,6 +148,9 @@ class MaterialManager
         $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
         $unit->setLocation($location ?: $this->getCentralWarehouse());
 
+        if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
+        if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
+
         $this->entityManager->persist($unit);
 
         // Update global stock for technical equipment
