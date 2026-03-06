@@ -37,32 +37,41 @@ export default class extends Controller {
     ];
 
     connect() {
+        console.log("Service Form Controller: Connecting...");
         try {
             if (this.hasModalTarget) {
                 this.setupAttendanceModal();
             }
 
             // Initialize Hierarchy Selector
-            if (this.hasTypeSelectTarget && this.hasSubcategorySelectTarget && !this.typeSelectTarget.value) {
-                this.subcategorySelectTarget.disabled = true;
-                this.subcategorySelectTarget.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
+            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : document.getElementById('service_type');
+            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : document.getElementById('service_subcategory');
+
+            if (typeSelect && subcategorySelect && !typeSelect.value) {
+                subcategorySelect.disabled = true;
+                subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
             }
 
             // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-            if (this.hasTasksInputTarget) {
-                tinymce.remove(this.tasksInputTarget);
+            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : document.getElementById('service_tasks');
+            if (tasksInput && typeof tinymce !== 'undefined') {
+                tinymce.remove(tasksInput);
             }
 
             // Date Listeners for Availability Check
-            if (this.hasStartDateInputTarget && this.hasEndDateInputTarget) {
-                this.startDateInputTarget.addEventListener('change', () => this.updateAllMaterialAvailability());
-                this.endDateInputTarget.addEventListener('change', () => this.updateAllMaterialAvailability());
+            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
+            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+            if (startInput && endInput) {
+                startInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+                endInput.addEventListener('change', () => this.updateAllMaterialAvailability());
             }
 
             // TinyMCE configuration for Description
-            if (this.hasDescriptionInputTarget) {
+            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_description');
+            if (descInput && typeof tinymce !== 'undefined') {
+                console.log("Initializing TinyMCE for description...");
                 tinymce.init({
-                    target: this.descriptionInputTarget,
+                    target: descInput,
                     plugins: 'lists link',
                     toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
                     menubar: false,
@@ -78,7 +87,9 @@ export default class extends Controller {
                     'api-key': 'no-api-key',
                     setup: function(editor) {
                         editor.on('init', function() {
-                            editor.getContainer().style.borderRadius = "1rem";
+                            if (editor.getContainer()) {
+                                editor.getContainer().style.borderRadius = "1rem";
+                            }
                         });
                     }
                 });
@@ -92,13 +103,16 @@ export default class extends Controller {
             }
 
             this.filterExistingMaterials();
+
+            // Trigger category update on load if a type is already selected (for edit mode)
+            if (typeSelect && typeSelect.value && subcategorySelect && subcategorySelect.options.length <= 1) {
+                console.log("Triggering initial category load...");
+                this.updateCategories();
+            }
+
+            console.log("Service Form Controller: Connected successfully.");
         } catch (error) {
             console.error("Error in Service Form Connect:", error);
-        }
-
-        // Trigger category update on load if a type is already selected (for edit mode)
-        if (this.hasTypeSelectTarget && this.typeSelectTarget.value && this.hasSubcategorySelectTarget && this.subcategorySelectTarget.options.length <= 1) {
-             this.updateCategories();
         }
     }
 
@@ -136,12 +150,36 @@ export default class extends Controller {
 
     // Unified Hierarchy Logic
     async updateCategories(event) {
-        console.log("Updating categories...", event);
-        const typeSelect = event?.target || (this.hasTypeSelectTarget ? this.typeSelectTarget : null);
-        if (!typeSelect) return;
+        console.log("Updating categories action triggered", event);
+
+        // Comprehensive selector discovery
+        let typeSelect = null;
+        if (event && event.target) {
+            typeSelect = event.target;
+        } else if (this.hasTypeSelectTarget) {
+            typeSelect = this.typeSelectTarget;
+        } else {
+            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+        }
+
+        if (!typeSelect) {
+            console.error("Type select element not found");
+            return;
+        }
 
         const typeId = typeSelect.value;
-        const subcategorySelect = this.subcategorySelectTarget;
+
+        let subcategorySelect = null;
+        if (this.hasSubcategorySelectTarget) {
+            subcategorySelect = this.subcategorySelectTarget;
+        } else {
+            subcategorySelect = document.getElementById('service_subcategory') || document.querySelector('select[id$="_subcategory"]');
+        }
+
+        if (!subcategorySelect) {
+            console.error("Subcategory select element not found");
+            return;
+        }
 
         if (!typeId) {
             subcategorySelect.disabled = true;
@@ -153,16 +191,24 @@ export default class extends Controller {
         subcategorySelect.innerHTML = '<option value="">Cargando...</option>';
 
         try {
+            console.log(`Fetching subcategories for type ID: ${typeId}`);
             const response = await fetch(`/api/subcategories?type_id=${typeId}`);
-            if (!response.ok) throw new Error('API request failed');
+            if (!response.ok) throw new Error(`API request failed with status: ${response.status}`);
             const subcategories = await response.json();
+            console.log("Subcategories received:", subcategories);
 
             subcategorySelect.innerHTML = '<option value="">Selecciona una opción...</option>';
 
+            if (!subcategories || subcategories.length === 0) {
+                subcategorySelect.innerHTML = '<option value="">No hay categorías disponibles</option>';
+                return;
+            }
+
             // Group subcategories by categoryName
             const grouped = subcategories.reduce((acc, sub) => {
-                if (!acc[sub.categoryName]) acc[sub.categoryName] = [];
-                acc[sub.categoryName].push(sub);
+                const catName = sub.categoryName || 'General';
+                if (!acc[catName]) acc[catName] = [];
+                acc[catName].push(sub);
                 return acc;
             }, {});
 
@@ -170,7 +216,7 @@ export default class extends Controller {
                 const optgroup = document.createElement('optgroup');
                 optgroup.label = categoryName;
                 subs.forEach(sub => {
-                    const option = new Option('\u00A0\u00A0\u00A0' + sub.name, sub.id); // Add indentation for subcategories
+                    const option = new Option('\u00A0\u00A0' + sub.name, sub.id);
                     optgroup.appendChild(option);
                 });
                 subcategorySelect.appendChild(optgroup);
@@ -456,7 +502,11 @@ export default class extends Controller {
 
     // Hierarchy Creation Logic
     openTypeModal() {
-        if (!this.hasTypeModalTarget) return;
+        console.log("openTypeModal triggered");
+        if (!this.hasTypeModalTarget) {
+            console.error("Type modal target not found");
+            return;
+        }
         this.typeModalTarget.classList.remove('hidden');
         this.typeModalTarget.style.setProperty('display', 'flex', 'important');
     }
@@ -513,11 +563,30 @@ export default class extends Controller {
     }
 
     async openSubcategoryModal() {
-        if (!this.hasTypeSelectTarget || !this.hasSubcategoryModalTarget) return;
+        console.log("openSubcategoryModal triggered");
 
-        const typeId = this.typeSelectTarget.value;
+        // Comprehensive selector discovery
+        let typeSelect = null;
+        if (this.hasTypeSelectTarget) {
+            typeSelect = this.typeSelectTarget;
+        } else {
+            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+        }
+
+        if (!typeSelect) {
+            console.error("Type select element not found for subcategory modal");
+            this.showToast("Error interno: No se encuentra el selector de Tipo.");
+            return;
+        }
+
+        const typeId = typeSelect.value;
         if (!typeId) {
             this.showToast('Por favor, selecciona primero un Tipo de Servicio.');
+            return;
+        }
+
+        if (!this.hasSubcategoryModalTarget) {
+            console.error("Subcategory modal target not found");
             return;
         }
 
