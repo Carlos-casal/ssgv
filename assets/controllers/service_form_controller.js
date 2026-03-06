@@ -32,19 +32,19 @@ export default class extends Controller {
         }
 
         // Initialize Hierarchy Selector
-        const typeSelect = document.getElementById('service_type');
-        const subcategorySelect = document.getElementById('service_subcategory');
+        const typeSelect = document.getElementById('service_form_type');
+        const subcategorySelect = document.getElementById('service_form_subcategory');
         if (typeSelect && subcategorySelect && !typeSelect.value) {
             subcategorySelect.disabled = true;
             subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
         }
 
         // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-        tinymce.remove('textarea#service_tasks');
+        tinymce.remove('textarea#service_form_tasks');
 
         // Date Listeners for Availability Check
-        const startDateInput = document.getElementById('service_startDate');
-        const endDateInput = document.getElementById('service_endDate');
+        const startDateInput = document.getElementById('service_form_startDate');
+        const endDateInput = document.getElementById('service_form_endDate');
         if (startDateInput && endDateInput) {
             startDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
             endDateInput.addEventListener('change', () => this.updateAllMaterialAvailability());
@@ -59,7 +59,7 @@ export default class extends Controller {
             statusbar: false,
             branding: false,
             resize: false,
-            height: 250,
+            height: 350,
             toolbar_mode: 'floating',
             promotion: false,
             base_url: '/build/tinymce',
@@ -116,7 +116,7 @@ export default class extends Controller {
     // Unified Hierarchy Logic
     async updateCategories(event) {
         const typeId = event.target.value;
-        const subcategorySelect = document.getElementById('service_subcategory');
+        const subcategorySelect = document.getElementById('service_form_subcategory');
 
         if (!typeId) {
             subcategorySelect.disabled = true;
@@ -342,8 +342,8 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = document.getElementById('service_startDate');
-        const endDateInput = document.getElementById('service_endDate');
+        const startDateInput = document.getElementById('service_form_startDate');
+        const endDateInput = document.getElementById('service_form_endDate');
 
         if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
 
@@ -468,7 +468,7 @@ export default class extends Controller {
                 this.closeTypeModal();
 
                 // Add to main selector and select it
-                const typeSelect = document.getElementById('service_type');
+                const typeSelect = document.getElementById('service_form_type');
                 const option = new Option(data.name, data.id, true, true);
                 typeSelect.appendChild(option);
 
@@ -483,7 +483,7 @@ export default class extends Controller {
     }
 
     async openSubcategoryModal() {
-        const typeId = document.getElementById('service_type').value;
+        const typeId = document.getElementById('service_form_type').value;
         if (!typeId) {
             this.showToast('Por favor, selecciona primero un Tipo de Servicio.');
             return;
@@ -592,11 +592,11 @@ export default class extends Controller {
                 this.closeSubcategoryModal();
 
                 // Refresh main hierarchy selector
-                const typeSelect = document.getElementById('service_type');
+                const typeSelect = document.getElementById('service_form_type');
                 await this.updateCategories({ target: typeSelect });
 
                 // Select the new subcategory
-                document.getElementById('service_subcategory').value = subData.id;
+                document.getElementById('service_form_subcategory').value = subData.id;
             } else {
                 this.showError('subcategory_name_input', this.humanizeError(subData.errors || 'Error al crear subcategoría'));
             }
@@ -734,7 +734,14 @@ export default class extends Controller {
         const val = select.value;
         if (val === 'baja') select.classList.add('afluencia-baja');
         else if (val === 'media') select.classList.add('afluencia-media');
-        else if (val === 'alta') select.classList.add('afluencia-alta');
+        else if (val === 'alta') {
+            select.classList.add('afluencia-alta');
+            select.style.color = '#dc2626'; // Red-600 for intense High affluence
+            select.style.fontWeight = '900';
+        } else {
+            select.style.color = '';
+            select.style.fontWeight = '';
+        }
     }
 
     // Attendance Logic

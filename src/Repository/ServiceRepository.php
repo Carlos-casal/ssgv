@@ -247,4 +247,36 @@ class ServiceRepository extends ServiceEntityRepository
 
         return $count + 1;
     }
+
+    /**
+     * Gets the absolute total count of services in the system.
+     */
+    public function getGlobalTotalCount(): int
+    {
+        return (int) $this->createQueryBuilder('s')
+            ->select('count(s.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Gets the sequential number for services within a specific Type/Category/Subcategory classification.
+     */
+    public function getClassSequentialNumber($type, $category, $subcategory): int
+    {
+        $qb = $this->createQueryBuilder('s')
+            ->select('count(s.id)');
+
+        if ($type) {
+            $qb->andWhere('s.type = :type')->setParameter('type', $type);
+        }
+        if ($category) {
+            $qb->andWhere('s.category = :category')->setParameter('category', $category);
+        }
+        if ($subcategory) {
+            $qb->andWhere('s.subcategory = :subcategory')->setParameter('subcategory', $subcategory);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() + 1;
+    }
 }

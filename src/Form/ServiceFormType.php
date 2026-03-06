@@ -152,10 +152,15 @@ class ServiceFormType extends AbstractType
                 'choice_attr' => [
                     'Baja' => ['class' => 'bg-green-100 text-green-800'],
                     'Media' => ['class' => 'bg-orange-100 text-orange-800'],
-                    'Alta' => ['class' => 'bg-blue-100 text-blue-800'],
+                    'Alta' => ['class' => 'bg-red-100 text-red-800'],
                 ],
                 'placeholder' => 'Selecciona un nivel',
                 'required' => true,
+            ])
+            ->add('estimatedPeople', IntegerType::class, [
+                'label' => 'Nº Personas',
+                'required' => false,
+                'attr' => ['min' => 0, 'placeholder' => 'Ej: 500'],
             ])
             ->add('numSvb', CheckboxType::class, [
                 'label' => 'SVB',
