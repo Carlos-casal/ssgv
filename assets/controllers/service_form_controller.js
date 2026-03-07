@@ -70,6 +70,7 @@ export default class extends Controller {
             const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_description');
             if (descInput && typeof tinymce !== 'undefined') {
                 console.log("Initializing TinyMCE for description...");
+                tinymce.remove(descInput);
                 tinymce.init({
                     target: descInput,
                     plugins: 'lists link',

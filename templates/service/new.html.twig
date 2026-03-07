@@ -47,7 +47,7 @@
             font-weight: 700;
             font-size: 0.8rem;
             text-transform: uppercase;
-            padding: 1rem 1.5rem;
+            padding: 0.5rem 1.5rem;
             border-bottom: 2px solid transparent;
         }
         .nav-tabs-custom .nav-link.active {
@@ -76,17 +76,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full" data-controller="service-form">
+<div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full overflow-hidden" data-controller="service-form">
     {{ form_start(form, {
         'attr': {
             'id': 'new-service-form-element',
             'data-service-form-target': 'form',
-            'novalidate': 'novalidate'
+            'novalidate': 'novalidate',
+            'class': 'h-full flex flex-col'
         }
     }) }}
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-4 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
+    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-2 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos" type="button" role="tab" aria-controls="datos" aria-selected="true">
                 <i data-lucide="file-text" class="w-4 h-4 inline me-2"></i> Datos Generales
@@ -99,7 +100,7 @@
         </li>
     </ul>
 
-    <div class="tab-content" id="serviceFormTabContent">
+    <div class="tab-content flex-1 overflow-y-auto pr-1" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
             <div class="row g-3">
@@ -237,16 +238,6 @@
                                     {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'descriptionInput'}}) }}
                                 </div>
                             </div>
-                            <div class="row g-3 mt-1 align-items-center">
-                                <div class="col-md-3">
-                                    <div class="d-flex align-items-center gap-3 bg-light p-2 rounded-2">
-                                        <label class="form-label-sm mb-0">¿Avituallamiento?</label>
-                                        <div class="form-check form-switch p-0 m-0">
-                                            {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -312,6 +303,12 @@
                                                     <span class="text-[11px] font-bold text-slate-600">Hosp. Campaña</span>
                                                     <div class="form-check form-switch m-0 p-0">
                                                         {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input ms-0'}}) }}
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex justify-content-between align-items-center bg-blue-50/50 p-1 px-2 rounded border border-blue-100 mt-2">
+                                                    <span class="text-[11px] font-black text-blue-700 uppercase tracking-tighter">¿AVITUALLAMIENTO?</span>
+                                                    <div class="form-check form-switch m-0 p-0">
+                                                        {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                     </div>
                                                 </div>
                                             </div>
