@@ -549,18 +549,15 @@ export default class extends Controller {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
                     statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles</span>`;
-                    statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
+                    statusLabel.className = 'availability-status text-[10px] font-black mt-1 text-green-600 uppercase tracking-tighter';
                 }
 
                 if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits) {
                     const selectors = row.querySelectorAll('.unit-selector');
                     selectors.forEach((sel, index) => {
-                        // Offset the suggested units per selector?
-                        // Actually the rotation logic should probably show the same full list of available units to each selector
                         this.updateUnitSelector(sel, data.suggestedUnits);
-                        // If we want auto-selection to be smart (unique), we'd need more complex logic.
-                        // For now, let's just make sure each selector has the data.
-                        if (data.suggestedUnits[index] && !sel.value) {
+                        // Smart auto-selection: unique unit per selector from the suggested list
+                        if (data.suggestedUnits[index] && (!sel.value || sel.value === '')) {
                             sel.value = data.suggestedUnits[index].id;
                         }
                     });
@@ -588,7 +585,7 @@ export default class extends Controller {
         units.forEach(unit => {
             let label = '';
             if (unit.alias) {
-                label = `${unit.alias} (${unit.serialNumber || 'S/N'})`;
+                label = unit.alias; // Simplified: Alias only
             } else {
                 label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
             }
