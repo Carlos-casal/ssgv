@@ -321,33 +321,115 @@ export default class extends Controller {
     onQuantityInput(event) {
         const input = event.currentTarget;
         const row = input.closest('.material-item');
-        const qty = parseInt(input.value);
+        let qty = parseInt(input.value || 0);
         const materialSelect = row.querySelector('.material-selector');
         const nature = materialSelect.options[materialSelect.selectedIndex]?.dataset.nature;
 
-        // Special behavior for Technical Assets: split into multiple rows
-        if (nature === 'EQUIPO_TECNICO' && qty > 1) {
-            const category = materialSelect.options[materialSelect.selectedIndex]?.dataset.category;
-            const materialId = materialSelect.value;
-
-            // Set current row quantity to 1
-            input.value = 1;
-
-            // Add (qty - 1) more rows with same material
-            for (let i = 0; i < qty - 1; i++) {
-                this.addMaterialWithData(category, materialId, 1);
-            }
-
-            this.updateAllMaterialAvailability();
-            return;
+        const max = parseInt(input.getAttribute('max'));
+        if (max !== undefined && !isNaN(max) && qty > max) {
+            input.value = max;
+            qty = max;
+            this.showToast(`Solo hay ${max} unidades disponibles.`);
         }
 
-        const max = parseInt(input.getAttribute('max'));
-        if (max !== undefined && !isNaN(max) && parseInt(input.value) > max) {
-            input.value = max;
+        // Special behavior for Technical Assets: Grouped selectors in same card
+        if (nature === 'EQUIPO_TECNICO') {
+            // Ensure the main quantity entry for this card only counts as 1 in the backend
+            // because each dropdown we add will also count as 1.
+            let hiddenQty = row.querySelector('.main-hidden-qty');
+            if (!hiddenQty) {
+                hiddenQty = document.createElement('input');
+                hiddenQty.type = 'hidden';
+                hiddenQty.className = 'main-hidden-qty';
+                hiddenQty.name = input.name;
+                hiddenQty.value = '1';
+                input.after(hiddenQty);
+                // Mangle the original input name so it's not submitted
+                input.dataset.originalName = input.name;
+                input.name = '_ignore_qty';
+            }
+            this.adjustGroupedUnitSelectors(row, qty);
+        } else {
+            // Restore original quantity name if not technical
+            const hiddenQty = row.querySelector('.main-hidden-qty');
+            if (hiddenQty) {
+                input.name = input.dataset.originalName;
+                hiddenQty.remove();
+            }
         }
 
         this.updateAllMaterialAvailability();
+    }
+
+    adjustGroupedUnitSelectors(row, requestedQty) {
+        const wrapper = row.querySelector('.unit-selectors-wrapper');
+        if (!wrapper) return;
+
+        // The first selector is already part of the prototype and mapped to the main SM entry
+        const currentSelectors = wrapper.querySelectorAll('.unit-selector');
+        const currentQty = currentSelectors.length;
+        const diff = requestedQty - currentQty;
+
+        if (requestedQty <= 0) return;
+
+        if (diff > 0) {
+            const materialId = row.querySelector('.material-selector').value;
+            const materialSelect = row.querySelector('.material-selector');
+            const category = materialSelect.options[materialSelect.selectedIndex]?.dataset.category;
+
+            for (let i = 0; i < diff; i++) {
+                this.addExtraUnitToRow(row, materialId, category);
+            }
+        } else if (diff < 0) {
+            for (let i = 0; i < Math.abs(diff); i++) {
+                const extraEntries = wrapper.querySelectorAll('.extra-unit-entry');
+                if (extraEntries.length > 0) {
+                    extraEntries[extraEntries.length - 1].remove();
+                }
+            }
+        }
+    }
+
+    addExtraUnitToRow(row, materialId, category) {
+        const wrapper = row.querySelector('.unit-selectors-wrapper');
+        const container = this.materialsContainerTarget;
+        const index = container.dataset.index;
+        const prototype = container.dataset.prototype;
+
+        // We use the prototype to get a fresh set of fields with a new index
+        const newFormHtml = prototype.replace(/__name__/g, index);
+        container.dataset.index = parseInt(index) + 1;
+
+        const temp = document.createElement('div');
+        temp.innerHTML = newFormHtml;
+        const newRow = temp.firstElementChild;
+
+        // Create a wrapper for this extra unit entry
+        const extraEntry = document.createElement('div');
+        extraEntry.className = 'extra-unit-entry mt-1 pt-1 border-t border-slate-50';
+
+        // 1. Material (Hidden)
+        const matSelect = newRow.querySelector('.material-selector');
+        matSelect.value = materialId;
+        const hiddenMat = document.createElement('input');
+        hiddenMat.type = 'hidden';
+        hiddenMat.name = matSelect.name;
+        hiddenMat.value = materialId;
+        extraEntry.appendChild(hiddenMat);
+
+        // 2. Quantity (Hidden, always 1)
+        const qtyInput = newRow.querySelector('.quantity-input');
+        const hiddenQty = document.createElement('input');
+        hiddenQty.type = 'hidden';
+        hiddenQty.name = qtyInput.name;
+        hiddenQty.value = '1';
+        extraEntry.appendChild(hiddenQty);
+
+        // 3. Unit Selector (Visible)
+        const unitSel = newRow.querySelector('.unit-selector');
+        extraEntry.appendChild(unitSel);
+
+        wrapper.appendChild(extraEntry);
     }
 
     addMaterialWithData(category, materialId, quantity) {
@@ -388,26 +470,24 @@ export default class extends Controller {
 
     onMaterialSelectChange(event) {
         const select = event.currentTarget;
+        const row = select.closest('.material-item');
         const nature = select.options[select.selectedIndex]?.dataset.nature;
-        const unitContainer = select.closest('.material-item')?.querySelector('.unit-selection-container');
-        const qtyInput = select.closest('.material-item')?.querySelector('.quantity-input');
-        const qty = parseInt(qtyInput?.value || 0);
+        const unitContainer = row.querySelector('.unit-selection-container');
+        const qtyInput = row.querySelector('.quantity-input');
 
         if (nature === 'EQUIPO_TECNICO') {
             unitContainer?.classList.remove('hidden');
-
-            // If selecting technical material and quantity is > 1, trigger split
-            if (qty > 1) {
-                const category = select.options[select.selectedIndex]?.dataset.category;
-                const materialId = select.value;
-                qtyInput.value = 1;
-                for (let i = 0; i < qty - 1; i++) {
-                    this.addMaterialWithData(category, materialId, 1);
-                }
-            }
         } else {
             unitContainer?.classList.add('hidden');
+            // Remove any extra units if nature changed
+            const wrapper = row.querySelector('.unit-selectors-wrapper');
+            if (wrapper) {
+                wrapper.querySelectorAll('.extra-unit-entry').forEach(e => e.remove());
+            }
         }
+
+        // Trigger quantity logic to ensure hidden fields and grouped selectors are in sync
+        this.onQuantityInput({ currentTarget: qtyInput });
 
         this.updateAllMaterialAvailability();
     }
@@ -472,8 +552,18 @@ export default class extends Controller {
                     statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
                 }
 
-                if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
-                    this.updateUnitSelector(unitSelector, data.suggestedUnits);
+                if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits) {
+                    const selectors = row.querySelectorAll('.unit-selector');
+                    selectors.forEach((sel, index) => {
+                        // Offset the suggested units per selector?
+                        // Actually the rotation logic should probably show the same full list of available units to each selector
+                        this.updateUnitSelector(sel, data.suggestedUnits);
+                        // If we want auto-selection to be smart (unique), we'd need more complex logic.
+                        // For now, let's just make sure each selector has the data.
+                        if (data.suggestedUnits[index] && !sel.value) {
+                            sel.value = data.suggestedUnits[index].id;
+                        }
+                    });
                 }
             } else {
                 materialSelect.classList.add('border-red-500');
@@ -496,15 +586,20 @@ export default class extends Controller {
 
         selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
         units.forEach(unit => {
-            const label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
+            let label = '';
+            if (unit.alias) {
+                label = `${unit.alias} (${unit.serialNumber || 'S/N'})`;
+            } else {
+                label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
+            }
             const option = new Option(label, unit.id);
             selector.appendChild(option);
         });
 
         if (currentValue && Array.from(selector.options).some(o => o.value == currentValue)) {
             selector.value = currentValue;
-        } else if (units.length > 0) {
-            // Auto-select the first suggested unit (the oldest one)
+        } else if (units.length > 0 && !currentValue) {
+            // Auto-select the first suggested unit if nothing selected
             selector.value = units[0].id;
         }
     }

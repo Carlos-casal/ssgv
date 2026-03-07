@@ -96,16 +96,16 @@ class MaterialController extends AbstractController
             $allAvailable = $materialManager->suggestUnits($material, $start, $end, null, $excludeServiceId);
             $totalAvailable = count($allAvailable);
 
-            // Re-run with quantity limit for suggestions if needed, or just take first N
-            $suggested = array_slice($allAvailable, 0, $quantity);
+            // Return all available units so the user can pick any of them
             $available = count($allAvailable) >= $quantity;
 
             $suggestedData = [];
-            foreach ($suggested as $unit) {
+            foreach ($allAvailable as $unit) {
                 $suggestedData[] = [
                     'id' => $unit->getId(),
                     'serialNumber' => $unit->getSerialNumber(),
-                    'collectiveNumber' => $unit->getCollectiveNumber()
+                    'collectiveNumber' => $unit->getCollectiveNumber(),
+                    'alias' => $unit->getAlias()
                 ];
             }
 
