@@ -117,6 +117,7 @@ export default class extends Controller {
                 this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
             }
 
+            this.cleanUnitPrototypes();
             this.filterExistingMaterials();
 
             // Trigger category update on load if a type is already selected (for edit mode)
@@ -286,6 +287,31 @@ export default class extends Controller {
         this.updateAllMaterialAvailability();
     }
 
+    cleanUnitPrototypes() {
+        if (!this.hasMaterialsContainerTarget) return;
+        const container = this.materialsContainerTarget;
+        let prototype = container.dataset.prototype;
+        if (prototype) {
+            const temp = document.createElement('div');
+            temp.innerHTML = prototype;
+
+            // 1. Clear unit selectors in prototype
+            const unitSelectors = temp.querySelectorAll('.unit-selector');
+            unitSelectors.forEach(us => {
+                const placeholder = us.querySelector('option[value=""]');
+                us.innerHTML = '';
+                if (placeholder) us.appendChild(placeholder);
+                else us.innerHTML = '<option value="">Selección automática (Rotación)</option>';
+            });
+
+            // 2. Filter material options in prototype by category if needed?
+            // No, addMaterial does that.
+
+            container.dataset.prototype = temp.innerHTML;
+            console.log("Service Form: Unit prototypes cleaned.");
+        }
+    }
+
     filterExistingMaterials() {
         if (!this.hasMaterialsContainerTarget) return;
 
@@ -302,10 +328,29 @@ export default class extends Controller {
                     }
                 });
 
+                const row = select.closest('.material-item');
+                if (!row) return;
+
                 // Initial check for unit container visibility
                 const nature = select.options[select.selectedIndex]?.dataset.nature;
                 if (nature === 'EQUIPO_TECNICO') {
-                    select.closest('.material-item')?.querySelector('.unit-selection-container')?.classList.remove('hidden');
+                    row.querySelector('.unit-selection-container')?.classList.remove('hidden');
+
+                    // Clear unit selectors that were pre-populated by Symfony with ALL units
+                    const unitSelectors = row.querySelectorAll('.unit-selector');
+                    unitSelectors.forEach(us => {
+                        // Only clear if not already correctly populated (we use data-populated attribute later)
+                        if (us.options.length > 10) { // Symfony usually dumps dozens of units here
+                            const val = us.value;
+                            const placeholder = us.querySelector('option[value=""]');
+                            us.innerHTML = '';
+                            if (placeholder) us.appendChild(placeholder);
+                            if (val) {
+                                // Keep current value if exists (edit mode)
+                                // We'll fetch the proper label via check-availability
+                            }
+                        }
+                    });
                 }
             });
         });
@@ -319,8 +364,13 @@ export default class extends Controller {
     }
 
     onQuantityInput(event) {
+        if (event && event._autoCorrect) return; // Prevent infinite loop from availability check
         const input = event.currentTarget;
+        if (!input) return;
+
         const row = input.closest('.material-item');
+        if (!row) return;
+
         let qty = parseInt(input.value || 0);
         const materialSelect = row.querySelector('.material-selector');
         const nature = materialSelect.options[materialSelect.selectedIndex]?.dataset.nature;
@@ -514,10 +564,23 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = this.startDateInputTarget;
-        const endDateInput = this.endDateInputTarget;
+        const statusLabel = row.querySelector('.availability-status');
 
-        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
+        // Comprehensive date discovery
+        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget :
+            (document.getElementById('service_startDate') || document.getElementById('service_form_startDate') || document.querySelector('input[id$="_startDate"]'));
+        const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget :
+            (document.getElementById('service_endDate') || document.getElementById('service_form_endDate') || document.querySelector('input[id$="_endDate"]'));
+
+        if (!materialSelect?.value) return;
+
+        if (!startDateInput?.value || !endDateInput?.value) {
+            if (statusLabel) {
+                statusLabel.innerHTML = '<i data-lucide="calendar" class="w-3 h-3 inline mr-1"></i> <span class="text-orange-500 font-bold">SELECCIONA FECHAS PARA VER STOCK</span>';
+                if (window.lucide) window.lucide.createIcons();
+            }
+            return;
+        }
 
         const materialId = materialSelect.value;
         const quantity = parseInt(quantityInput?.value || 1);
@@ -545,10 +608,17 @@ export default class extends Controller {
             // Set dynamic max attribute
             quantityInput.setAttribute('max', remainingForThisRow);
 
-            if (data.available) {
+            // AUTO-CORRECTION: If user entered more than available, cap it
+            if (quantity > remainingForThisRow && remainingForThisRow >= 0) {
+                quantityInput.value = remainingForThisRow;
+                // Re-trigger logic if we are decreasing
+                this.onQuantityInput({ currentTarget: quantityInput, _autoCorrect: true });
+            }
+
+            if (data.available || data.totalAvailable > 0) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles</span>`;
+                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">DISPONIBLES: ${data.totalAvailable}</span>`;
                     statusLabel.className = 'availability-status text-[10px] font-black mt-1 text-green-600 uppercase tracking-tighter';
                 }
 
@@ -580,9 +650,21 @@ export default class extends Controller {
 
     updateUnitSelector(selector, units) {
         const currentValue = selector.value;
+        const currentLabel = selector.options[selector.selectedIndex]?.text;
 
         selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
+
+        // If we have a value but it's not in the new units list (e.g. edit mode),
+        // we should keep it temporarily so it doesn't disappear until user changes it
+        if (currentValue && !units.some(u => u.id == currentValue)) {
+            const opt = new Option(currentLabel || 'Cargando...', currentValue, true, true);
+            selector.appendChild(opt);
+        }
+
         units.forEach(unit => {
+            // Avoid duplicate if we kept it above
+            if (unit.id == currentValue) return;
+
             let label = '';
             if (unit.alias) {
                 label = unit.alias; // Simplified: Alias only
@@ -593,9 +675,9 @@ export default class extends Controller {
             selector.appendChild(option);
         });
 
-        if (currentValue && Array.from(selector.options).some(o => o.value == currentValue)) {
+        if (currentValue) {
             selector.value = currentValue;
-        } else if (units.length > 0 && !currentValue) {
+        } else if (units.length > 0) {
             // Auto-select the first suggested unit if nothing selected
             selector.value = units[0].id;
         }
