@@ -22,7 +22,8 @@ class ServiceMaterialFormType extends AbstractType
                 'choice_attr' => function(Material $material) {
                     return [
                         'data-category' => $material->getCategory(),
-                        'data-nature' => $material->getNature()
+                        'data-nature' => $material->getNature(),
+                        'data-stock' => $material->getStock()
                     ];
                 },
                 'placeholder' => 'Selecciona un material',

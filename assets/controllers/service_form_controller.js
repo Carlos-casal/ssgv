@@ -549,8 +549,21 @@ export default class extends Controller {
         // Group rows by material to calculate usage
         const materialUsage = {};
         rows.forEach(row => {
-            const materialId = row.querySelector('.material-selector')?.value;
-            const qty = parseInt(row.querySelector('.quantity-input')?.value || 0);
+            const matSelect = row.querySelector('.material-selector');
+            const materialId = matSelect?.value;
+            if (!materialId) return;
+
+            const nature = matSelect.options[matSelect.selectedIndex]?.dataset.nature;
+            let qty = 0;
+
+            if (nature === 'EQUIPO_TECNICO') {
+                // For technical items, we count how many unit selectors (including extras) we have
+                qty = row.querySelectorAll('.unit-selector').length;
+            } else {
+                // For consumables, we read the quantity input
+                qty = parseInt(row.querySelector('.quantity-input')?.value || 0);
+            }
+
             if (materialId) {
                 materialUsage[materialId] = (materialUsage[materialId] || 0) + qty;
             }
@@ -576,7 +589,8 @@ export default class extends Controller {
 
         if (!startDateInput?.value || !endDateInput?.value) {
             if (statusLabel) {
-                statusLabel.innerHTML = '<i data-lucide="calendar" class="w-3 h-3 inline mr-1"></i> <span class="text-orange-500 font-bold">SELECCIONA FECHAS PARA VER STOCK</span>';
+                const totalStock = materialSelect.options[materialSelect.selectedIndex]?.dataset.stock || '?';
+                statusLabel.innerHTML = `<i data-lucide="calendar" class="w-3 h-3 inline mr-1"></i> <span class="text-orange-600 font-bold">STOCK TOTAL: ${totalStock} (FECHAS PENDIENTES)</span>`;
                 if (window.lucide) window.lucide.createIcons();
             }
             return;
@@ -615,7 +629,7 @@ export default class extends Controller {
                 this.onQuantityInput({ currentTarget: quantityInput, _autoCorrect: true });
             }
 
-            if (data.available || data.totalAvailable > 0) {
+            if (data.available) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
                     statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">DISPONIBLES: ${data.totalAvailable}</span>`;
@@ -635,8 +649,14 @@ export default class extends Controller {
             } else {
                 materialSelect.classList.add('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Soli: ${quantity} / Disp: ${data.totalAvailable})</span>`;
-                    statusLabel.className = 'availability-status text-[10px] mt-1';
+                    statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black uppercase tracking-tighter">STOCK INSUFICIENTE (SOLI: ${quantity} / DISP: ${data.totalAvailable})</span>`;
+                    statusLabel.className = 'availability-status text-[10px] font-black mt-1 text-red-600';
+                }
+
+                // Even if insufficient, we show what we have in the selectors
+                if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits) {
+                    const selectors = row.querySelectorAll('.unit-selector');
+                    selectors.forEach((sel) => this.updateUnitSelector(sel, data.suggestedUnits));
                 }
             }
 
@@ -656,7 +676,7 @@ export default class extends Controller {
 
         // If we have a value but it's not in the new units list (e.g. edit mode),
         // we should keep it temporarily so it doesn't disappear until user changes it
-        if (currentValue && !units.some(u => u.id == currentValue)) {
+        if (currentValue && currentValue !== '' && !units.some(u => u.id == currentValue)) {
             const opt = new Option(currentLabel || 'Cargando...', currentValue, true, true);
             selector.appendChild(opt);
         }
@@ -675,11 +695,8 @@ export default class extends Controller {
             selector.appendChild(option);
         });
 
-        if (currentValue) {
+        if (currentValue && currentValue !== '') {
             selector.value = currentValue;
-        } else if (units.length > 0) {
-            // Auto-select the first suggested unit if nothing selected
-            selector.value = units[0].id;
         }
     }
 
