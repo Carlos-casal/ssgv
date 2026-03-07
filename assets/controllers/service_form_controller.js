@@ -501,7 +501,8 @@ export default class extends Controller {
     }
 
     // Hierarchy Creation Logic
-    openTypeModal() {
+    openTypeModal(event) {
+        if (event) event.preventDefault();
         console.log("openTypeModal triggered");
         if (!this.hasTypeModalTarget) {
             console.error("Type modal target not found");
@@ -562,7 +563,8 @@ export default class extends Controller {
         }
     }
 
-    async openSubcategoryModal() {
+    async openSubcategoryModal(event) {
+        if (event) event.preventDefault();
         console.log("openSubcategoryModal triggered");
 
         // Comprehensive selector discovery
@@ -847,9 +849,9 @@ export default class extends Controller {
     }
 
     showToast(message) {
-        // Fallback to alert if no toast system, but user wanted to remove blocking alerts.
-        // For now, let's use a non-blocking way if possible, or just skip it if it's just a success message.
-        console.log('Success:', message);
+        // Fallback to alert for visibility if no toast system is integrated
+        alert(message);
+        console.log('Toast:', message);
     }
 
     // Afluencia
@@ -858,12 +860,13 @@ export default class extends Controller {
     }
 
     updateAllAfluenciaColors() {
-        if (this.hasAfluenciaSelectTarget) {
-            this.applyAfluenciaClass(this.afluenciaSelectTarget);
+        const mainSelect = this.hasAfluenciaSelectTarget ? this.afluenciaSelectTarget : null;
+        if (mainSelect) {
+            this.applyAfluenciaClass(mainSelect);
         }
         // Also find by ID as fallback for any legacy rows
         document.querySelectorAll('select[id$="_afluencia"]').forEach(select => {
-            if (select !== this.afluenciaSelectTarget) {
+            if (select !== mainSelect) {
                 this.applyAfluenciaClass(select);
             }
         });
