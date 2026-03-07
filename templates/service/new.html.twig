@@ -76,13 +76,12 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-0 bg-[#f8f9fa] h-[calc(100vh-100px)] overflow-hidden" data-controller="service-form">
+<div class="container-fluid px-4 py-0 bg-[#f8f9fa]" data-controller="service-form">
     {{ form_start(form, {
         'attr': {
             'id': 'new-service-form-element',
             'data-service-form-target': 'form',
-            'novalidate': 'novalidate',
-            'class': 'h-full flex flex-col overflow-x-hidden'
+            'novalidate': 'novalidate'
         }
     }) }}
 
@@ -100,13 +99,13 @@
         </li>
     </ul>
 
-    <div class="tab-content flex-1 overflow-y-auto pr-1" id="serviceFormTabContent">
+    <div class="tab-content" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
             <div class="row g-3">
                 <!-- COLUMNA IZQUIERDA: Identificación -->
                 <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                    <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-header-compact d-flex align-items-center">
                             <i data-lucide="info" class="w-4 h-4 text-blue-600 mr-2"></i>
                             <span class="section-title">Datos Identificativos</span>
@@ -161,7 +160,7 @@
 
                 <!-- COLUMNA DERECHA: Cronología y Ubicación -->
                 <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                    <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-header-compact d-flex align-items-center">
                             <i data-lucide="calendar" class="w-4 h-4 text-orange-600 mr-2"></i>
                             <span class="section-title">Cronología y Ubicación</span>

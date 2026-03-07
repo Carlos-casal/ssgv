@@ -71,22 +71,16 @@ export default class extends Controller {
             if (descInput && typeof tinymce !== 'undefined') {
                 console.log("Initializing TinyMCE for description...");
 
-                // Ensure unique ID
-                if (!descInput.id) {
-                    descInput.id = 'desc-editor-' + Math.random().toString(36).substr(2, 9);
-                }
+                const initEditor = () => {
+                    // Force absolute cleanup of ANY instance on this element ID or target
+                    if (descInput.id) {
+                        const existing = tinymce.get(descInput.id);
+                        if (existing) existing.remove();
+                    }
+                    tinymce.remove(descInput);
 
-                // Comprehensive cleanup before re-init
-                const existingEditor = tinymce.get(descInput.id);
-                if (existingEditor) {
-                    existingEditor.remove();
-                }
-                tinymce.remove(`#${descInput.id}`);
-
-                // Delay initialization and use selector for better target binding
-                setTimeout(() => {
                     tinymce.init({
-                        selector: `#${descInput.id}`,
+                        target: descInput,
                         plugins: 'lists link',
                         toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
                         menubar: false,
@@ -108,7 +102,12 @@ export default class extends Controller {
                             });
                         }
                     });
-                }, 50);
+                };
+
+                // Use requestAnimationFrame for smoother timing with Turbo
+                requestAnimationFrame(() => {
+                    setTimeout(initEditor, 300);
+                });
             }
 
             this.updateAllAfluenciaColors();
