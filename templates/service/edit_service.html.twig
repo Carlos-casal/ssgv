@@ -76,18 +76,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full overflow-hidden" data-controller="service-form" data-service-id="{{ service.id }}">
+<div class="container-fluid px-4 py-0 bg-[#f8f9fa] h-[calc(100vh-100px)] overflow-hidden" data-controller="service-form" data-service-id="{{ service.id }}">
     {{ form_start(form, {
         'attr': {
             'id': 'edit-service-form-element',
             'data-service-form-target': 'form',
             'novalidate': 'novalidate',
-            'class': 'h-full flex flex-col'
+            'class': 'h-full flex flex-col overflow-x-hidden'
         }
     }) }}
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-2 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
+    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-2 bg-white px-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos" type="button" role="tab" aria-controls="datos" aria-selected="true">
                 <i data-lucide="file-text" class="w-4 h-4 inline me-2"></i> Datos Generales
@@ -213,6 +213,14 @@
                                     {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
                                 </div>
                             </div>
+                            <div class="row g-3 mt-1">
+                                <div class="col-md-4">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</span>
+                                        {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control', 'placeholder': '∞'}}) }}
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -233,14 +241,6 @@
                                 <div class="col-md-6">
                                     <label class="form-label-sm">Descripción Detallada</label>
                                     {{ form_widget(form.description, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'descriptionInput'}}) }}
-                                </div>
-                            </div>
-                            <div class="row g-3 mt-1 align-items-center">
-                                <div class="col-md-3">
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-white"><i data-lucide="users" class="w-3 h-3 me-1"></i> Límite Inscritos</span>
-                                        {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control', 'placeholder': '∞'}}) }}
-                                    </div>
                                 </div>
                             </div>
                         </div>

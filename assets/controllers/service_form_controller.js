@@ -70,30 +70,45 @@ export default class extends Controller {
             const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_description');
             if (descInput && typeof tinymce !== 'undefined') {
                 console.log("Initializing TinyMCE for description...");
-                tinymce.remove(descInput);
-                tinymce.init({
-                    target: descInput,
-                    plugins: 'lists link',
-                    toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
-                    menubar: false,
-                    statusbar: false,
-                    branding: false,
-                    resize: false,
-                    height: 350,
-                    toolbar_mode: 'floating',
-                    promotion: false,
-                    base_url: '/build/tinymce',
-                    suffix: '.min',
-                    license_key: 'gpl',
-                    'api-key': 'no-api-key',
-                    setup: function(editor) {
-                        editor.on('init', function() {
-                            if (editor.getContainer()) {
-                                editor.getContainer().style.borderRadius = "1rem";
-                            }
-                        });
-                    }
-                });
+
+                // Ensure unique ID
+                if (!descInput.id) {
+                    descInput.id = 'desc-editor-' + Math.random().toString(36).substr(2, 9);
+                }
+
+                // Comprehensive cleanup before re-init
+                const existingEditor = tinymce.get(descInput.id);
+                if (existingEditor) {
+                    existingEditor.remove();
+                }
+                tinymce.remove(`#${descInput.id}`);
+
+                // Delay initialization and use selector for better target binding
+                setTimeout(() => {
+                    tinymce.init({
+                        selector: `#${descInput.id}`,
+                        plugins: 'lists link',
+                        toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
+                        menubar: false,
+                        statusbar: false,
+                        branding: false,
+                        resize: false,
+                        height: 350,
+                        toolbar_mode: 'floating',
+                        promotion: false,
+                        base_url: '/build/tinymce',
+                        suffix: '.min',
+                        license_key: 'gpl',
+                        'api-key': 'no-api-key',
+                        setup: function(editor) {
+                            editor.on('init', function() {
+                                if (editor.getContainer()) {
+                                    editor.getContainer().style.borderRadius = "1rem";
+                                }
+                            });
+                        }
+                    });
+                }, 50);
             }
 
             this.updateAllAfluenciaColors();
@@ -118,8 +133,13 @@ export default class extends Controller {
     }
 
     disconnect() {
-        if (this.hasDescriptionInputTarget) {
-            tinymce.remove(this.descriptionInputTarget);
+        const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : null;
+        if (descInput) {
+            const editor = tinymce.get(descInput.id);
+            if (editor) {
+                editor.remove();
+            }
+            tinymce.remove(`#${descInput.id}`);
         }
     }
 

@@ -76,18 +76,18 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4 py-0 bg-[#f8f9fa] min-h-full overflow-hidden" data-controller="service-form">
+<div class="container-fluid px-4 py-0 bg-[#f8f9fa] h-[calc(100vh-100px)] overflow-hidden" data-controller="service-form">
     {{ form_start(form, {
         'attr': {
             'id': 'new-service-form-element',
             'data-service-form-target': 'form',
             'novalidate': 'novalidate',
-            'class': 'h-full flex flex-col'
+            'class': 'h-full flex flex-col overflow-x-hidden'
         }
     }) }}
 
     <!-- Navigation Tabs -->
-    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-2 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
+    <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-2 bg-white px-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
         <li class="nav-item" role="presentation">
             <button class="nav-link active" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos" type="button" role="tab" aria-controls="datos" aria-selected="true">
                 <i data-lucide="file-text" class="w-4 h-4 inline me-2"></i> Datos Generales
