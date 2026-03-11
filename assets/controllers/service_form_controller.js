@@ -62,8 +62,8 @@ export default class extends Controller {
             const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
             const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
             if (startInput && endInput) {
-                startInput.addEventListener('change', () => this.updateAllMaterialAvailability());
-                endInput.addEventListener('change', () => this.updateAllMaterialAvailability());
+                startInput.addEventListener('input', () => this.updateAllMaterialAvailability());
+                endInput.addEventListener('input', () => this.updateAllMaterialAvailability());
             }
 
             // TinyMCE configuration for Description
@@ -299,6 +299,10 @@ export default class extends Controller {
         this.checkMaterialAvailability(row);
     }
 
+    onMaterialAdded(row) {
+        this.checkMaterialAvailability(row);
+    }
+
     onQuantityInput(event) {
         const input = event.currentTarget;
         const row = input.closest('.material-item');
@@ -358,8 +362,14 @@ export default class extends Controller {
         }
 
         const column = container.querySelector(`[data-material-category="${category}"]`);
+        let newRow = null;
         if (column) {
-            column.appendChild(wrapper.firstChild);
+            newRow = wrapper.firstChild;
+            column.appendChild(newRow);
+        }
+
+        if (newRow) {
+            this.onMaterialAdded(newRow);
         }
 
         if (window.lucide) {
@@ -424,10 +434,19 @@ export default class extends Controller {
         const startValue = startDateInput?.value;
         const endValue = endDateInput?.value;
 
-        if (!materialId || !startValue || !endValue) {
-            // If we don't have enough info to check, clear the status but don't call API
-            const statusLabel = row.querySelector('.availability-status');
+        const statusLabel = row.querySelector('.availability-status');
+
+        if (!materialId) {
             if (statusLabel) statusLabel.innerHTML = '';
+            return;
+        }
+
+        if (!startValue || !endValue) {
+            if (statusLabel) {
+                statusLabel.innerHTML = '<i data-lucide="calendar" class="w-3 h-3 inline mr-1 text-slate-400"></i> <span class="text-slate-400 font-medium">Esperando fechas...</span>';
+                statusLabel.className = 'availability-status text-[10px] mt-1 italic';
+                if (window.lucide) window.lucide.createIcons();
+            }
             return;
         }
 
