@@ -108,8 +108,15 @@ export default class extends Controller {
             const recursosTab = document.getElementById('recursos-tab');
             if (recursosTab) {
                 recursosTab.addEventListener('shown.bs.tab', () => {
-                    console.log("Tab switched to Recursos: triggering availability check.");
-                    this.updateAllMaterialAvailability();
+                    const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
+                    const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
+
+                    if (!startInput?.value || !endInput?.value) {
+                        this.showToast("Nota: Define el rango de fechas en 'Datos Generales' para verificar la disponibilidad de los recursos.");
+                    } else {
+                        console.log("Tab switched to Recursos: triggering availability check.");
+                        this.updateAllMaterialAvailability();
+                    }
                 });
             }
 
