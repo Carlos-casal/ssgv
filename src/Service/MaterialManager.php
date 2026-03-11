@@ -259,6 +259,90 @@ class MaterialManager
     }
 
     /**
+     * Calculates available stock for a consumable material in a given timeframe.
+     */
+    public function getAvailableStock(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, ?int $excludeServiceId = null): int
+    {
+        $totalStock = $material->getStock();
+
+        // Find all overlapping services using this material
+        $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
+            ->select('SUM(sm.quantity)')
+            ->join('sm.service', 's')
+            ->where('sm.material = :material')
+            ->andWhere('s.startDate < :end')
+            ->andWhere('s.endDate > :start')
+            ->setParameter('material', $material)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        if ($excludeServiceId) {
+            $qb->andWhere('s.id != :excludeId')
+                ->setParameter('excludeId', $excludeServiceId);
+        }
+
+        $reserved = (int) $qb->getQuery()->getSingleScalarResult();
+
+        return max(0, $totalStock - $reserved);
+    }
+
+    /**
+     * Calculates available stock for a consumable material in a given timeframe.
+     */
+    public function getAvailableStock(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, ?int $excludeServiceId = null): int
+    {
+        $totalStock = $material->getStock();
+
+        // Find all overlapping services using this material
+        $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
+            ->select('SUM(sm.quantity)')
+            ->join('sm.service', 's')
+            ->where('sm.material = :material')
+            ->andWhere('s.startDate < :end')
+            ->andWhere('s.endDate > :start')
+            ->setParameter('material', $material)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        if ($excludeServiceId) {
+            $qb->andWhere('s.id != :excludeId')
+                ->setParameter('excludeId', $excludeServiceId);
+        }
+
+        $reserved = (int) $qb->getQuery()->getSingleScalarResult();
+
+        return max(0, $totalStock - $reserved);
+    }
+
+    /**
+     * Calculates available stock for a consumable material in a given timeframe.
+     */
+    public function getAvailableStock(Material $material, \DateTimeInterface $start, \DateTimeInterface $end, ?int $excludeServiceId = null): int
+    {
+        $totalStock = $material->getStock();
+
+        // Find all overlapping services using this material
+        $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
+            ->select('SUM(sm.quantity)')
+            ->join('sm.service', 's')
+            ->where('sm.material = :material')
+            ->andWhere('s.startDate < :end')
+            ->andWhere('s.endDate > :start')
+            ->setParameter('material', $material)
+            ->setParameter('start', $start)
+            ->setParameter('end', $end);
+
+        if ($excludeServiceId) {
+            $qb->andWhere('s.id != :excludeId')
+                ->setParameter('excludeId', $excludeServiceId);
+        }
+
+        $reserved = (int) $qb->getQuery()->getSingleScalarResult();
+
+        return max(0, $totalStock - $reserved);
+    }
+
+    /**
      * Gets materials that need replenishment.
      */
     public function getMaterialsNeedingReplenishment(): array

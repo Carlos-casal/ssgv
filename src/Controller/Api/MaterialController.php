@@ -84,13 +84,15 @@ class MaterialController extends AbstractController
         }
 
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $available = $materialManager->hasEnoughStock($material, $quantity);
+            $totalAvailable = $materialManager->getAvailableStock($material, $start, $end, $excludeServiceId);
+            $available = $totalAvailable >= $quantity;
+
             return $this->json([
                 'available' => $available,
                 'stock' => $material->getStock(),
-                'totalAvailable' => $material->getStock(),
+                'totalAvailable' => $totalAvailable,
                 'nature' => 'CONSUMIBLE',
-                'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
+                'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $totalAvailable . ')'
             ]);
         } else {
             $allAvailable = $materialManager->suggestUnits($material, $start, $end, null, $excludeServiceId);

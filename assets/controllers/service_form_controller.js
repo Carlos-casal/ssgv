@@ -296,6 +296,11 @@ export default class extends Controller {
     onMaterialRowChange(event) {
         const row = event.currentTarget.closest('.material-item');
         this.checkMaterialAvailability(row);
+
+        // If the change was in a unit selector, we need to refresh other unit selectors of the same material
+        if (event.target.classList.contains('unit-selector')) {
+            this.updateAllMaterialAvailability();
+        }
     }
 
     onQuantityInput(event) {
@@ -417,7 +422,21 @@ export default class extends Controller {
         const startDateInput = this.startDateInputTarget;
         const endDateInput = this.endDateInputTarget;
 
-        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
+        if (!materialSelect?.value) return;
+
+        const statusLabel = row.querySelector('.availability-status');
+        if (!startDateInput?.value || !endDateInput?.value) {
+            const materialId = materialSelect.value;
+            const option = Array.from(materialSelect.options).find(o => o.value == materialId);
+            const totalStock = option?.dataset.stock || '?';
+
+            if (statusLabel) {
+                statusLabel.innerHTML = `<i data-lucide="calendar" class="w-3 h-3 text-orange-500 inline mr-1"></i> <span class="text-orange-600 font-black">STOCK LIBRE (SIN ASIGNAR): ${totalStock} (FECHAS PENDIENTES)</span>`;
+                statusLabel.className = 'availability-status text-[10px] mt-1';
+                if (window.lucide) window.lucide.createIcons();
+            }
+            return;
+        }
 
         const materialId = materialSelect.value;
         const quantity = parseInt(quantityInput?.value || 1);
@@ -448,12 +467,13 @@ export default class extends Controller {
             if (data.available) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles</span>`;
+                    const labelText = data.nature === 'CONSUMIBLE' ? 'libres (sin asignar)' : 'disponibles';
+                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} ${labelText}</span>`;
                     statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
                 }
 
                 if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
-                    this.updateUnitSelector(unitSelector, data.suggestedUnits);
+                    this.updateUnitSelector(unitSelector, data.suggestedUnits, row);
                 }
             } else {
                 materialSelect.classList.add('border-red-500');
@@ -471,21 +491,31 @@ export default class extends Controller {
         }
     }
 
-    updateUnitSelector(selector, units) {
+    updateUnitSelector(selector, units, currentRow) {
         const currentValue = selector.value;
+        const materialId = currentRow.querySelector('.material-selector')?.value;
 
-        selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
+        // Collect units of this material already selected in other rows
+        const alreadySelectedUnits = Array.from(this.materialsContainerTarget.querySelectorAll('.material-item'))
+            .filter(row => row !== currentRow && row.querySelector('.material-selector')?.value === materialId)
+            .map(row => row.querySelector('.unit-selector')?.value)
+            .filter(val => !!val);
+
+        selector.innerHTML = '<option value="">Selecciona unidad...</option>';
         units.forEach(unit => {
-            const label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
-            const option = new Option(label, unit.id);
-            selector.appendChild(option);
+            // Only show units that aren't already selected in another row
+            if (!alreadySelectedUnits.includes(String(unit.id))) {
+                const label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
+                const option = new Option(label, unit.id);
+                selector.appendChild(option);
+            }
         });
 
         if (currentValue && Array.from(selector.options).some(o => o.value == currentValue)) {
             selector.value = currentValue;
-        } else if (units.length > 0) {
-            // Auto-select the first suggested unit (the oldest one)
-            selector.value = units[0].id;
+        } else {
+            // If the current unit is now gone or none was selected, don't auto-select.
+            // But if user wants a choice, we leave it at placeholder.
         }
     }
 
