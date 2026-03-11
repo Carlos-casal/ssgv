@@ -44,8 +44,8 @@ export default class extends Controller {
             }
 
             // Initialize Hierarchy Selector
-            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : document.getElementById('service_form_type');
-            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : document.getElementById('service_form_subcategory');
+            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : (document.getElementById('service_form_type') || document.getElementById('service_type'));
+            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : (document.getElementById('service_form_subcategory') || document.getElementById('service_subcategory'));
 
             if (typeSelect && subcategorySelect && !typeSelect.value) {
                 subcategorySelect.disabled = true;
@@ -53,21 +53,21 @@ export default class extends Controller {
             }
 
             // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : document.getElementById('service_form_tasks');
+            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : (document.getElementById('service_form_tasks') || document.getElementById('service_tasks'));
             if (tasksInput && typeof tinymce !== 'undefined') {
                 tinymce.remove(tasksInput);
             }
 
             // Date Listeners for Availability Check
-            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_form_startDate');
-            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_form_endDate');
+            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
+            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
             if (startInput && endInput) {
                 startInput.addEventListener('change', () => this.updateAllMaterialAvailability());
                 endInput.addEventListener('change', () => this.updateAllMaterialAvailability());
             }
 
             // TinyMCE configuration for Description
-            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_form_description');
+            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description'));
             if (descInput && typeof tinymce !== 'undefined') {
                 console.log("Initializing TinyMCE for description...");
                 tinymce.init({
