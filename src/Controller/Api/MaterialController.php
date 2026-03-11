@@ -68,7 +68,20 @@ class MaterialController extends AbstractController
         $excludeServiceId = $request->query->get('excludeServiceId') ? (int)$request->query->get('excludeServiceId') : null;
 
         if (!$id || !$startStr || !$endStr) {
-            return $this->json(['error' => 'Missing parameters'], Response::HTTP_BAD_REQUEST);
+            $missing = [];
+            if (!$id) $missing[] = 'id';
+            if (!$startStr) $missing[] = 'start';
+            if (!$endStr) $missing[] = 'end';
+
+            return $this->json([
+                'error' => 'Missing parameters',
+                'missing' => $missing,
+                'received' => [
+                    'id' => $id,
+                    'start' => $startStr,
+                    'end' => $endStr
+                ]
+            ], Response::HTTP_BAD_REQUEST);
         }
 
         $material = $materialRepository->find($id);

@@ -414,10 +414,17 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = this.startDateInputTarget;
-        const endDateInput = this.endDateInputTarget;
 
-        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) return;
+        // Use targets if available, otherwise fallback to standard IDs
+        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
+        const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+
+        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) {
+            // If we don't have enough info to check, clear the status but don't call API
+            const statusLabel = row.querySelector('.availability-status');
+            if (statusLabel) statusLabel.innerHTML = '';
+            return;
+        }
 
         const materialId = materialSelect.value;
         const quantity = parseInt(quantityInput?.value || 1);
