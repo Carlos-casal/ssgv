@@ -290,7 +290,17 @@ export default class extends Controller {
             });
         });
 
-        this.updateAllMaterialAvailability();
+        // Skip initial updateAllMaterialAvailability if dates are missing to avoid 400 errors
+        const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
+        const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+
+        if (startInput?.value && endInput?.value) {
+            this.updateAllMaterialAvailability();
+        } else {
+            // Just refresh labels for initial state
+            const rows = this.materialsContainerTarget.querySelectorAll('.material-item');
+            rows.forEach(row => this.checkMaterialAvailability(row));
+        }
     }
 
     onMaterialRowChange(event) {
@@ -419,8 +429,8 @@ export default class extends Controller {
     async checkMaterialAvailability(row, globalUsage = null) {
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
-        const startDateInput = this.startDateInputTarget;
-        const endDateInput = this.endDateInputTarget;
+        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
+        const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
 
         if (!materialSelect?.value) return;
 
