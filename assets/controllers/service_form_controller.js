@@ -44,8 +44,8 @@ export default class extends Controller {
             }
 
             // Initialize Hierarchy Selector
-            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : document.getElementById('service_type');
-            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : document.getElementById('service_subcategory');
+            const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : document.getElementById('service_form_type');
+            const subcategorySelect = this.hasSubcategorySelectTarget ? this.subcategorySelectTarget : document.getElementById('service_form_subcategory');
 
             if (typeSelect && subcategorySelect && !typeSelect.value) {
                 subcategorySelect.disabled = true;
@@ -53,21 +53,21 @@ export default class extends Controller {
             }
 
             // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : document.getElementById('service_tasks');
+            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : document.getElementById('service_form_tasks');
             if (tasksInput && typeof tinymce !== 'undefined') {
                 tinymce.remove(tasksInput);
             }
 
             // Date Listeners for Availability Check
-            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
-            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+            const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_form_startDate');
+            const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_form_endDate');
             if (startInput && endInput) {
                 startInput.addEventListener('change', () => this.updateAllMaterialAvailability());
                 endInput.addEventListener('change', () => this.updateAllMaterialAvailability());
             }
 
             // TinyMCE configuration for Description
-            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_description');
+            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : document.getElementById('service_form_description');
             if (descInput && typeof tinymce !== 'undefined') {
                 console.log("Initializing TinyMCE for description...");
                 tinymce.init({
@@ -110,6 +110,7 @@ export default class extends Controller {
                 this.updateCategories();
             }
 
+            console.log("Service Form: Unit prototypes cleaned.");
             console.log("Service Form Controller: Connected successfully.");
         } catch (error) {
             console.error("Error in Service Form Connect:", error);
@@ -159,7 +160,7 @@ export default class extends Controller {
         } else if (this.hasTypeSelectTarget) {
             typeSelect = this.typeSelectTarget;
         } else {
-            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+            typeSelect = document.getElementById('service_form_type') || document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
         }
 
         if (!typeSelect) {
@@ -173,7 +174,7 @@ export default class extends Controller {
         if (this.hasSubcategorySelectTarget) {
             subcategorySelect = this.subcategorySelectTarget;
         } else {
-            subcategorySelect = document.getElementById('service_subcategory') || document.querySelector('select[id$="_subcategory"]');
+            subcategorySelect = document.getElementById('service_form_subcategory') || document.getElementById('service_subcategory') || document.querySelector('select[id$="_subcategory"]');
         }
 
         if (!subcategorySelect) {
@@ -416,8 +417,8 @@ export default class extends Controller {
         const quantityInput = row.querySelector('.quantity-input');
 
         // Use targets if available, otherwise fallback to standard IDs
-        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_startDate');
-        const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_endDate');
+        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
+        const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
 
         if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) {
             // If we don't have enough info to check, clear the status but don't call API
@@ -579,7 +580,7 @@ export default class extends Controller {
         if (this.hasTypeSelectTarget) {
             typeSelect = this.typeSelectTarget;
         } else {
-            typeSelect = document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
+            typeSelect = document.getElementById('service_form_type') || document.getElementById('service_type') || document.querySelector('select[id$="_type"]');
         }
 
         if (!typeSelect) {
