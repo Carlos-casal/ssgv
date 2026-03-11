@@ -420,17 +420,18 @@ export default class extends Controller {
         const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
         const endDateInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
 
-        if (!materialSelect?.value || !startDateInput?.value || !endDateInput?.value) {
+        const materialId = materialSelect?.value;
+        const startValue = startDateInput?.value;
+        const endValue = endDateInput?.value;
+
+        if (!materialId || !startValue || !endValue) {
             // If we don't have enough info to check, clear the status but don't call API
             const statusLabel = row.querySelector('.availability-status');
             if (statusLabel) statusLabel.innerHTML = '';
             return;
         }
 
-        const materialId = materialSelect.value;
         const quantity = parseInt(quantityInput?.value || 1);
-        const start = startDateInput.value;
-        const end = endDateInput.value;
         const serviceId = this.element.dataset.serviceId || '';
 
         try {
@@ -440,7 +441,7 @@ export default class extends Controller {
                 totalRequestedInForm = globalUsage[materialId];
             }
 
-            const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${start}&end=${end}&quantity=${totalRequestedInForm}&excludeServiceId=${serviceId}`);
+            const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${startValue}&end=${endValue}&quantity=${totalRequestedInForm}&excludeServiceId=${serviceId}`);
             const data = await response.json();
 
             const statusLabel = row.querySelector('.availability-status');
