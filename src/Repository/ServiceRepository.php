@@ -146,7 +146,8 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
-     * Finds all services that were completed within the current year.
+     * Finds all services that were completed within the current year,
+     * with eager loading of volunteer services and clock-in records to avoid N+1 queries.
      * @return Service[] Returns an array of completed Service objects for the current year.
      */
     public function findCompletedServicesThisYear(): array
@@ -154,8 +155,7 @@ class ServiceRepository extends ServiceEntityRepository
         $startDate = new \DateTime('first day of january this year 00:00:00');
 
         return $this->createQueryBuilder('s')
-            ->select('s')
-            ->distinct()
+            ->select('s', 'vs', 'f')
             ->innerJoin('s.volunteerServices', 'vs')
             ->innerJoin('vs.fichajes', 'f')
             ->where('s.endDate < :now')
