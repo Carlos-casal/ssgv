@@ -104,6 +104,15 @@ export default class extends Controller {
 
             this.filterExistingMaterials();
 
+            // Listen for tab changes to trigger availability check when user switches to "Recursos"
+            const recursosTab = document.getElementById('recursos-tab');
+            if (recursosTab) {
+                recursosTab.addEventListener('shown.bs.tab', () => {
+                    console.log("Tab switched to Recursos: triggering availability check.");
+                    this.updateAllMaterialAvailability();
+                });
+            }
+
             // Trigger category update on load if a type is already selected (for edit mode)
             if (typeSelect && typeSelect.value && subcategorySelect && subcategorySelect.options.length <= 1) {
                 console.log("Triggering initial category load...");
@@ -264,7 +273,11 @@ export default class extends Controller {
 
     removeMaterial(event) {
         event.currentTarget.closest('.material-item').remove();
-        this.updateAllMaterialAvailability();
+        // Only check if tab is visible
+        const resourcesTabPane = document.getElementById('recursos');
+        if (resourcesTabPane && resourcesTabPane.classList.contains('fade') && resourcesTabPane.classList.contains('show')) {
+            this.updateAllMaterialAvailability();
+        }
     }
 
     filterExistingMaterials() {
@@ -290,8 +303,6 @@ export default class extends Controller {
                 }
             });
         });
-
-        this.updateAllMaterialAvailability();
     }
 
     onMaterialRowChange(event) {
@@ -323,7 +334,11 @@ export default class extends Controller {
                 this.addMaterialWithData(category, materialId, 1);
             }
 
-            this.updateAllMaterialAvailability();
+            // Only check if tab is visible
+            const resourcesTabPane = document.getElementById('recursos');
+            if (resourcesTabPane && resourcesTabPane.classList.contains('fade') && resourcesTabPane.classList.contains('show')) {
+                this.updateAllMaterialAvailability();
+            }
             return;
         }
 
@@ -332,7 +347,11 @@ export default class extends Controller {
             input.value = max;
         }
 
-        this.updateAllMaterialAvailability();
+        // Only check if tab is visible
+        const resourcesTabPane = document.getElementById('recursos');
+        if (resourcesTabPane && resourcesTabPane.classList.contains('fade') && resourcesTabPane.classList.contains('show')) {
+            this.updateAllMaterialAvailability();
+        }
     }
 
     addMaterialWithData(category, materialId, quantity) {
@@ -400,11 +419,22 @@ export default class extends Controller {
             unitContainer?.classList.add('hidden');
         }
 
-        this.updateAllMaterialAvailability();
+        // Only check if tab is visible
+        const resourcesTabPane = document.getElementById('recursos');
+        if (resourcesTabPane && resourcesTabPane.classList.contains('fade') && resourcesTabPane.classList.contains('show')) {
+            this.updateAllMaterialAvailability();
+        }
     }
 
     async updateAllMaterialAvailability() {
         if (!this.hasMaterialsContainerTarget) return;
+
+        // Optimization: Do not check availability if the materials tab is not visible
+        const resourcesTabPane = document.getElementById('recursos');
+        if (resourcesTabPane && !resourcesTabPane.classList.contains('active')) {
+            return;
+        }
+
         const rows = this.materialsContainerTarget.querySelectorAll('.material-item');
 
         // Group rows by material to calculate usage
@@ -423,6 +453,12 @@ export default class extends Controller {
     }
 
     async checkMaterialAvailability(row, globalUsage = null) {
+        // Optimization: Do not check availability if the materials tab is not visible
+        const resourcesTabPane = document.getElementById('recursos');
+        if (resourcesTabPane && !resourcesTabPane.classList.contains('active')) {
+            return;
+        }
+
         const materialSelect = row.querySelector('.material-selector');
         const quantityInput = row.querySelector('.quantity-input');
 
