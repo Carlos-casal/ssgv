@@ -83,7 +83,8 @@ class SecurityController extends AbstractController
 
         if ($user) {
             $token = bin2hex(random_bytes(32));
-            $user->setResetToken($token);
+            $hashedToken = hash('sha256', $token);
+            $user->setResetToken($hashedToken);
             $user->setResetTokenExpiresAt(new \DateTimeImmutable('+1 hour'));
 
             $entityManager->persist($user);
@@ -115,7 +116,8 @@ class SecurityController extends AbstractController
     #[Route('/reset-password/{token}', name: 'app_reset_password', methods: ['GET', 'POST'])]
     public function resetPassword(Request $request, string $token, UserPasswordHasherInterface $passwordHasher, UserRepository $userRepository, EntityManagerInterface $entityManager): Response
     {
-        $user = $userRepository->findOneBy(['resetToken' => $token]);
+        $hashedToken = hash('sha256', $token);
+        $user = $userRepository->findOneBy(['resetToken' => $hashedToken]);
 
         if (!$user || ($user->getResetTokenExpiresAt() && $user->getResetTokenExpiresAt() < new \DateTimeImmutable())) {
             $this->addFlash('error', 'El enlace de recuperación no es válido o ha caducado.');
@@ -127,6 +129,16 @@ class SecurityController extends AbstractController
             $confirmPassword = $request->request->get('confirm_password');
 
             if ($password && $password === $confirmPassword) {
+                // Backend complexity validation
+                if (strlen($password) < 12) {
+                    $this->addFlash('error', 'La contraseña debe tener al menos 12 caracteres.');
+                    return $this->render('security/reset_password.html.twig', ['token' => $token]);
+                }
+                if (!preg_match('/[A-Z]/', $password) || !preg_match('/[a-z]/', $password) || !preg_match('/[0-9]/', $password)) {
+                    $this->addFlash('error', 'La contraseña debe incluir mayúsculas, minúsculas y números.');
+                    return $this->render('security/reset_password.html.twig', ['token' => $token]);
+                }
+
                 $user->setPassword($passwordHasher->hashPassword($user, $password));
                 $user->setResetToken(null);
                 $user->setResetTokenExpiresAt(null);

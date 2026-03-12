@@ -7,8 +7,7 @@
             {{ form_widget(form.quantity, {'attr': {
                 'class': 'form-control form-control-sm mini-input quantity-input',
                 'placeholder': '1',
-                'value': form.quantity.vars.value ?: 1,
-                'data-action': 'input->service-form#onQuantityInput input->service-form#clearError'
+                'data-action': 'input->service-form#onQuantityInput'
             }}) }}
         </div>
         <button type="button" class="btn btn-outline-danger btn-sm p-1 border-0" data-action="click->service-form#removeMaterial" title="Eliminar material">

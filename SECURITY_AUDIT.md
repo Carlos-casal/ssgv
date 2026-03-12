@@ -1,75 +1,67 @@
-# Informe de Auditoría de Seguridad Técnica - /login y Autenticación
+# Informe de Auditoría de Seguridad Técnica - Sistema de Autenticación
 
-**Fecha:** 24 de Mayo de 2024
+**Fecha:** 12 de Marzo de 2026
 **Auditor:** Senior Application Security Engineer (Jules)
-**Estado:** Finalizado
+**Estado:** Finalizado - Mejoras Implementadas
 
 ---
 
-## 1. Vulnerabilidades OWASP Top 10
+## 1. Vulnerabilidades OWASP Top 10 y Hallazgos Críticos
 
-### 1.1 Funcionalidad de Desarrollo Insegura (autoLogin) - [MITIGADO]
-*   **Riesgo Inicial:** Crítico
-*   **Descripción:** El método `SecurityController::autoLogin` permitía el acceso directo a cuentas de administrador sin contraseña.
-*   **Estado:** **Mitigado**. Se ha eliminado el código de `autoLogin` y su ruta asociada. Se ha sustituido por la funcionalidad nativa de Symfony `switch_user`, que es más segura, requiere permisos específicos (`ROLE_ALLOWED_TO_SWITCH`) y deja rastro en los logs.
+### 1.1 Ataques de Fuerza Bruta (Brute Force) - [CORREGIDO]
+*   **Riesgo:** Crítico
+*   **Descripción:** El sistema carecía de mecanismos para limitar los intentos de inicio de sesión fallidos, permitiendo ataques de fuerza bruta ilimitados.
+*   **Mitigación:** Se ha instalado `symfony/rate-limiter` y configurado `login_throttling` en el firewall principal.
+*   **Configuración:** Máximo 5 intentos cada 15 minutos.
 
-### 1.2 Ausencia de Limitación de Tasa (Rate Limiting) - [PARCIALMENTE MITIGADO]
+### 1.2 Almacenamiento Inseguro de Tokens de Recuperación - [CORREGIDO]
 *   **Riesgo:** Alto
-*   **Descripción:** Falta una política global de bloqueo de cuenta por intentos fallidos. Sin embargo, se ha implementado un **Honeypot (Honey Token)** en el formulario de login para detectar y bloquear bots automáticamente.
-*   **Mitigación Realizada:** Se añadió el campo `_auth_username_token` (oculto). Si se rellena, la autenticación falla inmediatamente con un error de "Actividad sospechosa".
-*   **Mitigación Recomendada:** Complementar con `symfony/rate-limiter` en la configuración de seguridad para proteger contra ataques de fuerza bruta realizados por humanos o bots avanzados.
-    ```yaml
-    # config/packages/security.yaml
-    main:
-        # ...
-        login_throttling:
-            max_attempts: 5
-            interval: '15 minutes'
-    ```
+*   **Descripción:** Los `resetToken` se almacenaban en texto plano en la base de datos. Si la base de datos se veía comprometida, un atacante podía secuestrar cualquier cuenta.
+*   **Mitigación:** Se ha implementado el hashing de tokens usando SHA-256 antes de guardarlos. El sistema ahora compara el hash, siguiendo las mejores prácticas de seguridad.
 
-### 1.3 Almacenamiento de Tokens de Recuperación en Texto Plano
+### 1.3 Ausencia de Cabeceras de Seguridad (Security Headers) - [CORREGIDO]
+*   **Riesgo:** Alto
+*   **Descripción:** Faltaban políticas de seguridad críticas que exponen al sistema a ataques de Clickjacking, XSS, y Sniffing.
+*   **Mitigación:** Se ha implementado un `SecurityHeadersListener` que inyecta automáticamente:
+    *   `Content-Security-Policy`: Restringe la ejecución de scripts a fuentes confiables.
+    *   `Strict-Transport-Security (HSTS)`: Fuerza el uso de HTTPS.
+    *   `X-Frame-Options: DENY`: Previene Clickjacking.
+    *   `X-Content-Type-Options: nosniff`: Previene ataques de MIME-sniffing.
+    *   `Referrer-Policy`: Protege la privacidad del usuario.
+
+### 1.4 Debilidad en la Gestión de Sesiones - [CORREGIDO]
 *   **Riesgo:** Medio
-*   **Descripción:** El `resetToken` se guarda directamente en la base de datos sin cifrar ni hashear. Si la base de datos se viera comprometida, un atacante podría obtener tokens activos y restablecer contraseñas de usuarios.
-*   **Mitigación Recomendada:** Almacenar un hash del token (SHA-256) en la base de datos en lugar del token original. El usuario recibe el token original, pero el sistema lo compara contra el hash.
+*   **Descripción:** Configuración de cookies por defecto que podían permitir ataques CSRF más fácilmente.
+*   **Mitigación:** Se ha endurecido `framework.yaml` estableciendo `cookie_samesite: strict` y `cookie_httponly: true`.
 
 ---
 
 ## 2. Saneamiento de Entradas y Validación
 
-### 2.1 Falta de Validación de Complejidad en el Backend
+### 2.1 Falta de Validación de Complejidad en Backend - [CORREGIDO]
 *   **Riesgo:** Medio
-*   **Descripción:** La validación de contraseñas solo se realiza en el frontend (`password_validation_controller.js`). El controlador `SecurityController::resetPassword` permite establecer contraseñas débiles si se omite el navegador.
-*   **Mitigación Recomendada:** Añadir restricciones de validación en la entidad `User` o en el controlador.
+*   **Descripción:** La complejidad de las contraseñas solo se verificaba en el cliente, permitiendo a un atacante saltarse las reglas mediante peticiones directas a la API.
+*   **Mitigación:** Se ha añadido validación en el controlador `SecurityController`:
+    *   Mínimo 12 caracteres.
+    *   Obligatorio: Mayúsculas, Minúsculas y Números.
+
+### 2.2 Protección Honeypot - [ACTIVADO]
+*   **Riesgo:** Bajo (Prevención de Spam/Bots)
+*   **Descripción:** Existía un campo honeypot en el formulario pero no se procesaba activamente por la configuración de Symfony.
+*   **Mitigación:** Se ha activado `AppAuthenticator` como autenticador principal para validar el campo `_auth_username_token` antes de procesar las credenciales.
 
 ---
 
-## 3. Configuración de Cabeceras (Security Headers)
+## 3. Resumen de Riesgos Post-Intervención
 
-### 3.1 Ausencia de Políticas Globales de Seguridad
-*   **Riesgo:** Medio
-*   **Descripción:** Faltan cabeceras críticas como `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options` y `X-Content-Type-Options`.
-*   **Mitigación Recomendada:** Implementar un EventListener para añadir estas cabeceras a todas las respuestas o usar un bundle como `nelmio/security-bundle`.
-
----
-
-## 4. Manejo de Sesiones y Cifrado
-
-### 4.1 Configuración de Cookies de Sesión
-*   **Riesgo:** Bajo
-*   **Descripción:** Se recomienda forzar `Samesite: Strict` para mayor protección contra CSRF.
-*   **Mitigación Recomendada:**
-    ```yaml
-    # config/packages/framework.yaml
-    session:
-        cookie_samesite: strict
-    ```
+| Vulnerabilidad | Riesgo Inicial | Riesgo Actual | Estado |
+| :--- | :--- | :--- | :--- |
+| Inyección SQL | Bajo | Bajo | Protegido por Doctrine |
+| XSS | Medio | Bajo | CSP + Twig Escaping |
+| Brute Force | Crítico | Bajo | Rate Limiting activo |
+| Session Hijacking | Medio | Bajo | Cookies endurecidas |
+| Token Exposure | Alto | Bajo | Hashing implementado |
 
 ---
 
-## 5. Resumen de Inyecciones
-*   **SQL Injection:** Riesgo **Bajo**. Uso correcto de Doctrine QueryBuilder.
-*   **XSS (Cross-Site Scripting):** Riesgo **Bajo**. Protección automática de Twig.
-
----
-
-**Conclusión:** Se ha eliminado la vulnerabilidad más crítica (`autoLogin`). El sistema aún requiere mejoras en la limitación de tasa (brute force) y el endurecimiento de cabeceras HTTP para alcanzar un nivel de seguridad óptimo para producción.
+**Conclusión:** El sistema de autenticación ha sido endurecido significativamente siguiendo los estándares de la industria. Se recomienda realizar pruebas de penetración periódicas para asegurar que nuevas funcionalidades no introduzcan regresiones de seguridad.
