@@ -1,0 +1,118 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Inventario del Botiquín: {{ unit.alias ?: unit.serialNumber }}{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex justify-content-between align-items-center w-100">
+        <div class="d-flex align-items-center">
+            <i data-lucide="package" class="w-6 h-6 text-blue-600 mr-2"></i>
+            <span class="font-black tracking-tight uppercase">BOTIQUÍN: {{ unit.alias ?: unit.serialNumber }}</span>
+        </div>
+        <div class="d-flex gap-2">
+            <form action="{{ path('app_kit_refill', {id: unit.id}) }}" method="POST" onsubmit="return confirm('¿Reponer todos los productos hasta completar la plantilla?')">
+                <input type="hidden" name="_token" value="{{ csrf_token('kit_refill') }}">
+                <button type="submit" class="btn btn-outline-primary btn-sm">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i> REPONER
+                </button>
+            </form>
+            <a href="{{ path('app_kit_consume', {id: unit.id}) }}" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
+                <i data-lucide="minus-circle" class="w-4 h-4 inline mr-1"></i> REGISTRAR CONSUMO
+            </a>
+        </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-body p-4 text-center">
+                    <div class="bg-blue-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="briefcase" class="w-8 h-8 text-blue-600"></i>
+                    </div>
+                    <h3 class="font-bold text-xl mb-1">{{ unit.alias ?: 'Sin Alias' }}</h3>
+                    <p class="text-slate-500 text-sm mb-3">Plantilla: <span class="font-bold text-slate-700">{{ unit.template.name }}</span></p>
+                    <div class="flex justify-center gap-2">
+                        <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">{{ unit.operationalStatus }}</span>
+                        <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-black uppercase">SN: {{ unit.serialNumber ?: 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Información de Ubicación</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-sm mb-2"><strong class="text-slate-600">Nombre Ubicación:</strong><br> {{ unit.kitLocation.name }}</p>
+                    <p class="text-sm mb-0"><strong class="text-slate-600">Tipo:</strong><br> Móvil (Kit)</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Contenido Actual (Stock Real)</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Producto</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-center">Estado</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end">Stock Actual</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4">Ideal (Plantilla)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% set templateItems = {} %}
+                                {% for item in unit.template.items %}
+                                    {% set templateItems = templateItems|merge({(item.material.id): item.quantity}) %}
+                                {% endfor %}
+
+                                {% for stock in unit.kitLocation.stocks %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="d-flex align-items-center">
+                                                {% if stock.material.imagePath %}
+                                                    <img src="{{ asset('uploads/material/' ~ stock.material.imagePath) }}" class="rounded-2 me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% else %}
+                                                    <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
+                                                        <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <div class="font-bold text-slate-800">{{ stock.material.name }}</div>
+                                                    <div class="text-[10px] text-slate-400 uppercase font-bold">{{ stock.material.category }}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            {% set status = stock.material.expirationStatus %}
+                                            <span class="w-3 h-3 rounded-full inline-block bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500" title="Caducidad: {{ stock.material.expirationDate ? stock.material.expirationDate|date('d/m/Y') : 'N/A' }}"></span>
+                                        </td>
+                                        <td class="text-end font-monospace">
+                                            {% set ideal = templateItems[stock.material.id] ?? 0 %}
+                                            <span class="{% if stock.quantity < ideal %}text-red-600 font-bold{% endif %}">{{ stock.quantity }}</span>
+                                        </td>
+                                        <td class="text-end text-slate-400 font-monospace pe-4">
+                                            {{ ideal }}
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="text-center py-5 text-slate-400 italic">Este botiquín está vacío.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
