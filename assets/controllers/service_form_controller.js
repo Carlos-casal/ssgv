@@ -262,7 +262,15 @@ export default class extends Controller {
         if (select) {
             Array.from(select.options).forEach(option => {
                 // If the option has a category and it doesn't match, remove it
-                if (option.value && option.dataset.category && option.dataset.category !== category) {
+                const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+
+                // Specific rule for Sanitario: only Technical Equipment
+                let matchesNature = true;
+                if (category === 'Sanitario') {
+                    matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                }
+
+                if (option.value && (!matchesCategory || !matchesNature)) {
                     option.remove();
                 }
             });
@@ -298,7 +306,15 @@ export default class extends Controller {
             const selects = column.querySelectorAll('select.material-selector');
             selects.forEach(select => {
                 Array.from(select.options).forEach(option => {
-                    if (option.value && option.dataset.category && option.dataset.category !== category) {
+                    const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+
+                    // Specific rule for Sanitario: only Technical Equipment
+                    let matchesNature = true;
+                    if (category === 'Sanitario') {
+                        matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                    }
+
+                    if (option.value && (!matchesCategory || !matchesNature)) {
                         option.remove();
                     }
                 });
@@ -375,7 +391,15 @@ export default class extends Controller {
         const select = wrapper.querySelector('select.material-selector');
         if (select) {
             Array.from(select.options).forEach(option => {
-                if (option.value && option.dataset.category && option.dataset.category !== category) {
+                const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+
+                // Specific rule for Sanitario: only Technical Equipment
+                let matchesNature = true;
+                if (category === 'Sanitario') {
+                    matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                }
+
+                if (option.value && (!matchesCategory || !matchesNature)) {
                     option.remove();
                 }
             });
@@ -519,7 +543,8 @@ export default class extends Controller {
             if (data.available) {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles</span>`;
+                    const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
+                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles (de ${totalStock})</span>`;
                     statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
                 }
 
@@ -529,7 +554,8 @@ export default class extends Controller {
             } else {
                 materialSelect.classList.add('border-red-500');
                 if (statusLabel) {
-                    statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Soli: ${quantity} / Disp: ${data.totalAvailable})</span>`;
+                    const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
+                    statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Disp: ${data.totalAvailable} / Total: ${totalStock})</span>`;
                     statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
             }
@@ -547,16 +573,32 @@ export default class extends Controller {
 
         selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
         units.forEach(unit => {
-            const label = (unit.collectiveNumber ? `[${unit.collectiveNumber}] ` : '') + (unit.serialNumber || `ID: ${unit.id}`);
+            const labelParts = [];
+            if (unit.collectiveNumber) labelParts.push(`[${unit.collectiveNumber}]`);
+            if (unit.alias) labelParts.push(unit.alias);
+            labelParts.push(unit.serialNumber || `ID: ${unit.id}`);
+
+            let label = labelParts.join(' ');
+            if (!unit.available) {
+                label += ' (EN OTRO SERVICIO)';
+            }
+
             const option = new Option(label, unit.id);
+            if (!unit.available) {
+                option.classList.add('text-red-600', 'font-bold');
+                option.style.color = 'red'; // CSS fallback
+            }
             selector.appendChild(option);
         });
 
         if (currentValue && Array.from(selector.options).some(o => o.value == currentValue)) {
             selector.value = currentValue;
-        } else if (units.length > 0) {
-            // Auto-select the first suggested unit (the oldest one)
-            selector.value = units[0].id;
+        } else {
+            // Auto-select the first AVAILABLE unit (the oldest free one)
+            const firstAvailable = units.find(u => u.available);
+            if (firstAvailable) {
+                selector.value = firstAvailable.id;
+            }
         }
     }
 

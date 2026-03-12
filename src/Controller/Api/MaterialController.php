@@ -59,7 +59,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/check-availability', name: 'api_material_check_availability', methods: ['GET'])]
-    public function checkAvailability(Request $request, MaterialManager $materialManager, MaterialRepository $materialRepository): Response
+    public function checkAvailability(Request $request, MaterialManager $materialManager, MaterialRepository $materialRepository, EntityManagerInterface $entityManager): Response
     {
         $id = $request->query->get('id');
         $startStr = $request->query->get('start');
@@ -99,21 +99,33 @@ class MaterialController extends AbstractController
                 'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
             ]);
         } else {
-            $allAvailable = $materialManager->suggestUnits($material, $start, $end, null, $excludeServiceId);
-            $totalAvailable = count($allAvailable);
-
-            // Re-run with quantity limit for suggestions if needed, or just take first N
-            $suggested = array_slice($allAvailable, 0, $quantity);
-            $available = count($allAvailable) >= $quantity;
+            // Requirement: "en el segundo despegable aparecerá todos los que están operativos incluyendo los que están en otro servicio pero este en rojo"
+            // We fetch ALL operational units and mark their availability individually
+            $allUnits = $entityManager->getRepository(\App\Entity\MaterialUnit::class)->findBy([
+                'material' => $material,
+                'operationalStatus' => 'OPERATIVO'
+            ]);
 
             $suggestedData = [];
-            foreach ($suggested as $unit) {
+            $totalAvailable = 0;
+
+            foreach ($allUnits as $unit) {
+                $isAvailable = $materialManager->isUnitAvailable($unit, $start, $end, $excludeServiceId);
+                if ($isAvailable) {
+                    $totalAvailable++;
+                }
+
                 $suggestedData[] = [
                     'id' => $unit->getId(),
                     'serialNumber' => $unit->getSerialNumber(),
-                    'collectiveNumber' => $unit->getCollectiveNumber()
+                    'collectiveNumber' => $unit->getCollectiveNumber(),
+                    'alias' => $unit->getAlias(),
+                    'available' => $isAvailable
                 ];
             }
+
+            // Global availability for the requested quantity
+            $available = $totalAvailable >= $quantity;
 
             return $this->json([
                 'available' => $available,
