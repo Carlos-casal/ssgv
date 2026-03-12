@@ -36,4 +36,4 @@ tailwindcss.exe
 test-results/
 
 /vendor/
-/public/assets/
+/public/assets//vendor/ 
