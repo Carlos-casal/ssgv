@@ -906,9 +906,9 @@ export default class extends Controller {
             if (!input.value) {
                 // If the input has a target name, use that for showError
                 let targetName = null;
-                for (let key in this.constructor.targets) {
-                    let target = this.constructor.targets[key];
-                    if (this[`${target}Target`] === input) {
+                for (let target of this.constructor.targets) {
+                    const hasTarget = this[`has${target.charAt(0).toUpperCase() + target.slice(1)}Target`];
+                    if (hasTarget && this[`${target}Target`] === input) {
                         targetName = target;
                         break;
                     }
