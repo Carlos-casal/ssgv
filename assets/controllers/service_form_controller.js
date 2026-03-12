@@ -97,9 +97,6 @@ export default class extends Controller {
 
             this.updateAllAfluenciaColors();
 
-            // Setup real-time validation for required fields in Tab 1
-            this.setupRealTimeValidation();
-
             // Bind main form submission if present
             if (this.hasFormTarget) {
                 this.formTarget.addEventListener('submit', this.handleMainFormSubmit.bind(this));
@@ -142,80 +139,30 @@ export default class extends Controller {
         }
     }
 
-    setupRealTimeValidation() {
-        const tab1 = document.getElementById('datos');
-        if (!tab1) return;
-
-        tab1.querySelectorAll('[required]').forEach(input => {
-            input.addEventListener('blur', () => {
-                const val = input.value?.trim();
-                if (!val) {
-                    this.showError(input, 'Este campo es obligatorio');
-                } else {
-                    this.clearError({ currentTarget: input });
-                    input.classList.add('input-success');
-                }
-            });
-
-            input.addEventListener('input', () => {
-                const val = input.value?.trim();
-                if (val) {
-                    this.clearError({ currentTarget: input });
-                    input.classList.add('input-success');
-                } else {
-                    input.classList.remove('input-success');
-                }
-            });
-        });
-    }
-
     switchTab(event) {
-        console.log("switchTab intercepted. Event type:", event.type);
         event.preventDefault();
-        const trigger = event.currentTarget;
-        const targetTabId = trigger.dataset.target || trigger.getAttribute('data-bs-target') || trigger.hash;
-        console.log("Target:", targetTabId);
+        const clickedLink = event.currentTarget;
+        const targetId = clickedLink.dataset.target;
 
-        // Only intercept if moving to Recursos from Datos
-        if ((targetTabId === '#recursos' || targetTabId === 'recursos') && document.getElementById('datos').classList.contains('active')) {
-            const tab1 = document.getElementById('datos');
-            let isTab1Valid = true;
-
-            tab1.querySelectorAll('[required]').forEach(input => {
-                const val = input.value?.trim();
-                if (!val) {
-                    this.showError(input, 'Este campo es obligatorio');
-                    isTab1Valid = false;
-                }
-            });
-
-            if (!isTab1Valid) {
-                this.showToast("Por favor, completa los campos obligatorios antes de continuar.");
-                return false;
+        // Update link styles
+        this.tabLinkTargets.forEach(link => {
+            if (link === clickedLink || link.dataset.target === targetId) {
+                link.classList.add('bg-white', 'text-blue-600', 'shadow-sm');
+                link.classList.remove('text-slate-500');
+            } else {
+                link.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
+                link.classList.add('text-slate-500');
             }
-        }
+        });
 
-        // Manual switch
-        document.querySelectorAll('.nav-link').forEach(btn => btn.classList.remove('active'));
-        trigger.classList.add('active');
-
-        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
-        const targetPane = document.querySelector(targetTabId);
-        if (targetPane) {
-            targetPane.classList.add('show', 'active');
-
-            // Trigger bootstrap-like events for availability logic
-            if (targetTabId.includes('recursos')) {
-                const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
-                const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
-
-                if (!startInput?.value || !endInput?.value) {
-                    this.showToast("Nota: Define el rango de fechas en 'Datos Generales' para verificar la disponibilidad de los recursos.");
-                } else {
-                    this.updateAllMaterialAvailability();
-                }
+        // Show/Hide content
+        this.tabContentTargets.forEach(content => {
+            if (content.id === targetId) {
+                content.classList.remove('hidden');
+            } else {
+                content.classList.add('hidden');
             }
-        }
+        });
     }
 
     // Unified Hierarchy Logic
@@ -309,6 +256,12 @@ export default class extends Controller {
 
         const wrapper = document.createElement('div');
         wrapper.innerHTML = newForm;
+
+        // Ensure default quantity is 1
+        const quantityInput = wrapper.querySelector('.quantity-input');
+        if (quantityInput) {
+            quantityInput.value = 1;
+        }
 
         // Filter the material dropdown by category
         const select = wrapper.querySelector('select');
@@ -418,10 +371,6 @@ export default class extends Controller {
             return;
         }
 
-        const max = parseInt(input.getAttribute('max'));
-        if (max !== undefined && !isNaN(max) && parseInt(input.value) > max) {
-            input.value = max;
-        }
 
         // Only check if tab is visible
         const resourcesTabPane = document.getElementById('recursos');
@@ -595,9 +544,9 @@ export default class extends Controller {
             quantityInput.setAttribute('max', remainingForThisRow);
 
             if (data.available) {
-                materialSelect.classList.remove('border-red-500');
+                materialSelect.classList.remove('border-red-500', 'is-invalid');
+                quantityInput?.classList.remove('is-invalid');
                 if (statusLabel) {
-                    const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
                     statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-green-600 font-black uppercase">DISPONIBLES: ${data.totalAvailable}</span>`;
                     statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
@@ -607,6 +556,7 @@ export default class extends Controller {
                 }
             } else {
                 materialSelect.classList.add('border-red-500');
+                quantityInput?.classList.add('is-invalid');
                 if (statusLabel) {
                     const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
                     statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Disp: ${data.totalAvailable} / Total: ${totalStock})</span>`;
@@ -932,41 +882,29 @@ export default class extends Controller {
 
     // Visual Validation Helpers
     showError(inputId, message) {
-        console.log("showError called for:", inputId, message);
         let input = null;
-        if (typeof inputId !== 'string') {
-            input = inputId;
-        } else if (this[`has${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Target`]) {
+        if (this[`has${inputId.charAt(0).toUpperCase() + inputId.slice(1)}Target`]) {
             input = this[`${inputId}Target`];
         } else {
-            input = document.getElementById(inputId) || document.querySelector(`[name*="[${inputId}]"]`);
+            input = document.getElementById(inputId);
         }
 
-        if (!input) {
-            // Last resort: search for the ID within the name attribute (for Symfony forms)
-            input = document.querySelector(`[name$="[${inputId}]"]`);
-        }
+        if (!input) return;
 
-        if (!input) {
-            console.error("Could not find input for error display:", inputId);
-            return;
-        }
+        input.classList.add('is-invalid');
 
-        input.classList.remove('input-success');
-        input.classList.add('is-invalid', 'input-error', 'shake');
-        setTimeout(() => input.classList.remove('shake'), 400);
+        // Find or create invalid-feedback
+        let errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4, .mb-2, .mb-3')?.querySelector('.invalid-feedback');
 
-        // Try to use material-style field-message
-        let errorDiv = input.parentNode.querySelector('.field-message');
         if (!errorDiv) {
-            errorDiv = document.createElement('div');
-            errorDiv.className = 'field-message error';
-            input.parentNode.appendChild(errorDiv);
+            errorDiv = document.getElementById(`error-${inputId}`);
         }
 
         if (errorDiv) {
             errorDiv.textContent = this.humanizeError(message);
-            errorDiv.classList.add('show');
+            errorDiv.classList.remove('hidden');
+            errorDiv.classList.add('d-block'); // Bootstrap 5 visibility
+            errorDiv.style.fontSize = "0.85rem";
         }
     }
 
@@ -1009,17 +947,20 @@ export default class extends Controller {
 
     clearError(event) {
         const input = event.currentTarget;
-        input.classList.remove('is-invalid', 'input-error');
+        input.classList.remove('is-invalid');
+        input.classList.remove('border-red-500');
 
-        const errorDiv = input.parentNode.querySelector('.field-message');
+        const errorDiv = input.closest('.col-md-8, .col-md-4, .col-md-6, .mb-4, .mb-2, .mb-3')?.querySelector('.invalid-feedback');
         if (errorDiv) {
-            errorDiv.classList.remove('show');
-        }
-
-        // Backward compatibility with legacy error divs
-        const legacyError = document.getElementById(`error-${input.id}`);
-        if (legacyError) {
-            legacyError.classList.add('hidden');
+            errorDiv.textContent = '';
+            errorDiv.classList.add('hidden');
+            errorDiv.classList.remove('d-block');
+        } else {
+            const errorDivById = document.getElementById(`error-${input.id}`);
+            if (errorDivById) {
+                errorDivById.textContent = '';
+                errorDivById.classList.add('hidden');
+            }
         }
     }
 
