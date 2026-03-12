@@ -69,7 +69,7 @@ class KitController extends AbstractController
         $entityManager->flush();
         $this->addFlash('success', 'Plantillas base creadas correctamente.');
 
-        return $this->redirectToRoute('app_kit_template_index');
+        return $this->redirectToRoute('app_kit_template_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/templates/new', name: 'app_kit_template_new', methods: ['GET', 'POST'])]
@@ -101,7 +101,7 @@ class KitController extends AbstractController
             $entityManager->persist($template);
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_kit_template_index');
+            return $this->redirectToRoute('app_kit_template_index', [], Response::HTTP_SEE_OTHER);
         }
 
         $materials = $entityManager->getRepository(Material::class)->createQueryBuilder('m')
@@ -148,7 +148,7 @@ class KitController extends AbstractController
             $entityManager->flush();
             $this->addFlash('success', 'Plantilla actualizada correctamente.');
 
-            return $this->redirectToRoute('app_kit_template_index');
+            return $this->redirectToRoute('app_kit_template_index', [], Response::HTTP_SEE_OTHER);
         }
 
         $materials = $entityManager->getRepository(Material::class)->createQueryBuilder('m')
@@ -214,7 +214,7 @@ class KitController extends AbstractController
 
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_kit_index');
+            return $this->redirectToRoute('app_kit_index', [], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('kit/new.html.twig', [
@@ -260,7 +260,7 @@ class KitController extends AbstractController
             }
 
             $this->addFlash('success', 'Consumo registrado correctamente.');
-            return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
+            return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()], Response::HTTP_SEE_OTHER);
         }
 
         return $this->render('kit/consume.html.twig', [
@@ -303,6 +303,6 @@ class KitController extends AbstractController
         }
 
         $this->addFlash('success', 'Botiquín repuesto según su plantilla.');
-        return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
+        return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()], Response::HTTP_SEE_OTHER);
     }
 }
