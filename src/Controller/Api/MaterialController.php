@@ -95,6 +95,7 @@ class MaterialController extends AbstractController
                 'available' => $available,
                 'stock' => $material->getStock(),
                 'totalAvailable' => $material->getStock(),
+                'suggestedUnits' => [],
                 'nature' => 'CONSUMIBLE',
                 'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
             ]);
@@ -110,8 +111,17 @@ class MaterialController extends AbstractController
             $totalAvailable = 0;
 
             foreach ($allUnits as $unit) {
-                $isAvailable = $materialManager->isUnitAvailable($unit, $start, $end, $excludeServiceId);
-                if ($isAvailable) {
+                $unitAvailable = $materialManager->isUnitAvailable($unit, $start, $end, $excludeServiceId);
+
+                $reason = 'OK';
+                if ($unit->isInMaintenance()) {
+                    $reason = 'MANTENIMIENTO';
+                    $unitAvailable = false; // Maintenance overrides calculation
+                } elseif (!$unitAvailable) {
+                    $reason = 'EN OTRO SERVICIO';
+                }
+
+                if ($unitAvailable) {
                     $totalAvailable++;
                 }
 
@@ -120,7 +130,8 @@ class MaterialController extends AbstractController
                     'serialNumber' => $unit->getSerialNumber(),
                     'collectiveNumber' => $unit->getCollectiveNumber(),
                     'alias' => $unit->getAlias(),
-                    'available' => $isAvailable
+                    'available' => (bool)$unitAvailable,
+                    'reason' => $reason
                 ];
             }
 
