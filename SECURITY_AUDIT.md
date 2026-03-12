@@ -13,10 +13,11 @@
 *   **Descripción:** El método `SecurityController::autoLogin` permitía el acceso directo a cuentas de administrador sin contraseña.
 *   **Estado:** **Mitigado**. Se ha eliminado el código de `autoLogin` y su ruta asociada. Se ha sustituido por la funcionalidad nativa de Symfony `switch_user`, que es más segura, requiere permisos específicos (`ROLE_ALLOWED_TO_SWITCH`) y deja rastro en los logs.
 
-### 1.2 Ausencia de Limitación de Tasa (Rate Limiting)
+### 1.2 Ausencia de Limitación de Tasa (Rate Limiting) - [PARCIALMENTE MITIGADO]
 *   **Riesgo:** Alto
-*   **Descripción:** No se ha detectado ninguna política de bloqueo de cuenta o limitación de intentos fallidos en `/login` o `/forgot-password`. Esto expone al sistema a ataques de fuerza bruta (A07:2021 - Identification and Authentication Failures).
-*   **Mitigación Recomendada:** Implementar `symfony/rate-limiter` en la configuración de seguridad.
+*   **Descripción:** Falta una política global de bloqueo de cuenta por intentos fallidos. Sin embargo, se ha implementado un **Honeypot (Honey Token)** en el formulario de login para detectar y bloquear bots automáticamente.
+*   **Mitigación Realizada:** Se añadió el campo `_auth_username_token` (oculto). Si se rellena, la autenticación falla inmediatamente con un error de "Actividad sospechosa".
+*   **Mitigación Recomendada:** Complementar con `symfony/rate-limiter` en la configuración de seguridad para proteger contra ataques de fuerza bruta realizados por humanos o bots avanzados.
     ```yaml
     # config/packages/security.yaml
     main:
