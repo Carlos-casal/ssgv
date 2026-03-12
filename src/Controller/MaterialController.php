@@ -277,6 +277,8 @@ class MaterialController extends AbstractController
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
         }
+
+        return $this->redirectToRoute('app_material_index');
     }
 
     #[Route('/check-barcode', name: 'app_material_check_barcode', methods: ['GET'])]
