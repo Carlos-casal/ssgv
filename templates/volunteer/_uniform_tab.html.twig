@@ -5,7 +5,7 @@
             <i class="fas fa-tshirt mr-2"></i>
             Dotación Actual
         </h6>
-        <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#assignUniformModal">
+        <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#assignUniformModal">
             <i class="fas fa-plus mr-2"></i>Nueva Entrega
         </button>
     </div>
@@ -34,8 +34,8 @@
                         <td>{{ uniform.assignedAt|date('d/m/Y') }}</td>
                         <td>
                             <button type="button" class="btn btn-sm btn-warning" 
-                                    data-toggle="modal" 
-                                    data-target="#returnUniformModal"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#returnUniformModal"
                                     data-uniform-id="{{ uniform.id }}"
                                     data-material-name="{{ uniform.material.name }}"
                                     data-size="{{ uniform.size }}">
@@ -51,7 +51,7 @@
         <div class="text-center py-5">
             <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
             <p class="text-muted">No hay uniformidad asignada actualmente</p>
-            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#assignUniformModal">
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#assignUniformModal">
                 <i class="fas fa-plus mr-2"></i>Registrar Primera Entrega
             </button>
         </div>
