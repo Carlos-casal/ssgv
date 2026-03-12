@@ -585,6 +585,10 @@ export default class extends Controller {
 
             let label = labelParts.join(' ');
 
+            if (unit.isKit) {
+                label += ` (📦 ${unit.templateName})`;
+            }
+
             // Strictly check for boolean false
             const isBusy = unit.available === false;
 

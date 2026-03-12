@@ -13,6 +13,7 @@ import BulkUnitController from './controllers/bulk_unit_controller.js';
 import UniformityGridController from './controllers/uniformity_grid_controller.js';
 import MaterialSizingController from './controllers/material_sizing_controller.js';
 import MaterialDynamicFormController from './controllers/material_dynamic_form_controller.js';
+import KitTemplateController from './controllers/kit-template_controller.js';
 
 const app = startStimulusApp();
 
@@ -29,3 +30,4 @@ app.register('bulk-unit', BulkUnitController);
 app.register('uniformity-grid', UniformityGridController);
 app.register('material-sizing', MaterialSizingController);
 app.register('material-dynamic-form', MaterialDynamicFormController);
+app.register('kit-template', KitTemplateController);
