@@ -36,9 +36,40 @@ class KitController extends AbstractController
     #[Route('/templates', name: 'app_kit_template_index', methods: ['GET'])]
     public function templateIndex(KitTemplateRepository $templateRepository): Response
     {
+        $templates = $templateRepository->findAll();
+
         return $this->render('kit/template_index.html.twig', [
-            'templates' => $templateRepository->findAll(),
+            'templates' => $templates,
         ]);
+    }
+
+    #[Route('/templates/seed-defaults', name: 'app_kit_template_seed_defaults', methods: ['POST'])]
+    public function seedDefaultTemplates(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('seed_defaults', $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        $defaults = [
+            ['name' => 'Mochila SVB Básica', 'type' => 'Mochila'],
+            ['name' => 'Maletín de Oxigenoterapia', 'type' => 'Bolsa'],
+            ['name' => 'Riñonera de Intervención Rápida', 'type' => 'Riñonera'],
+        ];
+
+        foreach ($defaults as $data) {
+            $existing = $entityManager->getRepository(KitTemplate::class)->findOneBy(['name' => $data['name']]);
+            if (!$existing) {
+                $template = new KitTemplate();
+                $template->setName($data['name']);
+                $template->setContainerType($data['type']);
+                $entityManager->persist($template);
+            }
+        }
+
+        $entityManager->flush();
+        $this->addFlash('success', 'Plantillas base creadas correctamente.');
+
+        return $this->redirectToRoute('app_kit_template_index');
     }
 
     #[Route('/templates/new', name: 'app_kit_template_new', methods: ['GET', 'POST'])]
@@ -49,11 +80,13 @@ class KitController extends AbstractController
                 throw $this->createAccessDeniedException('Token CSRF inválido.');
             }
             $name = $request->request->get('name');
+            $containerType = $request->request->get('container_type');
             $description = $request->request->get('description');
             $items = $request->request->all('items');
 
             $template = new KitTemplate();
             $template->setName($name);
+            $template->setContainerType($containerType);
             $template->setDescription($description);
 
             foreach ($items as $itemData) {

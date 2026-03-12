@@ -4,7 +4,6 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    <link rel="stylesheet" href="{{ asset('build/material_form.css') }}">
     <style>
         .form-error {
             color: #EF4444;
@@ -89,12 +88,12 @@
     <!-- Navigation Tabs -->
     <ul class="nav nav-tabs nav-tabs-custom border-bottom mb-4 bg-white px-4 -mx-4 sticky-top" style="top: 0; z-index: 10;" role="tablist">
         <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="datos-tab" type="button" role="tab" aria-controls="datos" aria-selected="true" data-action="click->service-form#switchTab" data-target="#datos">
+            <button class="nav-link active" id="datos-tab" data-bs-toggle="tab" data-bs-target="#datos" type="button" role="tab" aria-controls="datos" aria-selected="true">
                 <i data-lucide="file-text" class="w-4 h-4 inline me-2"></i> Datos Generales
             </button>
         </li>
         <li class="nav-item" role="presentation">
-            <button class="nav-link" id="recursos-tab" type="button" role="tab" aria-controls="recursos" aria-selected="false" data-action="click->service-form#switchTab" data-target="#recursos">
+            <button class="nav-link" id="recursos-tab" data-bs-toggle="tab" data-bs-target="#recursos" type="button" role="tab" aria-controls="recursos" aria-selected="false">
                 <i data-lucide="truck" class="w-4 h-4 inline me-2"></i> Recursos y Dotación
             </button>
         </li>

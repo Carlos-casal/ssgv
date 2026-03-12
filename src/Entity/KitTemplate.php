@@ -18,6 +18,9 @@ class KitTemplate
     #[ORM\Column(length: 255)]
     private ?string $name = null;
 
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $containerType = 'Mochila';
+
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $description = null;
 
@@ -42,6 +45,17 @@ class KitTemplate
     public function setName(string $name): static
     {
         $this->name = $name;
+        return $this;
+    }
+
+    public function getContainerType(): ?string
+    {
+        return $this->containerType;
+    }
+
+    public function setContainerType(?string $containerType): static
+    {
+        $this->containerType = $containerType;
         return $this;
     }
 

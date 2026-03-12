@@ -81,11 +81,6 @@ html, body {
         text-align: right;
     }
 
-    /* Standardized Form Input Heights */
-    .form-control-sm, .form-select-sm {
-        height: 38px !important;
-    }
-
     /* Utility for integrated buttons in input-groups */
     .btn-integrated-right {
         border-top-left-radius: 0 !important;

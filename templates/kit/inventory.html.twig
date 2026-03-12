@@ -32,7 +32,8 @@
                         <i data-lucide="briefcase" class="w-8 h-8 text-blue-600"></i>
                     </div>
                     <h3 class="font-bold text-xl mb-1">{{ unit.alias ?: 'Sin Alias' }}</h3>
-                    <p class="text-slate-500 text-sm mb-3">Plantilla: <span class="font-bold text-slate-700">{{ unit.template.name }}</span></p>
+                    <p class="text-slate-500 text-sm mb-1">Plantilla: <span class="font-bold text-slate-700">{{ unit.template.name }}</span></p>
+                    <p class="text-slate-400 text-xs mb-3 uppercase font-black tracking-widest">{{ unit.template.containerType }}</p>
                     <div class="flex justify-center gap-2">
                         <span class="px-3 py-1 bg-green-100 text-green-700 rounded-full text-[10px] font-black uppercase">{{ unit.operationalStatus }}</span>
                         <span class="px-3 py-1 bg-slate-100 text-slate-700 rounded-full text-[10px] font-black uppercase">SN: {{ unit.serialNumber ?: 'N/A' }}</span>
