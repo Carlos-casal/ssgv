@@ -529,6 +529,7 @@ export default class extends Controller {
 
             const response = await fetch(`/api/material/check-availability?id=${materialId}&start=${startValue}&end=${endValue}&quantity=${totalRequestedInForm}&excludeServiceId=${serviceId}`);
             const data = await response.json();
+            console.log(`Availability response for ${materialId}:`, data);
 
             const statusLabel = row.querySelector('.availability-status');
             const unitSelector = row.querySelector('.unit-selector');
@@ -544,8 +545,8 @@ export default class extends Controller {
                 materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
                     const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
-                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-slate-600 font-bold">${data.totalAvailable} disponibles (de ${totalStock})</span>`;
-                    statusLabel.className = 'availability-status text-[10px] mt-1 text-green-600';
+                    statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-green-600 font-black uppercase">DISPONIBLES: ${data.totalAvailable}</span>`;
+                    statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
 
                 if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
@@ -569,6 +570,7 @@ export default class extends Controller {
     }
 
     updateUnitSelector(selector, units) {
+        if (!units) return;
         const currentValue = selector.value;
 
         selector.innerHTML = '<option value="">Selección automática (Rotación)</option>';
@@ -579,12 +581,17 @@ export default class extends Controller {
             labelParts.push(unit.serialNumber || `ID: ${unit.id}`);
 
             let label = labelParts.join(' ');
-            if (!unit.available) {
-                label += ' (EN OTRO SERVICIO)';
+
+            // Strictly check for boolean false
+            const isBusy = unit.available === false;
+
+            if (isBusy) {
+                const reasonLabel = unit.reason === 'MANTENIMIENTO' ? ' (MANTENIMIENTO)' : ' (OCUPADO)';
+                label += reasonLabel;
             }
 
             const option = new Option(label, unit.id);
-            if (!unit.available) {
+            if (isBusy) {
                 option.classList.add('text-red-600', 'font-bold');
                 option.style.color = 'red'; // CSS fallback
             }
@@ -595,7 +602,7 @@ export default class extends Controller {
             selector.value = currentValue;
         } else {
             // Auto-select the first AVAILABLE unit (the oldest free one)
-            const firstAvailable = units.find(u => u.available);
+            const firstAvailable = units.find(u => u.available === true);
             if (firstAvailable) {
                 selector.value = firstAvailable.id;
             }

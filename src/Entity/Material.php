@@ -198,7 +198,7 @@ class Material
     #[ORM\PreUpdate]
     public function syncNatureWithCategory(): void
     {
-        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
+        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística', 'Sanitario'];
         if (in_array($this->category, $technicalCategories)) {
             $this->nature = self::NATURE_TECHNICAL;
         }

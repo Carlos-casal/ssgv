@@ -41,9 +41,12 @@ class MaterialManager
         }
 
         // Check for overlapping services that have this unit assigned
+        // We only consider services that have valid start and end dates
         $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
             ->join('sm.service', 's')
             ->where('sm.materialUnit = :unit')
+            ->andWhere('s.startDate IS NOT NULL')
+            ->andWhere('s.endDate IS NOT NULL')
             ->andWhere('s.startDate < :end')
             ->andWhere('s.endDate > :start')
             ->setParameter('unit', $unit)
@@ -57,6 +60,7 @@ class MaterialManager
 
         $conflicts = $qb->getQuery()->getResult();
 
+        // A unit is available if there are NO overlapping assignments
         return count($conflicts) === 0;
     }
 

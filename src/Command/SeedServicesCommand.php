@@ -91,7 +91,7 @@ class SeedServicesCommand extends Command
 
         // 4. Seed Materials
         $materials = [
-            ['name' => 'Botiquín', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 5, 'safety' => 2],
+            ['name' => 'Botiquín', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'DESA', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'Camilla', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'Walkies', 'category' => 'Comunicaciones', 'nature' => Material::NATURE_TECHNICAL],
