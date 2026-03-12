@@ -257,12 +257,6 @@ export default class extends Controller {
         const wrapper = document.createElement('div');
         wrapper.innerHTML = newForm;
 
-        // Ensure default quantity is 1
-        const quantityInput = wrapper.querySelector('.quantity-input');
-        if (quantityInput) {
-            quantityInput.value = 1;
-        }
-
         // Filter the material dropdown by category
         const select = wrapper.querySelector('select');
         if (select) {
@@ -371,6 +365,10 @@ export default class extends Controller {
             return;
         }
 
+        const max = parseInt(input.getAttribute('max'));
+        if (max !== undefined && !isNaN(max) && parseInt(input.value) > max) {
+            input.value = max;
+        }
 
         // Only check if tab is visible
         const resourcesTabPane = document.getElementById('recursos');
@@ -544,9 +542,9 @@ export default class extends Controller {
             quantityInput.setAttribute('max', remainingForThisRow);
 
             if (data.available) {
-                materialSelect.classList.remove('border-red-500', 'is-invalid');
-                quantityInput?.classList.remove('is-invalid');
+                materialSelect.classList.remove('border-red-500');
                 if (statusLabel) {
+                    const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
                     statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-green-600 font-black uppercase">DISPONIBLES: ${data.totalAvailable}</span>`;
                     statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
@@ -556,7 +554,6 @@ export default class extends Controller {
                 }
             } else {
                 materialSelect.classList.add('border-red-500');
-                quantityInput?.classList.add('is-invalid');
                 if (statusLabel) {
                     const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
                     statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Disp: ${data.totalAvailable} / Total: ${totalStock})</span>`;
