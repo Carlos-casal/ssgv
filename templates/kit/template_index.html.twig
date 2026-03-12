@@ -42,9 +42,9 @@
                         <p class="text-xs text-slate-400 font-monospace mb-4">{{ template.description ?: 'Sin descripción' }}</p>
 
                         <div class="d-grid">
-                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill font-bold">
+                            <a href="{{ path('app_kit_template_edit', {'id': template.id}) }}" class="btn btn-outline-secondary btn-sm rounded-pill font-bold">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5 inline mr-1"></i> EDITAR PLANTILLA
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>
