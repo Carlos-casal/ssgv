@@ -59,12 +59,6 @@ class MaterialUnit
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $operationalStatus = 'OPERATIVO';
 
-    #[ORM\ManyToOne]
-    private ?KitTemplate $template = null;
-
-    #[ORM\OneToOne(mappedBy: 'materialUnit', cascade: ['persist', 'remove'])]
-    private ?Location $kitLocation = null;
-
     #[ORM\Column(type: 'decimal', precision: 10, scale: 2, nullable: true)]
     private ?string $purchasePrice = null;
 
@@ -236,39 +230,6 @@ class MaterialUnit
     public function setOperationalStatus(?string $operationalStatus): static
     {
         $this->operationalStatus = $operationalStatus;
-
-        return $this;
-    }
-
-    public function getTemplate(): ?KitTemplate
-    {
-        return $this->template;
-    }
-
-    public function setTemplate(?KitTemplate $template): static
-    {
-        $this->template = $template;
-        return $this;
-    }
-
-    public function getKitLocation(): ?Location
-    {
-        return $this->kitLocation;
-    }
-
-    public function setKitLocation(?Location $kitLocation): static
-    {
-        // unset the owning side of the relation if necessary
-        if ($kitLocation === null && $this->kitLocation !== null) {
-            $this->kitLocation->setMaterialUnit(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($kitLocation !== null && $kitLocation->getMaterialUnit() !== $this) {
-            $kitLocation->setMaterialUnit($this);
-        }
-
-        $this->kitLocation = $kitLocation;
 
         return $this;
     }

@@ -86,30 +86,7 @@
                                 <h4 class="text-[10px] font-black uppercase text-slate-500 mb-2">{{ category }}</h4>
                                 <ul class="text-xs space-y-1">
                                     {% for sm in cat_materials %}
-                                        <li>
-                                            <span class="font-bold">{{ sm.quantity }}x</span> {{ sm.material.name }}
-                                            {% if sm.materialUnit and sm.materialUnit.template %}
-                                                <div class="ml-4 mt-1 p-1 px-2 bg-slate-100 rounded text-[9px] border-l-2 border-blue-400">
-                                                    <span class="font-black uppercase text-blue-600">Botiquín:</span> {{ sm.materialUnit.alias ?: sm.materialUnit.serialNumber }}
-                                                    <br>
-                                                    <span class="text-slate-500 italic">{{ sm.materialUnit.template.name }}</span>
-                                                    {% if sm.materialUnit.kitLocation and sm.materialUnit.kitLocation.stocks|length > 0 %}
-                                                        <ul class="mt-1 border-t border-slate-200 pt-1 space-y-0.5">
-                                                            {% for stock in sm.materialUnit.kitLocation.stocks %}
-                                                                {% if stock.quantity > 0 %}
-                                                                    <li class="flex justify-between">
-                                                                        <span>{{ stock.material.name }}</span>
-                                                                        <span class="font-bold">{{ stock.quantity }}</span>
-                                                                    </li>
-                                                                {% endif %}
-                                                            {% endfor %}
-                                                        </ul>
-                                                    {% endif %}
-                                                </div>
-                                            {% elseif sm.materialUnit %}
-                                                <span class="text-[10px] text-slate-500 italic">({{ sm.materialUnit.alias ?: sm.materialUnit.serialNumber }})</span>
-                                            {% endif %}
-                                        </li>
+                                        <li><span class="font-bold">{{ sm.quantity }}x</span> {{ sm.material.name }}</li>
                                     {% endfor %}
                                 </ul>
                             </div>

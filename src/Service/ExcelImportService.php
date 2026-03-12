@@ -3,11 +3,9 @@
 namespace App\Service;
 
 use App\Entity\Material;
-use App\Entity\MaterialUnit;
 use App\Repository\MaterialRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -15,18 +13,15 @@ class ExcelImportService
 {
     private EntityManagerInterface $entityManager;
     private MaterialRepository $materialRepository;
-    private MaterialManager $materialManager;
     private string $materialImagesDirectory;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         MaterialRepository $materialRepository,
-        MaterialManager $materialManager,
         string $materialImagesDirectory
     ) {
         $this->entityManager = $entityManager;
         $this->materialRepository = $materialRepository;
-        $this->materialManager = $materialManager;
         $this->materialImagesDirectory = $materialImagesDirectory;
     }
 
@@ -50,18 +45,10 @@ class ExcelImportService
         
         for ($row = 2; $row <= $highestRow; $row++) {
             $name = $worksheet->getCell("A{$row}")->getValue();
-            $nature = $worksheet->getCell("B{$row}")->getValue();
-            $barcode = $worksheet->getCell("E{$row}")->getValue();
+            $barcode = $worksheet->getCell("B{$row}")->getValue();
             $category = $worksheet->getCell("C{$row}")->getValue();
+            $stock = (int)$worksheet->getCell("D{$row}")->getValue();
             
-            $unitsPerPack = (int)$worksheet->getCell("I{$row}")->getValue() ?: 1;
-            $numPackages = (int)$worksheet->getCell("J{$row}")->getValue();
-            $stock = $unitsPerPack * $numPackages;
-
-            if ($nature === 'EQUIPO_TECNICO') {
-                $stock = 1; // Technical equipment usually handled one by one in excel row
-            }
-
             // Skip empty rows
             if (empty($name)) {
                 continue;
@@ -69,17 +56,10 @@ class ExcelImportService
             
             $preview['total_rows']++;
             
-            // Check if material exists by barcode or serial number
+            // Check if material exists by barcode
             $existingMaterial = null;
             if ($barcode) {
                 $existingMaterial = $this->materialRepository->findOneBy(['barcode' => $barcode]);
-            }
-
-            if (!$existingMaterial && $nature === 'EQUIPO_TECNICO') {
-                $serialNumber = $worksheet->getCell("O{$row}")->getValue();
-                if ($serialNumber) {
-                    $existingMaterial = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
-                }
             }
             
             if ($existingMaterial) {
@@ -94,8 +74,7 @@ class ExcelImportService
                     'name' => $name,
                     'barcode' => $barcode,
                     'category' => $category,
-                    'initial_stock' => $stock,
-                    'nature' => $nature
+                    'initial_stock' => $stock
                 ];
             }
         }
@@ -125,118 +104,44 @@ class ExcelImportService
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $name = $worksheet->getCell("A{$row}")->getValue();
-                if (empty($name)) continue;
-
-                $nature = $worksheet->getCell("B{$row}")->getValue() ?: Material::NATURE_CONSUMABLE;
+                $barcode = $worksheet->getCell("B{$row}")->getValue();
                 $category = $worksheet->getCell("C{$row}")->getValue();
-                $subfamily = $worksheet->getCell("D{$row}")->getValue();
-                $barcode = $worksheet->getCell("E{$row}")->getValue();
-                $batch = $worksheet->getCell("F{$row}")->getValue();
-                $expiryValue = $worksheet->getCell("G{$row}")->getValue();
-                $supplier = $worksheet->getCell("H{$row}")->getValue();
-                $unitsPerPack = (int)$worksheet->getCell("I{$row}")->getValue() ?: 1;
-                $numPacks = (int)$worksheet->getCell("J{$row}")->getValue();
-                $totalPrice = $worksheet->getCell("K{$row}")->getValue();
-                $discount = $worksheet->getCell("L{$row}")->getValue();
-                // Column M is Margen (ignored for now as we don't have a field for it in entity yet, or maybe it maps to something else)
-                $brandModel = $worksheet->getCell("N{$row}")->getValue();
-                $serialNumber = (string)$worksheet->getCell("O{$row}")->getValue();
-                $alias = $worksheet->getCell("P{$row}")->getValue();
-                $purchaseDateValue = $worksheet->getCell("Q{$row}")->getValue();
-                $warrantyDateValue = $worksheet->getCell("R{$row}")->getValue();
-                $description = $worksheet->getCell("S{$row}")->getValue();
+                $stock = (int)$worksheet->getCell("D{$row}")->getValue();
+                $description = $worksheet->getCell("E{$row}")->getValue();
 
-                $expiryDate = null;
-                if ($expiryValue) {
-                    if (is_numeric($expiryValue)) {
-                        $expiryDate = \DateTimeImmutable::createFromMutable(Date::excelToDateTimeObject($expiryValue));
-                    } else {
-                        $expiryDate = new \DateTimeImmutable($expiryValue);
-                    }
+                // Skip empty rows
+                if (empty($name)) {
+                    continue;
                 }
 
-                $purchaseDate = null;
-                if ($purchaseDateValue) {
-                    if (is_numeric($purchaseDateValue)) {
-                        $purchaseDate = \DateTimeImmutable::createFromMutable(Date::excelToDateTimeObject($purchaseDateValue));
-                    } else {
-                        $purchaseDate = new \DateTimeImmutable($purchaseDateValue);
-                    }
-                }
-
-                $warrantyDate = null;
-                if ($warrantyDateValue) {
-                    if (is_numeric($warrantyDateValue)) {
-                        $warrantyDate = \DateTimeImmutable::createFromMutable(Date::excelToDateTimeObject($warrantyDateValue));
-                    } else {
-                        $warrantyDate = new \DateTimeImmutable($warrantyDateValue);
-                    }
-                }
-
-                // Find or create Material (Base)
+                // Check if material exists by barcode
                 $material = null;
                 if ($barcode) {
                     $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
                 }
                 
-                if (!$material && $nature === Material::NATURE_TECHNICAL && !empty($serialNumber)) {
-                     $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
-                }
-
-                $isNew = false;
-                if (!$material) {
+                if ($material) {
+                    // Update existing material - add to stock
+                    $material->setStock($material->getStock() + $stock);
+                    $result['updated']++;
+                } else {
+                    // Create new material
                     $material = new Material();
                     $material->setName($name);
-                    $material->setNature($nature);
-                    $material->setCategory($category);
-                    $material->setSubFamily($subfamily);
                     $material->setBarcode($barcode);
-                    $material->setUnitsPerPackage($unitsPerPack);
-                    $material->setSupplier($supplier);
+                    $material->setCategory($category ?? 'Varios');
+                    $material->setStock($stock);
+                    $material->setSafetyStock(0);
                     $material->setDescription($description);
-                    $material->setBrandModel($brandModel);
-                    $material->setPurchaseDate($purchaseDate);
-                    $material->setWarrantyEndDate($warrantyDate);
 
+                    // Check if there's an image for this row
                     if (isset($images[$row])) {
                         $imagePath = $this->saveImage($images[$row]);
                         $material->setImagePath($imagePath);
                     }
 
                     $this->entityManager->persist($material);
-                    $isNew = true;
-                }
-
-                if ($nature === Material::NATURE_TECHNICAL) {
-                    // Create Unit
-                    if (!empty($serialNumber)) {
-                        $existingUnit = $this->entityManager->getRepository(MaterialUnit::class)->findOneBy(['serialNumber' => $serialNumber]);
-                        if ($existingUnit) {
-                            $result['errors'][] = "Fila {$row}: El número de serie {$serialNumber} ya existe.";
-                            continue;
-                        }
-                    }
-
-                    $this->materialManager->createUnit($material, [
-                        'alias' => $alias,
-                        'serialNumber' => $serialNumber,
-                        'purchasePrice' => $totalPrice,
-                        'discountPct' => $discount,
-                    ]);
-
-                    if ($isNew) $result['created']++; else $result['updated']++;
-
-                } else {
-                    // Consumable
-                    $material->setBatchNumber($batch);
-                    $material->setExpirationDate($expiryDate);
-
-                    $stockToAdd = $numPacks * $unitsPerPack;
-                    if ($stockToAdd > 0) {
-                        $this->materialManager->adjustStock($material, $stockToAdd, 'Importación Excel');
-                    }
-
-                    if ($isNew) $result['created']++; else $result['updated']++;
+                    $result['created']++;
                 }
 
             } catch (\Exception $e) {
@@ -299,71 +204,28 @@ class ExcelImportService
         $sheet = $spreadsheet->getActiveSheet();
         
         // Set headers
-        $headers = [
-            'A1' => 'Nombre *',
-            'B1' => 'Naturaleza (CONSUMIBLE/EQUIPO_TECNICO) *',
-            'C1' => 'Categoría',
-            'D1' => 'Subfamilia',
-            'E1' => 'Código de Barras',
-            'F1' => 'Lote (Consumibles)',
-            'G1' => 'Fecha Caducidad (AAAA-MM-DD)',
-            'H1' => 'Proveedor',
-            'I1' => 'Uds por Envase',
-            'J1' => 'Nº Envases (Stock Inicial)',
-            'K1' => 'Coste Total Compra',
-            'L1' => '% Descuento',
-            'M1' => 'Margen (%)',
-            'N1' => 'Marca/Modelo (Equipo)',
-            'O1' => 'Nº Serie (S/N)',
-            'P1' => 'Alias (Equipo)',
-            'Q1' => 'Fecha Compra (AAAA-MM-DD)',
-            'R1' => 'Fin Garantía (AAAA-MM-DD)',
-            'S1' => 'Descripción'
-        ];
-
-        foreach ($headers as $cell => $value) {
-            $sheet->setCellValue($cell, $value);
-        }
+        $sheet->setCellValue('A1', 'Nombre *');
+        $sheet->setCellValue('B1', 'Código de Barras');
+        $sheet->setCellValue('C1', 'Categoría');
+        $sheet->setCellValue('D1', 'Stock Inicial');
+        $sheet->setCellValue('E1', 'Descripción');
         
         // Style headers
         $headerStyle = [
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']]
         ];
-        $sheet->getStyle('A1:S1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
         
-        // Add example data (Consumable)
-        $sheet->setCellValue('A2', 'Gasas Estériles 10x10');
-        $sheet->setCellValue('B2', 'CONSUMIBLE');
-        $sheet->setCellValue('C2', 'Sanitario');
-        $sheet->setCellValue('D2', 'Curas');
-        $sheet->setCellValue('E2', '8412345678901');
-        $sheet->setCellValue('F2', 'LOT-2024-001');
-        $sheet->setCellValue('G2', '2026-12-31');
-        $sheet->setCellValue('H2', 'SUMINISTROS MEDICOS S.A.');
-        $sheet->setCellValue('I2', '5');
-        $sheet->setCellValue('J2', '10');
-        $sheet->setCellValue('K2', '25.50');
-        $sheet->setCellValue('L2', '0');
-        $sheet->setCellValue('M2', '0');
-        $sheet->setCellValue('S2', 'Sobre de 5 gasas estériles');
-
-        // Add example data (Technical Equipment)
-        $sheet->setCellValue('A3', 'Monitor Desfibrilador');
-        $sheet->setCellValue('B3', 'EQUIPO_TECNICO');
-        $sheet->setCellValue('C3', 'Sanitario');
-        $sheet->setCellValue('D3', 'Diagnóstico');
-        $sheet->setCellValue('H3', 'PHILLIPS SPAIN');
-        $sheet->setCellValue('K3', '4500.00');
-        $sheet->setCellValue('N3', 'HeartStart FR3');
-        $sheet->setCellValue('O3', 'SN-PH-99238');
-        $sheet->setCellValue('P3', 'DESA-01');
-        $sheet->setCellValue('Q3', '2024-01-15');
-        $sheet->setCellValue('R3', '2026-01-15');
-        $sheet->setCellValue('S3', 'Equipo desfibrilador portátil');
+        // Add example data
+        $sheet->setCellValue('A2', 'Linterna LED');
+        $sheet->setCellValue('B2', '8435123456789');
+        $sheet->setCellValue('C2', 'Logística');
+        $sheet->setCellValue('D2', '10');
+        $sheet->setCellValue('E2', 'Linterna LED recargable de alta potencia');
         
         // Auto-size columns
-        foreach (range('A', 'S') as $col) {
+        foreach (range('A', 'E') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
         

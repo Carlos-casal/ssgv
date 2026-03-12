@@ -219,10 +219,6 @@ class MaterialManager
 
     private function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
     {
-        if ($size === null) {
-            $size = 'Única';
-        }
-
         $stock = $this->stockRepository->findOneBy([
             'material' => $material,
             'location' => $location,

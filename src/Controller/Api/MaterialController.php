@@ -131,9 +131,7 @@ class MaterialController extends AbstractController
                     'collectiveNumber' => $unit->getCollectiveNumber(),
                     'alias' => $unit->getAlias(),
                     'available' => (bool)$unitAvailable,
-                    'reason' => $reason,
-                    'isKit' => $unit->getTemplate() !== null,
-                    'templateName' => $unit->getTemplate() ? $unit->getTemplate()->getName() : null
+                    'reason' => $reason
                 ];
             }
 
