@@ -28,7 +28,7 @@
                 {% if current_category == 'Sanitario' %}
                     <select name="subFamily" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
                         <option value="">Todas las familias...</option>
-                        {% for f in ['Analgésicos', 'Curas', 'Inmovilización', 'Medicación', 'Diagnóstico', 'Protección', 'Oxigenoterapia', 'Vía Aérea', 'Varios'] %}
+                        {% for f in ['Analgésicos', 'Curas', 'Inmovilización', 'Medicación', 'Diagnóstico', 'Constantes', 'Cánulas', 'Sueroterapia', 'Material de Entrenamiento', 'Otros'] %}
                             <option value="{{ f }}" {{ current_subfamily == f ? 'selected' : '' }}>{{ f }}</option>
                         {% endfor %}
                     </select>
