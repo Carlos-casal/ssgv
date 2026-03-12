@@ -3,6 +3,7 @@
 namespace App\Security;
 
 use Symfony\Bundle\SecurityBundle\Security;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,7 +36,7 @@ class AppAuthenticator extends AbstractLoginFormAuthenticator
 
         $email = $request->request->get('_username', '');
 
-        $request->getSession()->set(Security::LAST_USERNAME, $email);
+        $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
 
         return new Passport(
             new UserBadge($email),
