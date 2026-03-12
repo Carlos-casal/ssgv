@@ -195,7 +195,7 @@ class MaterialController extends AbstractController
             'form' => $form,
             'units_data' => $unitsData,
             'current_section' => 'recursos'
-        ], new Response(null, $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+        ]);
     }
 
     #[Route('/import/template', name: 'app_material_import_template', methods: ['GET'])]
@@ -219,7 +219,7 @@ class MaterialController extends AbstractController
 
         if (!$file) {
             $this->addFlash('error', 'Por favor selecciona un archivo Excel.');
-            return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_material_index');
         }
 
         try {
@@ -233,9 +233,6 @@ class MaterialController extends AbstractController
             $tempFilename = uniqid('import_') . '.xlsx';
             $file->move($tempPath, $tempFilename);
 
-            // To support Turbo, we can't just return a 200 HTML on POST.
-            // We'll use a redirect to a GET route that shows the preview,
-            // OR we'll tell the form to not use Turbo.
             return $this->render('material/import_preview.html.twig', [
                 'preview' => $preview,
                 'temp_filename' => $tempFilename,
@@ -243,7 +240,7 @@ class MaterialController extends AbstractController
             ]);
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al procesar el archivo: ' . $e->getMessage());
-            return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_material_index');
         }
     }
 
@@ -255,7 +252,7 @@ class MaterialController extends AbstractController
 
         if (!file_exists($tempPath)) {
             $this->addFlash('error', 'Archivo temporal no encontrado. Por favor intenta de nuevo.');
-            return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
+            return $this->redirectToRoute('app_material_index');
         }
 
         try {
@@ -280,8 +277,6 @@ class MaterialController extends AbstractController
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
         }
-
-        return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
     }
 
     #[Route('/check-barcode', name: 'app_material_check_barcode', methods: ['GET'])]
@@ -562,7 +557,7 @@ class MaterialController extends AbstractController
             'form' => $form,
             'units_data' => $unitsData,
             'current_section' => 'recursos'
-        ], new Response(null, $form->isSubmitted() ? Response::HTTP_UNPROCESSABLE_ENTITY : Response::HTTP_OK));
+        ]);
     }
 
     #[Route('/{id}/unit/new', name: 'app_material_unit_new', methods: ['GET', 'POST'])]

@@ -29,9 +29,6 @@ class Location
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Vehicle $vehicle = null;
 
-    #[ORM\OneToOne(inversedBy: 'kitLocation', cascade: ['persist', 'remove'])]
-    private ?MaterialUnit $materialUnit = null;
-
     #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialStock::class, orphanRemoval: true)]
     private Collection $stocks;
 
@@ -61,18 +58,6 @@ class Location
     public function setName(string $name): static
     {
         $this->name = $name;
-
-        return $this;
-    }
-
-    public function getMaterialUnit(): ?MaterialUnit
-    {
-        return $this->materialUnit;
-    }
-
-    public function setMaterialUnit(?MaterialUnit $materialUnit): static
-    {
-        $this->materialUnit = $materialUnit;
 
         return $this;
     }

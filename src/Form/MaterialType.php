@@ -107,13 +107,10 @@ class MaterialType extends AbstractType
                     'Curas' => 'Curas',
                     'Inmovilización' => 'Inmovilización',
                     'Vía Aérea' => 'ViaAerea',
-                    'Cánulas' => 'Canulas',
                     'Diagnóstico' => 'Diagnostico',
-                    'Constantes' => 'Constantes',
                     'Sueroterapia' => 'Sueroterapia',
                     'Medicación' => 'Medicacion',
-                    'Material de Entrenamiento' => 'Entrenamiento',
-                    'Otros' => 'Otros'
+                    'Material de Entrenamiento' => 'Entrenamiento'
                 ],
                 'attr' => ['class' => 'form-control']
             ])
@@ -137,7 +134,7 @@ class MaterialType extends AbstractType
             ])
             ->add('batchNumber', TextType::class, [
                 'label' => 'LOTE',
-                'required' => false,
+                'required' => true,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Nº de lote para fungibles'
@@ -167,7 +164,7 @@ class MaterialType extends AbstractType
             ->add('expirationDate', DateType::class, [
                 'label' => 'Fecha de Caducidad',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('supplier', TextType::class, [
@@ -279,7 +276,7 @@ class MaterialType extends AbstractType
             ->add('warrantyEndDate', DateType::class, [
                 'label' => 'Fin de Garantía',
                 'widget' => 'single_text',
-                'required' => false,
+                'required' => true,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('hasCharger', CheckboxType::class, [

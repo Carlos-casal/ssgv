@@ -31,18 +31,11 @@ class ServiceMaterialFormType extends AbstractType
             ->add('materialUnit', EntityType::class, [
                 'class' => MaterialUnit::class,
                 'choice_label' => function(MaterialUnit $unit) {
-                    $label = '';
                     if ($unit->getAlias()) {
-                        $label = $unit->getAlias();
-                    } else {
-                        $label = $unit->getCollectiveNumber() ? '[' . $unit->getCollectiveNumber() . '] ' : '';
-                        $label .= $unit->getSerialNumber() ?: 'ID: ' . $unit->getId();
+                        return $unit->getAlias() . ' (' . ($unit->getSerialNumber() ?: 'S/N') . ')';
                     }
-
-                    if ($unit->getTemplate()) {
-                        $label .= ' (📦 ' . $unit->getTemplate()->getName() . ')';
-                    }
-
+                    $label = $unit->getCollectiveNumber() ? '[' . $unit->getCollectiveNumber() . '] ' : '';
+                    $label .= $unit->getSerialNumber() ?: 'ID: ' . $unit->getId();
                     return $label;
                 },
                 'placeholder' => 'Selección automática (Rotación)',
