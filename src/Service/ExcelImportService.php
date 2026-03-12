@@ -217,12 +217,18 @@ class ExcelImportService
         ];
         $sheet->getStyle('A1:E1')->applyFromArray($headerStyle);
         
-        // Add example data
-        $sheet->setCellValue('A2', 'Linterna LED');
-        $sheet->setCellValue('B2', '8435123456789');
-        $sheet->setCellValue('C2', 'Logística');
-        $sheet->setCellValue('D2', '10');
-        $sheet->setCellValue('E2', 'Linterna LED recargable de alta potencia');
+        // Add example data (Consumables)
+        $sheet->setCellValue('A2', 'Gasas Estériles 10x10');
+        $sheet->setCellValue('B2', '8412345678901');
+        $sheet->setCellValue('C2', 'Sanitario');
+        $sheet->setCellValue('D2', '50');
+        $sheet->setCellValue('E2', 'Sobre de 5 gasas estériles para curas');
+
+        $sheet->setCellValue('A3', 'Suero Fisiológico 250ml');
+        $sheet->setCellValue('B3', '8412345678902');
+        $sheet->setCellValue('C3', 'Sanitario');
+        $sheet->setCellValue('D3', '20');
+        $sheet->setCellValue('E3', 'Frasco para irrigación');
         
         // Auto-size columns
         foreach (range('A', 'E') as $col) {

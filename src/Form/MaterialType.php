@@ -107,10 +107,13 @@ class MaterialType extends AbstractType
                     'Curas' => 'Curas',
                     'Inmovilización' => 'Inmovilización',
                     'Vía Aérea' => 'ViaAerea',
+                    'Cánulas' => 'Canulas',
                     'Diagnóstico' => 'Diagnostico',
+                    'Constantes' => 'Constantes',
                     'Sueroterapia' => 'Sueroterapia',
                     'Medicación' => 'Medicacion',
-                    'Material de Entrenamiento' => 'Entrenamiento'
+                    'Material de Entrenamiento' => 'Entrenamiento',
+                    'Otros' => 'Otros'
                 ],
                 'attr' => ['class' => 'form-control']
             ])
