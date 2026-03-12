@@ -34,7 +34,6 @@ tailwindcss.exe
 /var/cache/
 /var/*.db
 test-results/
-.phpunit.cache/
 
 /vendor/
 /public/assets/
