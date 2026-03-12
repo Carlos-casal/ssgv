@@ -7,7 +7,3 @@ when@dev:
         resource: '@WebProfilerBundle/Resources/config/routing/profiler.php'
         prefix: /_profiler
 
-    app_auto_login:
-        path: /auto-login/{id}
-        controller: App\Controller\SecurityController::autoLogin
-        methods: [GET]
