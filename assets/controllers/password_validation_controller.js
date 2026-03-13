@@ -6,8 +6,8 @@ export default class extends Controller {
     validate() {
         const password = this.passwordTarget.value;
 
-        // 8+ characters
-        const isLongEnough = password.length >= 8;
+        // 12+ characters
+        const isLongEnough = password.length >= 12;
         this.updateFeedback(this.lengthTarget, isLongEnough);
 
         // 1 uppercase

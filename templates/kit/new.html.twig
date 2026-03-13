@@ -1,0 +1,56 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Registrar Nuevo Botiquín{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center">
+        <i data-lucide="plus-circle" class="w-6 h-6 text-blue-600 mr-2"></i>
+        <span class="font-black tracking-tight uppercase">REGISTRAR NUEVO BOTIQUÍN</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4">
+                <div class="card-body p-5">
+                    <form action="{{ path('app_kit_new') }}" method="POST">
+                        <input type="hidden" name="_token" value="{{ csrf_token('kit_new') }}">
+
+                        <div class="mb-4">
+                            <label for="template_id" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Plantilla Base</label>
+                            <select name="template_id" id="template_id" class="form-select form-select-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" required>
+                                <option value="" disabled selected>Selecciona una plantilla...</option>
+                                {% for template in templates %}
+                                    <option value="{{ template.id }}">{{ template.name }} ({{ template.containerType }})</option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text text-[10px] mt-2">Los productos se cargarán automáticamente según esta plantilla.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="alias" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Alias / Identificador</label>
+                            <input type="text" name="alias" id="alias" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: Botiquín Alfa 1">
+                        </div>
+
+                        <div class="mb-5">
+                            <label for="serial_number" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Número de Serie</label>
+                            <input type="text" name="serial_number" id="serial_number" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: SN-2024-001">
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg rounded-3 font-black uppercase tracking-widest shadow-sm py-3">
+                                <i data-lucide="save" class="w-5 h-5 inline mr-2"></i> REGISTRAR Y CARGAR STOCK
+                            </button>
+                            <a href="{{ path('app_kit_index') }}" class="btn btn-link text-slate-400 text-xs font-bold uppercase text-decoration-none py-2">
+                                Cancelar y volver
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
