@@ -82,34 +82,32 @@
                                             </td>
                                         </tr>
                                     {% endfor %}
-
-                                    <!-- Row template for items -->
-                                    <template data-kit-template-target="prototype">
-                                        <tr class="kit-item-row">
-                                            <td class="ps-4">
-                                                <select name="items[__index__][material]" class="form-select form-select-sm" required>
-                                                    <option value="" disabled selected>Selecciona material...</option>
-                                                    {% for material in materials %}
-                                                        <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td class="pe-4">
-                                                <div class="input-group input-group-sm">
-                                                    <input type="number" name="items[__index__][quantity]" class="form-control text-end font-bold" min="1" value="1" required>
-                                                    <span class="input-group-text bg-white">unids.</span>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-template#removeItem">
-                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </template>
                                 </tbody>
                             </table>
                         </div>
+                        <template data-kit-template-target="prototype">
+                            <tr class="kit-item-row">
+                                <td class="ps-4">
+                                    <select name="items[__index__][material]" class="form-select form-select-sm" required>
+                                        <option value="" disabled selected>Selecciona material...</option>
+                                        {% for material in materials %}
+                                            <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </td>
+                                <td class="pe-4">
+                                    <div class="input-group input-group-sm">
+                                        <input type="number" name="items[__index__][quantity]" class="form-control text-end font-bold" min="1" value="1" required>
+                                        <span class="input-group-text bg-white">unids.</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-template#removeItem">
+                                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </template>
                     </div>
                     <div class="card-footer bg-white p-4 border-top border-slate-100 d-flex justify-content-end gap-2">
                         <a href="{{ path('app_kit_template_index') }}" class="btn btn-light px-4 font-bold">CANCELAR</a>
@@ -120,4 +118,27 @@
         </div>
     </form>
 </div>
+    <template data-kit-template-target="prototype" class="d-none">
+        <tr class="kit-item-row">
+            <td class="ps-4">
+                <select name="items[__index__][material]" class="form-select form-select-sm" required>
+                    <option value="" disabled selected>Selecciona material...</option>
+                    {% for material in materials %}
+                        <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="pe-4">
+                <div class="input-group input-group-sm">
+                    <input type="number" name="items[__index__][quantity]" class="form-control text-end font-bold" min="1" value="1" required>
+                    <span class="input-group-text bg-white">unids.</span>
+                </div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-template#removeItem">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </td>
+        </tr>
+    </template>
 {% endblock %}

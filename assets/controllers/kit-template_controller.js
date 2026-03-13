@@ -2,31 +2,30 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ["container", "prototype"];
-    index = 0;
 
     connect() {
         console.log("Kit Template Controller connected");
-        // Add first item by default if container is empty
-        if (this.containerTarget.querySelectorAll('.kit-item-row').length === 0) {
-            this.addItem();
-        }
-
-        // Use event delegation for remove buttons that might exist in edit mode
-        this.element.addEventListener('click', (e) => {
-            const removeBtn = e.target.closest('[data-action="click->kit-template#removeItem"]');
-            if (removeBtn) {
-                this.removeItem(e);
-            }
-        });
 
         // Initialize index based on existing rows
-        this.index = this.containerTarget.querySelectorAll('.kit-item-row').length;
+        const rows = this.containerTarget.querySelectorAll('.kit-item-row');
+        this.index = rows.length;
+
+        // Add first item by default if container is empty
+        if (this.index === 0) {
+            this.addItem();
+        }
     }
 
-    addItem() {
-        console.log("Adding item...");
-        const prototype = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);
-        this.containerTarget.insertAdjacentHTML('beforeend', prototype);
+    addItem(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        console.log("Adding item at index:", this.index);
+
+        // Use the content of the template tag
+        const html = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);
+        this.containerTarget.insertAdjacentHTML('beforeend', html);
         this.index++;
 
         if (window.lucide) {
@@ -35,6 +34,13 @@ export default class extends Controller {
     }
 
     removeItem(event) {
-        event.currentTarget.closest('tr').remove();
+        if (event) {
+            event.preventDefault();
+        }
+
+        const row = event.target.closest('.kit-item-row');
+        if (row) {
+            row.remove();
+        }
     }
 }
