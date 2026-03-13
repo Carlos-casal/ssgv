@@ -22,6 +22,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/material')]
@@ -277,6 +278,8 @@ class MaterialController extends AbstractController
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al importar: ' . $e->getMessage());
         }
+
+        return $this->redirectToRoute('app_material_index');
     }
 
     #[Route('/check-barcode', name: 'app_material_check_barcode', methods: ['GET'])]
