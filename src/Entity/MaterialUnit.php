@@ -65,6 +65,12 @@ class MaterialUnit
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $discountPct = null;
 
+    #[ORM\ManyToOne]
+    private ?KitTemplate $template = null;
+
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    private ?Location $kitLocation = null;
+
     #[ORM\OneToMany(mappedBy: 'materialUnit', targetEntity: MaterialUnitHistory::class, orphanRemoval: true)]
     private Collection $history;
 
@@ -254,6 +260,30 @@ class MaterialUnit
     public function setDiscountPct(?string $discountPct): static
     {
         $this->discountPct = $discountPct;
+
+        return $this;
+    }
+
+    public function getTemplate(): ?KitTemplate
+    {
+        return $this->template;
+    }
+
+    public function setTemplate(?KitTemplate $template): static
+    {
+        $this->template = $template;
+
+        return $this;
+    }
+
+    public function getKitLocation(): ?Location
+    {
+        return $this->kitLocation;
+    }
+
+    public function setKitLocation(?Location $kitLocation): static
+    {
+        $this->kitLocation = $kitLocation;
 
         return $this;
     }
