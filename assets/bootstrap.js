@@ -13,6 +13,12 @@ import BulkUnitController from './controllers/bulk_unit_controller.js';
 import UniformityGridController from './controllers/uniformity_grid_controller.js';
 import MaterialSizingController from './controllers/material_sizing_controller.js';
 import MaterialDynamicFormController from './controllers/material_dynamic_form_controller.js';
+import KitTemplateController from './controllers/kit-template_controller.js';
+import ServiceDetailsController from './controllers/service_details_controller.js';
+import FormValidationController from './controllers/form_validation_controller.js';
+import CsrfProtectionController from './controllers/csrf_protection_controller.js';
+import HelloController from './controllers/hello_controller.js';
+import MaterialCommsFormController from './controllers/material_comms_form_controller.js';
 
 const app = startStimulusApp();
 
@@ -29,3 +35,9 @@ app.register('bulk-unit', BulkUnitController);
 app.register('uniformity-grid', UniformityGridController);
 app.register('material-sizing', MaterialSizingController);
 app.register('material-dynamic-form', MaterialDynamicFormController);
+app.register('kit-template', KitTemplateController);
+app.register('service-details', ServiceDetailsController);
+app.register('form-validation', FormValidationController);
+app.register('csrf-protection', CsrfProtectionController);
+app.register('hello', HelloController);
+app.register('material-comms-form', MaterialCommsFormController);
