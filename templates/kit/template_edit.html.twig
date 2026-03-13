@@ -1,16 +1,16 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Nueva Plantilla de Botiquín{% endblock %}
+{% block title %}Editar Plantilla de Botiquín{% endblock %}
 
 {% block page_title %}
     <div class="d-flex align-items-center w-100">
-        <i data-lucide="plus-circle" class="w-6 h-6 text-blue-600 mr-2"></i>
-        <span class="font-black tracking-tight uppercase">CREAR NUEVA PLANTILLA DE CONFIGURACIÓN</span>
+        <i data-lucide="edit-3" class="w-6 h-6 text-blue-600 mr-2"></i>
+        <span class="font-black tracking-tight uppercase">EDITAR PLANTILLA: {{ template.name }}</span>
     </div>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4" id="kit-template-root" data-controller="kit-template">
+<div class="container-fluid px-4" data-controller="kit-template">
     <form method="POST">
         <input type="hidden" name="_token" value="{{ csrf_token('kit_template') }}">
         <div class="row g-4">
@@ -22,19 +22,19 @@
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Nombre de la Plantilla</label>
-                            <input type="text" name="name" class="form-control form-control-sm font-bold" placeholder="Ej: Mochila SVB Básica" required>
+                            <input type="text" name="name" class="form-control form-control-sm font-bold" placeholder="Ej: Mochila SVB Básica" value="{{ template.name }}" required>
                         </div>
                         <div class="mb-3">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Tipo de Contenedor</label>
                             <select name="container_type" class="form-select form-select-sm" required>
-                                <option value="Mochila">Mochila</option>
-                                <option value="Bolsa">Bolsa</option>
-                                <option value="Riñonera">Riñonera</option>
+                                <option value="Mochila" {{ template.containerType == 'Mochila' ? 'selected' : '' }}>Mochila</option>
+                                <option value="Bolsa" {{ template.containerType == 'Bolsa' ? 'selected' : '' }}>Bolsa</option>
+                                <option value="Riñonera" {{ template.containerType == 'Riñonera' ? 'selected' : '' }}>Riñonera</option>
                             </select>
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Descripción / Notas</label>
-                            <textarea name="description" class="form-control form-control-sm" rows="4" placeholder="Para qué se usa esta configuración..."></textarea>
+                            <textarea name="description" class="form-control form-control-sm" rows="4" placeholder="Para qué se usa esta configuración...">{{ template.description }}</textarea>
                         </div>
                     </div>
                 </div>
@@ -58,7 +58,31 @@
                                         <th class="border-0" style="width: 50px;"></th>
                                     </tr>
                                 </thead>
-                                <tbody data-kit-template-target="container"></tbody>
+                                <tbody data-kit-template-target="container">
+                                    {% for item in template.items %}
+                                        <tr class="kit-item-row">
+                                            <td class="ps-4">
+                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm" required>
+                                                    <option value="" disabled>Selecciona material...</option>
+                                                    {% for material in materials %}
+                                                        <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }} (Stock: {{ material.stock }})</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td class="pe-4">
+                                                <div class="input-group input-group-sm">
+                                                    <input type="number" name="items[{{ loop.index0 }}][quantity]" class="form-control text-end font-bold" min="1" value="{{ item.quantity }}" required>
+                                                    <span class="input-group-text bg-white">unids.</span>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-template#removeItem">
+                                                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
                             </table>
                         </div>
                         <template data-kit-template-target="prototype">
@@ -94,4 +118,27 @@
         </div>
     </form>
 </div>
+    <template data-kit-template-target="prototype" class="d-none">
+        <tr class="kit-item-row">
+            <td class="ps-4">
+                <select name="items[__index__][material]" class="form-select form-select-sm" required>
+                    <option value="" disabled selected>Selecciona material...</option>
+                    {% for material in materials %}
+                        <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>
+                    {% endfor %}
+                </select>
+            </td>
+            <td class="pe-4">
+                <div class="input-group input-group-sm">
+                    <input type="number" name="items[__index__][quantity]" class="form-control text-end font-bold" min="1" value="1" required>
+                    <span class="input-group-text bg-white">unids.</span>
+                </div>
+            </td>
+            <td>
+                <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-template#removeItem">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </td>
+        </tr>
+    </template>
 {% endblock %}
