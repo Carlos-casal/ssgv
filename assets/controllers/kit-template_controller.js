@@ -2,18 +2,21 @@ import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
     static targets = ["container", "prototype"];
-    index = 0;
 
     connect() {
         console.log("Kit Template Controller connected");
-        // Add first item by default
-        this.addItem();
     }
 
-    addItem() {
-        console.log("Adding item...");
-        const prototype = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);
-        this.containerTarget.insertAdjacentHTML('beforeend', prototype);
+    addItem(event) {
+        if (event) {
+            event.preventDefault();
+        }
+
+        console.log("Adding item at index:", this.index);
+
+        // Use the content of the template tag
+        const html = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);
+        this.containerTarget.insertAdjacentHTML('beforeend', html);
         this.index++;
 
         if (window.lucide) {
@@ -22,6 +25,13 @@ export default class extends Controller {
     }
 
     removeItem(event) {
-        event.currentTarget.closest('tr').remove();
+        if (event) {
+            event.preventDefault();
+        }
+
+        const row = event.target.closest('.kit-item-row');
+        if (row) {
+            row.remove();
+        }
     }
 }
