@@ -83,6 +83,9 @@ class Material
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $discountPercentage = null;
 
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $marginPercentage = null;
+
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $serialNumber = null;
 
@@ -194,11 +197,24 @@ class Material
         return $this;
     }
 
+    public function getMarginPercentage(): ?string
+    {
+        return $this->marginPercentage;
+    }
+
+    public function setMarginPercentage(?string $marginPercentage): static
+    {
+        $this->marginPercentage = $marginPercentage;
+
+        return $this;
+    }
+
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
     public function syncNatureWithCategory(): void
     {
-        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística', 'Sanitario'];
+        // Sanitario is removed because it can be both CONSUMABLE and TECHNICAL
+        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
         if (in_array($this->category, $technicalCategories)) {
             $this->nature = self::NATURE_TECHNICAL;
         }
