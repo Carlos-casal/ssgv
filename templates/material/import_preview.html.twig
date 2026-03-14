@@ -29,7 +29,7 @@
                     <table class="table table-sm table-bordered">
                         <thead class="thead-light">
                             <tr>
-                                <th>Nombre</th>
+                                <th>Nombre Comercial</th>
                                 <th>Código de Barras</th>
                                 <th>Stock Actual</th>
                                 <th>Stock a Añadir</th>
@@ -62,9 +62,10 @@
                     <table class="table table-sm table-bordered">
                         <thead class="thead-light">
                             <tr>
-                                <th>Nombre</th>
+                                <th>Nombre Comercial</th>
                                 <th>Código de Barras</th>
                                 <th>Categoría</th>
+                                <th>Naturaleza</th>
                                 <th>Stock Inicial</th>
                             </tr>
                         </thead>
@@ -74,6 +75,7 @@
                                 <td>{{ item.name }}</td>
                                 <td><code>{{ item.barcode|default('Sin código') }}</code></td>
                                 <td><span class="badge badge-secondary">{{ item.category }}</span></td>
+                                <td><span class="badge badge-info">{{ item.nature }}</span></td>
                                 <td class="font-weight-bold">{{ item.initial_stock }}</td>
                             </tr>
                             {% endfor %}

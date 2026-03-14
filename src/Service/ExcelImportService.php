@@ -48,11 +48,11 @@ class ExcelImportService
         
         for ($row = 2; $row <= $highestRow; $row++) {
             $name = $this->getCellValue($worksheet, "A", $row);
-            $nature = $this->getCellValue($worksheet, "B", $row);
+            $barcode = $this->getCellValue($worksheet, "B", $row);
             $category = $this->getCellValue($worksheet, "C", $row);
-            $barcode = $this->getCellValue($worksheet, "E", $row);
-            $unitsPerPackage = (int)$this->getCellValue($worksheet, "I", $row) ?: 1;
-            $numPackages = (int)$this->getCellValue($worksheet, "J", $row);
+            $nature = $this->getCellValue($worksheet, "D", $row);
+            $unitsPerPackage = (int)$this->getCellValue($worksheet, "F", $row) ?: 1;
+            $numPackages = (int)$this->getCellValue($worksheet, "G", $row);
             $stock = $unitsPerPackage * $numPackages;
             
             if (empty($name)) {
@@ -113,24 +113,27 @@ class ExcelImportService
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $name = $this->getCellValue($worksheet, "A", $row);
-                $nature = $this->getCellValue($worksheet, "B", $row);
+                $barcode = $this->getCellValue($worksheet, "B", $row);
                 $category = $this->getCellValue($worksheet, "C", $row);
-                $subFamily = $this->getCellValue($worksheet, "D", $row);
-                $barcode = $this->getCellValue($worksheet, "E", $row);
-                $batchNumber = $this->getCellValue($worksheet, "F", $row);
-                $expirationDate = $this->getDateValue($worksheet, "G", $row);
-                $supplier = $this->getCellValue($worksheet, "H", $row);
-                $unitsPerPackage = (int)$this->getCellValue($worksheet, "I", $row) ?: 1;
-                $numPackages = (int)$this->getCellValue($worksheet, "J", $row);
-                $totalPrice = $this->getCellValue($worksheet, "K", $row);
-                $discountPct = $this->getCellValue($worksheet, "L", $row);
-                // Margin in M (13) - currently not used in entity
-                $brandModel = $this->getCellValue($worksheet, "N", $row);
-                $serialNumber = $this->getCellValue($worksheet, "O", $row);
+                $nature = $this->getCellValue($worksheet, "D", $row);
+                $subFamily = $this->getCellValue($worksheet, "E", $row);
+                $unitsPerPackage = (int)$this->getCellValue($worksheet, "F", $row) ?: 1;
+                $numPackages = (int)$this->getCellValue($worksheet, "G", $row);
+                $safetyStock = (int)$this->getCellValue($worksheet, "H", $row);
+                $batchNumber = $this->getCellValue($worksheet, "I", $row);
+                $expirationDate = $this->getDateValue($worksheet, "J", $row);
+                $supplier = $this->getCellValue($worksheet, "K", $row);
+                $totalPrice = $this->getCellValue($worksheet, "L", $row);
+                $marginPct = $this->getCellValue($worksheet, "M", $row);
+                $iva = $this->getCellValue($worksheet, "N", $row);
+                $brandModel = $this->getCellValue($worksheet, "O", $row);
                 $alias = $this->getCellValue($worksheet, "P", $row);
-                $purchaseDate = $this->getDateValue($worksheet, "Q", $row);
-                $warrantyEndDate = $this->getDateValue($worksheet, "R", $row);
-                $description = $this->getCellValue($worksheet, "S", $row);
+                $serialNumber = $this->getCellValue($worksheet, "Q", $row);
+                $networkId = $this->getCellValue($worksheet, "R", $row);
+                $phoneNumber = $this->getCellValue($worksheet, "S", $row);
+                $purchaseDate = $this->getDateValue($worksheet, "T", $row);
+                $warrantyEndDate = $this->getDateValue($worksheet, "U", $row);
+                $description = $this->getCellValue($worksheet, "V", $row);
 
                 if (empty($name)) {
                     continue;
@@ -161,13 +164,17 @@ class ExcelImportService
                 if ($category) $material->setCategory($category);
                 if ($subFamily) $material->setSubFamily($subFamily);
                 if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
+                if ($safetyStock) $material->setSafetyStock($safetyStock);
                 if ($batchNumber) $material->setBatchNumber($batchNumber);
                 if ($expirationDate) $material->setExpirationDate($expirationDate);
                 if ($supplier) $material->setSupplier($supplier);
                 $material->setUnitsPerPackage($unitsPerPackage);
                 if ($totalPrice) $material->setTotalPrice($totalPrice);
-                if ($discountPct) $material->setDiscountPercentage($discountPct);
+                if ($marginPct) $material->setMarginPercentage($marginPct);
+                if ($iva) $material->setIva($iva);
                 if ($brandModel) $material->setBrandModel($brandModel);
+                if ($networkId) $material->setNetworkId($networkId);
+                if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
                 if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
                 if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
                 if ($description) $material->setDescription($description);
@@ -189,7 +196,9 @@ class ExcelImportService
                                 'alias' => $alias,
                                 'brandModel' => $brandModel,
                                 'purchasePrice' => $totalPrice, // Simplified: total price per unit
-                                'discountPct' => $discountPct,
+                                'discountPct' => $marginPct, // Use margin for units if discount is not separate
+                                'networkId' => $networkId,
+                                'phoneNumber' => $phoneNumber,
                             ]);
                         }
                     } else {
@@ -228,11 +237,19 @@ class ExcelImportService
 
     private function getDateValue($worksheet, $col, $row): ?\DateTimeImmutable
     {
-        $value = $worksheet->getCell($col . $row)->getValue();
+        $cell = $worksheet->getCell($col . $row);
+        $value = $cell->getValue();
         if (empty($value)) return null;
 
         if (is_numeric($value)) {
             return \DateTimeImmutable::createFromMutable(Date::excelToDateTimeObject($value));
+        }
+
+        // Try common Spanish formats
+        $formats = ['d/m/Y', 'd/m/y', 'd-m-Y', 'd-m-y', 'Y-m-d'];
+        foreach ($formats as $format) {
+            $date = \DateTimeImmutable::createFromFormat($format, $value);
+            if ($date) return $date->setTime(0, 0, 0);
         }
 
         try {
@@ -293,25 +310,28 @@ class ExcelImportService
         
         // Set headers
         $headers = [
-            'A1' => 'Nombre *',
-            'B1' => 'Naturaleza (CONSUMIBLE/EQUIPO_TEC)',
+            'A1' => 'Nombre Comercial *',
+            'B1' => 'Código de Barras *',
             'C1' => 'Categoría',
-            'D1' => 'Subfamilia',
-            'E1' => 'Código de Barras',
-            'F1' => 'Lote (Consumibles)',
-            'G1' => 'Fecha Caducidad (AAAA-MM-DD)',
-            'H1' => 'Proveedor',
-            'I1' => 'Uds por Envase',
-            'J1' => 'Nº Envases (Stock Inicial)',
-            'K1' => 'Coste Total Compra (sin IVA)',
-            'L1' => '% Descuento',
+            'D1' => 'Naturaleza (CONSUMIBLE/EQUIPO_TECNICO)',
+            'E1' => 'Subfamilia',
+            'F1' => 'Unidades por Envase',
+            'G1' => 'Nº de Envases',
+            'H1' => 'Stock Mínimo (Envases)',
+            'I1' => 'Lote',
+            'J1' => 'Fecha de Caducidad (DD/MM/AA)',
+            'K1' => 'Proveedor',
+            'L1' => 'Precio Compra Total (IVA inc.)',
             'M1' => 'Margen (%)',
-            'N1' => 'Marca/Modelo (Equipamiento)',
-            'O1' => 'Nº Serie (S/N)',
-            'P1' => 'Alias (Equipo)',
-            'Q1' => 'Fecha Compra (AAAA-MM-DD)',
-            'R1' => 'Fin Garantía (AAAA-MM-DD)',
-            'S1' => 'Descripción'
+            'N1' => 'IVA (%)',
+            'O1' => 'Marca y Modelo',
+            'P1' => 'Alias',
+            'Q1' => 'Número de Serie',
+            'R1' => 'ID de Red (ISSI/IMEI)',
+            'S1' => 'Teléfono',
+            'T1' => 'Fecha de Compra (DD/MM/AA)',
+            'U1' => 'Fin de Garantía (DD/MM/AA)',
+            'V1' => 'Descripción'
         ];
 
         foreach ($headers as $cell => $value) {
@@ -323,32 +343,33 @@ class ExcelImportService
             'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
             'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']]
         ];
-        $sheet->getStyle('A1:S1')->applyFromArray($headerStyle);
+        $sheet->getStyle('A1:V1')->applyFromArray($headerStyle);
         
         // Add example data
-        $sheet->setCellValue('A2', 'Pulse Oximeter MD300C6');
-        $sheet->setCellValue('B2', 'EQUIPO_TECNICO');
-        $sheet->setCellValue('C2', 'Sanitario');
-        $sheet->setCellValue('D2', 'Constantes');
-        $sheet->setCellValue('I2', '1');
-        $sheet->setCellValue('J2', '1');
-        $sheet->setCellValue('N2', 'Pulsioximetro de dedo');
-        $sheet->setCellValue('O2', 'SN123456789');
-        $sheet->setCellValue('P2', 'Pulsi 01');
-        $sheet->setCellValue('Q2', '2024-01-15');
+        $sheet->setCellValue('A2', 'Motorola DP1400');
+        $sheet->setCellValue('B2', 'SN-DP1400-01');
+        $sheet->setCellValue('C2', 'Comunicaciones');
+        $sheet->setCellValue('D2', 'EQUIPO_TECNICO');
+        $sheet->setCellValue('E2', 'Portátiles');
+        $sheet->setCellValue('F2', '1');
+        $sheet->setCellValue('G2', '1');
+        $sheet->setCellValue('O2', 'Motorola');
+        $sheet->setCellValue('P2', 'TALKI-01');
+        $sheet->setCellValue('Q2', 'SN99887766');
+        $sheet->setCellValue('R2', '123456');
 
-        $sheet->setCellValue('A3', 'Canula de Guedel');
-        $sheet->setCellValue('B3', 'CONSUMIBLE');
+        $sheet->setCellValue('A3', 'Paracetamol 500mg');
+        $sheet->setCellValue('B3', '8470006521458');
         $sheet->setCellValue('C3', 'Sanitario');
-        $sheet->setCellValue('D3', 'Canula');
-        $sheet->setCellValue('E3', '697209E12');
-        $sheet->setCellValue('F3', '2407010903');
-        $sheet->setCellValue('G3', '2028-06-01');
-        $sheet->setCellValue('I3', '1');
-        $sheet->setCellValue('J3', '10');
+        $sheet->setCellValue('D3', 'CONSUMIBLE');
+        $sheet->setCellValue('E3', 'Analgesia');
+        $sheet->setCellValue('F3', '20');
+        $sheet->setCellValue('G3', '10');
+        $sheet->setCellValue('I3', 'L24001');
+        $sheet->setCellValue('J3', '01/01/26');
         
         // Auto-size columns
-        foreach (range('A', 'S') as $col) {
+        foreach (range('A', 'V') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
         
