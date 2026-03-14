@@ -198,7 +198,8 @@ class Material
     #[ORM\PreUpdate]
     public function syncNatureWithCategory(): void
     {
-        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística', 'Sanitario'];
+        // Sanitario is removed because it can be both CONSUMABLE and TECHNICAL
+        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
         if (in_array($this->category, $technicalCategories)) {
             $this->nature = self::NATURE_TECHNICAL;
         }
