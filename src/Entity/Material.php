@@ -83,6 +83,9 @@ class Material
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $discountPercentage = null;
 
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $marginPercentage = null;
+
     #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $serialNumber = null;
 
@@ -190,6 +193,18 @@ class Material
     public function setDiscountPercentage(?string $discountPercentage): static
     {
         $this->discountPercentage = $discountPercentage;
+
+        return $this;
+    }
+
+    public function getMarginPercentage(): ?string
+    {
+        return $this->marginPercentage;
+    }
+
+    public function setMarginPercentage(?string $marginPercentage): static
+    {
+        $this->marginPercentage = $marginPercentage;
 
         return $this;
     }
