@@ -8,6 +8,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
+use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class ExcelImportService
@@ -32,7 +33,7 @@ class ExcelImportService
     /**
      * Preview the Excel file and return statistics about what will be imported
      */
-    public function previewImport(UploadedFile $file): array
+    public function previewImport(File $file): array
     {
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
@@ -94,7 +95,7 @@ class ExcelImportService
     /**
      * Process the Excel import and create/update materials
      */
-    public function processImport(UploadedFile $file): array
+    public function processImport(File $file): array
     {
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
@@ -160,24 +161,26 @@ class ExcelImportService
                 }
 
                 // Update Material fields
-                if ($nature) $material->setNature($nature);
-                if ($category) $material->setCategory($category);
-                if ($subFamily) $material->setSubFamily($subFamily);
-                if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
-                if ($safetyStock) $material->setSafetyStock($safetyStock);
-                if ($batchNumber) $material->setBatchNumber($batchNumber);
-                if ($expirationDate) $material->setExpirationDate($expirationDate);
-                if ($supplier) $material->setSupplier($supplier);
-                $material->setUnitsPerPackage($unitsPerPackage);
-                if ($totalPrice) $material->setTotalPrice($totalPrice);
-                if ($marginPct) $material->setMarginPercentage($marginPct);
-                if ($iva) $material->setIva($iva);
-                if ($brandModel) $material->setBrandModel($brandModel);
-                if ($networkId) $material->setNetworkId($networkId);
-                if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
-                if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
-                if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
-                if ($description) $material->setDescription($description);
+                if ($isNew) {
+                    if ($nature) $material->setNature($nature);
+                    if ($category) $material->setCategory($category);
+                    if ($subFamily) $material->setSubFamily($subFamily);
+                    if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
+                    if ($safetyStock) $material->setSafetyStock($safetyStock);
+                    if ($batchNumber) $material->setBatchNumber($batchNumber);
+                    if ($expirationDate) $material->setExpirationDate($expirationDate);
+                    if ($supplier) $material->setSupplier($supplier);
+                    $material->setUnitsPerPackage($unitsPerPackage);
+                    if ($totalPrice) $material->setTotalPrice($totalPrice);
+                    if ($marginPct) $material->setMarginPercentage($marginPct);
+                    if ($iva) $material->setIva($iva);
+                    if ($brandModel) $material->setBrandModel($brandModel);
+                    if ($networkId) $material->setNetworkId($networkId);
+                    if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
+                    if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
+                    if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
+                    if ($description) $material->setDescription($description);
+                }
 
                 // Handle Image
                 if (isset($images[$row])) {
@@ -225,6 +228,10 @@ class ExcelImportService
         $cell = $worksheet->getCell($col . $row);
         $value = $cell->getValue();
 
+        if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
+            $value = $value->getPlainText();
+        }
+
         if ($cell->getDataType() === \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC) {
             // Check if it's formatted as a date
             if (Date::isDateTime($cell)) {
@@ -232,7 +239,7 @@ class ExcelImportService
             }
         }
 
-        return $value;
+        return is_string($value) ? trim($value) : $value;
     }
 
     private function getDateValue($worksheet, $col, $row): ?\DateTimeImmutable

@@ -3,6 +3,7 @@
 namespace App\Form;
 
 use App\Entity\Material;
+use App\Repository\MaterialRepository;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -21,8 +22,31 @@ use Symfony\Component\Form\CallbackTransformer;
 
 class MaterialType extends AbstractType
 {
+    private MaterialRepository $materialRepository;
+
+    public function __construct(MaterialRepository $materialRepository)
+    {
+        $this->materialRepository = $materialRepository;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $existingCategories = $this->materialRepository->findAllExistingCategories();
+        $defaultCategories = ['Sanitario', 'Comunicaciones', 'Logística', 'Mar', 'Uniformidad', 'Varios'];
+        $categoryChoices = array_unique(array_merge($defaultCategories, $existingCategories));
+        $categoryChoices = array_combine($categoryChoices, $categoryChoices);
+
+        $existingNatures = $this->materialRepository->findAllExistingNatures();
+        $natureChoices = [
+            'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
+            'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL
+        ];
+        foreach ($existingNatures as $nature) {
+            if (!in_array($nature, $natureChoices)) {
+                $natureChoices[$nature] = $nature;
+            }
+        }
+
         $builder
             ->add('name', TextType::class, [
                 'label' => 'NOMBRE COMERCIAL**',
@@ -50,22 +74,12 @@ class MaterialType extends AbstractType
             ])
             ->add('category', ChoiceType::class, [
                 'label' => 'Categoría',
-                'choices' => [
-                    'Sanitario' => 'Sanitario',
-                    'Comunicaciones' => 'Comunicaciones',
-                    'Logística' => 'Logística',
-                    'Mar' => 'Mar',
-                    'Uniformidad' => 'Uniformidad',
-                    'Varios' => 'Varios'
-                ],
+                'choices' => $categoryChoices,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('nature', ChoiceType::class, [
                 'label' => 'NATURALEZA**',
-                'choices' => [
-                    'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
-                    'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL
-                ],
+                'choices' => $natureChoices,
                 'attr' => [
                     'class' => 'form-control',
                     'data-material-dynamic-form-target' => 'natureSelect',
