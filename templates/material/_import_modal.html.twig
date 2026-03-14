@@ -41,7 +41,7 @@
                     Subir Archivo Completado
                 </h6>
 
-                <form method="post" action="{{ path('app_material_import_preview') }}" enctype="multipart/form-data">
+                <form method="post" action="{{ path('app_material_import_preview') }}" enctype="multipart/form-data" data-turbo="false">
                     <div class="form-group">
                         <label for="import_file">Selecciona el archivo Excel:</label>
                         <div class="custom-file">
