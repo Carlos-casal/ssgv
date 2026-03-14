@@ -29,4 +29,34 @@ class MaterialRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
     }
+
+    /**
+     * Returns all unique categories present in the material database.
+     */
+    public function findAllExistingCategories(): array
+    {
+        $results = $this->createQueryBuilder('m')
+            ->select('DISTINCT m.category')
+            ->where('m.category IS NOT NULL')
+            ->orderBy('m.category', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'category');
+    }
+
+    /**
+     * Returns all unique natures present in the material database.
+     */
+    public function findAllExistingNatures(): array
+    {
+        $results = $this->createQueryBuilder('m')
+            ->select('DISTINCT m.nature')
+            ->where('m.nature IS NOT NULL')
+            ->orderBy('m.nature', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'nature');
+    }
 }
