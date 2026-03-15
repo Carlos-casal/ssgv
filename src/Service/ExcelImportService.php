@@ -226,7 +226,7 @@ class ExcelImportService
     private function getCellValue($worksheet, $col, $row)
     {
         $cell = $worksheet->getCell($col . $row);
-        $value = $cell->getValue();
+        $value = $cell->getCalculatedValue();
 
         if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
             $value = $value->getPlainText();
