@@ -31,12 +31,12 @@ class MaterialType extends AbstractType
 
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $existingCategories = $this->materialRepository->findAllExistingCategories();
+        $existingCategories = array_filter($this->materialRepository->findAllExistingCategories());
         $defaultCategories = ['Sanitario', 'Comunicaciones', 'Logística', 'Mar', 'Uniformidad', 'Varios'];
         $categoryChoices = array_unique(array_merge($defaultCategories, $existingCategories));
         $categoryChoices = array_combine($categoryChoices, $categoryChoices);
 
-        $existingNatures = $this->materialRepository->findAllExistingNatures();
+        $existingNatures = array_filter($this->materialRepository->findAllExistingNatures());
         $natureChoices = [
             'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
             'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL

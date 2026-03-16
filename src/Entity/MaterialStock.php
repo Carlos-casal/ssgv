@@ -21,7 +21,7 @@ class MaterialStock
     #[ORM\JoinColumn(nullable: true)]
     private ?Location $location = null;
 
-    #[ORM\Column(length: 20)]
+    #[ORM\Column(length: 20, nullable: true)]
     private ?string $size = null;
 
     #[ORM\Column(options: ["default" => 0])]
