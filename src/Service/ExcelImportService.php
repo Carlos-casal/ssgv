@@ -31,6 +31,67 @@ class ExcelImportService
     }
 
     /**
+     * Map Excel columns to field names based on headers in first row
+     */
+    private function mapColumns($worksheet): array
+    {
+        $map = [];
+        $highestColumn = $worksheet->getHighestColumn();
+        $highestColumnIndex = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($highestColumn);
+
+        $headers = [
+            'name' => ['nombre', 'comercial', 'artículo', 'producto', 'name'],
+            'barcode' => ['código', 'barras', 'ean', 'barcode', 'qr', 'barra'],
+            'category' => ['categoría', 'categoria', 'familia', 'category'],
+            'nature' => ['naturaleza', 'tipo', 'clase', 'nature'],
+            'subFamily' => ['subfamilia', 'subfamily'],
+            'unitsPerPackage' => ['unidades', 'envase', 'uds/envase', 'package'],
+            'numPackages' => ['nº', 'envases', 'número', 'number'],
+            'safetyStock' => ['mínimo', 'seguridad', 'crítico', 'safety'],
+            'batchNumber' => ['lote', 'batch'],
+            'expirationDate' => ['caducidad', 'expiration'],
+            'supplier' => ['proveedor', 'supplier'],
+            'totalPrice' => ['precio', 'total', 'coste', 'price'],
+            'marginPct' => ['margen', 'ganancia', 'margin'],
+            'iva' => ['iva', 'tax'],
+            'brandModel' => ['marca', 'modelo', 'brand', 'model'],
+            'alias' => ['alias'],
+            'serialNumber' => ['serie', 's/n', 'serial'],
+            'networkId' => ['id', 'red', 'issi', 'imei', 'network'],
+            'phoneNumber' => ['teléfono', 'móvil', 'phone'],
+            'purchaseDate' => ['compra', 'purchase'],
+            'warrantyEndDate' => ['garantía', 'fin', 'warranty'],
+            'description' => ['descripción', 'notas', 'description']
+        ];
+
+        // Search in the first 3 rows for headers (in case there's some title or empty rows)
+        for ($row = 1; $row <= 3; $row++) {
+            for ($col = 1; $col <= $highestColumnIndex; $col++) {
+                $cell = $worksheet->getCellByColumnAndRow($col, $row);
+                $cellValue = $cell->getValue();
+                if ($cellValue instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
+                    $cellValue = $cellValue->getPlainText();
+                }
+                $cellValue = mb_strtolower(trim((string)$cellValue));
+                if (empty($cellValue)) continue;
+
+                foreach ($headers as $field => $keywords) {
+                    if (isset($map[$field])) continue; // Already mapped
+                    foreach ($keywords as $keyword) {
+                        if (mb_strpos($cellValue, $keyword) !== false) {
+                            $map[$field] = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (count($map) >= 4) break; // Found main fields, stop searching rows
+        }
+
+        return $map;
+    }
+
+    /**
      * Preview the Excel file and return statistics about what will be imported
      */
     public function previewImport(File $file): array
@@ -38,6 +99,8 @@ class ExcelImportService
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
+        $map = $this->mapColumns($worksheet);
+
         $preview = [
             'total_rows' => 0,
             'existing_items' => [],
@@ -48,12 +111,15 @@ class ExcelImportService
         $highestRow = $worksheet->getHighestRow();
         
         for ($row = 2; $row <= $highestRow; $row++) {
-            $name = $this->getCellValue($worksheet, "A", $row);
-            $barcode = $this->getCellValue($worksheet, "B", $row);
-            $category = $this->getCellValue($worksheet, "C", $row);
-            $nature = $this->getCellValue($worksheet, "D", $row);
-            $unitsPerPackage = (int)$this->getCellValue($worksheet, "F", $row) ?: 1;
-            $numPackages = (int)$this->getCellValue($worksheet, "G", $row);
+            $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
+            $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
+            $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
+            $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+
+            $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
+            if ($unitsPerPackage <= 0) $unitsPerPackage = 1;
+
+            $numPackages = isset($map['numPackages']) ? (int)$this->getCellValue($worksheet, $map['numPackages'], $row) : 0;
             $stock = $unitsPerPackage * $numPackages;
             
             if (empty($name)) {
@@ -100,6 +166,8 @@ class ExcelImportService
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
+        $map = $this->mapColumns($worksheet);
+
         $result = [
             'created' => 0,
             'updated' => 0,
@@ -113,28 +181,32 @@ class ExcelImportService
         
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
-                $name = $this->getCellValue($worksheet, "A", $row);
-                $barcode = $this->getCellValue($worksheet, "B", $row);
-                $category = $this->getCellValue($worksheet, "C", $row);
-                $nature = $this->getCellValue($worksheet, "D", $row);
-                $subFamily = $this->getCellValue($worksheet, "E", $row);
-                $unitsPerPackage = (int)$this->getCellValue($worksheet, "F", $row) ?: 1;
-                $numPackages = (int)$this->getCellValue($worksheet, "G", $row);
-                $safetyStock = (int)$this->getCellValue($worksheet, "H", $row);
-                $batchNumber = $this->getCellValue($worksheet, "I", $row);
-                $expirationDate = $this->getDateValue($worksheet, "J", $row);
-                $supplier = $this->getCellValue($worksheet, "K", $row);
-                $totalPrice = $this->getCellValue($worksheet, "L", $row);
-                $marginPct = $this->getCellValue($worksheet, "M", $row);
-                $iva = $this->getCellValue($worksheet, "N", $row);
-                $brandModel = $this->getCellValue($worksheet, "O", $row);
-                $alias = $this->getCellValue($worksheet, "P", $row);
-                $serialNumber = $this->getCellValue($worksheet, "Q", $row);
-                $networkId = $this->getCellValue($worksheet, "R", $row);
-                $phoneNumber = $this->getCellValue($worksheet, "S", $row);
-                $purchaseDate = $this->getDateValue($worksheet, "T", $row);
-                $warrantyEndDate = $this->getDateValue($worksheet, "U", $row);
-                $description = $this->getCellValue($worksheet, "V", $row);
+                $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
+                $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
+                $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
+                $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+                $subFamily = isset($map['subFamily']) ? $this->getCellValue($worksheet, $map['subFamily'], $row) : null;
+
+                $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
+                if ($unitsPerPackage <= 0) $unitsPerPackage = 1;
+
+                $numPackages = isset($map['numPackages']) ? (int)$this->getCellValue($worksheet, $map['numPackages'], $row) : 0;
+
+                $safetyStock = isset($map['safetyStock']) ? (int)$this->getCellValue($worksheet, $map['safetyStock'], $row) : 0;
+                $batchNumber = isset($map['batchNumber']) ? $this->getCellValue($worksheet, $map['batchNumber'], $row) : null;
+                $expirationDate = isset($map['expirationDate']) ? $this->getDateValue($worksheet, $map['expirationDate'], $row) : null;
+                $supplier = isset($map['supplier']) ? $this->getCellValue($worksheet, $map['supplier'], $row) : null;
+                $totalPrice = isset($map['totalPrice']) ? $this->getCellValue($worksheet, $map['totalPrice'], $row) : null;
+                $marginPct = isset($map['marginPct']) ? $this->getCellValue($worksheet, $map['marginPct'], $row) : null;
+                $iva = isset($map['iva']) ? $this->getCellValue($worksheet, $map['iva'], $row) : null;
+                $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
+                $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
+                $serialNumber = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
+                $networkId = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
+                $phoneNumber = isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null;
+                $purchaseDate = isset($map['purchaseDate']) ? $this->getDateValue($worksheet, $map['purchaseDate'], $row) : null;
+                $warrantyEndDate = isset($map['warrantyEndDate']) ? $this->getDateValue($worksheet, $map['warrantyEndDate'], $row) : null;
+                $description = isset($map['description']) ? $this->getCellValue($worksheet, $map['description'], $row) : null;
 
                 if (empty($name)) {
                     continue;
@@ -226,27 +298,29 @@ class ExcelImportService
     private function getCellValue($worksheet, $col, $row)
     {
         $cell = $worksheet->getCell($col . $row);
+        $value = $cell->getValue();
 
-        // 1. Try to get calculated value (for formulas)
-        try {
-            $value = $cell->getCalculatedValue();
-        } catch (\Exception $e) {
-            // If formula fails, fall back to raw value
-            $value = $cell->getValue();
-        }
-
-        // 2. Handle RichText
+        // Handle RichText
         if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
             $value = $value->getPlainText();
         }
 
-        // 3. Fallback to formatted value if empty (useful for some Excel formats)
+        // If it's a formula or empty, try calculated value
+        if (is_string($value) && strpos($value, '=') === 0 || $value === null || $value === '') {
+            try {
+                $value = $cell->getCalculatedValue();
+            } catch (\Exception $e) {
+                // Keep the raw value if calculation fails
+            }
+        }
+
+        // Fallback to formatted value if still empty (useful for some Excel formats)
         if ($value === null || $value === '') {
             $value = $cell->getFormattedValue();
         }
 
-        // 4. Handle Dates specifically if it's a numeric type
-        if ($cell->getDataType() === \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC) {
+        // Handle Dates specifically if it's a numeric type or looks like a date
+        if ($cell->getDataType() === \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC || Date::isDateTime($cell)) {
             if (Date::isDateTime($cell)) {
                 try {
                     return Date::excelToDateTimeObject($value)->format('Y-m-d');
@@ -338,7 +412,7 @@ class ExcelImportService
             'B1' => 'Código de Barras *',
             'C1' => 'Categoría *',
             'D1' => 'Naturaleza * (CONSUMIBLE/EQUIPO_TECNICO)',
-            'E1' => 'Subfamilia',
+            'E1' => 'Subfamilia *',
             'F1' => 'Unidades por Envase *',
             'G1' => 'Nº de Envases *',
             'H1' => 'Stock Mínimo (Envases) *',
@@ -346,14 +420,14 @@ class ExcelImportService
             'J1' => 'Fecha de Caducidad * (DD/MM/AA)',
             'K1' => 'Proveedor *',
             'L1' => 'Precio Compra Total (IVA inc.) *',
-            'M1' => 'Margen (%)',
+            'M1' => 'Margen (%) *',
             'N1' => 'IVA (%) *',
-            'O1' => 'Marca y Modelo',
+            'O1' => 'Marca y Modelo *',
             'P1' => 'Alias',
             'Q1' => 'Número de Serie',
             'R1' => 'ID de Red (ISSI/IMEI)',
             'S1' => 'Teléfono',
-            'T1' => 'Fecha de Compra (DD/MM/AA)',
+            'T1' => 'Fecha de Compra (DD/MM/AA) *',
             'U1' => 'Fin de Garantía (DD/MM/AA) *',
             'V1' => 'Descripción'
         ];
