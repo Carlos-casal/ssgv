@@ -1,6 +1,6 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Command Center{% endblock %}
+{% block title %}Panel Control{% endblock %}
 {% block page_title %}Dashboard de Gestión{% endblock %}
 
 {% block content %}
@@ -9,71 +9,6 @@
 
         <!-- ZONA DE DATOS (9/12 approx) -->
         <div class="flex-1 space-y-10">
-
-            <!-- KPIs con Bordes Laterales -->
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ low_stock_materials_count > 0 ? '5' : '4' }} gap-6">
-                <!-- Voluntarios -->
-                <a href="{{ path('app_volunteer_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Voluntarios</p>
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <p class="text-3xl font-black text-slate-900">{{ active_volunteers_count }}</p>
-                            <span class="text-[10px] font-bold text-green-600">+{{ new_volunteers_this_month }} este mes</span>
-                        </div>
-                        <i data-lucide="users" class="w-8 h-8 text-blue-100 group-hover:text-blue-500 transition-colors"></i>
-                    </div>
-                </a>
-
-                <!-- Servicios -->
-                <a href="{{ path('app_services_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-green-500 hover:shadow-md transition-all">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Servicios Mes</p>
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <p class="text-3xl font-black text-slate-900">{{ services_this_month }}</p>
-                            <span class="text-[10px] font-bold text-slate-400">Activos actualmente</span>
-                        </div>
-                        <i data-lucide="activity" class="w-8 h-8 text-green-100 group-hover:text-green-500 transition-colors"></i>
-                    </div>
-                </a>
-
-                <!-- Vehículos -->
-                <a href="{{ path('app_vehicle_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 hover:shadow-md transition-all">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Parque Móvil</p>
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <p class="text-3xl font-black text-slate-900">{{ available_vehicles_count }}</p>
-                            <span class="text-[10px] font-bold text-amber-600">Disponibles</span>
-                        </div>
-                        <i data-lucide="truck" class="w-8 h-8 text-amber-100 group-hover:text-amber-500 transition-colors"></i>
-                    </div>
-                </a>
-
-                <!-- Horas -->
-                <a href="{{ path('app_reports') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Horas Anuales</p>
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <p class="text-3xl font-black text-slate-900">{{ total_annual_service_hours }}</p>
-                            <span class="text-[10px] font-bold text-slate-400">{{ completed_services_count }} finalizados</span>
-                        </div>
-                        <i data-lucide="clock" class="w-8 h-8 text-indigo-100 group-hover:text-indigo-500 transition-colors"></i>
-                    </div>
-                </a>
-
-                <!-- Materiales (Low Stock Alert) -->
-                {% if low_stock_materials_count > 0 %}
-                <a href="{{ path('app_material_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-red-500 hover:shadow-md transition-all">
-                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reposición</p>
-                    <div class="flex items-end justify-between">
-                        <div>
-                            <p class="text-3xl font-black text-red-600">{{ low_stock_materials_count }}</p>
-                            <span class="text-[10px] font-bold text-red-600">Necesaria</span>
-                        </div>
-                        <i data-lucide="package" class="w-8 h-8 text-red-100 group-hover:text-red-500 transition-colors"></i>
-                    </div>
-                </a>
-                {% endif %}
-            </div>
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
                 <!-- Actividad Reciente -->
@@ -146,6 +81,87 @@
                         {% endfor %}
                     </div>
                 </div>
+            </div>
+
+            <!-- KPIs con Bordes Laterales -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ low_stock_materials_count > 0 ? '5' : '4' }} gap-6">
+                <!-- Voluntarios -->
+                <a href="{{ path('app_volunteer_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Voluntarios</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ active_volunteers_count }}</p>
+                            <span class="text-[10px] font-bold text-green-600">+{{ new_volunteers_this_month }} este mes</span>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                             <div class="sparkline-container text-blue-500 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <svg viewBox="0 0 100 40" class="w-full h-full">
+                                    <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                        points="0,35 20,25 40,30 60,15 80,20 100,5" />
+                                </svg>
+                            </div>
+                            <i data-lucide="users" class="w-6 h-6 text-blue-100 group-hover:text-blue-500 transition-colors"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Servicios -->
+                <a href="{{ path('app_services_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-green-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Servicios Mes</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ services_this_month }}</p>
+                            <span class="text-[10px] font-bold text-slate-400">Activos actualmente</span>
+                        </div>
+                        <div class="flex flex-col items-end gap-2">
+                             <div class="sparkline-container text-green-500 opacity-50 group-hover:opacity-100 transition-opacity">
+                                <svg viewBox="0 0 100 40" class="w-full h-full">
+                                    <polyline fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                                        points="0,20 20,30 40,10 60,25 80,5 100,15" />
+                                </svg>
+                            </div>
+                            <i data-lucide="activity" class="w-6 h-6 text-green-100 group-hover:text-green-500 transition-colors"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Vehículos -->
+                <a href="{{ path('app_vehicle_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Parque Móvil</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ available_vehicles_count }}</p>
+                            <span class="text-[10px] font-bold text-amber-600">Disponibles</span>
+                        </div>
+                        <i data-lucide="truck" class="w-8 h-8 text-amber-100 group-hover:text-amber-500 transition-colors"></i>
+                    </div>
+                </a>
+
+                <!-- Horas -->
+                <a href="{{ path('app_reports') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Horas Anuales</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-slate-900">{{ total_annual_service_hours }}</p>
+                            <span class="text-[10px] font-bold text-slate-400">{{ completed_services_count }} finalizados</span>
+                        </div>
+                        <i data-lucide="clock" class="w-8 h-8 text-indigo-100 group-hover:text-indigo-500 transition-colors"></i>
+                    </div>
+                </a>
+
+                <!-- Materiales (Low Stock Alert) -->
+                {% if low_stock_materials_count > 0 %}
+                <a href="{{ path('app_material_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-red-500 hover:shadow-md transition-all">
+                    <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Reposición</p>
+                    <div class="flex items-end justify-between">
+                        <div>
+                            <p class="text-3xl font-black text-red-600">{{ low_stock_materials_count }}</p>
+                            <span class="text-[10px] font-bold text-red-600">Necesaria</span>
+                        </div>
+                        <i data-lucide="package" class="w-8 h-8 text-red-100 group-hover:text-red-500 transition-colors"></i>
+                    </div>
+                </a>
+                {% endif %}
             </div>
         </div>
 
