@@ -1,12 +1,19 @@
 <!-- Sidebar -->
-<div class="w-64 h-full bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 m-0 p-0 overflow-y-auto border-r border-slate-800" id="sidebar">
+<div class="bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 m-0 p-0 overflow-y-auto border-r border-slate-800 sidebar h-screen"
+     id="sidebar"
+     data-sidebar-target="sidebar">
 
     <!-- Header/Logo -->
-    <div class="p-6 border-b border-slate-800 flex items-center gap-3">
-        <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
-            <i data-lucide="command" class="w-6 h-6 text-white"></i>
+    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-3 overflow-hidden">
+            <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20 flex-shrink-0">
+                <i data-lucide="command" class="w-6 h-6 text-white"></i>
+            </div>
+            <span class="font-black text-white tracking-tighter text-lg uppercase sidebar-header-text">Command<span class="text-blue-500">Center</span></span>
         </div>
-        <span class="font-black text-white tracking-tighter text-lg uppercase">Command<span class="text-blue-500">Center</span></span>
+        <button data-action="click->sidebar#toggleCollapse" class="text-slate-500 hover:text-white transition-colors">
+            <i data-lucide="panel-left-close" class="w-5 h-5" data-sidebar-target="toggleIcon"></i>
+        </button>
     </div>
 
     <!-- Navegación Principal -->
@@ -15,28 +22,28 @@
             <!-- Dashboard Link -->
             <div class="px-6">
                 {% set active = app.request.attributes.get('_route') == 'app_dashboard' %}
-                <a href="{{ path('app_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-bold text-sm {{ active ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:text-white' }}">
-                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
-                    <span>Dashboard</span>
+                <a href="{{ path('app_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-bold text-sm sidebar-item {{ active ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/20' : 'text-slate-400 hover:text-white' }}">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5 flex-shrink-0"></i>
+                    <span class="sidebar-text">Dashboard</span>
                 </a>
             </div>
 
             {% if is_granted('ROLE_ADMIN') %}
             <!-- OPERATIVA -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4">Operativa</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Operativa</p>
                 <ul class="space-y-1">
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_services_list' %}
-                        <a href="{{ path('app_services_list') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="briefcase" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Servicios</span>
+                        <a href="{{ path('app_services_list') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Servicios</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm text-slate-400 hover:text-white hover:bg-white/5">
-                            <i data-lucide="map" class="w-5 h-5"></i>
-                            <span>Mapa Operativo</span>
+                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
+                            <i data-lucide="map" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text">Mapa Operativo</span>
                         </a>
                     </li>
                 </ul>
@@ -44,41 +51,41 @@
 
             <!-- RECURSOS -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4">Recursos</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Recursos</p>
                 <ul class="space-y-1">
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_volunteer_list' %}
-                        <a href="{{ path('app_volunteer_list') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="users" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Voluntarios</span>
+                        <a href="{{ path('app_volunteer_list') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="users" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Voluntarios</span>
                         </a>
                     </li>
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_warehouse_dashboard' %}
-                        <a href="{{ path('app_warehouse_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="boxes" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Gestión de Almacén</span>
+                        <a href="{{ path('app_warehouse_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Almacén</span>
                         </a>
                     </li>
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_vehicle_index' %}
-                        <a href="{{ path('app_vehicle_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="truck" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Parque Móvil</span>
+                        <a href="{{ path('app_vehicle_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Parque Móvil</span>
                         </a>
                     </li>
                     <li>
                         {% set active = app.request.attributes.get('_route') starts with 'app_material' %}
-                        <a href="{{ path('app_material_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="package" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Inventario</span>
+                        <a href="{{ path('app_material_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="package" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Inventario</span>
                         </a>
                     </li>
                     <li>
                         {% set active = app.request.attributes.get('_route') starts with 'app_kit' %}
-                        <a href="{{ path('app_kit_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="briefcase" class="w-5 h-5"></i>
-                            <span class="{{ active ? 'font-bold' : '' }}">Botiquines</span>
+                        <a href="{{ path('app_kit_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Botiquines</span>
                         </a>
                     </li>
                 </ul>
@@ -86,63 +93,47 @@
 
             <!-- SISTEMA -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4">Sistema</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Sistema</p>
                 <ul class="space-y-1">
                     <li>
-                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm text-slate-400 hover:text-white hover:bg-white/5">
-                            <i data-lucide="settings" class="w-5 h-5"></i>
-                            <span>Configuración</span>
+                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
+                            <i data-lucide="settings" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text">Configuración</span>
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm text-slate-400 hover:text-white hover:bg-white/5">
-                            <i data-lucide="user-cog" class="w-5 h-5"></i>
-                            <span>Usuarios</span>
+                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
+                            <i data-lucide="user-cog" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text">Usuarios</span>
                         </a>
                     </li>
                 </ul>
             </div>
             {% else %}
-                    {# Simplified menu for non-admins, e.g., ROLE_VOLUNTEER #}
-                     <li class="mt-8">
-                        <a href="{{ path('app_services_list') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                            <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                            <span>Servicios</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="{{ path('app_my_services') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                            <i data-lucide="star" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                            <span>Mis servicios</span>
-                        </a>
-                    </li>
-
-                    {% set is_responsible_for_any_service = false %}
-                    {% if app.user.volunteer is defined and app.user.volunteer %}
-                        {% for confirmation in app.user.volunteer.assistanceConfirmations %}
-                            {% if confirmation.isFichajeResponsible %}
-                                {% set is_responsible_for_any_service = true %}
-                            {% endif %}
-                        {% endfor %}
-                    {% endif %}
-
-                    {% if is_responsible_for_any_service %}
-                        <li class="mt-8">
-                            <a href="{{ path('app_responsible_services_list') }}" class="w-full flex items-center justify-start pl-4 py-1 rounded-xl text-yellow-400 bg-white/5 hover:bg-white/10 transition-all duration-200 font-medium text-sm">
-                                <i data-lucide="shield-check" class="w-5 h-5 flex-shrink-0 mr-3"></i>
-                                <span>Servicios Responsable</span>
+                <div class="px-6">
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{{ path('app_services_list') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
+                                <i data-lucide="briefcase" class="w-5 h-5 flex-shrink-0"></i>
+                                <span class="sidebar-text">Servicios</span>
                             </a>
                         </li>
-                    {% endif %}
-                {% endif %}
-            </ul>
+                        <li>
+                            <a href="{{ path('app_my_services') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
+                                <i data-lucide="star" class="w-5 h-5 flex-shrink-0"></i>
+                                <span class="sidebar-text">Mis servicios</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            {% endif %}
         </nav>
     </div>
 
     <!-- User Profile Fixed at Bottom -->
     <div class="mt-auto p-6 border-t border-slate-800 bg-slate-900/50 backdrop-blur-md">
         {% if app.user %}
-            <div class="flex items-center gap-3 mb-4">
+            <div class="flex items-center gap-3 mb-4 sidebar-user-info overflow-hidden">
                 <div class="w-10 h-10 rounded-full overflow-hidden border-2 border-slate-700 flex-shrink-0">
                     <img src="{{ asset('uploads/profile_pictures/' ~ (app.user.volunteer.profilePicture|default('default.png'))) }}"
                          alt="Foto de perfil"
@@ -152,108 +143,12 @@
                     <p class="font-bold text-white text-xs truncate">{{ app.user.volunteer.name|default('Usuario') }}</p>
                     <p class="text-[10px] text-slate-500 truncate">{{ app.user.email }}</p>
                 </div>
-                <button class="relative text-slate-400 hover:text-white transition-colors">
-                    <i data-lucide="bell" class="w-4 h-4"></i>
-                    {% if pending_volunteer_count > 0 %}
-                        <span class="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full border-2 border-slate-900"></span>
-                    {% endif %}
-                </button>
             </div>
             <a href="{{ path('app_logout') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all duration-200">
-                <i data-lucide="log-out" class="w-4 h-4"></i>
-                <span>Cerrar Sesión</span>
+                <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="sidebar-text">Salir</span>
             </a>
         {% endif %}
     </div>
 
 </div>
-
-<style>
-    .has-submenu > ul {
-        overflow: hidden;
-        max-height: 0;
-        transition: max-height 0.3s ease-in-out;
-        background-color: rgba(0, 0, 0, 0.1); /* Slightly darker background for submenus */
-    }
-    .has-submenu.submenu-open > ul {
-        max-height: 1000px; /* A large enough value to show all content */
-    }
-    .has-submenu.submenu-open > a > [data-lucide="chevron-right"] {
-        transform: rotate(90deg);
-    }
-    .has-submenu ul a {
-        color: white; /* Ensure text is white */
-    }
-    .has-submenu ul a:hover {
-        background-color: #1e40af; /* A darker blue for hover */
-    }
-</style>
-
-<script>
-    function setupSidebarHover() {
-        const nav = document.getElementById('main-nav');
-        if (!nav) return;
-
-        const closeSubmenu = (submenu) => {
-            // Recursively close all descendant submenus that are open
-            submenu.querySelectorAll('.submenu-open').forEach(openChild => {
-                openChild.classList.remove('submenu-open');
-                const childLink = openChild.querySelector('a[aria-expanded]');
-                if (childLink) {
-                    childLink.setAttribute('aria-expanded', 'false');
-                }
-            });
-
-            // Close the submenu itself
-            if (submenu.classList.contains('submenu-open')) {
-                submenu.classList.remove('submenu-open');
-                const link = submenu.querySelector('a[aria-expanded]');
-                if (link) {
-                    link.setAttribute('aria-expanded', 'false');
-                }
-            }
-        };
-
-        nav.querySelectorAll('.has-submenu').forEach(item => {
-            if (item.dataset.hoverListenersAttached) {
-                return;
-            }
-            item.dataset.hoverListenersAttached = 'true';
-
-            let enterTimer;
-            let leaveTimer;
-
-            item.addEventListener('mouseenter', () => {
-                clearTimeout(leaveTimer); // Cancel any pending close operations
-
-                enterTimer = setTimeout(() => {
-                    // Close sibling submenus
-                    const parentUl = item.parentElement;
-                    parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
-                        if (sibling !== item) {
-                            closeSubmenu(sibling);
-                        }
-                    });
-
-                    // Open this submenu
-                    item.classList.add('submenu-open');
-                    const link = item.querySelector('a[aria-expanded]');
-                    if (link) {
-                        link.setAttribute('aria-expanded', 'true');
-                    }
-                }, 100); // A small delay to prevent accidental opening
-            });
-
-            item.addEventListener('mouseleave', () => {
-                clearTimeout(enterTimer); // Cancel any pending open operations
-
-                leaveTimer = setTimeout(() => {
-                    closeSubmenu(item);
-                }, 200); // Delay to allow moving mouse to child submenu
-            });
-        });
-    }
-
-    document.addEventListener('turbo:load', setupSidebarHover);
-    document.addEventListener('DOMContentLoaded', setupSidebarHover);
-</script>

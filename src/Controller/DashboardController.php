@@ -42,18 +42,10 @@ class DashboardController extends AbstractController
         Security $security
     ): Response {
         if ($this->getUser() && $this->isGranted('ROLE_ADMIN')) {
-            $completedServicesThisYear = $serviceRepository->findCompletedServicesThisYear();
-            $totalAnnualServiceMinutes = 0;
-            foreach ($completedServicesThisYear as $service) {
-                $maxHoursInService = 0;
-                foreach ($service->getVolunteerServices() as $volunteerService) {
-                    $duration = $volunteerService->calculateTotalDuration(); // duration in minutes
-                    if ($duration > $maxHoursInService) {
-                        $maxHoursInService = $duration;
-                    }
-                }
-                $totalAnnualServiceMinutes += $maxHoursInService;
-            }
+            $startOfYear = new \DateTime('first day of january this year 00:00:00');
+            $endOfYear = new \DateTime('last day of december this year 23:59:59');
+
+            $totalAnnualServiceMinutes = $serviceRepository->calculateTotalServiceMinutes($startOfYear, $endOfYear);
 
             // Recent Activities
             $recentVolunteers = $volunteerRepository->findRecentActivityVolunteers();
@@ -90,7 +82,7 @@ class DashboardController extends AbstractController
                 'available_vehicles_count' => $vehicleRepository->countAvailableVehicles(),
                 'low_stock_materials_count' => $materialRepository->countLowStockMaterials(),
                 'total_annual_service_hours' => round($totalAnnualServiceMinutes / 60),
-                'completed_services_count' => count($completedServicesThisYear),
+                'completed_services_count' => $serviceRepository->countCompletedServices(),
                 'recent_activities' => $recentActivities,
                 'upcoming_services' => $serviceRepository->findUpcomingServices(5),
             ]);

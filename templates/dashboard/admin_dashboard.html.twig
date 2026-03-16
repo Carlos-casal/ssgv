@@ -49,16 +49,16 @@
                 </a>
 
                 <!-- Horas -->
-                <div class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_reports') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
                     <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1">Horas Anuales</p>
                     <div class="flex items-end justify-between">
                         <div>
                             <p class="text-3xl font-black text-slate-900">{{ total_annual_service_hours }}</p>
                             <span class="text-[10px] font-bold text-slate-400">{{ completed_services_count }} finalizados</span>
                         </div>
-                        <i data-lucide="clock" class="w-8 h-8 text-indigo-100 transition-colors"></i>
+                        <i data-lucide="clock" class="w-8 h-8 text-indigo-100 group-hover:text-indigo-500 transition-colors"></i>
                     </div>
-                </div>
+                </a>
 
                 <!-- Materiales (Low Stock Alert) -->
                 {% if low_stock_materials_count > 0 %}
