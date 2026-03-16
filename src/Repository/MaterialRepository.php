@@ -17,6 +17,41 @@ class MaterialRepository extends ServiceEntityRepository
     }
 
     /**
+     * Finds consumable materials with stock below safety threshold.
+     * Logic: (stock / unitsPerPackage) <= safetyStock
+     */
+    public function findLowStockMaterials(): array
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.nature = :nature')
+            ->andWhere('m.stock <= (m.safetyStock * COALESCE(m.unitsPerPackage, 1))')
+            ->setParameter('nature', \App\Entity\Material::NATURE_CONSUMABLE)
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Finds materials with expiration issues.
+     * Status 'red': expired
+     * Status 'orange': expiring within 30 days
+     */
+    public function findExpiringMaterials(\DateTimeImmutable $threshold): array
+    {
+        // This is complex because of batches. For now, let's at least optimize the simple case
+        // and fetch materials that either have a global expiration date or at least one batch with expiration issues.
+
+        $qb = $this->createQueryBuilder('m');
+        $qb->leftJoin('m.batches', 'b')
+           ->where($qb->expr()->orX(
+               'm.expirationDate <= :threshold',
+               'b.expirationDate <= :threshold'
+           ))
+           ->setParameter('threshold', $threshold);
+
+        return $qb->getQuery()->getResult();
+    }
+
+    /**
      * Counts the number of consumable materials with stock below safety threshold.
      */
     public function countLowStockMaterials(): int
