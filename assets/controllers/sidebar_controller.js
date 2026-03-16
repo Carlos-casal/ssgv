@@ -8,13 +8,39 @@ export default class extends Controller {
 
     connect() {
         this.collapsedValue = localStorage.getItem('sidebar-collapsed') === 'true';
+        this.theme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', this.theme);
+
+        // Auto-collapse on small screens
+        this._checkResponsive();
+        window.addEventListener('resize', this._checkResponsive.bind(this));
+
         this._updateState();
+    }
+
+    disconnect() {
+        window.removeEventListener('resize', this._checkResponsive.bind(this));
+    }
+
+    _checkResponsive() {
+        if (window.innerWidth < 1024) { // lg breakpoint in Tailwind
+            this.collapsedValue = true;
+        }
     }
 
     toggleCollapse() {
         this.collapsedValue = !this.collapsedValue;
         localStorage.setItem('sidebar-collapsed', this.collapsedValue);
         this._updateState();
+    }
+
+    toggleTheme() {
+        this.theme = this.theme === 'light' ? 'dark' : 'light';
+        localStorage.setItem('theme', this.theme);
+        document.documentElement.setAttribute('data-theme', this.theme);
+
+        // Update Lucide icons after theme change if they contain theme-specific classes
+        if (window.lucide) window.lucide.createIcons();
     }
 
     toggleSubmenu(event) {
