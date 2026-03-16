@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -54,6 +56,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $resetTokenExpiresAt = null;
+
+    #[ORM\OneToMany(mappedBy: 'recipient', targetEntity: Notification::class, orphanRemoval: true)]
+    private Collection $notifications;
+
+    public function __construct()
+    {
+        $this->notifications = new ArrayCollection();
+    }
 
     /**
      * Gets the unique identifier for the user.
@@ -203,6 +213,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setResetTokenExpiresAt(?\DateTimeImmutable $resetTokenExpiresAt): static
     {
         $this->resetTokenExpiresAt = $resetTokenExpiresAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notification>
+     */
+    public function getNotifications(): Collection
+    {
+        return $this->notifications;
+    }
+
+    public function addNotification(Notification $notification): static
+    {
+        if (!$this->notifications->contains($notification)) {
+            $this->notifications->add($notification);
+            $notification->setRecipient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotification(Notification $notification): static
+    {
+        if ($this->notifications->removeElement($notification)) {
+            // set the owning side to null (unless already changed)
+            if ($notification->getRecipient() === $this) {
+                $notification->setRecipient(null);
+            }
+        }
 
         return $this;
     }

@@ -21,9 +21,11 @@ import HelloController from './controllers/hello_controller.js';
 import MaterialCommsFormController from './controllers/material_comms_form_controller.js';
 import SidebarController from './controllers/sidebar_controller.js';
 import ThemeController from './controllers/theme_controller.js';
+import NotificationController from './controllers/notification_controller.js';
 
 const app = startStimulusApp();
 
+app.register('notification', NotificationController);
 app.register('sidebar', SidebarController);
 app.register('theme', ThemeController);
 app.register('hello-modal', HelloModalController);
