@@ -27,6 +27,9 @@ class MaterialStock
     #[ORM\Column(options: ["default" => 0])]
     private int $quantity = 0;
 
+    #[ORM\ManyToOne(inversedBy: 'stocks')]
+    private ?MaterialBatch $batch = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -76,6 +79,18 @@ class MaterialStock
     public function setLocation(?Location $location): static
     {
         $this->location = $location;
+
+        return $this;
+    }
+
+    public function getBatch(): ?MaterialBatch
+    {
+        return $this->batch;
+    }
+
+    public function setBatch(?MaterialBatch $batch): static
+    {
+        $this->batch = $batch;
 
         return $this;
     }

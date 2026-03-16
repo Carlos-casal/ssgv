@@ -137,11 +137,16 @@ class Material
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialStock::class, orphanRemoval: true)]
     private Collection $stocks;
 
+    #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialBatch::class, orphanRemoval: true)]
+    #[ORM\OrderBy(["expirationDate" => "ASC", "createdAt" => "ASC"])]
+    private Collection $batches;
+
     public function __construct()
     {
         $this->serviceMaterials = new ArrayCollection();
         $this->units = new ArrayCollection();
         $this->stocks = new ArrayCollection();
+        $this->batches = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -157,6 +162,35 @@ class Material
     public function setName(string $name): static
     {
         $this->name = $name;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialBatch>
+     */
+    public function getBatches(): Collection
+    {
+        return $this->batches;
+    }
+
+    public function addBatch(MaterialBatch $batch): static
+    {
+        if (!$this->batches->contains($batch)) {
+            $this->batches->add($batch);
+            $batch->setMaterial($this);
+        }
+
+        return $this;
+    }
+
+    public function removeBatch(MaterialBatch $batch): static
+    {
+        if ($this->batches->removeElement($batch)) {
+            if ($batch->getMaterial() === $this) {
+                $batch->setMaterial(null);
+            }
+        }
 
         return $this;
     }

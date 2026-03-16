@@ -148,7 +148,7 @@ class MaterialType extends AbstractType
             ])
             ->add('batchNumber', TextType::class, [
                 'label' => 'LOTE',
-                'required' => true,
+                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Nº de lote para fungibles'
@@ -178,12 +178,12 @@ class MaterialType extends AbstractType
             ->add('expirationDate', DateType::class, [
                 'label' => 'Fecha de Caducidad',
                 'widget' => 'single_text',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('supplier', TextType::class, [
                 'label' => 'Proveedor',
-                'required' => true,
+                'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('unitPrice', TextType::class, [
@@ -197,7 +197,7 @@ class MaterialType extends AbstractType
             ])
             ->add('totalPrice', TextType::class, [
                 'label' => 'Coste Total de la Compra',
-                'required' => true,
+                'required' => false,
                 'attr' => [
                     'class' => 'form-control',
                     'type' => 'text',

@@ -260,7 +260,7 @@ class ExcelImportService
                     $material->setImagePath($imagePath);
                 }
 
-                // Handle Stock and Units
+                // Handle Stock, Batches and Units
                 if ($material->getNature() === Material::NATURE_TECHNICAL) {
                     if ($serialNumber && $serialNumber !== 'S/N') {
                         // Check if unit exists
@@ -281,8 +281,44 @@ class ExcelImportService
                         $this->materialManager->updateStockDirectly($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages);
                     }
                 } else {
-                    // Consumable
-                    $this->materialManager->updateStockDirectly($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages);
+                    // Consumable - Create or Update Batch
+                    $batch = null;
+                    if ($batchNumber) {
+                        $batch = $this->entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
+                            'material' => $material,
+                            'batchNumber' => $batchNumber
+                        ]);
+                    }
+
+                    if (!$batch) {
+                        $batch = new \App\Entity\MaterialBatch();
+                        $batch->setMaterial($material);
+                        $batch->setBatchNumber($batchNumber ?? 'LOTE-EXCEL');
+                        $this->entityManager->persist($batch);
+                    }
+
+                    if ($expirationDate) $batch->setExpirationDate($expirationDate);
+                    if ($supplier) $batch->setSupplier($supplier);
+                    $batch->setUnitsPerPackage($unitsPerPackage);
+
+                    // Add to current numPackages if it already exists
+                    $batch->setNumPackages($batch->getNumPackages() + $numPackages);
+
+                    if ($totalPrice) $batch->setTotalPrice($totalPrice);
+                    if ($marginPct) $batch->setMarginPercentage($marginPct);
+                    $batch->setIva($iva ?? $material->getIva());
+
+                    // Unit price calculation
+                    $totalStockInBatch = $batch->getUnitsPerPackage() * $batch->getNumPackages();
+                    if ($totalStockInBatch > 0 && $batch->getTotalPrice()) {
+                        $priceVal = (float)$batch->getTotalPrice();
+                        if ($batch->getMarginPercentage()) {
+                            $priceVal = $priceVal - ($priceVal * ((float)$batch->getMarginPercentage() / 100));
+                        }
+                        $batch->setUnitPrice((string)($priceVal / $totalStockInBatch));
+                    }
+
+                    $this->materialManager->updateStockWithBatch($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages, $batch);
                 }
 
             } catch (\Exception $e) {
