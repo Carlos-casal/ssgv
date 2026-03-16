@@ -226,22 +226,33 @@ class ExcelImportService
     private function getCellValue($worksheet, $col, $row)
     {
         $cell = $worksheet->getCell($col . $row);
-        $value = $cell->getCalculatedValue();
 
-        // Debug logging for empty columns
-        if (empty($value) && in_array($col, ['C', 'D'])) {
-            // Check if there is a formatted value even if calculated is empty
-            $value = $cell->getFormattedValue();
+        // 1. Try to get calculated value (for formulas)
+        try {
+            $value = $cell->getCalculatedValue();
+        } catch (\Exception $e) {
+            // If formula fails, fall back to raw value
+            $value = $cell->getValue();
         }
 
+        // 2. Handle RichText
         if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
             $value = $value->getPlainText();
         }
 
+        // 3. Fallback to formatted value if empty (useful for some Excel formats)
+        if ($value === null || $value === '') {
+            $value = $cell->getFormattedValue();
+        }
+
+        // 4. Handle Dates specifically if it's a numeric type
         if ($cell->getDataType() === \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_NUMERIC) {
-            // Check if it's formatted as a date
             if (Date::isDateTime($cell)) {
-                return Date::excelToDateTimeObject($value)->format('Y-m-d');
+                try {
+                    return Date::excelToDateTimeObject($value)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    // Not a valid date after all
+                }
             }
         }
 
