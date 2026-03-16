@@ -138,7 +138,7 @@ class Material
     private Collection $stocks;
 
     #[ORM\OneToMany(mappedBy: 'material', targetEntity: MaterialBatch::class, orphanRemoval: true)]
-    #[ORM\OrderBy(["expirationDate" => "ASC", "createdAt" => "ASC"])]
+    #[ORM\OrderBy(["id" => "ASC"])]
     private Collection $batches;
 
     public function __construct()
@@ -689,7 +689,23 @@ class Material
 
     public function getExpirationStatus(): string
     {
-        if ($this->expirationDate === null) {
+        $expirationDate = $this->expirationDate;
+
+        // If we have batches, use the earliest expiration date from active batches
+        if (!$this->batches->isEmpty()) {
+            foreach ($this->batches as $batch) {
+                if ($batch->getExpirationDate()) {
+                    // Assuming they are ordered by expirationDate ASC in the collection if I didn't change it,
+                    // but I changed it to ID ASC for the form.
+                    // Let's just find the min.
+                    if ($expirationDate === null || $batch->getExpirationDate() < $expirationDate) {
+                        $expirationDate = $batch->getExpirationDate();
+                    }
+                }
+            }
+        }
+
+        if ($expirationDate === null) {
             return 'gray';
         }
 
