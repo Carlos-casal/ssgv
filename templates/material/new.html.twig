@@ -24,7 +24,8 @@
      data-material-category="{{ material.category }}" 
      data-material-action="new" 
      data-serial-check-url="{{ path('app_material_check_serial_number') }}"
-     data-initial-units="{{ units_data|default([])|json_encode }}">
+     data-initial-units="{{ units_data|default([])|json_encode }}"
+     data-initial-batches="{{ batches_data|default([])|json_encode }}">
     {{ form_start(form, {'attr': {'id': 'material-form', 'class': 'material-form', 'novalidate': 'novalidate'}}) }}
     
     <div class="row mb-3">
@@ -220,8 +221,12 @@
                     </div>
                 </div>
 
-                {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD #}
-                <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
+                {# Contenedor para Lotes de Consumibles #}
+                <div id="batches-container" data-material-dynamic-form-target="batchesContainer">
+                </div>
+
+                {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (FALLBACK) #}
+                <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
                     <div class="card-header bg-white py-3">
                         <h6 class="m-0 font-weight-bold text-danger text-uppercase">
                             Seguridad y Trazabilidad
@@ -230,16 +235,16 @@
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-4">
-                                <label class="form-label">Lote<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
+                                <label class="form-label">Lote</label>
+                                {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input'}}) }}
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Fecha de Caducidad<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
+                                <label class="form-label">Fecha de Caducidad</label>
+                                {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input'}}) }}
                             </div>
                             <div class="col-md-4">
-                                <label class="form-label">Proveedor<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.supplier, {'attr': {'class': 'form-input', 'data-required': 'true'}}) }}
+                                <label class="form-label">Proveedor</label>
+                                {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
                             </div>
                         </div>
                         <div class="d-none">{{ form_row(form.category) }}</div>
@@ -254,9 +259,15 @@
 
         {# Columna Derecha (4) - BLOQUE D E IMAGEN #}
         <div class="col-lg-4">
+            {# Botón Añadir Lote para Consumibles #}
+            <div class="mb-4" data-material-dynamic-form-target="addBatchBtnContainer">
+                <button type="button" class="btn btn-danger btn-block shadow-sm py-3" data-action="click->material-dynamic-form#addBatchRow">
+                    <i class="fas fa-plus-circle mr-2"></i> AÑADIR OTRO LOTE / PRECIO
+                </button>
+            </div>
+
             {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
-            {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
-            <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #1cc88a !important;">
+            <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #1cc88a !important;" data-material-dynamic-form-target="stockAndCostsBlock">
                 <div class="card-header bg-white py-3 border-bottom-1">
                     <h6 class="m-0 font-weight-bold text-success text-uppercase">
                         Bloque D: Stock y Costes

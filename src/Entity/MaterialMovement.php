@@ -38,6 +38,10 @@ class MaterialMovement
     #[ORM\ManyToOne]
     private ?Volunteer $responsible = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?MaterialBatch $batch = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -59,6 +63,18 @@ class MaterialMovement
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
+
+        return $this;
+    }
+
+    public function getBatch(): ?MaterialBatch
+    {
+        return $this->batch;
+    }
+
+    public function setBatch(?MaterialBatch $batch): static
+    {
+        $this->batch = $batch;
 
         return $this;
     }

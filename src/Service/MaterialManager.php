@@ -110,13 +110,19 @@ class MaterialManager
     /**
      * Adjusts stock for a material and records a movement.
      */
-    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null): void
+    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
 
         if (!$location) {
             $location = $this->getCentralWarehouse();
+        }
+
+        if ($quantity < 0 && !$batch && $material->getNature() === Material::NATURE_CONSUMABLE) {
+            // Use FIFO for negative adjustments if batch is not specified
+            $this->transfer($material, $location, null, abs($quantity), $reason, $responsible, $size, null, null);
+            return;
         }
 
         $movement = new MaterialMovement();
@@ -128,9 +134,10 @@ class MaterialManager
         $movement->setDestination($quantity > 0 ? $location : null);
         $movement->setOrigin($quantity < 0 ? $location : null);
         $movement->setResponsible($responsible);
+        $movement->setBatch($batch);
         $this->entityManager->persist($movement);
 
-        $this->updateStockDirectly($material, $location, $quantity, $size);
+        $this->updateStockWithBatch($material, $location, $quantity, $batch, $size);
 
         $this->entityManager->flush();
     }
@@ -173,6 +180,7 @@ class MaterialManager
 
     /**
      * Transfer between two locations or handle Entry/Exit
+     * Implements FIFO for consumables if batch is not specified.
      */
     public function transfer(
         Material $material,
@@ -182,7 +190,8 @@ class MaterialManager
         string $reason,
         ?Volunteer $responsible,
         ?string $size = null,
-        ?MaterialUnit $unit = null
+        ?MaterialUnit $unit = null,
+        ?MaterialBatch $batch = null
     ): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
@@ -191,18 +200,71 @@ class MaterialManager
             if ($destination) {
                 $unit->setLocation($destination);
             }
+            $this->recordMovement($material, $quantity, $reason, $origin, $destination, $responsible, $size, $batch);
+        } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
+            // FIFO logic for subtraction
+            $remainingToSubtract = $quantity;
+            $batches = $this->entityManager->getRepository(MaterialBatch::class)->findBy(
+                ['material' => $material],
+                ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
+            );
+
+            foreach ($batches as $b) {
+                $stock = $this->stockRepository->findOneBy([
+                    'material' => $material,
+                    'location' => $origin,
+                    'batch' => $b,
+                    'size' => $size ?: 'UNICA'
+                ]);
+
+                if ($stock && $stock->getQuantity() > 0) {
+                    $toSubtract = min($remainingToSubtract, $stock->getQuantity());
+                    $this->updateStockWithBatch($material, $origin, -$toSubtract, $b, $size);
+                    if ($destination) {
+                        $this->updateStockWithBatch($material, $destination, $toSubtract, $b, $size);
+                    }
+                    $this->recordMovement($material, $toSubtract, $reason, $origin, $destination, $responsible, $size, $b);
+
+                    $remainingToSubtract -= $toSubtract;
+                    if ($remainingToSubtract <= 0) break;
+                }
+            }
+
+            // If still remaining, subtract from "no batch" stock if any
+            if ($remainingToSubtract > 0) {
+                $this->updateStockWithBatch($material, $origin, -$remainingToSubtract, null, $size);
+                if ($destination) {
+                    $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null, $size);
+                }
+                $this->recordMovement($material, $remainingToSubtract, $reason, $origin, $destination, $responsible, $size, null);
+            }
         } else {
-            // Origin subtraction (only if it exists)
+            // Explicit batch or entry from null origin
             if ($origin) {
-                $this->updateStockDirectly($material, $origin, -$quantity, $size);
+                $this->updateStockWithBatch($material, $origin, -$quantity, $batch, $size);
             }
-            // Destination addition (only if it exists)
             if ($destination) {
-                $this->updateStockDirectly($material, $destination, $quantity, $size);
+                $this->updateStockWithBatch($material, $destination, $quantity, $batch, $size);
             }
+            $this->recordMovement($material, $quantity, $reason, $origin, $destination, $responsible, $size, $batch);
         }
 
-        // Record movement
+        $this->entityManager->flush();
+    }
+
+    private function recordMovement(
+        Material $material,
+        int $quantity,
+        string $reason,
+        ?Location $origin,
+        ?Location $destination,
+        ?Volunteer $responsible,
+        ?string $size = null,
+        ?MaterialBatch $batch = null
+    ): void {
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
         $movement->setQuantity(abs($quantity));
@@ -212,26 +274,35 @@ class MaterialManager
         $movement->setResponsible($responsible);
         $movement->setUser($currentUser);
         $movement->setSize($size);
+        $movement->setBatch($batch);
 
         $this->entityManager->persist($movement);
-        $this->entityManager->flush();
     }
 
     public function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
     {
+        $this->updateStockWithBatch($material, $location, $delta, null, $size);
+    }
+
+    public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null, ?string $size = null): void
+    {
         if ($size === null) $size = 'UNICA';
 
-        $stock = $this->stockRepository->findOneBy([
+        $criteria = [
             'material' => $material,
             'location' => $location,
-            'size' => $size
-        ]);
+            'size' => $size,
+            'batch' => $batch
+        ];
+
+        $stock = $this->stockRepository->findOneBy($criteria);
 
         if (!$stock) {
             $stock = new MaterialStock();
             $stock->setMaterial($material);
             $stock->setLocation($location);
             $stock->setSize($size);
+            $stock->setBatch($batch);
             $stock->setQuantity(0);
             $this->entityManager->persist($stock);
         }

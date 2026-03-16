@@ -1,10 +1,11 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput'];
+    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput', 'batchesContainer', 'addBatchBtnContainer', 'stockAndCostsBlock'];
 
     connect() {
         this.initialUnits = JSON.parse(this.element.dataset.initialUnits || '[]');
+        this.initialBatches = JSON.parse(this.element.dataset.initialBatches || '[]');
 
         // On edit mode, sync numPackages input with the real unit count
         // so that generateTechnicalBlocks() creates the correct number of blocks.
@@ -232,9 +233,14 @@ export default class extends Controller {
         }
     }
 
-    performCalculations() {
-        this.calculateStock();
-        this.calculateCosts();
+    performCalculations(event = null) {
+        if (event && event.target && event.target.name && event.target.name.includes('batches_data')) {
+            this.calculateBatchCosts(event.target);
+            this.calculateTotalStockFromBatches();
+        } else {
+            this.calculateStock();
+            this.calculateCosts();
+        }
         this.updateDynamicBlocks();
     }
 
@@ -253,6 +259,13 @@ export default class extends Controller {
     }
 
     calculateStock() {
+        const nature = this.hasNatureSelectTarget ? this.natureSelectTarget.value : 'CONSUMIBLE';
+
+        if (nature === 'CONSUMIBLE' && this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0) {
+            this.calculateTotalStockFromBatches();
+            return;
+        }
+
         if (!this.hasUnitsPerPackageInputTarget || !this.hasNumPackagesInputTarget || !this.hasTotalStockInputTarget) {
             return;
         }
@@ -314,15 +327,16 @@ export default class extends Controller {
     toggleTechnicalBlock() {
         if (!this.hasNatureSelectTarget) return;
 
-        const isTechnical = this.natureSelectTarget.value === 'EQUIPO_TECNICO';
+        const nature = this.natureSelectTarget.value;
+        const isTechnical = nature === 'EQUIPO_TECNICO';
+        const isConsumable = nature === 'CONSUMIBLE';
 
         if (this.hasTechnicalBlockTarget) {
-            // Hide the original static technical block if we are using dynamic ones
             this.technicalBlockTarget.classList.add('d-none');
         }
 
         if (this.hasConsumableBlockTarget) {
-            this.consumableBlockTarget.classList.toggle('d-none', isTechnical);
+            this.consumableBlockTarget.classList.add('d-none');
         }
 
         if (this.hasTechnicalBlocksContainerTarget) {
@@ -330,6 +344,25 @@ export default class extends Controller {
             if (isTechnical) {
                 this.generateTechnicalBlocks(parseInt(this.numPackagesInputTarget?.value) || 0);
             }
+        }
+
+        if (this.hasBatchesContainerTarget) {
+            this.batchesContainerTarget.classList.toggle('d-none', !isConsumable);
+            if (isConsumable && this.batchesContainerTarget.children.length === 0) {
+                if (this.initialBatches && this.initialBatches.length > 0) {
+                    this.initialBatches.forEach(batch => this.addBatchRow(null, batch));
+                } else {
+                    this.addBatchRow();
+                }
+            }
+        }
+
+        if (this.hasAddBatchBtnContainerTarget) {
+            this.addBatchBtnContainerTarget.classList.toggle('d-none', !isConsumable);
+        }
+
+        if (this.hasStockAndCostsBlockTarget) {
+            this.stockAndCostsBlockTarget.classList.toggle('d-none', isConsumable && this.batchesContainerTarget.children.length > 0);
         }
 
         this.handleNatureChange();
@@ -670,6 +703,161 @@ export default class extends Controller {
 
     handleIvaChange() {
         this.performCalculations();
+    }
+
+    escapeHtml(text) {
+        if (!text) return '';
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    addBatchRow(event = null, initialData = null) {
+        if (!this.hasBatchesContainerTarget) return;
+
+        const index = this.batchesContainerTarget.children.length;
+        const div = document.createElement('div');
+        div.className = 'card shadow-sm mb-4 border-0';
+        div.style.borderTop = '4px solid #e74a3b !important';
+
+        const isEdit = this.element.dataset.materialAction === 'edit';
+
+        div.innerHTML = `
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 font-weight-bold text-danger text-uppercase">
+                    Lote ${index + 1}: Seguridad, Trazabilidad y Costes
+                </h6>
+                ${index > 0 ? `<button type="button" class="btn btn-sm btn-outline-danger" data-action="click->material-dynamic-form#removeBatchRow"><i class="fas fa-trash"></i></button>` : ''}
+            </div>
+            <div class="card-body">
+                <input type="hidden" name="batches_data[${index}][id]" value="${initialData?.id || ''}">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Lote<span class="text-red-500">*</span></label>
+                        <input type="text" name="batches_data[${index}][batchNumber]" value="${this.escapeHtml(initialData?.batchNumber)}" class="form-input" data-required="true">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Fecha Caducidad<span class="text-red-500">*</span></label>
+                        <input type="date" name="batches_data[${index}][expirationDate]" value="${initialData?.expirationDate || ''}" class="form-input" data-required="true">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Proveedor<span class="text-red-500">*</span></label>
+                        <input type="text" name="batches_data[${index}][supplier]" value="${this.escapeHtml(initialData?.supplier)}" class="form-input" data-required="true">
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Uds/Envase<span class="text-red-500">*</span></label>
+                        <input type="text" name="batches_data[${index}][unitsPerPackage]" value="${this.formatToUserLocale(initialData?.unitsPerPackage, 0) || ''}" class="form-input" data-required="true"
+                            data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
+                        <input type="text" name="batches_data[${index}][numPackages]" value="${this.formatToUserLocale(initialData?.numPackages, 0) || ''}" class="form-input" data-required="true"
+                            data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Precio Compra (IVA inc.)<span class="text-red-500">*</span></label>
+                        <div class="input-group">
+                            <input type="text" name="batches_data[${index}][totalPrice]" value="${this.formatToUserLocale(initialData?.totalPrice, 2) || ''}" class="form-input" data-required="true" data-type="decimal"
+                                data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                            <span class="input-group-text">€</span>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">% Margen</label>
+                        <div class="input-group">
+                            <input type="text" name="batches_data[${index}][marginPercentage]" value="${this.formatToUserLocale(initialData?.marginPercentage, 2) || ''}" class="form-input" data-type="decimal"
+                                data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                            <span class="input-group-text">%</span>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">IVA (%)</label>
+                        <input type="text" name="batches_data[${index}][iva]" value="${initialData?.iva || '21'}" class="form-input"
+                            data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                    </div>
+                    <div class="col-md-1 mb-3">
+                        <label class="form-label">P/Ud</label>
+                        <input type="text" name="batches_data[${index}][unitPrice]" value="${this.formatToUserLocale(initialData?.unitPrice, 2) || ''}" class="form-input bg-light" readonly style="font-size: 0.7rem;">
+                    </div>
+                </div>
+            </div>
+        `;
+
+        this.batchesContainerTarget.appendChild(div);
+        this.performCalculations();
+    }
+
+    removeBatchRow(event) {
+        const row = event.target.closest('.card');
+        if (row) {
+            row.remove();
+            this.reindexBatchRows();
+            this.performCalculations();
+        }
+    }
+
+    reindexBatchRows() {
+        const rows = this.batchesContainerTarget.querySelectorAll('.card');
+        rows.forEach((row, index) => {
+            row.querySelector('h6').textContent = `Lote ${index + 1}: Seguridad, Trazabilidad y Costes`;
+            row.querySelectorAll('input').forEach(input => {
+                input.name = input.name.replace(/batches_data\[\d+\]/, `batches_data[${index}]`);
+            });
+        });
+    }
+
+    calculateBatchCosts(targetInput) {
+        const row = targetInput.closest('.card');
+        if (!row) return;
+
+        const unitsInput = row.querySelector('[name*="[unitsPerPackage]"]');
+        const packsInput = row.querySelector('[name*="[numPackages]"]');
+        const totalPriceInput = row.querySelector('[name*="[totalPrice]"]');
+        const marginInput = row.querySelector('[name*="[marginPercentage]"]');
+        const unitPriceInput = row.querySelector('[name*="[unitPrice]"]');
+
+        if (!unitsInput || !packsInput || !totalPriceInput || !unitPriceInput) return;
+
+        const unitsPerPackage = this.parseFormattedNumber(unitsInput.value);
+        const numPackages = this.parseFormattedNumber(packsInput.value);
+        const totalStock = unitsPerPackage * numPackages;
+        const totalPrice = this.parseFormattedNumber(totalPriceInput.value);
+        const margin = marginInput ? this.parseFormattedNumber(marginInput.value) : 0;
+
+        let discountedTotal = totalPrice;
+        // In this context, % Margen is used as a discount in some parts of the code,
+        // but the prompt says "margen". I'll stick to the existing behavior where
+        // discountPercentage/marginPercentage can affect unit price calculation if treated as discount.
+        // However, if it's truly a profit margin for selling, it shouldn't reduce the purchase unit price.
+        // Given the existing code in calculateCosts: discountedTotal = totalCost - (totalCost * (discount / 100));
+        // I will follow that logic.
+        if (margin > 0 && margin <= 100) {
+            discountedTotal = totalPrice - (totalPrice * (margin / 100));
+        }
+
+        if (totalStock > 0) {
+            unitPriceInput.value = this.formatToUserLocale(discountedTotal / totalStock);
+        } else {
+            unitPriceInput.value = '0,00';
+        }
+    }
+
+    calculateTotalStockFromBatches() {
+        if (!this.hasBatchesContainerTarget || !this.hasTotalStockInputTarget) return;
+
+        let totalStock = 0;
+        const rows = this.batchesContainerTarget.querySelectorAll('.card');
+        rows.forEach(row => {
+            const unitsInput = row.querySelector('[name*="[unitsPerPackage]"]');
+            const packsInput = row.querySelector('[name*="[numPackages]"]');
+            if (unitsInput && packsInput) {
+                totalStock += this.parseFormattedNumber(unitsInput.value) * this.parseFormattedNumber(packsInput.value);
+            }
+        });
+
+        this.totalStockInputTarget.value = this.formatToUserLocale(totalStock, 0);
     }
 
     handleMaintenanceSync(event) {

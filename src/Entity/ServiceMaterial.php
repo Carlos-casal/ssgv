@@ -25,6 +25,10 @@ class ServiceMaterial
     #[ORM\JoinColumn(nullable: true)]
     private ?MaterialUnit $materialUnit = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?MaterialBatch $batch = null;
+
     #[ORM\Column]
     private ?int $quantity = 0;
 
@@ -41,6 +45,18 @@ class ServiceMaterial
     public function setService(?Service $service): static
     {
         $this->service = $service;
+
+        return $this;
+    }
+
+    public function getBatch(): ?MaterialBatch
+    {
+        return $this->batch;
+    }
+
+    public function setBatch(?MaterialBatch $batch): static
+    {
+        $this->batch = $batch;
 
         return $this;
     }

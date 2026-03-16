@@ -107,6 +107,43 @@ class MaterialController extends AbstractController
             $entityManager->persist($material);
             $entityManager->flush();
 
+            // Handle dynamic batch creation for Consumables
+            if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
+                $batchesData = $request->request->all('batches_data');
+                foreach ($batchesData as $bData) {
+                    $batch = new \App\Entity\MaterialBatch();
+                    $batch->setMaterial($material);
+                    $batch->setBatchNumber($bData['batchNumber'] ?? 'LOTE');
+                    if (!empty($bData['expirationDate'])) {
+                        $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
+                    }
+                    $batch->setSupplier($bData['supplier'] ?? null);
+                    $batch->setUnitsPerPackage(isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1);
+                    $batch->setNumPackages(isset($bData['numPackages']) ? (int)str_replace('.', '', $bData['numPackages']) : 0);
+                    $batch->setTotalPrice(isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null);
+                    $batch->setMarginPercentage(isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null);
+                    $batch->setIva(isset($bData['iva']) ? (int)str_replace('.', '', $bData['iva']) : (int)$material->getIva());
+
+                    // Calculate unit price for storage
+                    $totalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
+                    if ($totalStock > 0 && $batch->getTotalPrice()) {
+                        $price = (float)$batch->getTotalPrice();
+                        if ($batch->getMarginPercentage()) {
+                            $price = $price - ($price * ((float)$batch->getMarginPercentage() / 100));
+                        }
+                        $batch->setUnitPrice((string)($price / $totalStock));
+                    }
+
+                    $entityManager->persist($batch);
+
+                    // Initialize stock for this batch in Central Warehouse
+                    if ($batch->getNumPackages() > 0) {
+                        $materialManager->updateStockWithBatch($material, $materialManager->getCentralWarehouse(), $totalStock, $batch);
+                    }
+                }
+                $entityManager->flush();
+            }
+
             // Handle dynamic unit creation for Communications or Technical Equipment
             if ($request->request->has('units_data')) {
                 $unitsData = $request->request->all('units_data');
@@ -190,11 +227,13 @@ class MaterialController extends AbstractController
         }
 
         $unitsData = $request->request->all('units_data');
+        $batchesData = $request->request->all('batches_data');
 
         return $this->render('material/new.html.twig', [
             'material' => $material,
             'form' => $form,
             'units_data' => $unitsData,
+            'batches_data' => $batchesData,
             'current_section' => 'recursos'
         ]);
     }
@@ -407,6 +446,64 @@ class MaterialController extends AbstractController
 
             $entityManager->flush();
 
+            // Handle dynamic batch creation/update in edit
+            if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
+                $batchesData = $request->request->all('batches_data');
+                $submittedBatchIds = array_filter(array_column($batchesData, 'id'));
+
+                // Delete batches that are not in the submitted data
+                foreach ($material->getBatches() as $existingBatch) {
+                    if (!in_array($existingBatch->getId(), $submittedBatchIds)) {
+                        $entityManager->remove($existingBatch);
+                    }
+                }
+
+                foreach ($batchesData as $bData) {
+                    $batch = null;
+                    if (!empty($bData['id'])) {
+                        $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($bData['id']);
+                    }
+
+                    if (!$batch) {
+                        $batch = new \App\Entity\MaterialBatch();
+                        $batch->setMaterial($material);
+                        $entityManager->persist($batch);
+                    }
+
+                    $batch->setBatchNumber($bData['batchNumber'] ?? 'LOTE');
+                    if (!empty($bData['expirationDate'])) {
+                        $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
+                    }
+                    $batch->setSupplier($bData['supplier'] ?? null);
+
+                    $oldTotalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
+
+                    $batch->setUnitsPerPackage(isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1);
+                    $batch->setNumPackages(isset($bData['numPackages']) ? (int)str_replace('.', '', $bData['numPackages']) : 0);
+                    $batch->setTotalPrice(isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null);
+                    $batch->setMarginPercentage(isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null);
+                    $batch->setIva(isset($bData['iva']) ? (int)str_replace('.', '', $bData['iva']) : (int)$material->getIva());
+
+                    $newTotalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
+
+                    // Calculate unit price
+                    if ($newTotalStock > 0 && $batch->getTotalPrice()) {
+                        $price = (float)$batch->getTotalPrice();
+                        if ($batch->getMarginPercentage()) {
+                            $price = $price - ($price * ((float)$batch->getMarginPercentage() / 100));
+                        }
+                        $batch->setUnitPrice((string)($price / $newTotalStock));
+                    }
+
+                    // If stock changed, adjust it in Central Warehouse
+                    if ($newTotalStock !== $oldTotalStock) {
+                        $diff = $newTotalStock - $oldTotalStock;
+                        $materialManager->updateStockWithBatch($material, $materialManager->getCentralWarehouse(), $diff, $batch);
+                    }
+                }
+                $entityManager->flush();
+            }
+
             // Handle dynamic unit creation in edit (only for NEW units)
             if ($request->request->has('units_data')) {
                 $unitsData = $request->request->all('units_data');
@@ -527,8 +624,9 @@ class MaterialController extends AbstractController
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
 
-        // Prepare existing units data for the frontend
+            // Prepare existing units and batches data for the frontend
         $unitsData = $request->request->all('units_data');
+        $batchesData = $request->request->all('batches_data');
         if (empty($unitsData)) {
             $unitsData = [];
             foreach ($material->getUnits() as $unit) {
@@ -555,10 +653,28 @@ class MaterialController extends AbstractController
             }
         }
 
+        if (empty($batchesData)) {
+            $batchesData = [];
+            foreach ($material->getBatches() as $batch) {
+                $batchesData[] = [
+                    'id' => $batch->getId(),
+                    'batchNumber' => $batch->getBatchNumber(),
+                    'expirationDate' => $batch->getExpirationDate() ? $batch->getExpirationDate()->format('Y-m-d') : null,
+                    'supplier' => $batch->getSupplier(),
+                    'unitsPerPackage' => $batch->getUnitsPerPackage(),
+                    'numPackages' => $batch->getNumPackages(),
+                    'totalPrice' => $batch->getTotalPrice(),
+                    'marginPercentage' => $batch->getMarginPercentage(),
+                    'unitPrice' => $batch->getUnitPrice(),
+                ];
+            }
+        }
+
         return $this->render('material/edit.html.twig', [
             'material' => $material,
             'form' => $form,
             'units_data' => $unitsData,
+            'batches_data' => $batchesData,
             'current_section' => 'recursos'
         ]);
     }
