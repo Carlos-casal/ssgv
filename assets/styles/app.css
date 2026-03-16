@@ -18,6 +18,82 @@ html, body {
     overflow: hidden;
 }
 
+/* Dark Mode Overrides */
+html.dark {
+    color-scheme: dark;
+}
+
+html.dark body {
+    background-color: #0f172a !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .main-content {
+    background-color: #0f172a !important;
+}
+
+html.dark header h1 {
+    color: #f8fafc !important;
+}
+
+html.dark .card {
+    background-color: #1e293b !important;
+    border-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .card-header {
+    background-color: #1e293b !important;
+    border-bottom-color: #334155 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .text-gray-800, html.dark .text-gray-900, html.dark .text-slate-900 {
+    color: #f1f5f9 !important;
+}
+
+html.dark .text-muted, html.dark .text-gray-500, html.dark .text-slate-500 {
+    color: #94a3b8 !important;
+}
+
+html.dark .table {
+    color: #f1f5f9 !important;
+}
+
+html.dark .table thead th {
+    background-color: #334155 !important;
+    color: #cbd5e1 !important;
+    border-color: #475569 !important;
+}
+
+html.dark .table td {
+    border-color: #334155 !important;
+}
+
+html.dark .bg-white {
+    background-color: #1e293b !important;
+}
+
+html.dark .bg-light {
+    background-color: #334155 !important;
+}
+
+html.dark .form-input, html.dark .form-control, html.dark .form-select {
+    background-color: #334155 !important;
+    border-color: #475569 !important;
+    color: #f1f5f9 !important;
+}
+
+html.dark .form-input[readonly] {
+    background-color: #1e293b !important;
+    opacity: 0.8;
+}
+
+html.dark .modal-content {
+    background-color: #1e293b !important;
+    color: #f1f5f9 !important;
+}
+
 /* Sidebar - Clases de utilidad se encargan del layout */
 .sidebar {
     width: 260px !important;
@@ -171,6 +247,13 @@ html, body {
     .tox-statusbar__branding, .tox-promotion, .tox-statusbar__path {
         display: none !important;
     }
+
+    /* Soft color backgrounds for alerts */
+    .bg-warning-soft { background-color: rgba(246, 194, 62, 0.1) !important; }
+    .bg-danger-soft { background-color: rgba(231, 74, 59, 0.1) !important; }
+    .bg-success-soft { background-color: rgba(28, 200, 138, 0.1) !important; }
+    .bg-info-soft { background-color: rgba(54, 185, 204, 0.1) !important; }
+    .bg-primary-soft { background-color: rgba(78, 115, 223, 0.1) !important; }
 
     /* Afluencia classes */
     .afluencia-baja { background-color: #d1fae5 !important; color: #065f46 !important; border-color: #10b981 !important; }

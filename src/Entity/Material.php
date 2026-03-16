@@ -394,8 +394,37 @@ class Material
 
     public function isLowStock(): bool
     {
-        $threshold = $this->safetyStock * ($this->unitsPerPackage ?? 1);
-        return $this->nature === self::NATURE_CONSUMABLE && $this->stock <= $threshold;
+        if ($this->nature !== self::NATURE_CONSUMABLE) {
+            return false;
+        }
+
+        return $this->getTotalPackages() <= (float)$this->safetyStock;
+    }
+
+    public function getTotalPackages(): float
+    {
+        if ($this->batches->isEmpty()) {
+            if ($this->unitsPerPackage > 0) {
+                return $this->stock / $this->unitsPerPackage;
+            }
+            return (float)$this->stock;
+        }
+
+        $totalPacks = 0;
+        foreach ($this->batches as $batch) {
+            $batchStock = 0;
+            foreach ($batch->getStocks() as $s) {
+                $batchStock += $s->getQuantity();
+            }
+
+            if ($batch->getUnitsPerPackage() > 0) {
+                $totalPacks += ($batchStock / $batch->getUnitsPerPackage());
+            } else {
+                $totalPacks += $batchStock;
+            }
+        }
+
+        return (float)$totalPacks;
     }
 
     public function getImagePath(): ?string

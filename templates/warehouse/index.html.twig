@@ -114,11 +114,21 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                {% set loc_breakdown = [] %}
+                                                {% set loc_totals = {} %}
                                                 {% for stock in material.stocks %}
-                                                    {% set loc_breakdown = loc_breakdown|merge([stock.location.name ~ ': ' ~ stock.quantity]) %}
+                                                    {% set loc_name = stock.location.name %}
+                                                    {% if loc_totals[loc_name] is defined %}
+                                                        {% set loc_totals = loc_totals|merge({ (loc_name): loc_totals[loc_name] + stock.quantity }) %}
+                                                    {% else %}
+                                                        {% set loc_totals = loc_totals|merge({ (loc_name): stock.quantity }) %}
+                                                    {% endif %}
                                                 {% endfor %}
-                                                <span class="text-muted small">{{ loc_breakdown|join(', ')|default('Sin ubicación (Stock global)') }}</span>
+
+                                                {% set loc_display = [] %}
+                                                {% for loc, qty in loc_totals %}
+                                                    {% set loc_display = loc_display|merge([loc ~ ': ' ~ qty]) %}
+                                                {% endfor %}
+                                                <span class="text-muted small">{{ loc_display|join(', ')|default('Sin ubicación (Stock global)') }}</span>
                                             </td>
                                             <td>
                                                 <a href="{{ path('app_material_show', {id: material.id}) }}" class="btn btn-xs btn-link p-0 text-decoration-none">

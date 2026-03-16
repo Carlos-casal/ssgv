@@ -24,7 +24,17 @@ class WarehouseController extends AbstractController
 
         $totalValuation = 0;
         foreach ($materials as $material) {
-            $totalValuation += (float) $material->getUnitPrice() * $material->getStock();
+            if ($material->getNature() === \App\Entity\Material::NATURE_CONSUMABLE && !$material->getBatches()->isEmpty()) {
+                foreach ($material->getBatches() as $batch) {
+                    $batchStock = 0;
+                    foreach ($batch->getStocks() as $s) {
+                        $batchStock += $s->getQuantity();
+                    }
+                    $totalValuation += (float) $batch->getUnitPrice() * $batchStock;
+                }
+            } else {
+                $totalValuation += (float) $material->getUnitPrice() * $material->getStock();
+            }
         }
 
         $stats = [
