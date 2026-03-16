@@ -17,8 +17,10 @@ export default class extends Controller {
     _applyTheme() {
         if (this.theme === 'dark') {
             document.documentElement.classList.add('dark');
+            document.body.classList.remove('light-theme');
         } else {
             document.documentElement.classList.remove('dark');
+            document.body.classList.add('light-theme');
         }
 
         this._updateIcon();
@@ -27,10 +29,7 @@ export default class extends Controller {
     _updateIcon() {
         if (!this.hasIconTarget) return;
 
-        // User requested: "si esta luna tien que ser modo oscuro ... si esta modo claro el icoo tiene que ser en sol"
-        // This is a bit unusual (usually icon represents action, not state), but I will follow:
-        // Moon icon = Dark Mode active
-        // Sun icon = Light Mode active
+        // Moon = Dark Mode, Sun = Light Mode
         if (this.theme === 'dark') {
             this.iconTarget.setAttribute('data-lucide', 'moon');
         } else {

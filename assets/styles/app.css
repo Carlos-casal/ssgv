@@ -9,6 +9,23 @@
     /* Base styles can remain if they are truly global */
 }
 
+:root {
+    --bg-main: #FFFFFF;
+    --bg-card: #F9FAFB;
+    --text-primary: #111827;
+    --text-secondary: #4B5563;
+    --border-color: #e5e7eb;
+}
+
+html.dark {
+    --bg-main: #121926;
+    --bg-card: #1f2937;
+    --text-primary: #FFFFFF;
+    --text-secondary: #9CA3AF;
+    --border-color: rgba(255, 255, 255, 0.1);
+    color-scheme: dark;
+}
+
 /* Reset global obligatorio */
 html, body {
     margin: 0 !important;
@@ -16,83 +33,92 @@ html, body {
     height: 100vh;
     width: 100%;
     overflow: hidden;
+    background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
 }
 
-/* Dark Mode Overrides */
-html.dark {
-    color-scheme: dark;
+.main-content {
+    background-color: var(--bg-main) !important;
 }
 
-html.dark body {
-    background-color: #0f172a !important;
-    color: #f1f5f9 !important;
+.card, .bg-white {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
 }
 
-html.dark .main-content {
-    background-color: #0f172a !important;
+.card-header {
+    background-color: var(--bg-card) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
 }
 
-html.dark header h1 {
-    color: #f8fafc !important;
+.bg-gray-50, .bg-slate-50, .bg-light {
+    background-color: var(--bg-card) !important;
 }
 
-html.dark .card, html.dark .bg-white {
-    background-color: #1e293b !important;
-    border-color: #334155 !important;
-    color: #f1f5f9 !important;
+.text-gray-800, .text-gray-900, .text-slate-900 {
+    color: var(--text-primary) !important;
 }
 
-html.dark .card-header {
-    background-color: #1e293b !important;
-    border-bottom-color: #334155 !important;
-    color: #f1f5f9 !important;
+.text-muted, .text-gray-500, .text-slate-500 {
+    color: var(--text-secondary) !important;
 }
 
-html.dark .bg-gray-50, html.dark .bg-slate-50 {
-    background-color: #0f172a !important;
+.table {
+    color: var(--text-primary) !important;
 }
 
-html.dark .text-gray-800, html.dark .text-gray-900, html.dark .text-slate-900 {
-    color: #f1f5f9 !important;
+.table thead th {
+    background-color: var(--bg-card) !important;
+    color: var(--text-secondary) !important;
+    border-color: var(--border-color) !important;
 }
 
-html.dark .text-muted, html.dark .text-gray-500, html.dark .text-slate-500 {
-    color: #94a3b8 !important;
+.table td {
+    border-color: var(--border-color) !important;
 }
 
-html.dark .table {
-    color: #f1f5f9 !important;
+.form-input, .form-control, .form-select {
+    background-color: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
 }
 
-html.dark .table thead th {
-    background-color: #334155 !important;
-    color: #cbd5e1 !important;
-    border-color: #475569 !important;
-}
-
-html.dark .table td {
-    border-color: #334155 !important;
-}
-
-
-html.dark .bg-light {
-    background-color: #334155 !important;
-}
-
-html.dark .form-input, html.dark .form-control, html.dark .form-select {
-    background-color: #334155 !important;
-    border-color: #475569 !important;
-    color: #f1f5f9 !important;
-}
-
-html.dark .form-input[readonly] {
-    background-color: #1e293b !important;
+.form-input[readonly] {
     opacity: 0.8;
 }
 
-html.dark .modal-content {
-    background-color: #1e293b !important;
-    color: #f1f5f9 !important;
+.modal-content {
+    background-color: var(--bg-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* Notification Panel Visibility Fix */
+html.dark .dropdown-menu {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+}
+
+html.dark .dropdown-item {
+    color: var(--text-primary) !important;
+}
+
+html.dark .dropdown-item:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html.dark #alertsDropdown i {
+    color: #FFFFFF !important;
+}
+
+/* Sidebar Toggle Button Visibility */
+.sidebar button[data-action="click->sidebar#toggleCollapse"] i {
+    color: #FFFFFF !important;
+}
+
+.sidebar-collapsed button[data-action="click->sidebar#toggleCollapse"] i {
+    color: #3b82f6 !important; /* Vibrant Blue when collapsed */
 }
 
 /* Sidebar - Clases de utilidad se encargan del layout */
@@ -107,8 +133,9 @@ html.dark .modal-content {
 
 .sidebar-collapsed .sidebar-text,
 .sidebar-collapsed .sidebar-header-text,
-.sidebar-collapsed .sidebar-section-title {
-    display: none;
+.sidebar-collapsed .sidebar-section-title,
+.sidebar-collapsed .sidebar-header-container {
+    display: none !important;
 }
 
 .sidebar-collapsed .sidebar-item {
