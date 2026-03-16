@@ -249,6 +249,47 @@ class ServiceRepository extends ServiceEntityRepository
     }
 
     /**
+     * Gets the next sequential number for services of a specific type in a given year.
+     */
+    public function getNextSequentialNumberByTypeAndYear($type, int $year): int
+    {
+        $startOfYear = new \DateTime("$year-01-01 00:00:00");
+        $endOfYear = new \DateTime("$year-12-31 23:59:59");
+
+        $qb = $this->createQueryBuilder('s')
+            ->select('count(s.id)')
+            ->where('s.startDate BETWEEN :start AND :end')
+            ->setParameter('start', $startOfYear)
+            ->setParameter('end', $endOfYear);
+
+        if ($type) {
+            $qb->andWhere('s.type = :type')
+               ->setParameter('type', $type);
+        } else {
+            $qb->andWhere('s.type IS NULL');
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult() + 1;
+    }
+
+    /**
+     * Generates the next suggested numeration ID for a service.
+     */
+    public function generateNextNumeration($type, ?\DateTimeInterface $startDate): string
+    {
+        $year = $startDate ? (int)$startDate->format('Y') : (int)date('Y');
+
+        $typeCode = 'SERV';
+        if ($type instanceof \App\Entity\ServiceType) {
+            $typeCode = $type->getCode() ?: mb_strtoupper(mb_substr($type->getName(), 0, 3));
+        }
+
+        $sequentialNumber = $this->getNextSequentialNumberByTypeAndYear($type, $year);
+
+        return sprintf('%s-%d/%03d', $typeCode, $year, $sequentialNumber);
+    }
+
+    /**
      * Gets the absolute total count of services in the system.
      */
     public function getGlobalTotalCount(): int

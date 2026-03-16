@@ -756,4 +756,27 @@ class ServiceController extends AbstractController
             'fichajes' => $fichajesByVolunteer,
         ]);
     }
+
+    /**
+     * API endpoint to suggest the next sequential numeration for a service.
+     */
+    #[Route('/api/service/next-numeration', name: 'api_service_next_numeration', methods: ['GET'])]
+    public function getNextNumeration(Request $request, ServiceRepository $serviceRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        if (!$this->isGranted('ROLE_USER')) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $typeId = $request->query->get('type_id');
+        $dateStr = $request->query->get('date');
+
+        $startDate = $dateStr ? new \DateTime($dateStr) : null;
+        $type = $typeId ? $entityManager->getRepository(\App\Entity\ServiceType::class)->find($typeId) : null;
+
+        $suggestedId = $serviceRepository->generateNextNumeration($type, $startDate);
+
+        return new JsonResponse([
+            'suggestedId' => $suggestedId
+        ]);
+    }
 }
