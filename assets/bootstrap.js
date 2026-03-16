@@ -19,9 +19,11 @@ import FormValidationController from './controllers/form_validation_controller.j
 import CsrfProtectionController from './controllers/csrf_protection_controller.js';
 import HelloController from './controllers/hello_controller.js';
 import MaterialCommsFormController from './controllers/material_comms_form_controller.js';
+import SidebarController from './controllers/sidebar_controller.js';
 
 const app = startStimulusApp();
 
+app.register('sidebar', SidebarController);
 app.register('hello-modal', HelloModalController);
 app.register('modal', ModalController);
 app.register('modal-form', ModalFormController);

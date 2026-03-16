@@ -279,4 +279,71 @@ class ServiceRepository extends ServiceEntityRepository
 
         return (int) $qb->getQuery()->getSingleScalarResult() + 1;
     }
+
+    /**
+     * Calculates the total service minutes for a given period using DQL.
+     * This avoids loading all service and fichaje entities into memory.
+     *
+     * Note: This method calculates the sum of all individual fichaje durations.
+     * If multiple volunteers are in the same service, their times are added up.
+     */
+    public function calculateTotalServiceMinutes(\DateTimeInterface $start, \DateTimeInterface $end): int
+    {
+        // For broad compatibility (SQLite/MySQL/PostgreSQL) without custom DQL functions,
+        // we use a Native Query.
+        $sql = "
+            SELECT SUM(
+                COALESCE(
+                    strftime('%s', f.end_time) - strftime('%s', f.start_time),
+                    strftime('%s', s.end_date) - strftime('%s', f.start_time)
+                )
+            ) as total_seconds
+            FROM fichaje f
+            JOIN volunteer_service vs ON f.volunteer_service_id = vs.id
+            JOIN service s ON vs.service_id = s.id
+            WHERE s.start_date >= :start
+              AND s.end_date < :end
+              AND s.end_date < :now
+        ";
+
+        // Check if we are in PostgreSQL (often used in prod)
+        $conn = $this->getEntityManager()->getConnection();
+        if ($conn->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\PostgreSQLPlatform) {
+            $sql = "
+                SELECT SUM(
+                    EXTRACT(EPOCH FROM (COALESCE(f.end_time, s.end_date) - f.start_time))
+                ) as total_seconds
+                FROM fichaje f
+                JOIN volunteer_service vs ON f.volunteer_service_id = vs.id
+                JOIN service s ON vs.service_id = s.id
+                WHERE s.start_date >= :start
+                  AND s.end_date < :end
+                  AND s.end_date < :now
+            ";
+        } elseif ($conn->getDatabasePlatform() instanceof \Doctrine\DBAL\Platforms\MySQLPlatform) {
+             $sql = "
+                SELECT SUM(
+                    TIMESTAMPDIFF(SECOND, f.start_time, COALESCE(f.end_time, s.end_date))
+                ) as total_seconds
+                FROM fichaje f
+                JOIN volunteer_service vs ON f.volunteer_service_id = vs.id
+                JOIN service s ON vs.service_id = s.id
+                WHERE s.start_date >= :start
+                  AND s.end_date < :end
+                  AND s.end_date < :now
+            ";
+        }
+
+        $rsm = new \Doctrine\ORM\Query\ResultSetMapping();
+        $rsm->addScalarResult('total_seconds', 'total_seconds');
+
+        $query = $this->getEntityManager()->createNativeQuery($sql, $rsm);
+        $query->setParameter('start', $start->format('Y-m-d H:i:s'));
+        $query->setParameter('end', $end->format('Y-m-d H:i:s'));
+        $query->setParameter('now', (new \DateTime())->format('Y-m-d H:i:s'));
+
+        $result = $query->getSingleScalarResult();
+
+        return (int) round(($result ?? 0) / 60);
+    }
 }
