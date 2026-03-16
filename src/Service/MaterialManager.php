@@ -217,7 +217,7 @@ class MaterialManager
         $this->entityManager->flush();
     }
 
-    private function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
+    public function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
     {
         $stock = $this->stockRepository->findOneBy([
             'material' => $material,
