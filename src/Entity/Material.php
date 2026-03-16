@@ -742,15 +742,15 @@ class Material
         $oneMonth = $now->modify('+30 days');
         $sixMonths = $now->modify('+6 months');
 
-        if ($this->expirationDate <= $now) {
+        if ($expirationDate <= $now) {
             return 'red';
         }
 
-        if ($this->expirationDate <= $oneMonth) {
+        if ($expirationDate <= $oneMonth) {
             return 'orange';
         }
 
-        if ($this->expirationDate <= $sixMonths) {
+        if ($expirationDate <= $sixMonths) {
             return 'yellow';
         }
 

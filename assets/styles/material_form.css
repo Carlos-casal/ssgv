@@ -45,10 +45,10 @@
     padding: 0.5rem 0.75rem !important;
     font-size: 0.875rem !important;
     line-height: normal !important;
-    color: #495057 !important;
-    background-color: #fff !important;
+    color: var(--text-primary, #495057) !important;
+    background-color: var(--bg-main, #fff) !important;
     background-clip: padding-box !important;
-    border: 1px solid var(--border-gray) !important;
+    border: 1px solid var(--border-color, var(--border-gray)) !important;
     border-radius: 0.35rem !important;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out, transform 0.1s ease-in-out !important;
 }
@@ -61,16 +61,21 @@
 
 .form-input[readonly] {
     background-color: var(--bg-highlight) !important;
+    opacity: 0.8;
+}
+
+html.dark .form-input[readonly] {
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .form-input.input-success {
     border-color: var(--success-green) !important;
-    background-color: #f6fff9 !important;
+    background-color: rgba(28, 200, 138, 0.1) !important;
 }
 
 .form-input.input-error {
     border-color: var(--danger-red) !important;
-    background-color: #fff8f7 !important;
+    background-color: rgba(231, 74, 59, 0.1) !important;
 }
 
 /* Currency Integration */
