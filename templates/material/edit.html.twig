@@ -270,7 +270,7 @@
                 <div class="card-body p-4">
                     <div class="form-grid">
                         {# Fila: Uds/Envase y Nº Envases #}
-                        <div class="form-group" data-material-dynamic-form-target="unitsPerPackageContainer">
+                        <div class="form-group" data-material-dynamic-form-target="unitsPerPackageContainer" data-redundant-multi-batch="true">
                             <label class="form-label">Uds/Envase<span class="text-red-500">*</span></label>
                             {{ form_widget(form.unitsPerPackage, {
                                 'attr': {
@@ -283,7 +283,7 @@
                         </div>
 
                         {# Nº Envases #}
-                        <div class="form-group">
+                        <div class="form-group" data-redundant-multi-batch="true">
                             <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
                             {{ form_widget(form.numPackages, {
                                 'attr': {
@@ -297,7 +297,7 @@
 
                         {# Stock Total Calculado - Span 2 #}
                         <div class="form-group col-span-2 highlight-box">
-                            <label class="form-label">Stock Total Calculado</label>
+                            <label class="form-label">Stock Total Registrado</label>
                             <div class="relative">
                                 {{ form_widget(form.stock, {
                                     'attr': {
@@ -323,7 +323,7 @@
                         </div>
 
                         {# Precio Compra (IVA inc.) #}
-                        <div class="form-group col-span-2">
+                        <div class="form-group col-span-2" data-redundant-multi-batch="true">
                             <label class="form-label">Precio Compra (IVA inc.)<span class="text-red-500">*</span></label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.totalPrice, {
@@ -341,7 +341,7 @@
                         </div>
 
                         {# % Margen #}
-                        <div class="form-group">
+                        <div class="form-group" data-redundant-multi-batch="true">
                             <label class="form-label">% Margen</label>
                             {{ form_widget(form.discountPercentage, {
                                 'attr': {
@@ -354,7 +354,7 @@
                         </div>
 
                         {# Coste con Dto #}
-                        <div class="form-group">
+                        <div class="form-group" data-redundant-multi-batch="true">
                             <label class="form-label">Coste con Dto</label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.discountedPrice, {
@@ -370,7 +370,7 @@
                         </div>
 
                         {# Precio/Ud #}
-                        <div class="form-group">
+                        <div class="form-group" data-redundant-multi-batch="true">
                             <label class="form-label">Precio/Ud</label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.unitPrice, {
@@ -386,7 +386,7 @@
                         </div>
 
                         {# IVA #}
-                        <div class="form-group">
+                        <div class="form-group" data-redundant-multi-batch="true">
                             <label class="form-label">IVA (%)</label>
                             {{ form_widget(form.iva, {
                                 'attr': {

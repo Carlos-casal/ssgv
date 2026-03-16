@@ -50,8 +50,21 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold {{ material.isLowStock ? 'text-danger' : 'text-success' }} text-uppercase mb-1">Stock Actual</div>
-                            {% set numPacks = material.unitsPerPackage > 0 ? (material.stock / material.unitsPerPackage)|round(0, 'floor') : material.stock %}
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ numPacks }} <span class="text-xs text-muted">nº envases</span></div>
+                            {% set currentPacks = 0 %}
+                            {% if material.batches|length > 0 %}
+                                {% for batch in material.batches %}
+                                    {% set batchStock = 0 %}
+                                    {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
+                                    {% if batch.unitsPerPackage > 0 %}
+                                        {% set currentPacks = currentPacks + (batchStock / batch.unitsPerPackage) %}
+                                    {% else %}
+                                        {% set currentPacks = currentPacks + batchStock %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                {% set currentPacks = material.unitsPerPackage > 0 ? material.stock / material.unitsPerPackage : material.stock %}
+                            {% endif %}
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ currentPacks|round(2) }} <span class="text-xs text-muted">nº envases</span></div>
                             <div class="text-xs text-muted">Total Unidades: {{ material.stock }} | Mínimo: {{ material.safetyStock }} envases</div>
                         </div>
                         <div class="col-auto">
@@ -99,14 +112,16 @@
                             <span class="small text-muted">Garantía:</span>
                             <span class="small">{{ material.warrantyEndDate ? material.warrantyEndDate|date('d/m/Y') : 'N/A' }}</span>
                         </div>
-                    {% else %}
+                    {% elseif material.batches|length <= 1 %}
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Trazabilidad y Finanzas</div>
+                        {% set batch = material.batches|first %}
                         <div class="mb-2">
                             <span class="small text-muted">Lote:</span>
-                            <span class="font-weight-bold">{{ material.batchNumber|default('N/A') }}</span>
+                            <span class="font-weight-bold">{{ batch ? batch.batchNumber : material.batchNumber|default('N/A') }}</span>
                         </div>
                         <div class="mb-2">
                             <span class="small text-muted">Caducidad:</span>
+                            {% set expDate = batch ? batch.expirationDate : material.expirationDate %}
                             {% set status = material.expirationStatus %}
                             <span class="badge badge-{{
                                 status == 'green' ? 'success' :
@@ -114,19 +129,29 @@
                                 (status == 'red' ? 'danger' : 'secondary'))
                             }}">
                                 <i class="fas fa-calendar-alt mr-1"></i>
-                                {{ material.expirationDate ? material.expirationDate|date('d/m/Y') : 'Sin fecha' }}
+                                {{ expDate ? expDate|date('d/m/Y') : 'Sin fecha' }}
                             </span>
                         </div>
+                        <div class="mb-2">
+                            <span class="small text-muted">Proveedor:</span>
+                            <span class="small">{{ batch ? batch.supplier : material.supplier|default('Desconocido') }}</span>
+                        </div>
+                        <div>
+                            <span class="small text-muted">Valor Unitario:</span>
+                            <span class="font-weight-bold text-gray-800">{{ (batch ? batch.unitPrice : material.unitPrice)|number_format(2, ',', '.') }}€</span>
+                            <span class="text-xs text-muted">(IVA {{ batch ? batch.iva : material.iva }}%)</span>
+                        </div>
+                    {% else %}
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Información de Lotes</div>
+                        <div class="small text-muted mb-2">Este material dispone de {{ material.batches|length }} lotes registrados. Consulta el detalle en la sección inferior.</div>
+                        <div class="mt-2 p-2 bg-light rounded border">
+                            <div class="text-xs font-bold text-uppercase mb-1">Próxima Caducidad</div>
+                            {% set firstBatch = material.batches|first %}
+                            <div class="small fw-bold text-danger">
+                                <i class="fas fa-calendar-times mr-1"></i> {{ firstBatch.expirationDate ? firstBatch.expirationDate|date('d/m/Y') : 'N/A' }}
+                            </div>
+                        </div>
                     {% endif %}
-                    <div class="mb-2">
-                        <span class="small text-muted">Proveedor:</span>
-                        <span class="small">{{ material.supplier|default('Desconocido') }}</span>
-                    </div>
-                    <div>
-                        <span class="small text-muted">Valor Unitario:</span>
-                        <span class="font-weight-bold text-gray-800">{{ material.unitPrice|number_format(2, ',', '.') }}€</span>
-                        <span class="text-xs text-muted">(IVA {{ material.iva }}%)</span>
-                    </div>
                 </div>
             </div>
         </div>
@@ -290,6 +315,56 @@
     {% endif %}
 
 
+    {% if material.nature == 'CONSUMIBLE' and material.batches|length > 0 %}
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 bg-white">
+            <h6 class="m-0 font-weight-bold text-danger"><i class="fas fa-tags mr-2"></i>Trazabilidad de Lotes y Costes</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="bg-gray-50">
+                        <tr class="text-xs text-uppercase text-muted">
+                            <th class="ps-4">Lote</th>
+                            <th>Caducidad</th>
+                            <th>Proveedor</th>
+                            <th class="text-center">Uds/Env</th>
+                            <th class="text-center">Nº Envases</th>
+                            <th class="text-center">Stock Unidades</th>
+                            <th class="text-end">P. Compra</th>
+                            <th class="text-end pe-4">P. Unitario</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        {% for batch in material.batches %}
+                            {% set batchStock = 0 %}
+                            {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
+                            <tr class="{{ batchStock <= 0 ? 'opacity-50 grayscale bg-light' : '' }}">
+                                <td class="ps-4 font-weight-bold text-primary">{{ batch.batchNumber }}</td>
+                                <td>
+                                    <span class="badge {{ batch.expirationDate < date() ? 'bg-danger' : 'bg-success' }}">
+                                        {{ batch.expirationDate ? batch.expirationDate|date('d/m/Y') : '-' }}
+                                    </span>
+                                </td>
+                                <td>{{ batch.supplier }}</td>
+                                <td class="text-center">{{ batch.unitsPerPackage }}</td>
+                                <td class="text-center">{{ batch.numPackages }}</td>
+                                <td class="text-center">
+                                    <span class="font-weight-bold {{ batchStock <= 0 ? 'text-muted' : 'text-success' }}">
+                                        {{ batchStock }}
+                                    </span>
+                                </td>
+                                <td class="text-end">{{ batch.totalPrice|number_format(2, ',', '.') }}€</td>
+                                <td class="text-end pe-4 font-weight-bold">{{ batch.unitPrice|number_format(2, ',', '.') }}€</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
     <div class="card shadow mb-4">
         <div class="card-header py-3">
             <h6 class="m-0 font-weight-bold text-primary">Historial de Movimientos</h6>
@@ -301,19 +376,24 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Usuario</th>
+                            <th>Lote</th>
                             <th>Cantidad</th>
                             <th>Talla</th>
                             <th>Motivo</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% set movements = [] %}
-                        {# This is a bit inefficient in Twig, ideally passed from controller #}
-                        {# For now I'll just assume movements are accessible or I'll update controller #}
                         {% for movement in material_movements|default([]) %}
                             <tr>
                                 <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
-                                <td>{{ movement.user ? movement.user.email : 'Sistema' }}</td>
+                                <td>{{ movement.user ? (movement.user.name ?: movement.user.email) : 'Sistema' }}</td>
+                                <td>
+                                    {% if movement.batch %}
+                                        <span class="badge bg-light text-primary border">{{ movement.batch.batchNumber }}</span>
+                                    {% else %}
+                                        <span class="text-muted small">-</span>
+                                    {% endif %}
+                                </td>
                                 <td>
                                     <span class="badge {{ movement.quantity > 0 ? 'badge-success' : 'badge-danger' }}">
                                         {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}

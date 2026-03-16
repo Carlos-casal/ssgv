@@ -362,7 +362,16 @@ export default class extends Controller {
         }
 
         if (this.hasStockAndCostsBlockTarget) {
-            this.stockAndCostsBlockTarget.classList.toggle('d-none', isConsumable && this.batchesContainerTarget.children.length > 0);
+            // No longer hiding the block, but we might want to hide specific fields inside it
+            // if we are in multi-batch mode.
+            // For now, let's keep it visible so Stock Mínimo is accessible.
+            this.stockAndCostsBlockTarget.classList.remove('d-none');
+
+            // Toggle specific fields that are redundant in multi-batch
+            const redundantFields = this.stockAndCostsBlockTarget.querySelectorAll('[data-redundant-multi-batch="true"]');
+            redundantFields.forEach(field => {
+                field.classList.toggle('d-none', isConsumable && this.batchesContainerTarget.children.length > 0);
+            });
         }
 
         this.handleNatureChange();
@@ -756,12 +765,12 @@ export default class extends Controller {
                         <input type="text" name="batches_data[${index}][numPackages]" value="${this.formatToUserLocale(initialData?.numPackages, 0) || ''}" class="form-input" data-required="true"
                             data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
                     </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Precio Compra (IVA inc.)<span class="text-red-500">*</span></label>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">Precio Compra<span class="text-red-500">*</span></label>
                         <div class="input-group">
                             <input type="text" name="batches_data[${index}][totalPrice]" value="${this.formatToUserLocale(initialData?.totalPrice, 2) || ''}" class="form-input" data-required="true" data-type="decimal"
                                 data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                            <span class="input-group-text">€</span>
+                            <span class="input-group-text p-1">€</span>
                         </div>
                     </div>
                     <div class="col-md-2 mb-3">
@@ -769,7 +778,7 @@ export default class extends Controller {
                         <div class="input-group">
                             <input type="text" name="batches_data[${index}][marginPercentage]" value="${this.formatToUserLocale(initialData?.marginPercentage, 2) || ''}" class="form-input" data-type="decimal"
                                 data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                            <span class="input-group-text">%</span>
+                            <span class="input-group-text p-1">%</span>
                         </div>
                     </div>
                     <div class="col-md-2 mb-3">
@@ -777,9 +786,12 @@ export default class extends Controller {
                         <input type="text" name="batches_data[${index}][iva]" value="${initialData?.iva || '21'}" class="form-input"
                             data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
                     </div>
-                    <div class="col-md-1 mb-3">
+                    <div class="col-md-2 mb-3">
                         <label class="form-label">P/Ud</label>
-                        <input type="text" name="batches_data[${index}][unitPrice]" value="${this.formatToUserLocale(initialData?.unitPrice, 2) || ''}" class="form-input bg-light" readonly style="font-size: 0.7rem;">
+                        <div class="input-group">
+                            <input type="text" name="batches_data[${index}][unitPrice]" value="${this.formatToUserLocale(initialData?.unitPrice, 2) || ''}" class="form-input bg-light font-weight-bold" readonly>
+                            <span class="input-group-text p-1">€</span>
+                        </div>
                     </div>
                 </div>
             </div>
