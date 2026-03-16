@@ -30,10 +30,13 @@ class WarehouseController extends AbstractController
                     foreach ($batch->getStocks() as $s) {
                         $batchStock += $s->getQuantity();
                     }
-                    $totalValuation += (float) $batch->getUnitPrice() * $batchStock;
+
+                    $uPrice = str_replace(',', '.', (string)$batch->getUnitPrice());
+                    $totalValuation += (float)$uPrice * $batchStock;
                 }
             } else {
-                $totalValuation += (float) $material->getUnitPrice() * $material->getStock();
+                $uPrice = str_replace(',', '.', (string)$material->getUnitPrice());
+                $totalValuation += (float)$uPrice * $material->getStock();
             }
         }
 

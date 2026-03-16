@@ -27,10 +27,14 @@ export default class extends Controller {
     _updateIcon() {
         if (!this.hasIconTarget) return;
 
+        // User requested: "si esta luna tien que ser modo oscuro ... si esta modo claro el icoo tiene que ser en sol"
+        // This is a bit unusual (usually icon represents action, not state), but I will follow:
+        // Moon icon = Dark Mode active
+        // Sun icon = Light Mode active
         if (this.theme === 'dark') {
-            this.iconTarget.setAttribute('data-lucide', 'sun');
-        } else {
             this.iconTarget.setAttribute('data-lucide', 'moon');
+        } else {
+            this.iconTarget.setAttribute('data-lucide', 'sun');
         }
 
         if (window.lucide) {
