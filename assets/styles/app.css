@@ -134,6 +134,8 @@ html.dark #alertsDropdown i {
 .sidebar {
     width: 260px !important;
     transition: width 0.3s ease;
+    overflow-y: auto;
+    overflow-x: visible !important;
 }
 
 .sidebar-collapsed {
@@ -193,6 +195,7 @@ html.dark #alertsDropdown i {
     justify-content: center !important;
     padding: 1.5rem 0 !important;
     min-height: 180px; /* Ensure enough space for 3 vertical buttons */
+    overflow: visible !important;
 }
 
 /* Reset global obligatorio para asegurar cero márgenes */
