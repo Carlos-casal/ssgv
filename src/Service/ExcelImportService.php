@@ -228,6 +228,12 @@ class ExcelImportService
         $cell = $worksheet->getCell($col . $row);
         $value = $cell->getCalculatedValue();
 
+        // Debug logging for empty columns
+        if (empty($value) && in_array($col, ['C', 'D'])) {
+            // Check if there is a formatted value even if calculated is empty
+            $value = $cell->getFormattedValue();
+        }
+
         if ($value instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
             $value = $value->getPlainText();
         }
@@ -319,25 +325,25 @@ class ExcelImportService
         $headers = [
             'A1' => 'Nombre Comercial *',
             'B1' => 'Código de Barras *',
-            'C1' => 'Categoría',
-            'D1' => 'Naturaleza (CONSUMIBLE/EQUIPO_TECNICO)',
+            'C1' => 'Categoría *',
+            'D1' => 'Naturaleza * (CONSUMIBLE/EQUIPO_TECNICO)',
             'E1' => 'Subfamilia',
-            'F1' => 'Unidades por Envase',
-            'G1' => 'Nº de Envases',
-            'H1' => 'Stock Mínimo (Envases)',
-            'I1' => 'Lote',
-            'J1' => 'Fecha de Caducidad (DD/MM/AA)',
-            'K1' => 'Proveedor',
-            'L1' => 'Precio Compra Total (IVA inc.)',
+            'F1' => 'Unidades por Envase *',
+            'G1' => 'Nº de Envases *',
+            'H1' => 'Stock Mínimo (Envases) *',
+            'I1' => 'Lote *',
+            'J1' => 'Fecha de Caducidad * (DD/MM/AA)',
+            'K1' => 'Proveedor *',
+            'L1' => 'Precio Compra Total (IVA inc.) *',
             'M1' => 'Margen (%)',
-            'N1' => 'IVA (%)',
+            'N1' => 'IVA (%) *',
             'O1' => 'Marca y Modelo',
             'P1' => 'Alias',
             'Q1' => 'Número de Serie',
             'R1' => 'ID de Red (ISSI/IMEI)',
             'S1' => 'Teléfono',
             'T1' => 'Fecha de Compra (DD/MM/AA)',
-            'U1' => 'Fin de Garantía (DD/MM/AA)',
+            'U1' => 'Fin de Garantía (DD/MM/AA) *',
             'V1' => 'Descripción'
         ];
 
