@@ -13,15 +13,17 @@ use Twig\TwigFilter;
 class AppExtension extends AbstractExtension implements GlobalsInterface
 {
     private $volunteerRepository;
+    private $notificationService;
 
     /**
      * AppExtension constructor.
-     *
-     * @param VolunteerRepository $volunteerRepository The repository for volunteers, used to fetch global data.
      */
-    public function __construct(VolunteerRepository $volunteerRepository)
-    {
+    public function __construct(
+        VolunteerRepository $volunteerRepository,
+        \App\Service\NotificationService $notificationService
+    ) {
         $this->volunteerRepository = $volunteerRepository;
+        $this->notificationService = $notificationService;
     }
 
     /**
@@ -33,6 +35,7 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
     {
         return [
             'pending_volunteer_count' => $this->volunteerRepository->countPendingVolunteers(),
+            'system_alerts' => $this->notificationService->getAlerts(),
             'now' => new \DateTime(),
         ];
     }

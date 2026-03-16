@@ -17,6 +17,47 @@
                 <i data-lucide="panel-left-close" class="w-5 h-5" data-sidebar-target="toggleIcon"></i>
             </button>
         </div>
+        <div class="flex gap-2">
+            <!-- Notification Bell -->
+            <div class="dropdown">
+                <button class="text-slate-500 hover:text-white transition-colors position-relative" type="button" id="alertsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <i data-lucide="bell" class="w-5 h-5"></i>
+                    {% if system_alerts|length > 0 %}
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="padding: 0.25em 0.4em; font-size: 0.5rem;">
+                            {{ system_alerts|length }}
+                        </span>
+                    {% endif %}
+                </button>
+                <div class="dropdown-menu dropdown-menu-end shadow border-0 py-0 overflow-hidden" aria-labelledby="alertsDropdown" style="width: 300px; max-height: 400px; overflow-y: auto;">
+                    <div class="bg-primary text-white p-3 text-xs font-bold uppercase tracking-wider">
+                        Alertas del Sistema ({{ system_alerts|length }})
+                    </div>
+                    {% for alert in system_alerts %}
+                        <a class="dropdown-item p-3 border-bottom d-flex align-items-start gap-3" href="{{ alert.link }}">
+                            <div class="p-2 rounded bg-{{ alert.severity }}-soft text-{{ alert.severity }}">
+                                <i data-lucide="{{ alert.type == 'low_stock' ? 'package' : 'calendar-off' }}" class="w-4 h-4"></i>
+                            </div>
+                            <div style="white-space: normal;">
+                                <p class="mb-0 fw-bold text-xs">{{ alert.title }}</p>
+                                <p class="mb-0 text-muted" style="font-size: 0.7rem;">{{ alert.message }}</p>
+                            </div>
+                        </a>
+                    {% else %}
+                        <div class="p-4 text-center text-muted">
+                            <i data-lucide="check-circle" class="w-8 h-8 mb-2 opacity-25"></i>
+                            <p class="mb-0 small">No hay alertas pendientes</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <button data-controller="theme" data-action="click->theme#toggle" class="text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="moon" class="w-5 h-5" data-theme-target="icon"></i>
+            </button>
+            <button data-action="click->sidebar#toggleCollapse" class="text-slate-500 hover:text-white transition-colors">
+                <i data-lucide="panel-left-close" class="w-5 h-5" data-sidebar-target="toggleIcon"></i>
+            </button>
+        </div>
     </div>
 
     <!-- Navegación Principal -->

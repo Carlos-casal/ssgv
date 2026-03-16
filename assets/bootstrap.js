@@ -20,10 +20,12 @@ import CsrfProtectionController from './controllers/csrf_protection_controller.j
 import HelloController from './controllers/hello_controller.js';
 import MaterialCommsFormController from './controllers/material_comms_form_controller.js';
 import SidebarController from './controllers/sidebar_controller.js';
+import ThemeController from './controllers/theme_controller.js';
 
 const app = startStimulusApp();
 
 app.register('sidebar', SidebarController);
+app.register('theme', ThemeController);
 app.register('hello-modal', HelloModalController);
 app.register('modal', ModalController);
 app.register('modal-form', ModalFormController);
