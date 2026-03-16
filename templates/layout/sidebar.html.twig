@@ -4,12 +4,20 @@
      data-sidebar-target="sidebar">
 
     <!-- Header/Logo -->
-    <div class="p-4 border-b border-slate-800 flex items-center justify-between overflow-hidden">
+    <div class="p-4 border-b border-slate-800 flex items-center justify-between sidebar-header">
         <div class="flex flex-col gap-0 min-w-0 sidebar-header-container">
             <span class="font-black text-white tracking-tighter text-xs uppercase leading-tight sidebar-header-text truncate">PANEL</span>
             <span class="font-black text-white tracking-tighter text-xs uppercase leading-tight sidebar-header-text truncate">CONTROL</span>
         </div>
-        <div class="flex items-center gap-2 flex-shrink-0">
+        <div class="flex items-center gap-2 flex-shrink-0 sidebar-actions">
+            <button data-action="click->sidebar#toggleCollapse" class="text-slate-500 hover:text-white transition-colors flex items-center">
+                <i data-lucide="panel-left-close" class="w-5 h-5" data-sidebar-target="toggleIcon"></i>
+            </button>
+
+            <button data-controller="theme" data-action="click->theme#toggle" class="text-slate-500 hover:text-white transition-colors flex items-center">
+                <i data-lucide="sun" class="w-5 h-5" data-theme-target="icon"></i>
+            </button>
+
             <!-- Notification Bell -->
             <div class="dropdown">
                 <button class="text-slate-500 hover:text-white transition-colors position-relative flex items-center" type="button" id="alertsDropdown" data-bs-toggle="dropdown" aria-expanded="false">
@@ -42,13 +50,6 @@
                     {% endfor %}
                 </div>
             </div>
-
-            <button data-controller="theme" data-action="click->theme#toggle" class="text-slate-500 hover:text-white transition-colors flex items-center">
-                <i data-lucide="sun" class="w-5 h-5" data-theme-target="icon"></i>
-            </button>
-            <button data-action="click->sidebar#toggleCollapse" class="text-slate-500 hover:text-white transition-colors flex items-center">
-                <i data-lucide="panel-left-close" class="w-5 h-5" data-sidebar-target="toggleIcon"></i>
-            </button>
         </div>
     </div>
 
