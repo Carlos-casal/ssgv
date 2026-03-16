@@ -107,6 +107,14 @@ class MaterialController extends AbstractController
             $entityManager->persist($material);
             $entityManager->flush();
 
+            // Explicitly set safetyStock if provided (sometimes unmapped or custom handled)
+            if ($request->request->has('material') && isset($request->request->all('material')['safetyStock'])) {
+                $safetyVal = $request->request->all('material')['safetyStock'];
+                $safetyVal = (int)str_replace('.', '', $safetyVal);
+                $material->setSafetyStock($safetyVal);
+                $entityManager->flush();
+            }
+
             // Handle dynamic batch creation for Consumables
             if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
                 $batchesData = $request->request->all('batches_data');
@@ -445,6 +453,14 @@ class MaterialController extends AbstractController
             }
 
             $entityManager->flush();
+
+            // Update safetyStock in edit
+            if ($request->request->has('material') && isset($request->request->all('material')['safetyStock'])) {
+                $safetyVal = $request->request->all('material')['safetyStock'];
+                $safetyVal = (int)str_replace('.', '', $safetyVal);
+                $material->setSafetyStock($safetyVal);
+                $entityManager->flush();
+            }
 
             // Handle dynamic batch creation/update in edit
             if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
