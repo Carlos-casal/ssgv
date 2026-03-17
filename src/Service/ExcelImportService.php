@@ -67,7 +67,7 @@ class ExcelImportService
         // Search in the first 3 rows for headers (in case there's some title or empty rows)
         for ($row = 1; $row <= 3; $row++) {
             for ($col = 1; $col <= $highestColumnIndex; $col++) {
-                $cell = $worksheet->getCellByColumnAndRow($col, $row);
+                $cell = $worksheet->getCell(\PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col) . $row);
                 $cellValue = $cell->getValue();
                 if ($cellValue instanceof \PhpOffice\PhpSpreadsheet\RichText\RichText) {
                     $cellValue = $cellValue->getPlainText();
