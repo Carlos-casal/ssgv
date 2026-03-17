@@ -4,10 +4,16 @@ export default class extends Controller {
     static targets = ["item", "badge", "dropdown"];
 
     markAsRead(event) {
-        event.preventDefault();
         const id = event.currentTarget.dataset.id;
         const url = event.currentTarget.dataset.url;
+        const targetUrl = event.currentTarget.getAttribute('href');
         const item = event.currentTarget.closest('[data-notification-target="item"]');
+
+        // Prevent default if it's just a button or we want to handle navigation manually
+        // But in our case, it's an overlay link <a>, we want it to navigate.
+        // We fire the fetch and then let the browser navigate, or navigate in then().
+
+        event.preventDefault();
 
         fetch(url, { method: 'POST' })
             .then(response => response.json())
@@ -19,6 +25,10 @@ export default class extends Controller {
                         item.classList.add('border-transparent');
                     }
                     this.updateBadge();
+                }
+                // Navigate to the target URL after marking as read
+                if (targetUrl && targetUrl !== '#') {
+                    window.location.href = targetUrl;
                 }
             });
     }
