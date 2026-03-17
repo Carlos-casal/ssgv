@@ -16,74 +16,58 @@
         <div class="card-body">
             <div class="alert alert-info">
                 <i class="fas fa-info-circle mr-2"></i>
-                <strong>Se han detectado {{ preview.total_rows }} filas</strong> en el archivo Excel.
+                <strong>Se han detectado {{ preview.total_rows }} filas</strong> en el archivo Excel, que afectan a <strong>{{ preview.materials|length }} materiales</strong>.
             </div>
 
-            {% if preview.existing_items|length > 0 %}
-            <div class="mb-4">
-                <h5 class="text-success">
-                    <i class="fas fa-check-circle mr-2"></i>
-                    {{ preview.existing_items|length }} ítems existen (se sumará el stock)
-                </h5>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Nombre Comercial</th>
-                                <th>Código de Barras</th>
-                                <th>Stock Actual</th>
-                                <th>Stock a Añadir</th>
-                                <th>Stock Final</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in preview.existing_items %}
-                            <tr>
-                                <td>{{ item.name }}</td>
-                                <td><code>{{ item.barcode }}</code></td>
-                                <td>{{ item.current_stock }}</td>
-                                <td class="text-success font-weight-bold">+{{ item.stock_to_add }}</td>
-                                <td class="font-weight-bold">{{ item.current_stock + item.stock_to_add }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+            <div class="table-responsive">
+                <table class="table table-hover table-bordered table-sm">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Acción</th>
+                            <th>Material</th>
+                            <th>Info</th>
+                            <th>Stock Actual</th>
+                            <th>Cambio</th>
+                            <th>Stock Final</th>
+                            <th>Detalles</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in preview.materials %}
+                        <tr class="{{ item.is_new ? 'table-primary' : '' }}">
+                            <td class="text-center align-middle">
+                                {% if item.is_new %}
+                                    <span class="badge badge-primary">NUEVO</span>
+                                {% else %}
+                                    <span class="badge badge-success">ACTUALIZAR</span>
+                                {% endif %}
+                            </td>
+                            <td class="align-middle">
+                                <div class="font-weight-bold">{{ item.name }}</div>
+                                <small class="text-muted">{{ item.barcode|default('Sin EAN') }}</small>
+                            </td>
+                            <td class="align-middle">
+                                <span class="badge badge-secondary">{{ item.category }}</span><br>
+                                <span class="badge badge-info">{{ item.nature }}</span>
+                            </td>
+                            <td class="text-center align-middle">{{ item.current_stock }}</td>
+                            <td class="text-center align-middle text-success font-weight-bold">+{{ item.stock_to_add }}</td>
+                            <td class="text-center align-middle font-weight-bold">{{ item.current_stock + item.stock_to_add }}</td>
+                            <td class="align-middle">
+                                {% if item.units_to_create > 0 %}
+                                    <div class="small"><i class="fas fa-microchip mr-1"></i>{{ item.units_to_create }} unidades nuevas</div>
+                                {% endif %}
+                                {% if item.batches_to_create|length > 0 %}
+                                    <div class="small text-truncate" style="max-width: 200px;" title="{{ item.batches_to_create|join(', ') }}">
+                                        <i class="fas fa-layer-group mr-1"></i>Lotes: {{ item.batches_to_create|join(', ') }}
+                                    </div>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
-            {% endif %}
-
-            {% if preview.new_items|length > 0 %}
-            <div class="mb-4">
-                <h5 class="text-primary">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    {{ preview.new_items|length }} ítems son nuevos (se crearán con sus fotos)
-                </h5>
-                <div class="table-responsive">
-                    <table class="table table-sm table-bordered">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Nombre Comercial</th>
-                                <th>Código de Barras</th>
-                                <th>Categoría</th>
-                                <th>Naturaleza</th>
-                                <th>Stock Inicial</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in preview.new_items %}
-                            <tr>
-                                <td>{{ item.name }}</td>
-                                <td><code>{{ item.barcode|default('Sin código') }}</code></td>
-                                <td><span class="badge badge-secondary">{{ item.category }}</span></td>
-                                <td><span class="badge badge-info">{{ item.nature }}</span></td>
-                                <td class="font-weight-bold">{{ item.initial_stock }}</td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endif %}
 
             {% if preview.errors|length > 0 %}
             <div class="alert alert-danger">

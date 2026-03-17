@@ -4,6 +4,9 @@
 - **Corrección:** Arreglo del error `getCellByColumnAndRow` en la importación de Excel causado por incompatibilidad con versiones recientes de PhpSpreadsheet.
 - **Corrección:** Solución al fallo de duplicados (`IntegrityConstraintViolation`) en la importación masiva al validar campos únicos como `network_id` y `serial_number`.
 - **Corrección:** Solución al error `LogicException` al descargar plantillas en servidores sin la extensión PHP `fileinfo` habilitada.
+- **Importación:** Rediseño del proceso de importación Excel con agrupación de filas por material, mejorando la transparencia en la vista previa.
+- **Importación:** Implementación de caché de sesión en `ExcelImportService` para agrupar filas del mismo material y evitar errores de duplicado previos al guardado.
+- **Sincronización:** Mejora en la importación de Excel para permitir la actualización de metadatos en materiales y unidades técnicas existentes.
 - **Sincronización:** Unificación de la versión del Changelog con el archivo VERSION del sistema.
 
 ## [1.5.1] - 17-03-2026

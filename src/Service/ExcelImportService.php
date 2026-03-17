@@ -17,6 +17,8 @@ class ExcelImportService
     private MaterialRepository $materialRepository;
     private MaterialManager $materialManager;
     private string $materialImagesDirectory;
+    private array $materialCache = [];
+    private array $batchCache = [];
 
     public function __construct(
         EntityManagerInterface $entityManager,
@@ -96,6 +98,8 @@ class ExcelImportService
      */
     public function previewImport(File $file): array
     {
+        $this->materialCache = [];
+        $this->batchCache = [];
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
@@ -103,8 +107,7 @@ class ExcelImportService
 
         $preview = [
             'total_rows' => 0,
-            'existing_items' => [],
-            'new_items' => [],
+            'materials' => [], // Grouped by target Material
             'errors' => []
         ];
 
@@ -112,62 +115,52 @@ class ExcelImportService
         
         for ($row = 2; $row <= $highestRow; $row++) {
             $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
+            if (empty($name)) continue;
+
             $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
             $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
             $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+            $sn = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
+            $nid = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
 
             $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
             if ($unitsPerPackage <= 0) $unitsPerPackage = 1;
-
             $numPackages = isset($map['numPackages']) ? (int)$this->getCellValue($worksheet, $map['numPackages'], $row) : 0;
             $stock = $unitsPerPackage * $numPackages;
             
-            if (empty($name)) {
-                continue;
-            }
-            
             $preview['total_rows']++;
             
-            // Check if material exists by barcode, serial number, network id or name
-            $existingMaterial = null;
-            if ($barcode && $barcode !== 'S/N') {
-                $existingMaterial = $this->materialRepository->findOneBy(['barcode' => $barcode]);
-            }
+            $material = $this->findExistingMaterial($name, $barcode, $sn, $nid);
+            $key = $material ? 'm_' . $material->getId() : 'new_' . $name . '_' . ($barcode ?? '');
 
-            // Check for unique technical fields if mapped
-            if (!$existingMaterial && isset($map['serialNumber'])) {
-                $sn = $this->getCellValue($worksheet, $map['serialNumber'], $row);
-                if ($sn && $sn !== 'S/N') {
-                    $existingMaterial = $this->materialRepository->findOneBy(['serialNumber' => $sn]);
-                }
-            }
-
-            if (!$existingMaterial && isset($map['networkId'])) {
-                $nid = $this->getCellValue($worksheet, $map['networkId'], $row);
-                if ($nid && $nid !== 'S/N') {
-                    $existingMaterial = $this->materialRepository->findOneBy(['networkId' => $nid]);
-                }
-            }
-
-            if (!$existingMaterial) {
-                $existingMaterial = $this->materialRepository->findOneBy(['name' => $name]);
-            }
-            
-            if ($existingMaterial) {
-                $preview['existing_items'][] = [
-                    'name' => $name,
-                    'barcode' => $barcode,
-                    'current_stock' => $existingMaterial->getStock(),
-                    'stock_to_add' => $stock
+            if (!isset($preview['materials'][$key])) {
+                $preview['materials'][$key] = [
+                    'is_new' => $material === null,
+                    'name' => $material ? $material->getName() : $name,
+                    'barcode' => $material ? $material->getBarcode() : $barcode,
+                    'category' => $material ? $material->getCategory() : $category,
+                    'nature' => $material ? $material->getNature() : $nature,
+                    'current_stock' => $material ? $material->getStock() : 0,
+                    'stock_to_add' => 0,
+                    'units_to_create' => 0,
+                    'batches_to_create' => [],
                 ];
-            } else {
-                $preview['new_items'][] = [
-                    'name' => $name,
-                    'barcode' => $barcode,
-                    'category' => $category,
-                    'nature' => $nature,
-                    'initial_stock' => $stock
-                ];
+            }
+
+            $preview['materials'][$key]['stock_to_add'] += $stock;
+
+            // For technical nature, track if we are creating a unit
+            $resolvedNature = $material ? $material->getNature() : $nature;
+            if ($resolvedNature === Material::NATURE_TECHNICAL && $sn && $sn !== 'S/N') {
+                $preview['materials'][$key]['units_to_create']++;
+            }
+
+            // For consumable nature, track batches
+            if ($resolvedNature !== Material::NATURE_TECHNICAL) {
+                $batchNum = $this->getCellValue($worksheet, $map['batchNumber'] ?? null, $row) ?? 'LOTE-EXCEL';
+                if (!in_array($batchNum, $preview['materials'][$key]['batches_to_create'])) {
+                    $preview['materials'][$key]['batches_to_create'][] = $batchNum;
+                }
             }
         }
         
@@ -179,6 +172,8 @@ class ExcelImportService
      */
     public function processImport(File $file): array
     {
+        $this->materialCache = [];
+        $this->batchCache = [];
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
@@ -187,6 +182,8 @@ class ExcelImportService
         $result = [
             'created' => 0,
             'updated' => 0,
+            'units_created' => 0,
+            'batches_created' => 0,
             'errors' => []
         ];
 
@@ -198,6 +195,8 @@ class ExcelImportService
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
+                if (empty($name)) continue;
+
                 $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
                 $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
                 $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
@@ -224,27 +223,8 @@ class ExcelImportService
                 $warrantyEndDate = isset($map['warrantyEndDate']) ? $this->getDateValue($worksheet, $map['warrantyEndDate'], $row) : null;
                 $description = isset($map['description']) ? $this->getCellValue($worksheet, $map['description'], $row) : null;
 
-                if (empty($name)) {
-                    continue;
-                }
-
                 // Find or Create Material
-                $material = null;
-                if ($barcode && $barcode !== 'S/N') {
-                    $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
-                }
-
-                if (!$material && $serialNumber && $serialNumber !== 'S/N') {
-                    $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
-                }
-
-                if (!$material && $networkId && $networkId !== 'S/N') {
-                    $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
-                }
-
-                if (!$material) {
-                    $material = $this->materialRepository->findOneBy(['name' => $name]);
-                }
+                $material = $this->findExistingMaterial($name, $barcode, $serialNumber, $networkId);
                 
                 $isNew = false;
                 if (!$material) {
@@ -253,31 +233,34 @@ class ExcelImportService
                     $this->entityManager->persist($material);
                     $isNew = true;
                     $result['created']++;
+                    $this->addToCache($material);
                 } else {
-                    $result['updated']++;
+                    // Avoid double-counting "updated" for same material in different rows
+                    // We only count it as updated once per session
+                    if (!$this->isAlreadyCounted($material, $result['errors'])) {
+                        $result['updated']++;
+                    }
                 }
 
                 // Update Material fields
-                if ($isNew) {
-                    if ($nature) $material->setNature($nature);
-                    if ($category) $material->setCategory($category);
-                    if ($subFamily) $material->setSubFamily($subFamily);
-                    if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
-                    if ($safetyStock) $material->setSafetyStock($safetyStock);
-                    if ($batchNumber) $material->setBatchNumber($batchNumber);
-                    if ($expirationDate) $material->setExpirationDate($expirationDate);
-                    if ($supplier) $material->setSupplier($supplier);
-                    $material->setUnitsPerPackage($unitsPerPackage);
-                    if ($totalPrice) $material->setTotalPrice($totalPrice);
-                    if ($marginPct) $material->setMarginPercentage($marginPct);
-                    if ($iva) $material->setIva($iva);
-                    if ($brandModel) $material->setBrandModel($brandModel);
-                    if ($networkId) $material->setNetworkId($networkId);
-                    if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
-                    if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
-                    if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
-                    if ($description) $material->setDescription($description);
-                }
+                if ($nature) $material->setNature($nature);
+                if ($category) $material->setCategory($category);
+                if ($subFamily) $material->setSubFamily($subFamily);
+                if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
+                if ($safetyStock) $material->setSafetyStock($safetyStock);
+                if ($batchNumber) $material->setBatchNumber($batchNumber);
+                if ($expirationDate) $material->setExpirationDate($expirationDate);
+                if ($supplier) $material->setSupplier($supplier);
+                if ($unitsPerPackage) $material->setUnitsPerPackage($unitsPerPackage);
+                if ($totalPrice) $material->setTotalPrice($totalPrice);
+                if ($marginPct) $material->setMarginPercentage($marginPct);
+                if ($iva) $material->setIva($iva);
+                if ($brandModel) $material->setBrandModel($brandModel);
+                if ($networkId && $networkId !== 'S/N') $material->setNetworkId($networkId);
+                if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
+                if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
+                if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
+                if ($description) $material->setDescription($description);
 
                 // Handle Image
                 if (isset($images[$row])) {
@@ -288,52 +271,53 @@ class ExcelImportService
                 // Handle Stock, Batches and Units
                 if ($material->getNature() === Material::NATURE_TECHNICAL) {
                     if ($serialNumber && $serialNumber !== 'S/N') {
-                        // Check if unit exists
                         $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $serialNumber]);
                         if (!$unit) {
                             $this->materialManager->createUnit($material, [
                                 'serialNumber' => $serialNumber,
                                 'alias' => $alias,
                                 'brandModel' => $brandModel,
-                                'purchasePrice' => $totalPrice, // Simplified: total price per unit
-                                'discountPct' => $marginPct, // Use margin for units if discount is not separate
+                                'purchasePrice' => $totalPrice,
+                                'discountPct' => $marginPct,
                                 'networkId' => $networkId,
                                 'phoneNumber' => $phoneNumber,
+                                'batteryStatus' => '100%',
                             ]);
+                            $result['units_created']++;
+                        } else {
+                            if ($alias) $unit->setAlias($alias);
+                            if ($networkId && $networkId !== 'S/N') $unit->setNetworkId($networkId);
+                            if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
+                            if ($totalPrice) $unit->setPurchasePrice($totalPrice);
+                            if ($marginPct) $unit->setDiscountPct($marginPct);
                         }
                     } else {
-                        // Technical equipment without serial number (bulk)
+                        // Technical bulk stock
                         $this->materialManager->updateStockDirectly($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages);
                     }
                 } else {
                     // Consumable - Create or Update Batch
-                    $batch = null;
-                    if ($batchNumber) {
-                        $batch = $this->entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
-                            'material' => $material,
-                            'batchNumber' => $batchNumber
-                        ]);
-                    }
+                    $batchNumberValue = $batchNumber ?? 'LOTE-EXCEL';
+                    $batch = $this->findExistingBatch($material, $batchNumberValue);
 
                     if (!$batch) {
                         $batch = new \App\Entity\MaterialBatch();
                         $batch->setMaterial($material);
-                        $batch->setBatchNumber($batchNumber ?? 'LOTE-EXCEL');
+                        $batch->setBatchNumber($batchNumberValue);
                         $this->entityManager->persist($batch);
+                        $this->addToBatchCache($batch);
+                        $result['batches_created']++;
                     }
 
                     if ($expirationDate) $batch->setExpirationDate($expirationDate);
                     if ($supplier) $batch->setSupplier($supplier);
                     $batch->setUnitsPerPackage($unitsPerPackage);
-
-                    // Add to current numPackages if it already exists
                     $batch->setNumPackages($batch->getNumPackages() + $numPackages);
 
                     if ($totalPrice) $batch->setTotalPrice($totalPrice);
                     if ($marginPct) $batch->setMarginPercentage($marginPct);
                     $batch->setIva($iva ?? $material->getIva());
 
-                    // Unit price calculation
                     $totalStockInBatch = $batch->getUnitsPerPackage() * $batch->getNumPackages();
                     if ($totalStockInBatch > 0 && $batch->getTotalPrice()) {
                         $priceVal = (float)$batch->getTotalPrice();
@@ -354,6 +338,89 @@ class ExcelImportService
         $this->entityManager->flush();
         
         return $result;
+    }
+
+    private array $countedMaterials = [];
+    private function isAlreadyCounted(Material $material, array &$errors): bool
+    {
+        if ($material->getId() && in_array($material->getId(), $this->countedMaterials)) {
+            return true;
+        }
+        if ($material->getId()) {
+            $this->countedMaterials[] = $material->getId();
+        }
+        return false;
+    }
+
+    /**
+     * Finds a material by various unique identifiers, checking both the database and the current session cache.
+     */
+    private function findExistingMaterial(?string $name, ?string $barcode, ?string $serialNumber, ?string $networkId): ?Material
+    {
+        // 1. Try to find in session cache first (prevents duplicate creation of new items before flush)
+        foreach ($this->materialCache as $m) {
+            if ($barcode && $barcode !== 'S/N' && $m->getBarcode() === $barcode) return $m;
+            if ($serialNumber && $serialNumber !== 'S/N' && $m->getSerialNumber() === $serialNumber) return $m;
+            if ($networkId && $networkId !== 'S/N' && $m->getNetworkId() === $networkId) return $m;
+            if ($name && $m->getName() === $name) return $m;
+        }
+
+        // 2. Try to find in database
+        $material = null;
+        if ($barcode && $barcode !== 'S/N') {
+            $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
+        }
+        if (!$material && $serialNumber && $serialNumber !== 'S/N') {
+            $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
+        }
+        if (!$material && $networkId && $networkId !== 'S/N') {
+            $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
+        }
+        if (!$material && $name) {
+            $material = $this->materialRepository->findOneBy(['name' => $name]);
+        }
+
+        if ($material) {
+            $this->addToCache($material);
+        }
+
+        return $material;
+    }
+
+    private function addToCache(Material $material): void
+    {
+        if (!in_array($material, $this->materialCache, true)) {
+            $this->materialCache[] = $material;
+        }
+    }
+
+    private function findExistingBatch(Material $material, string $batchNumber): ?\App\Entity\MaterialBatch
+    {
+        // 1. Check cache
+        foreach ($this->batchCache as $b) {
+            if ($b->getMaterial() === $material && $b->getBatchNumber() === $batchNumber) {
+                return $b;
+            }
+        }
+
+        // 2. Check DB
+        $batch = $this->entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
+            'material' => $material,
+            'batchNumber' => $batchNumber
+        ]);
+
+        if ($batch) {
+            $this->addToBatchCache($batch);
+        }
+
+        return $batch;
+    }
+
+    private function addToBatchCache(\App\Entity\MaterialBatch $batch): void
+    {
+        if (!in_array($batch, $this->batchCache, true)) {
+            $this->batchCache[] = $batch;
+        }
     }
 
     private function getCellValue($worksheet, $col, $row)

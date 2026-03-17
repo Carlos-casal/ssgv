@@ -305,10 +305,17 @@ class MaterialController extends AbstractController
             unlink($tempPath);
 
             $message = sprintf(
-                'Importación completada: %d materiales creados, %d actualizados.',
+                'Importación completada: %d creados, %d actualizados. ',
                 $result['created'],
                 $result['updated']
             );
+
+            if ($result['units_created'] > 0 || $result['batches_created'] > 0) {
+                $details = [];
+                if ($result['units_created'] > 0) $details[] = $result['units_created'] . ' unidades técnicas';
+                if ($result['batches_created'] > 0) $details[] = $result['batches_created'] . ' lotes nuevos';
+                $message .= '(' . implode(', ', $details) . ')';
+            }
 
             if (!empty($result['errors'])) {
                 $message .= ' Errores: ' . implode(', ', $result['errors']);
