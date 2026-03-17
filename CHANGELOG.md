@@ -9,14 +9,19 @@
 - **FIFO:** Implementación de lógica de consumo First-In-First-Out para consumibles.
 - **Alertas Stock:** Notificaciones automáticas de stock bajo y caducidad inminente.
 
+## [1.4.1] - 08-03-2026
+- **Optimización:** Mejora de velocidad en la carga de estadísticas del panel.
+
 ## [1.4.0] - 05-03-2026
 - **Dashboard:** Rediseño completo de la interfaz de administración (Command Center).
 - **UX:** Implementación de barra lateral colapsable y optimización móvil.
 - **Modo Oscuro:** Sistema de temas claro/oscuro con persistencia en localStorage.
 
+## [1.3.1] - 25-02-2026
+- **Excel:** Mejora en la importación masiva con soporte para 22 columnas de datos.
+
 ## [1.3.0] - 20-02-2026
 - **Seguridad:** Hardening de la autenticación, limitación de tasa (Rate Limiting) y Honeypot.
-- **Excel:** Actualización de la importación masiva a 22 columnas (precios, márgenes, IVAs).
 - **Cifrado:** Hasheo SHA-256 para tokens de recuperación de contraseña.
 
 ## [1.2.0] - 05-02-2026
