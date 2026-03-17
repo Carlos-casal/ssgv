@@ -20,8 +20,8 @@ export default class extends Controller {
             .then(data => {
                 if (data.success) {
                     if (item) {
-                        item.classList.add('opacity-50');
-                        item.classList.remove('border-cyan-500', 'bg-cyan-500/5');
+                        item.classList.add('opacity-30');
+                        item.classList.remove('border-blue-500', 'bg-blue-50/10');
                         item.classList.add('border-transparent');
                     }
                     this.updateBadge();
@@ -42,8 +42,8 @@ export default class extends Controller {
             .then(data => {
                 if (data.success) {
                     this.itemTargets.forEach(item => {
-                        item.classList.add('opacity-50');
-                        item.classList.remove('border-cyan-500', 'bg-cyan-500/5');
+                        item.classList.add('opacity-30');
+                        item.classList.remove('border-blue-500', 'bg-blue-50/10');
                         item.classList.add('border-transparent');
                     });
                     this.updateBadge();
@@ -83,7 +83,7 @@ export default class extends Controller {
     }
 
     updateBadge() {
-        const unreadCount = this.itemTargets.filter(item => !item.classList.contains('opacity-50')).length;
+        const unreadCount = this.itemTargets.filter(item => !item.classList.contains('opacity-30')).length;
         if (unreadCount > 0) {
             this.badgeTarget.textContent = unreadCount;
             this.badgeTarget.classList.remove('d-none');

@@ -5,6 +5,7 @@ export default {
     './src/**/*.{js,ts,jsx,tsx}',
     './templates/**/*.html.twig'
   ],
+  darkMode: 'class',
   theme: {
     extend: {},
   },
