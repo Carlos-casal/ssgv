@@ -2,6 +2,7 @@
 
 ## [1.6.0] - 19-03-2026 (Versión Actual)
 - **Corrección:** Arreglo del error `getCellByColumnAndRow` en la importación de Excel causado por incompatibilidad con versiones recientes de PhpSpreadsheet.
+- **Corrección:** Solución al fallo de duplicados (`IntegrityConstraintViolation`) en la importación masiva al validar campos únicos como `network_id` y `serial_number`.
 - **Sincronización:** Unificación de la versión del Changelog con el archivo VERSION del sistema.
 
 ## [1.5.1] - 17-03-2026

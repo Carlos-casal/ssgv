@@ -128,11 +128,27 @@ class ExcelImportService
             
             $preview['total_rows']++;
             
-            // Check if material exists by barcode or name
+            // Check if material exists by barcode, serial number, network id or name
             $existingMaterial = null;
             if ($barcode && $barcode !== 'S/N') {
                 $existingMaterial = $this->materialRepository->findOneBy(['barcode' => $barcode]);
             }
+
+            // Check for unique technical fields if mapped
+            if (!$existingMaterial && isset($map['serialNumber'])) {
+                $sn = $this->getCellValue($worksheet, $map['serialNumber'], $row);
+                if ($sn && $sn !== 'S/N') {
+                    $existingMaterial = $this->materialRepository->findOneBy(['serialNumber' => $sn]);
+                }
+            }
+
+            if (!$existingMaterial && isset($map['networkId'])) {
+                $nid = $this->getCellValue($worksheet, $map['networkId'], $row);
+                if ($nid && $nid !== 'S/N') {
+                    $existingMaterial = $this->materialRepository->findOneBy(['networkId' => $nid]);
+                }
+            }
+
             if (!$existingMaterial) {
                 $existingMaterial = $this->materialRepository->findOneBy(['name' => $name]);
             }
@@ -217,6 +233,15 @@ class ExcelImportService
                 if ($barcode && $barcode !== 'S/N') {
                     $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
                 }
+
+                if (!$material && $serialNumber && $serialNumber !== 'S/N') {
+                    $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
+                }
+
+                if (!$material && $networkId && $networkId !== 'S/N') {
+                    $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
+                }
+
                 if (!$material) {
                     $material = $this->materialRepository->findOneBy(['name' => $name]);
                 }
