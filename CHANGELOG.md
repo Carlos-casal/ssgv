@@ -1,6 +1,12 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.6.0] - 19-03-2026 (Versión Actual)
+## [1.6.1] - 20-03-2026 (Versión Actual)
+- **Corrección:** Mejora en la lógica de conteo de materiales "actualizados" vs "creados" durante la importación, funcionando correctamente incluso para registros nuevos no guardados aún.
+- **Corrección:** Refinamiento en la detección de materiales duplicados por nombre; ahora solo se agrupan si no se proporcionan identificadores únicos (EAN/Serie), evitando fusiones accidentales de productos distintos.
+- **Corrección:** Soporte para códigos de barras largos y en notación científica provenientes de Excel, asegurando que se capturen como texto exacto.
+- **Lógica:** Protección de la naturaleza del material (Consumible/Técnico) durante la importación para evitar sobrescrituras automáticas por categoría.
+
+## [1.6.0] - 19-03-2026
 - **Corrección:** Arreglo del error `getCellByColumnAndRow` en la importación de Excel causado por incompatibilidad con versiones recientes de PhpSpreadsheet.
 - **Corrección:** Solución al fallo de duplicados (`IntegrityConstraintViolation`) en la importación masiva al validar campos únicos como `network_id` y `serial_number`.
 - **Corrección:** Solución al error `LogicException` al descargar plantillas en servidores sin la extensión PHP `fileinfo` habilitada.
