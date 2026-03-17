@@ -1,6 +1,10 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.5.1] - 17-03-2026 (Versión Actual)
+## [1.6.0] - 19-03-2026 (Versión Actual)
+- **Corrección:** Arreglo del error `getCellByColumnAndRow` en la importación de Excel causado por incompatibilidad con versiones recientes de PhpSpreadsheet.
+- **Sincronización:** Unificación de la versión del Changelog con el archivo VERSION del sistema.
+
+## [1.5.1] - 17-03-2026
 - **Control Visual:** Implementación del número de versión manual en formato X.Y.Z.
 - **Interfaz:** Visualización de la versión v1.5.1 en la barra lateral del sistema.
 
