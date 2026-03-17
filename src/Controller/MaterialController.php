@@ -244,6 +244,8 @@ class MaterialController extends AbstractController
         $templatePath = $importService->generateTemplate();
 
         $response = new BinaryFileResponse($templatePath);
+        // Explicitly set MIME type to bypass LogicException when fileinfo extension is missing
+        $response->headers->set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         $response->setContentDisposition(
             ResponseHeaderBag::DISPOSITION_ATTACHMENT,
             'plantilla_materiales.xlsx'
