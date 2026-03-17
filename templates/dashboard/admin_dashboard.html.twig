@@ -1,7 +1,7 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Panel de Control{% endblock %}
-{% block page_title %}Dashboard de Gestión{% endblock %}
+{% block title %}Panel Gestión{% endblock %}
+{% block page_title %}Panel de Gestión{% endblock %}
 
 {% block content %}
 <div class="p-8 w-full max-w-none">
@@ -9,6 +9,79 @@
 
         <!-- ZONA DE DATOS (9/12 approx) -->
         <div class="flex-1 space-y-10">
+
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
+                <!-- Actividad Reciente -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 dark:text-white">Log de Actividad</h3>
+                            <p class="text-xs text-slate-400">Últimos movimientos del sistema</p>
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                            <i data-lucide="list-checks" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        {% for activity in recent_activities|slice(0, 5) %}
+                            <div class="flex items-center gap-4 group">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {{ attribute(activity, 'joinDate') is defined ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600' : 'bg-green-50 dark:bg-green-900/30 text-green-600' }}">
+                                    <i data-lucide="{{ attribute(activity, 'joinDate') is defined ? 'user-plus' : (activity.archived|default(false) ? 'check-circle' : 'alert-circle') }}" class="w-5 h-5"></i>
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                                        {% if attribute(activity, 'joinDate') is defined %}
+                                            Registro: {{ activity.name }}
+                                        {% else %}
+                                            Servicio: {{ activity.title }}
+                                        {% endif %}
+                                    </p>
+                                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-tight">
+                                        {% if attribute(activity, 'joinDate') is defined %}
+                                            {{ activity.joinDate|date('d M, H:i') }}
+                                        {% else %}
+                                            {{ activity.endDate|date('d M, H:i') }}
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <!-- Próximos Eventos -->
+                <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                    <div class="flex items-center justify-between mb-8">
+                        <div>
+                            <h3 class="text-lg font-black text-slate-800 dark:text-white">Próximos Servicios</h3>
+                            <p class="text-xs text-slate-400">Agenda operativa inmediata</p>
+                        </div>
+                        <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                            <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        {% for service in upcoming_services %}
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-slate-50 dark:border-slate-700 hover:border-blue-100 dark:hover:border-blue-900 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex flex-col items-center justify-center flex-shrink-0">
+                                    <span class="text-sm font-black leading-none">{{ service.startDate|date('d') }}</span>
+                                    <span class="text-[8px] font-bold uppercase">{{ service.startDate|date('M') }}</span>
+                                </div>
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ service.title }}</p>
+                                    <p class="text-[10px] text-slate-500">{{ service.startDate|date('H:i') }} · {{ service.maxAttendees }} voluntarios</p>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div class="text-center py-8">
+                                <p class="text-sm text-slate-400 font-medium italic">Sin servicios programados</p>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
 
             <!-- KPIs con Bordes Laterales -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ low_stock_materials_count > 0 ? '5' : '4' }} gap-6">
@@ -75,78 +148,6 @@
                 {% endif %}
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
-                <!-- Actividad Reciente -->
-                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 class="text-lg font-black text-slate-800">Log de Actividad</h3>
-                            <p class="text-xs text-slate-400">Últimos movimientos del sistema</p>
-                        </div>
-                        <div class="p-2 bg-slate-50 rounded-xl">
-                            <i data-lucide="list-checks" class="w-5 h-5 text-slate-400"></i>
-                        </div>
-                    </div>
-
-                    <div class="space-y-6">
-                        {% for activity in recent_activities|slice(0, 5) %}
-                            <div class="flex items-center gap-4 group">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {{ attribute(activity, 'joinDate') is defined ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600' }}">
-                                    <i data-lucide="{{ attribute(activity, 'joinDate') is defined ? 'user-plus' : 'check-circle' }}" class="w-5 h-5"></i>
-                                </div>
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-slate-800 truncate">
-                                        {% if attribute(activity, 'joinDate') is defined %}
-                                            Registro: {{ activity.name }}
-                                        {% else %}
-                                            Servicio: {{ activity.title }}
-                                        {% endif %}
-                                    </p>
-                                    <p class="text-[10px] font-medium text-slate-400 uppercase tracking-tight">
-                                        {% if attribute(activity, 'joinDate') is defined %}
-                                            {{ activity.joinDate|date('d M, H:i') }}
-                                        {% else %}
-                                            {{ activity.endDate|date('d M, H:i') }}
-                                        {% endif %}
-                                    </p>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-
-                <!-- Próximos Eventos -->
-                <div class="bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h3 class="text-lg font-black text-slate-800">Próximos Servicios</h3>
-                            <p class="text-xs text-slate-400">Agenda operativa inmediata</p>
-                        </div>
-                        <div class="p-2 bg-slate-50 rounded-xl">
-                            <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        {% for service in upcoming_services %}
-                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
-                                <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex flex-col items-center justify-center flex-shrink-0">
-                                    <span class="text-sm font-black leading-none">{{ service.startDate|date('d') }}</span>
-                                    <span class="text-[8px] font-bold uppercase">{{ service.startDate|date('M') }}</span>
-                                </div>
-                                <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-800">{{ service.title }}</p>
-                                    <p class="text-[10px] text-slate-500">{{ service.startDate|date('H:i') }} · {{ service.maxAttendees }} voluntarios</p>
-                                </div>
-                            </div>
-                        {% else %}
-                            <div class="text-center py-8">
-                                <p class="text-sm text-slate-400 font-medium italic">Sin servicios programados</p>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
         </div>
 
         <!-- ACCIONES RÁPIDAS (BANNERS) -->
