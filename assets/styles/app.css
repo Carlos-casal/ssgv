@@ -116,7 +116,8 @@ html, body {
     background-color: transparent !important;
 }
 
-.dropdown-menu [data-notification-target="dropdown"] .bg-blue-50\/10 {
+.dropdown-menu [data-notification-target="dropdown"] .bg-blue-500\/5,
+.dropdown-menu [data-notification-target="dropdown"] .dark\:bg-blue-500\/10 {
     background-color: rgba(59, 130, 246, 0.1) !important;
 }
 
@@ -124,7 +125,8 @@ html, body {
     color: var(--text-primary) !important;
 }
 
-.dropdown-menu [data-notification-target="dropdown"] .text-muted {
+.dropdown-menu [data-notification-target="dropdown"] .text-muted,
+.dropdown-menu [data-notification-target="dropdown"] .dark\:text-slate-300 {
     color: var(--text-secondary) !important;
 }
 
@@ -133,20 +135,30 @@ html, body {
 }
 
 html.dark .dropdown-menu {
-    background-color: var(--bg-card) !important;
-    border: 1px solid var(--border-color) !important;
+    background-color: #1f2937 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .dropdown-menu .notification-header span,
+html.dark .dropdown-menu [data-notification-target="dropdown"] p,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-xs,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-[11px],
+html.dark .dropdown-menu [data-notification-target="dropdown"] .opacity-80 {
+    color: #f8fafc !important; /* slate-50 */
+}
+
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-muted,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-slate-500 {
+    color: #94a3b8 !important; /* slate-400 */
+}
+
+html.dark .dropdown-menu [data-notification-target="dropdown"] .bg-blue-500\/5,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .dark\:bg-blue-500\/10 {
+    background-color: rgba(30, 41, 59, 0.7) !important; /* slate-800 with opacity */
 }
 
 html.dark .dropdown-item {
-    color: var(--text-primary) !important;
-}
-
-html.dark .dropdown-item p {
-    color: var(--text-primary) !important;
-}
-
-html.dark .dropdown-item .text-muted {
-    color: var(--text-secondary) !important;
+    color: #FFFFFF !important;
 }
 
 html.dark .dropdown-item:hover {

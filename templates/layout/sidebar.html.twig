@@ -32,10 +32,10 @@
                         {{ unread_count }}
                     </span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end shadow border-0 py-0 overflow-hidden" aria-labelledby="alertsDropdown" style="width: 350px; max-height: 500px; overflow-y: auto;">
-                    <div class="p-3 border-b border-gray-200 notification-header">
+                <div class="dropdown-menu dropdown-menu-end shadow border-0 py-0 overflow-hidden dark:bg-slate-800 dark:border-slate-700" aria-labelledby="alertsDropdown" style="width: 350px; max-height: 500px; overflow-y: auto;">
+                    <div class="p-3 border-b border-gray-200 dark:border-slate-700 notification-header">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-xs font-bold uppercase tracking-wider">Notificaciones</span>
+                            <span class="text-xs font-bold uppercase tracking-wider dark:text-white">Notificaciones</span>
                             <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
                                 <i data-lucide="chevron-up" class="w-4 h-4"></i>
                             </button>
@@ -55,9 +55,9 @@
                             </button>
                         </div>
                     </div>
-                    <div class="divide-y divide-gray-100" data-notification-target="dropdown">
+                    <div class="divide-y divide-gray-100 dark:divide-slate-700" data-notification-target="dropdown">
                         {% for alert in system_alerts %}
-                            <div class="p-4 relative transition-colors group border-l-2 {{ alert.isRead|default(false) ? 'opacity-30 border-transparent' : 'border-blue-500 bg-blue-50/10' }}"
+                            <div class="p-4 relative transition-colors group border-l-2 {{ alert.isRead|default(false) ? 'opacity-30 border-transparent' : 'border-blue-500 bg-blue-500/5 dark:bg-blue-500/10' }}"
                                  data-notification-target="item">
                                 <div class="flex gap-3">
                                     <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded bg-blue-100/20 text-blue-400 shadow-inner">
@@ -65,7 +65,7 @@
                                     </div>
                                     <div class="flex-1 pr-4">
                                         <div class="flex justify-between items-start mb-1">
-                                            <p class="text-xs font-bold leading-tight">{{ alert.title }}</p>
+                                            <p class="text-xs font-bold leading-tight dark:text-white">{{ alert.title }}</p>
                                             <button type="button"
                                                     class="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     data-action="click->notification#delete"
@@ -90,7 +90,7 @@
                                                 ahora mismo
                                             {% endif %}
                                         </p>
-                                        <p class="text-[11px] leading-relaxed opacity-80">{{ alert.message }}</p>
+                                        <p class="text-[11px] leading-relaxed opacity-80 dark:text-slate-300">{{ alert.message }}</p>
                                     </div>
                                 </div>
                                 {% if alert.id is defined %}
