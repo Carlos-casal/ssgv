@@ -31,79 +31,117 @@ class NotificationService
 
     public function getAlerts(): array
     {
-        $alerts = [];
+        $user = $this->security->getUser();
+        if (!$user instanceof User) {
+            return [];
+        }
 
-        // 1. Optimized Low Stock Check
+        $persistentNotifications = $this->notificationRepository->findBy(
+            ['recipient' => $user],
+            ['createdAt' => 'DESC']
+        );
+
+        $alerts = [];
+        foreach ($persistentNotifications as $notification) {
+            $alerts[] = [
+                'id' => $notification->getId(),
+                'type' => $notification->getType(),
+                'title' => $notification->getTitle(),
+                'message' => $notification->getMessage(),
+                'link' => $notification->getLink(),
+                'severity' => $notification->getSeverity(),
+                'createdAt' => $notification->getCreatedAt(),
+                'isRead' => $notification->isRead(),
+            ];
+        }
+
+        return $alerts;
+    }
+
+    public function syncSystemAlerts(User $user): void
+    {
+        $currentLowStockIds = [];
+        $currentExpiredIds = [];
+        $currentExpiringSoonIds = [];
+
+        // 1. Check Low Stock
         $lowStockMaterials = $this->materialRepository->findLowStockMaterials();
         foreach ($lowStockMaterials as $material) {
-            $alerts[] = [
-                'type' => 'low_stock',
+            $currentLowStockIds[] = $material->getId();
+            $this->ensureNotificationExists($user, 'low_stock', [
                 'title' => 'Stock Bajo',
                 'message' => 'El material "' . $material->getName() . '" está por debajo del stock mínimo.',
                 'link' => '/material/' . $material->getId(),
                 'severity' => 'warning',
-                'createdAt' => new \DateTimeImmutable()
-            ];
+                'type' => 'low_stock'
+            ]);
         }
 
-        // 2. Optimized Expiry Check (up to 6 months for all statuses)
+        // 2. Check Expiry
         $threshold = (new \DateTimeImmutable('today'))->modify('+6 months');
         $expiringMaterials = $this->materialRepository->findExpiringMaterials($threshold);
-
         foreach ($expiringMaterials as $material) {
             $status = $material->getExpirationStatus();
             if ($status === 'red') {
-                $alerts[] = [
-                    'type' => 'expired',
+                $currentExpiredIds[] = $material->getId();
+                $this->ensureNotificationExists($user, 'expired', [
                     'title' => 'Material Caducado',
                     'message' => 'El material "' . $material->getName() . '" ha caducado.',
                     'link' => '/material/' . $material->getId(),
                     'severity' => 'danger',
-                    'createdAt' => new \DateTimeImmutable()
-                ];
+                    'type' => 'expired'
+                ]);
             } elseif ($status === 'orange') {
-                $alerts[] = [
-                    'type' => 'expiring_soon',
+                $currentExpiringSoonIds[] = $material->getId();
+                $this->ensureNotificationExists($user, 'expiring_soon', [
                     'title' => 'Próxima Caducidad',
                     'message' => 'El material "' . $material->getName() . '" caducará pronto.',
                     'link' => '/material/' . $material->getId(),
                     'severity' => 'warning',
-                    'createdAt' => new \DateTimeImmutable()
-                ];
+                    'type' => 'expiring_soon'
+                ]);
             }
         }
 
-        // 3. Combined with persistent notifications
-        $user = $this->security->getUser();
-        if ($user instanceof User) {
-            $persistentNotifications = $this->notificationRepository->findBy(
-                ['recipient' => $user],
-                ['createdAt' => 'DESC']
-            );
+        // 3. Auto-delete notifications if issue is resolved
+        $this->cleanupResolvedAlerts($user, 'low_stock', $currentLowStockIds);
+        $this->cleanupResolvedAlerts($user, 'expired', $currentExpiredIds);
+        $this->cleanupResolvedAlerts($user, 'expiring_soon', $currentExpiringSoonIds);
 
-            foreach ($persistentNotifications as $notification) {
-                $alerts[] = [
-                    'id' => $notification->getId(),
-                    'type' => 'persistent',
-                    'sub_type' => $notification->getType(),
-                    'title' => $notification->getTitle(),
-                    'message' => $notification->getMessage(),
-                    'link' => $notification->getLink(),
-                    'severity' => $notification->getSeverity(),
-                    'createdAt' => $notification->getCreatedAt(),
-                    'isRead' => $notification->isRead(),
-                ];
+        $this->entityManager->flush();
+    }
+
+    private function cleanupResolvedAlerts(User $user, string $type, array $currentIds): void
+    {
+        $notifications = $this->notificationRepository->findBy(['recipient' => $user, 'type' => $type]);
+        foreach ($notifications as $notification) {
+            if (preg_match('/\/material\/(\d+)/', $notification->getLink() ?? '', $matches)) {
+                $materialId = (int)$matches[1];
+                if (!in_array($materialId, $currentIds)) {
+                    $this->entityManager->remove($notification);
+                }
             }
         }
+    }
 
-        // Sort alerts by createdAt (System alerts use 'now' effectively)
-        usort($alerts, function($a, $b) {
-            $dateA = $a['createdAt'] ?? new \DateTimeImmutable();
-            $dateB = $b['createdAt'] ?? new \DateTimeImmutable();
-            return $dateB <=> $dateA;
-        });
+    private function ensureNotificationExists(User $user, string $type, array $data): void
+    {
+        $existing = $this->notificationRepository->findOneBy([
+            'recipient' => $user,
+            'type' => $type,
+            'link' => $data['link']
+        ]);
 
-        return $alerts;
+        if (!$existing) {
+            $notification = new Notification();
+            $notification->setRecipient($user);
+            $notification->setTitle($data['title']);
+            $notification->setMessage($data['message']);
+            $notification->setLink($data['link']);
+            $notification->setSeverity($data['severity']);
+            $notification->setType($data['type']);
+            $this->entityManager->persist($notification);
+        }
     }
 
     public function createNotification(User $user, string $title, string $message, string $type = 'info', string $severity = 'info', ?string $link = null): Notification

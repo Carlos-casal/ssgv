@@ -34,11 +34,12 @@ html, body {
     width: 100%;
     overflow: hidden;
     background-color: var(--bg-main) !important;
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 .main-content {
     background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
 }
 
 .card, .bg-white {
@@ -95,21 +96,69 @@ html, body {
 }
 
 /* Notification Panel Visibility Fix */
-html.dark .dropdown-menu {
+.dropdown-menu {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+.dropdown-menu .notification-header {
+    background-color: var(--bg-card) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.dropdown-menu .notification-header span {
+    color: var(--text-primary) !important;
+}
+
+.dropdown-menu [data-notification-target="dropdown"] > div {
+    border-bottom: 1px solid var(--border-color) !important;
+    background-color: transparent !important;
+}
+
+.dropdown-menu [data-notification-target="dropdown"] .bg-blue-500\/5,
+.dropdown-menu [data-notification-target="dropdown"] .dark\:bg-blue-500\/10 {
+    background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.dropdown-menu [data-notification-target="dropdown"] p {
+    color: var(--text-primary) !important;
+}
+
+.dropdown-menu [data-notification-target="dropdown"] .text-muted,
+.dropdown-menu [data-notification-target="dropdown"] .dark\:text-slate-300 {
+    color: var(--text-secondary) !important;
+}
+
+.dropdown-menu .opacity-30 {
+    opacity: 0.3 !important;
+}
+
+html.dark .dropdown-menu {
+    background-color: #1f2937 !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+html.dark .dropdown-menu .notification-header span,
+html.dark .dropdown-menu [data-notification-target="dropdown"] p,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-xs,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-[11px],
+html.dark .dropdown-menu [data-notification-target="dropdown"] .opacity-80 {
+    color: #f8fafc !important; /* slate-50 */
+}
+
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-muted,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-slate-500 {
+    color: #94a3b8 !important; /* slate-400 */
+}
+
+html.dark .dropdown-menu [data-notification-target="dropdown"] .bg-blue-500\/5,
+html.dark .dropdown-menu [data-notification-target="dropdown"] .dark\:bg-blue-500\/10 {
+    background-color: rgba(30, 41, 59, 0.7) !important; /* slate-800 with opacity */
 }
 
 html.dark .dropdown-item {
-    color: var(--text-primary) !important;
-}
-
-html.dark .dropdown-item p {
-    color: var(--text-primary) !important;
-}
-
-html.dark .dropdown-item .text-muted {
-    color: var(--text-secondary) !important;
+    color: #FFFFFF !important;
 }
 
 html.dark .dropdown-item:hover {
@@ -134,8 +183,7 @@ html.dark #alertsDropdown i {
 .sidebar {
     width: 260px !important;
     transition: width 0.3s ease;
-    overflow-y: auto;
-    overflow-x: visible !important;
+    /* overflow: visible !important; */
 }
 
 .sidebar-collapsed {
@@ -183,6 +231,15 @@ html.dark #alertsDropdown i {
     transform: rotate(90deg);
 }
 
+/* Notification dropdown positioning fix */
+#sidebar .dropdown-menu.show {
+    position: fixed !important;
+    left: 20px !important;
+    top: 60px !important;
+    margin: 0 !important;
+    z-index: 9999 !important;
+}
+
 /* Sidebar adjustments for mobile/collapsed visibility */
 .sidebar-collapsed .sidebar-actions {
     flex-direction: column;
@@ -196,6 +253,10 @@ html.dark #alertsDropdown i {
     padding: 1.5rem 0 !important;
     min-height: 180px; /* Ensure enough space for 3 vertical buttons */
     overflow: visible !important;
+}
+
+.sidebar .dropdown-menu.show {
+    display: block !important;
 }
 
 /* Reset global obligatorio para asegurar cero márgenes */

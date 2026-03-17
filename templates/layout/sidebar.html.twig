@@ -1,13 +1,14 @@
 <!-- Sidebar -->
 <div class="bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 m-0 p-0 border-r border-slate-800 sidebar h-screen"
      id="sidebar"
+     style="overflow: visible !important;"
      data-sidebar-target="sidebar">
 
     <!-- Header/Logo -->
     <div class="p-4 border-b border-slate-800 flex items-center justify-between sidebar-header">
         <div class="flex flex-col gap-0 min-w-0 sidebar-header-container">
-            <span class="font-black text-white tracking-tighter text-xs uppercase leading-tight sidebar-header-text truncate">PANEL</span>
-            <span class="font-black text-white tracking-tighter text-xs uppercase leading-tight sidebar-header-text truncate">CONTROL</span>
+            <span class="font-black text-white tracking-tighter text-sm uppercase leading-tight sidebar-header-text truncate">PANEL</span>
+            <span class="font-black text-white tracking-tighter text-sm uppercase leading-tight sidebar-header-text truncate">GESTIÓN</span>
         </div>
         <div class="flex items-center gap-2 flex-shrink-0 sidebar-actions">
             <button data-action="click->sidebar#toggleCollapse" class="text-slate-500 hover:text-white transition-colors flex items-center">
@@ -32,56 +33,65 @@
                         {{ unread_count }}
                     </span>
                 </button>
-                <div class="dropdown-menu dropdown-menu-end shadow border-0 py-0 overflow-hidden bg-slate-900 border-slate-800" aria-labelledby="alertsDropdown" style="width: 350px; max-height: 500px; overflow-y: auto;">
-                    <div class="bg-slate-800/50 p-3 border-b border-slate-700">
+                <div class="dropdown-menu shadow border-0 py-0 overflow-hidden dark:bg-slate-800 dark:border-slate-700" aria-labelledby="alertsDropdown" style="width: 320px; max-height: 500px; overflow-y: auto; left: 10px; top: 60px;">
+                    <div class="p-3 border-b border-gray-200 dark:border-slate-700 notification-header">
                         <div class="flex items-center justify-between mb-2">
-                            <span class="text-white text-xs font-bold uppercase tracking-wider">Notificaciones</span>
-                            <button type="button" class="text-slate-400 hover:text-white transition-colors">
+                            <span class="text-xs font-bold uppercase tracking-wider dark:text-white">Notificaciones</span>
+                            <button type="button" class="text-gray-400 hover:text-gray-600 transition-colors">
                                 <i data-lucide="chevron-up" class="w-4 h-4"></i>
                             </button>
                         </div>
                         <div class="flex items-center gap-4">
                             <button type="button"
-                                    class="text-cyan-400 hover:text-cyan-300 text-[11px] font-bold transition-colors"
+                                    class="text-blue-600 hover:text-blue-700 text-[11px] font-bold transition-colors"
                                     data-action="click->notification#markAllAsRead"
                                     data-url="{{ path('app_notification_read_all') }}">
                                 Marcar todas como leídas
                             </button>
                             <button type="button"
-                                    class="text-red-400 hover:text-red-300 text-[11px] font-bold transition-colors"
+                                    class="text-red-600 hover:text-red-700 text-[11px] font-bold transition-colors"
                                     data-action="click->notification#deleteAll"
                                     data-url="{{ path('app_notification_delete_all') }}">
                                 Borrar
                             </button>
                         </div>
                     </div>
-                    <div class="divide-y divide-slate-800" data-notification-target="dropdown">
+                    <div class="divide-y divide-gray-100 dark:divide-slate-700" data-notification-target="dropdown">
                         {% for alert in system_alerts %}
-                            <div class="p-4 relative transition-colors hover:bg-white/5 group border-l-2 {{ alert.isRead|default(false) ? 'opacity-50 border-transparent' : 'border-cyan-500 bg-cyan-500/5' }}"
+                            <div class="p-4 relative transition-colors group border-l-2 {{ alert.isRead|default(false) ? 'opacity-30 border-transparent' : 'border-blue-500 bg-blue-500/5 dark:bg-blue-500/10' }}"
                                  data-notification-target="item">
                                 <div class="flex gap-3">
-                                    <div class="p-2 rounded bg-slate-800 text-cyan-400">
-                                        <i data-lucide="{{ alert.type == 'low_stock' ? 'package' : (alert.type == 'expired' ? 'calendar-off' : 'info') }}" class="w-4 h-4"></i>
+                                    <div class="w-10 h-10 flex-shrink-0 flex items-center justify-center rounded bg-blue-100/20 text-blue-400 shadow-inner">
+                                        <i data-lucide="{{ alert.type == 'low_stock' ? 'package' : (alert.type == 'expired' ? 'calendar-off' : 'info') }}" class="w-5 h-5"></i>
                                     </div>
                                     <div class="flex-1 pr-4">
                                         <div class="flex justify-between items-start mb-1">
-                                            <p class="text-white text-xs font-bold leading-tight">{{ alert.title }}</p>
+                                            <p class="text-xs font-bold leading-tight dark:text-white">{{ alert.title }}</p>
                                             <button type="button"
-                                                    class="text-slate-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                                                    class="text-gray-400 hover:text-gray-600 opacity-0 group-hover:opacity-100 transition-opacity"
                                                     data-action="click->notification#delete"
                                                     data-id="{{ alert.id|default(0) }}"
                                                     data-url="{{ alert.id is defined ? path('app_notification_delete', {id: alert.id}) : '#' }}">
                                                 <i data-lucide="x" class="w-3 h-3"></i>
                                             </button>
                                         </div>
-                                        <p class="text-slate-400 text-[10px] mb-1">
+                                        <p class="text-muted text-[10px] mb-1">
                                             {% if alert.createdAt is defined %}
-                                                hace {{ alert.createdAt|date('H') }} horas
+                                                {% set diff = date().diff(date(alert.createdAt)) %}
+                                                {% if diff.days > 0 %}
+                                                    hace {{ diff.days }} días
+                                                {% elseif diff.h > 0 %}
+                                                    hace {{ diff.h }}h
+                                                {% elseif diff.i > 0 %}
+                                                    hace {{ diff.i }}m
+                                                {% else %}
+                                                    ahora mismo
+                                                {% endif %}
                                             {% else %}
-                                                Ahora
+                                                ahora mismo
                                             {% endif %}
                                         </p>
-                                        <p class="text-slate-300 text-[11px] leading-relaxed">{{ alert.message }}</p>
+                                        <p class="text-[11px] leading-relaxed opacity-80 dark:text-slate-300">{{ alert.message }}</p>
                                     </div>
                                 </div>
                                 {% if alert.id is defined %}
@@ -128,12 +138,6 @@
                             <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Servicios</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="#" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item text-slate-400 hover:text-white hover:bg-white/5">
-                            <i data-lucide="map" class="w-5 h-5 flex-shrink-0"></i>
-                            <span class="sidebar-text">Mapa Operativo</span>
-                        </a>
-                    </li>
                 </ul>
             </div>
 
@@ -149,17 +153,24 @@
                         </a>
                     </li>
                     <li>
-                        {% set active = app.request.attributes.get('_route') == 'app_warehouse_dashboard' %}
-                        <a href="{{ path('app_warehouse_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
-                            <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
-                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Almacén</span>
-                        </a>
-                    </li>
-                    <li>
                         {% set active = app.request.attributes.get('_route') == 'app_vehicle_index' %}
                         <a href="{{ path('app_vehicle_index') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
                             <i data-lucide="truck" class="w-5 h-5 flex-shrink-0"></i>
                             <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Parque Móvil</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- LOGÍSTICA -->
+            <div class="px-6">
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Logística</p>
+                <ul class="space-y-1">
+                    <li>
+                        {% set active = app.request.attributes.get('_route') == 'app_warehouse_dashboard' %}
+                        <a href="{{ path('app_warehouse_dashboard') }}" class="group w-full flex items-center gap-3 px-4 py-2 rounded-xl transition-all duration-200 font-medium text-sm sidebar-item {{ active ? 'bg-blue-600/10 text-blue-400' : 'text-slate-400 hover:text-white hover:bg-white/5' }}">
+                            <i data-lucide="boxes" class="w-5 h-5 flex-shrink-0"></i>
+                            <span class="sidebar-text {{ active ? 'font-bold' : '' }}">Almacén</span>
                         </a>
                     </li>
                     <li>
@@ -232,15 +243,10 @@
                     <p class="text-[10px] text-slate-500 truncate">{{ app.user.email }}</p>
                 </div>
             </div>
-            <div class="flex items-center justify-between gap-2">
-                <a href="{{ path('app_logout') }}" class="flex-1 flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all duration-200">
-                    <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
-                    <span class="sidebar-text">Salir</span>
-                </a>
-                <div class="sidebar-text text-[9px] font-black text-slate-600 bg-slate-800/50 px-2 py-2 rounded-lg border border-slate-800">
-                    {{ app_version }}
-                </div>
-            </div>
+            <a href="{{ path('app_logout') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all duration-200">
+                <i data-lucide="log-out" class="w-4 h-4 flex-shrink-0"></i>
+                <span class="sidebar-text">Salir</span>
+            </a>
         {% endif %}
     </div>
 
