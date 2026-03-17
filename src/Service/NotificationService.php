@@ -36,8 +36,6 @@ class NotificationService
             return [];
         }
 
-        $this->syncSystemAlerts($user);
-
         $persistentNotifications = $this->notificationRepository->findBy(
             ['recipient' => $user],
             ['createdAt' => 'DESC']
@@ -60,7 +58,7 @@ class NotificationService
         return $alerts;
     }
 
-    private function syncSystemAlerts(User $user): void
+    public function syncSystemAlerts(User $user): void
     {
         $currentLowStockIds = [];
         $currentExpiredIds = [];
