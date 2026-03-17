@@ -533,9 +533,15 @@ class ExcelImportService
         }
         
         // Save to temp file
-        $tempFile = tempnam(sys_get_temp_dir(), 'material_template_') . '.xlsx';
+        $tempBase = tempnam(sys_get_temp_dir(), 'material_template_');
+        $tempFile = $tempBase . '.xlsx';
         $writer = IOFactory::createWriter($spreadsheet, 'Xlsx');
         $writer->save($tempFile);
+
+        // Clean up the initial tempnam file (which is empty)
+        if (file_exists($tempBase)) {
+            unlink($tempBase);
+        }
         
         return $tempFile;
     }
