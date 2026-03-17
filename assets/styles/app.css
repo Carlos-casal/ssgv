@@ -104,11 +104,28 @@ html, body {
 }
 
 .sidebar .dropdown-menu .notification-header {
-    background-color: var(--bg-main) !important;
+    background-color: var(--bg-card) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar .dropdown-menu .notification-header span {
+    color: var(--text-primary) !important;
+}
+
+.sidebar .dropdown-menu [data-notification-target="dropdown"] > div {
+    border-bottom: 1px solid var(--border-color) !important;
+}
+
+.sidebar .dropdown-menu [data-notification-target="dropdown"] p {
+    color: var(--text-primary) !important;
+}
+
+.sidebar .dropdown-menu [data-notification-target="dropdown"] .text-muted {
+    color: var(--text-secondary) !important;
 }
 
 html.dark .sidebar .dropdown-menu {
-    background-color: #1f2937 !important; /* Force slightly different for contrast if needed, or stick to variable */
+    background-color: #1f2937 !important;
 }
 
 .sidebar .dropdown-menu .opacity-50 {

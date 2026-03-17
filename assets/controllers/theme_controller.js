@@ -4,7 +4,8 @@ export default class extends Controller {
     static targets = ["icon"];
 
     connect() {
-        this.theme = localStorage.getItem('theme') || 'light';
+        const hasDarkClass = document.documentElement.classList.contains('dark');
+        this.theme = localStorage.getItem('theme') || (hasDarkClass ? 'dark' : 'light');
         this._applyTheme();
     }
 
