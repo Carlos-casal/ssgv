@@ -39,9 +39,11 @@ class DashboardController extends AbstractController
         VehicleRepository $vehicleRepository,
         AssistanceConfirmationRepository $assistanceConfirmationRepository,
         \App\Repository\MaterialRepository $materialRepository,
+        \App\Service\NotificationService $notificationService,
         Security $security
     ): Response {
         if ($this->getUser() && $this->isGranted('ROLE_ADMIN')) {
+            $notificationService->syncSystemAlerts($this->getUser());
             $startOfYear = new \DateTime('first day of january this year 00:00:00');
             $endOfYear = new \DateTime('last day of december this year 23:59:59');
 

@@ -62,10 +62,7 @@ export default class extends Controller {
             const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
             const endInput = this.hasEndDateInputTarget ? this.endDateInputTarget : (document.getElementById('service_form_endDate') || document.getElementById('service_endDate'));
             if (startInput && endInput) {
-                startInput.addEventListener('input', () => {
-                    this.updateAllMaterialAvailability();
-                    this.suggestNumeration();
-                });
+                startInput.addEventListener('input', () => this.updateAllMaterialAvailability());
                 endInput.addEventListener('input', () => this.updateAllMaterialAvailability());
             }
 
@@ -127,7 +124,6 @@ export default class extends Controller {
             if (typeSelect && typeSelect.value && subcategorySelect && subcategorySelect.options.length <= 1) {
                 console.log("Triggering initial category load...");
                 this.updateCategories();
-                this.suggestNumeration();
             }
 
             console.log("Service Form: Unit prototypes cleaned.");
@@ -172,9 +168,6 @@ export default class extends Controller {
     // Unified Hierarchy Logic
     async updateCategories(event) {
         console.log("Updating categories action triggered", event);
-
-        // Also suggest numeration when type changes
-        this.suggestNumeration();
 
         // Comprehensive selector discovery
         let typeSelect = null;
@@ -1153,47 +1146,6 @@ export default class extends Controller {
             if (firstError) {
                 firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-        }
-    }
-
-    async suggestNumeration() {
-        if (!this.hasNumerationTarget) return;
-
-        // Don't overwrite if user already typed something manually
-        if (this.numerationTarget.value && this.numerationTarget.dataset.manual === "true") return;
-
-        const typeSelect = this.hasTypeSelectTarget ? this.typeSelectTarget : (document.getElementById('service_form_type') || document.getElementById('service_type'));
-        const startDateInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
-
-        const typeId = typeSelect?.value;
-        const date = startDateInput?.value;
-
-        if (!typeId) return;
-
-        try {
-            const response = await fetch(`/api/service/next-numeration?type_id=${typeId}&date=${date || ''}`);
-            if (!response.ok) throw new Error('Failed to fetch suggested numeration');
-            const data = await response.json();
-
-            if (data.suggestedId) {
-                // We set it as a placeholder and also as value if empty
-                this.numerationTarget.placeholder = data.suggestedId;
-                if (!this.numerationTarget.value) {
-                    this.numerationTarget.value = data.suggestedId;
-                    this.numerationTarget.classList.add('text-blue-600', 'font-bold');
-                }
-            }
-        } catch (error) {
-            console.error('Error suggesting numeration:', error);
-        }
-
-        // Add listener to mark as manual if user edits it
-        if (!this.numerationTarget.dataset.listenerSet) {
-            this.numerationTarget.addEventListener('input', () => {
-                this.numerationTarget.dataset.manual = "true";
-                this.numerationTarget.classList.remove('text-blue-600', 'font-bold');
-            });
-            this.numerationTarget.dataset.listenerSet = "true";
         }
     }
 
