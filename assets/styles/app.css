@@ -97,33 +97,18 @@ html, body {
 
 /* Notification Panel Visibility Fix */
 .sidebar .dropdown-menu {
-    background-color: #0f172a !important; /* slate-900 */
-    border: 1px solid #1e293b !important; /* slate-800 */
-    color: #cbd5e1 !important; /* slate-300 */
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-primary) !important;
     z-index: 9999 !important;
 }
 
-.sidebar .dropdown-menu p,
-.sidebar .dropdown-menu span,
-.sidebar .dropdown-menu button,
-.sidebar .dropdown-menu i {
-    /* Prevent theme overrides in the sidebar dropdown which should always be dark */
+.sidebar .dropdown-menu .notification-header {
+    background-color: var(--bg-main) !important;
 }
 
-.sidebar .dropdown-menu button.text-cyan-400 {
-    color: #22d3ee !important;
-}
-
-.sidebar .dropdown-menu button.text-red-400 {
-    color: #f87171 !important;
-}
-
-.sidebar .dropdown-menu .bg-slate-800\/50 {
-    background-color: rgba(30, 41, 59, 0.5) !important;
-}
-
-.sidebar .dropdown-menu .divide-slate-800 > * + * {
-    border-color: #1e293b !important;
+html.dark .sidebar .dropdown-menu {
+    background-color: #1f2937 !important; /* Force slightly different for contrast if needed, or stick to variable */
 }
 
 .sidebar .dropdown-menu .opacity-50 {
