@@ -126,6 +126,10 @@ html, body {
     border-color: #1e293b !important;
 }
 
+.sidebar .dropdown-menu .opacity-50 {
+    opacity: 0.3 !important;
+}
+
 html.dark .dropdown-menu {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
