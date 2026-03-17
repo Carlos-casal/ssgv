@@ -34,11 +34,12 @@ html, body {
     width: 100%;
     overflow: hidden;
     background-color: var(--bg-main) !important;
-    color: var(--text-primary) !important;
+    color: var(--text-primary);
 }
 
 .main-content {
     background-color: var(--bg-main) !important;
+    color: var(--text-primary) !important;
 }
 
 .card, .bg-white {
@@ -95,6 +96,36 @@ html, body {
 }
 
 /* Notification Panel Visibility Fix */
+.sidebar .dropdown-menu {
+    background-color: #0f172a !important; /* slate-900 */
+    border: 1px solid #1e293b !important; /* slate-800 */
+    color: #cbd5e1 !important; /* slate-300 */
+    z-index: 9999 !important;
+}
+
+.sidebar .dropdown-menu p,
+.sidebar .dropdown-menu span,
+.sidebar .dropdown-menu button,
+.sidebar .dropdown-menu i {
+    /* Prevent theme overrides in the sidebar dropdown which should always be dark */
+}
+
+.sidebar .dropdown-menu button.text-cyan-400 {
+    color: #22d3ee !important;
+}
+
+.sidebar .dropdown-menu button.text-red-400 {
+    color: #f87171 !important;
+}
+
+.sidebar .dropdown-menu .bg-slate-800\/50 {
+    background-color: rgba(30, 41, 59, 0.5) !important;
+}
+
+.sidebar .dropdown-menu .divide-slate-800 > * + * {
+    border-color: #1e293b !important;
+}
+
 html.dark .dropdown-menu {
     background-color: var(--bg-card) !important;
     border: 1px solid var(--border-color) !important;
@@ -196,6 +227,10 @@ html.dark #alertsDropdown i {
     padding: 1.5rem 0 !important;
     min-height: 180px; /* Ensure enough space for 3 vertical buttons */
     overflow: visible !important;
+}
+
+.sidebar .dropdown-menu.show {
+    display: block !important;
 }
 
 /* Reset global obligatorio para asegurar cero márgenes */
