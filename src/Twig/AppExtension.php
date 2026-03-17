@@ -33,10 +33,18 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
      */
     public function getGlobals(): array
     {
+        $version = 'v1.5.0';
+        if (file_exists('../VERSION')) {
+            $version = 'v' . trim(file_get_contents('../VERSION'));
+        } elseif (file_exists('VERSION')) {
+            $version = 'v' . trim(file_get_contents('VERSION'));
+        }
+
         return [
             'pending_volunteer_count' => $this->volunteerRepository->countPendingVolunteers(),
             'system_alerts' => $this->notificationService->getAlerts(),
             'now' => new \DateTime(),
+            'app_version' => $version,
         ];
     }
 
