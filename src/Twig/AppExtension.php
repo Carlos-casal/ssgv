@@ -14,16 +14,19 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
 {
     private $volunteerRepository;
     private $notificationService;
+    private $projectDir;
 
     /**
      * AppExtension constructor.
      */
     public function __construct(
         VolunteerRepository $volunteerRepository,
-        \App\Service\NotificationService $notificationService
+        \App\Service\NotificationService $notificationService,
+        string $projectDir
     ) {
         $this->volunteerRepository = $volunteerRepository;
         $this->notificationService = $notificationService;
+        $this->projectDir = $projectDir;
     }
 
     /**
@@ -33,10 +36,18 @@ class AppExtension extends AbstractExtension implements GlobalsInterface
      */
     public function getGlobals(): array
     {
+        $version = 'v1.5.1';
+        $versionFile = $this->projectDir . '/VERSION';
+
+        if (file_exists($versionFile)) {
+            $version = 'v' . trim(file_get_contents($versionFile));
+        }
+
         return [
             'pending_volunteer_count' => $this->volunteerRepository->countPendingVolunteers(),
             'system_alerts' => $this->notificationService->getAlerts(),
             'now' => new \DateTime(),
+            'app_version' => $version,
         ];
     }
 
