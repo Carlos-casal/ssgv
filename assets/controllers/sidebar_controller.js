@@ -7,7 +7,10 @@ export default class extends Controller {
     }
 
     connect() {
-        this.collapsedValue = localStorage.getItem('sidebar-collapsed') === 'true';
+        const stored = localStorage.getItem('sidebar-collapsed');
+        if (stored !== null) {
+            this.collapsedValue = stored === 'true';
+        }
         this._updateState();
     }
 
@@ -61,6 +64,15 @@ export default class extends Controller {
 
             // Close all submenus when collapsing
             this.submenuTargets.forEach(el => el.classList.remove('submenu-open'));
+
+            // Add tooltips (title attribute) to nav links
+            const links = this.element.querySelectorAll('a[data-title]');
+            links.forEach(link => {
+                const title = link.getAttribute('data-title');
+                if (title) {
+                    link.setAttribute('title', title);
+                }
+            });
         } else {
             this.sidebarTarget.classList.remove('sidebar-collapsed');
             this.sidebarTarget.classList.remove('w-20');
@@ -73,6 +85,12 @@ export default class extends Controller {
             if (this.hasToggleIconTarget) {
                 this.toggleIconTarget.setAttribute('data-lucide', 'panel-left-close');
             }
+
+            // Remove tooltips when expanded
+            const links = this.element.querySelectorAll('a[data-title]');
+            links.forEach(link => {
+                link.removeAttribute('title');
+            });
         }
 
         // Re-initialize Lucide icons

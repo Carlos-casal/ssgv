@@ -21,7 +21,6 @@ class Material
     public const NATURE_CONSUMABLE = 'CONSUMIBLE';
     public const NATURE_TECHNICAL = 'EQUIPO_TECNICO';
     public const NATURE_OTHER = 'OTROS';
-    public const NATURE_ACCESSORIES = 'ACCESORIOS';
 
 
     #[ORM\Id]

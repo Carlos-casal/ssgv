@@ -36,11 +36,16 @@ export default class extends Controller {
     }
 
     initAutoWidth() {
-        const inputs = this.element.querySelectorAll('input[type="text"]:not([name*="[name]"]), input[type="number"], select');
+        const inputs = this.element.querySelectorAll('input[type="text"]:not([name*="[name]"]), input[type="number"], select, textarea');
         inputs.forEach(input => {
-            this.adjustInputWidth(input);
-            input.addEventListener('input', () => this.adjustInputWidth(input));
-            input.addEventListener('change', () => this.adjustInputWidth(input));
+            if (input.tagName === 'TEXTAREA') {
+                this.adjustTextareaHeight(input);
+                input.addEventListener('input', () => this.adjustTextareaHeight(input));
+            } else {
+                this.adjustInputWidth(input);
+                input.addEventListener('input', () => this.adjustInputWidth(input));
+                input.addEventListener('change', () => this.adjustInputWidth(input));
+            }
         });
     }
 
@@ -68,6 +73,11 @@ export default class extends Controller {
             input.style.width = Math.max(width + 20, 50) + 'px';
             document.body.removeChild(temp);
         }
+    }
+
+    adjustTextareaHeight(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = (textarea.scrollHeight) + 'px';
     }
 
     enforceNumericConstraints(event) {
@@ -382,7 +392,7 @@ export default class extends Controller {
         const category = this.element.dataset.materialCategory;
 
         const isTechnical = nature === 'EQUIPO_TECNICO';
-        const isConsumable = nature === 'CONSUMIBLE' || (category === 'Comunicaciones' && nature === 'ACCESORIOS');
+        const isConsumable = nature === 'CONSUMIBLE';
         const isOther = nature === 'OTROS';
 
         if (this.hasTechnicalBlockTarget) {
@@ -421,7 +431,8 @@ export default class extends Controller {
             // Toggle specific fields that are redundant in multi-batch
             const redundantFields = this.stockAndCostsBlockTarget.querySelectorAll('[data-redundant-multi-batch="true"]');
             redundantFields.forEach(field => {
-                field.classList.toggle('d-none', (isConsumable || isOther) && this.batchesContainerTarget.children.length > 0);
+                const isMultiBatchActive = this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0;
+                field.classList.toggle('d-none', (isConsumable || isOther) && isMultiBatchActive);
             });
         }
 
@@ -434,7 +445,7 @@ export default class extends Controller {
         if (!this.hasHeaderAddBtnContainerTarget) return;
         const nature = this.natureSelectTarget?.value;
         const category = this.element.dataset.materialCategory;
-        const show = nature === 'EQUIPO_TECNICO' || nature === 'CONSUMIBLE' || (category === 'Comunicaciones' && nature === 'ACCESORIOS') || nature === 'OTROS';
+        const show = nature === 'EQUIPO_TECNICO' || nature === 'CONSUMIBLE' || nature === 'OTROS';
         this.headerAddBtnContainerTarget.classList.toggle('d-none', !show);
     }
 
@@ -445,16 +456,22 @@ export default class extends Controller {
         const isOther = nature === 'OTROS' || (category === 'Sanitario' && nature === 'OTROS');
 
         if (isSanitarioOrComms || isOther) {
-            if (this.hasUnitsPerPackageContainerTarget) this.unitsPerPackageContainerTarget.classList.remove('d-none');
-            if (this.hasNumPackagesContainerTarget) this.numPackagesContainerTarget.classList.remove('d-none');
-            if (this.hasTotalPriceContainerTarget) this.totalPriceContainerTarget.classList.remove('d-none');
+            if (this.hasUnitsPerPackageContainerTarget) {
+                this.unitsPerPackageContainerTarget.style.setProperty('display', 'none', 'important');
+                const input = this.unitsPerPackageContainerTarget.querySelector('input');
+                if (input && (input.value === '' || input.value === '0')) {
+                    input.value = '1';
+                }
+            }
+            if (this.hasNumPackagesContainerTarget) this.numPackagesContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasTotalPriceContainerTarget) this.totalPriceContainerTarget.style.setProperty('display', 'block', 'important');
 
             // Hide others for specific view
-            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.classList.add('d-none');
-            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.classList.add('d-none');
-            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.classList.add('d-none');
-            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.classList.add('d-none');
-            if (this.hasIvaContainerTarget) this.ivaContainerTarget.classList.add('d-none');
+            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.style.setProperty('display', 'none', 'important');
+            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.style.setProperty('display', 'none', 'important');
+            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.style.setProperty('display', 'none', 'important');
+            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.style.setProperty('display', 'none', 'important');
+            if (this.hasIvaContainerTarget) this.ivaContainerTarget.style.setProperty('display', 'none', 'important');
 
             // Specific requirement for "Otros": price and numPackages are mandatory
             if (isOther) {
@@ -465,11 +482,12 @@ export default class extends Controller {
             }
         } else {
             // Restore visibility for other categories
-            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.classList.remove('d-none');
-            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.classList.remove('d-none');
-            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.classList.remove('d-none');
-            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.classList.remove('d-none');
-            if (this.hasIvaContainerTarget) this.ivaContainerTarget.classList.remove('d-none');
+            if (this.hasUnitsPerPackageContainerTarget) this.unitsPerPackageContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasIvaContainerTarget) this.ivaContainerTarget.style.setProperty('display', 'block', 'important');
         }
     }
 
@@ -522,10 +540,11 @@ export default class extends Controller {
         const category = this.element.dataset.materialCategory;
         const isTechnical = nature === 'EQUIPO_TECNICO';
 
-        // Requirement: Hide "Tipo de tallaje" for Sanitario
+        // Requirement: Hide "Tipo de tallaje" for Sanitario and Communications
         const sizingContainer = document.getElementById('sizing-type-container') || this.element.querySelector('[name*="[sizingType]"]')?.closest('.col-md-6');
         if (sizingContainer) {
-            sizingContainer.classList.toggle('d-none', category === 'Sanitario');
+            const hideSizing = category === 'Sanitario' || category === 'Comunicaciones';
+            sizingContainer.classList.toggle('d-none', hideSizing);
         }
 
         // Requirement: Hide Expiration Date for Communications if not consumable (Accesorios)
@@ -558,6 +577,20 @@ export default class extends Controller {
             }
             this.clearError(this.numPackagesInputTarget);
             this.performCalculations();
+        }
+    }
+
+    toggleCommsFields(nature) {
+        const isAccessories = nature === 'CONSUMIBLE';
+
+        // Hide Panel B (Logical Data) if it's Accessories
+        const panelB = this.element.querySelector('.border-left-info');
+        if (panelB) {
+            if (isAccessories) {
+                panelB.style.setProperty('display', 'none', 'important');
+            } else {
+                panelB.style.setProperty('display', 'block', 'important');
+            }
         }
     }
 
@@ -877,6 +910,23 @@ export default class extends Controller {
         const div = document.createElement('div');
         div.textContent = text;
         return div.innerHTML;
+    }
+
+    handleAddButton(event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+        const nature = this.natureSelectTarget?.value;
+        if (nature === 'EQUIPO_TECNICO') {
+            if (this.hasNumPackagesInputTarget) {
+                const currentVal = parseInt(this.numPackagesInputTarget.value) || 0;
+                this.numPackagesInputTarget.value = String(currentVal + 1);
+                this.performCalculations();
+            }
+        } else {
+            this.addBatchRow();
+        }
     }
 
     addBatchRow(event = null, initialData = null) {

@@ -43,45 +43,10 @@ class VehicleController extends AbstractController
      * @param SluggerInterface $slugger The slugger to create safe filenames.
      * @return Response The response object.
      */
-    #[Route('/new', name: 'app_vehicle_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, SluggerInterface $slugger): Response
+    #[Route('/new', name: 'app_vehicle_new', methods: ['GET'])]
+    public function new(): Response
     {
-        $vehicle = new Vehicle();
-        $form = $this->createForm(VehicleType::class, $vehicle);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $photoFile = $form->get('photo')->getData();
-
-            if ($photoFile) {
-                $originalFilename = pathinfo($photoFile->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $slugger->slug($originalFilename);
-                $newFilename = $safeFilename.'-'.uniqid().'.'.$photoFile->guessExtension();
-
-                try {
-                    $photoFile->move(
-                        $this->getParameter('vehicle_photos_directory'),
-                        $newFilename
-                    );
-                } catch (FileException $e) {
-                    // ... handle exception if something happens during file upload
-                }
-
-                $vehicle->setPhoto($newFilename);
-            }
-
-            $entityManager->persist($vehicle);
-            $entityManager->flush();
-
-            $this->addFlash('success', 'Vehículo creado con éxito.');
-
-            return $this->redirectToRoute('app_vehicle_index', [], Response::HTTP_SEE_OTHER);
-        }
-
-        return $this->render('vehicle/new.html.twig', [
-            'vehicle' => $vehicle,
-            'form' => $form->createView(),
-        ]);
+        return $this->redirectToRoute('app_material_new', ['category' => 'Vehículos']);
     }
 
     /**
