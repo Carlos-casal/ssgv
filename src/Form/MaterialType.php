@@ -40,8 +40,7 @@ class MaterialType extends AbstractType
         $natureChoices = [
             'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
             'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL,
-            'Otros' => Material::NATURE_OTHER,
-            'Accesorios' => Material::NATURE_ACCESSORIES
+            'Otros' => Material::NATURE_OTHER
         ];
 
         // If it's a new form and category is Communications, we might want to tweak labels,
@@ -374,6 +373,23 @@ class MaterialType extends AbstractType
         $builder->get('numPackages')->addModelTransformer($spanishIntegerTransformer);
         $builder->get('stock')->addModelTransformer($spanishIntegerTransformer);
         $builder->get('iva')->addModelTransformer($spanishIntegerTransformer);
+
+        // Ensure these are not required by default to allow dynamic frontend hiding
+        $builder->add('safetyStock', TextType::class, [
+            'label' => 'STOCK MÍNIMO (Nº ENVASES)',
+            'required' => false,
+            'attr' => [
+                'class' => 'form-control',
+            ]
+        ]);
+        $builder->get('safetyStock')->addModelTransformer($spanishIntegerTransformer);
+
+        $builder->add('warrantyEndDate', DateType::class, [
+            'label' => 'Fin de Garantía',
+            'widget' => 'single_text',
+            'required' => false,
+            'attr' => ['class' => 'form-control']
+        ]);
 
         $builder->get('unitPrice')->addModelTransformer($spanishNumericTransformer);
         $builder->get('totalPrice')->addModelTransformer($spanishNumericTransformer);

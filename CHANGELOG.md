@@ -1,6 +1,10 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.0] - 21-03-2026 (Versión Actual)
+## [1.7.1] - 21-03-2026 (Versión Actual)
+- **UX/UI:** Implementación de tooltips descriptivos en la barra lateral cuando está colapsada.
+- **UX/UI:** Corrección de la alineación de iconos en el desplegable de "Añadir Material" del almacén (iconos a la izquierda del texto).
+
+## [1.7.0] - 21-03-2026
 - **Formularios:** Rediseño completo de los formularios de alta de material por categorías (Sanitario, Comunicaciones, Logística, Uniformidad, Vehículos).
 - **UX/UI:** Optimización de campos dinámicos y adaptación automática del tamaño de cajas de texto al contenido.
 - **Funcionalidad:** Implementación de "Añadir" en cabecera para lotes y gestión de subfamilias dinámicas con guardado permanente.
