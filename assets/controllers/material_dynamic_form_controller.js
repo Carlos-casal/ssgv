@@ -330,7 +330,7 @@ export default class extends Controller {
     calculateStock() {
         const nature = this.hasNatureSelectTarget ? this.natureSelectTarget.value : 'CONSUMIBLE';
 
-        if (nature === 'CONSUMIBLE' && this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0) {
+        if ((nature === 'CONSUMIBLE' || nature === 'OTROS') && this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0) {
             this.calculateTotalStockFromBatches();
             return;
         }
@@ -437,10 +437,27 @@ export default class extends Controller {
             this.stockAndCostsBlockTarget.classList.remove('d-none');
 
             // Toggle specific fields that are redundant in multi-batch
+            const isMultiBatchActive = this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0;
             const redundantFields = this.stockAndCostsBlockTarget.querySelectorAll('[data-redundant-multi-batch="true"]');
             redundantFields.forEach(field => {
-                const isMultiBatchActive = this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0;
-                field.classList.toggle('d-none', (isConsumable || isOther) && isMultiBatchActive);
+                const isTotalField = field.dataset.materialDynamicFormTarget === 'numPackagesContainer' ||
+                                     field.dataset.materialDynamicFormTarget === 'totalPriceContainer';
+
+                if (isTotalField && isMultiBatchActive && (isConsumable || isOther)) {
+                    field.classList.remove('d-none');
+                    const input = field.querySelector('input');
+                    if (input) {
+                        input.readOnly = true;
+                        input.classList.add('bg-gray-50', 'cursor-default');
+                    }
+                } else {
+                    field.classList.toggle('d-none', (isConsumable || isOther) && isMultiBatchActive);
+                    const input = field.querySelector('input');
+                    if (input && !isMultiBatchActive) {
+                         input.readOnly = false;
+                         input.classList.remove('bg-gray-50', 'cursor-default');
+                    }
+                }
             });
         }
 
@@ -921,6 +938,8 @@ export default class extends Controller {
     }
 
     handleAddButton(event) {
+        window.alert('Button clicked!');
+        console.log('handleAddButton triggered', { nature: this.natureSelectTarget?.value });
         if (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -938,6 +957,7 @@ export default class extends Controller {
     }
 
     addBatchRow(event = null, initialData = null) {
+        console.log('addBatchRow triggered', { index: this.batchesContainerTarget?.children.length });
         if (!this.hasBatchesContainerTarget) return;
 
         const index = this.batchesContainerTarget.children.length;
@@ -1073,19 +1093,38 @@ export default class extends Controller {
     }
 
     calculateTotalStockFromBatches() {
-        if (!this.hasBatchesContainerTarget || !this.hasTotalStockInputTarget) return;
+        if (!this.hasBatchesContainerTarget) return;
 
         let totalStock = 0;
+        let totalPackages = 0;
+        let totalCost = 0;
+
         const rows = this.batchesContainerTarget.querySelectorAll('.card');
         rows.forEach(row => {
             const unitsInput = row.querySelector('[name*="[unitsPerPackage]"]');
             const packsInput = row.querySelector('[name*="[numPackages]"]');
+            const priceInput = row.querySelector('[name*="[totalPrice]"]');
+
             if (unitsInput && packsInput) {
-                totalStock += this.parseFormattedNumber(unitsInput.value) * this.parseFormattedNumber(packsInput.value);
+                const u = this.parseFormattedNumber(unitsInput.value);
+                const p = this.parseFormattedNumber(packsInput.value);
+                totalStock += u * p;
+                totalPackages += p;
+            }
+            if (priceInput) {
+                totalCost += this.parseFormattedNumber(priceInput.value);
             }
         });
 
-        this.totalStockInputTarget.value = this.formatToUserLocale(totalStock, 0);
+        if (this.hasTotalStockInputTarget) {
+            this.totalStockInputTarget.value = this.formatToUserLocale(totalStock, 0);
+        }
+        if (this.hasNumPackagesInputTarget) {
+            this.numPackagesInputTarget.value = this.formatToUserLocale(totalPackages, 0);
+        }
+        if (this.hasTotalPriceTarget) {
+            this.totalPriceTarget.value = this.formatToUserLocale(totalCost, 2);
+        }
     }
 
     handleMaintenanceSync(event) {
