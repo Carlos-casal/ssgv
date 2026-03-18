@@ -75,10 +75,10 @@ export default class extends Controller {
             let minWidth = 50;
             if (input.name && input.name.includes('[barcode]')) {
                 // Approximate width for 13 chars (approx 120px depending on font)
-                minWidth = 130;
+                minWidth = 140;
             }
 
-            input.style.width = Math.max(width + 20, minWidth) + 'px';
+            input.style.width = Math.max(width + 30, minWidth) + 'px';
             document.body.removeChild(temp);
         }
     }
