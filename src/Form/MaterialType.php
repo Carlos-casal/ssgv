@@ -55,16 +55,11 @@ class MaterialType extends AbstractType
 
         $existingSubFamilies = array_filter($this->materialRepository->findAllExistingSubFamilies());
         $defaultSubFamilies = [
-            'Analgésicos' => 'Analgésicos',
-            'Curas' => 'Curas',
-            'Inmovilización' => 'Inmovilización',
-            'Vía Aérea' => 'ViaAerea',
-            'Diagnóstico' => 'Diagnostico',
-            'Sueroterapia' => 'Sueroterapia',
-            'Medicación' => 'Medicacion',
-            'Material de Entrenamiento' => 'Entrenamiento'
+            'Material de Entrenamiento' => 'Material de Entrenamiento'
         ];
-        $subFamilyChoices = array_unique(array_merge($defaultSubFamilies, array_combine($existingSubFamilies, $existingSubFamilies)));
+
+        $subFamilyChoices = array_merge($defaultSubFamilies, array_combine($existingSubFamilies, $existingSubFamilies));
+        ksort($subFamilyChoices);
 
         $builder
             ->add('name', TextType::class, [

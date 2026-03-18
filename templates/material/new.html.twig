@@ -194,21 +194,21 @@
             {% else %}
                 {# SANITARIO / GENERIC LAYOUT #}
                 {# BLOQUE A: IDENTIDAD DEL MATERIAL #}
-                <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #4e73df !important;">
+                <div class="card shadow-sm mb-4 border-0 mt-n3" style="border-top: 4px solid #4e73df !important;">
                     <div class="card-header bg-white py-3 border-bottom-0">
                         <h6 class="m-0 font-weight-bold text-primary text-uppercase">
                             Bloque A: Identidad del Material
                         </h6>
                     </div>
-                    <div class="card-body pt-0">
+                    <div class="card-body pt-2">
                         <div class="row">
                             <div class="col-md-12">
-                                <label class="form-label">Nombre Comercial<span class="text-red-500">*</span></label>
+                                <label class="form-label pt-2">Nombre Comercial<span class="text-red-500">*</span></label>
                                 {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ej: Paracetamol 500mg', 'data-required': 'true'}}) }}
                             </div>
                         </div>
                         <div class="row mt-3">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <label class="form-label">Naturaleza</label>
                                 {{ form_widget(form.nature, {
                                     'attr': {
@@ -218,22 +218,23 @@
                                     }
                                 }) }}
                             </div>
-                        </div>
-                        <div class="row mt-3">
                             <div class="col-md-6">
                                 {% if material.category in ['Sanitario', 'Uniformidad', 'Logística'] %}
                                     <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
                                     <div class="input-group">
                                         {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
-                                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
+                                        <button class="btn btn-primary d-flex align-items-center gap-2" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
                                             <i class="fas fa-plus"></i>
+                                            <span class="d-none d-md-inline">Añadir</span>
                                         </button>
                                     </div>
                                 {% else %}
                                     <div class="d-none">{{ form_row(form.subFamily) }}</div>
                                 {% endif %}
                             </div>
-                            <div class="col-md-6">
+                        </div>
+                        <div class="row mt-3">
+                            <div class="col-md-12">
                                 <label class="form-label">Código de Barras / QR<span class="text-red-500">*</span></label>
                                 {{ form_widget(form.barcode, {
                                     'attr': {

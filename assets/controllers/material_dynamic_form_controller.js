@@ -70,7 +70,15 @@ export default class extends Controller {
             temp.innerText = value;
             document.body.appendChild(temp);
             const width = temp.getBoundingClientRect().width;
-            input.style.width = Math.max(width + 20, 50) + 'px';
+
+            // Requirement: Barcode default width for 13 chars
+            let minWidth = 50;
+            if (input.name && input.name.includes('[barcode]')) {
+                // Approximate width for 13 chars (approx 120px depending on font)
+                minWidth = 130;
+            }
+
+            input.style.width = Math.max(width + 20, minWidth) + 'px';
             document.body.removeChild(temp);
         }
     }
