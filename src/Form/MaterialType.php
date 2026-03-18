@@ -32,20 +32,40 @@ class MaterialType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $existingCategories = array_filter($this->materialRepository->findAllExistingCategories());
-        $defaultCategories = ['Sanitario', 'Comunicaciones', 'Logística', 'Mar', 'Uniformidad', 'Varios'];
+        $defaultCategories = ['Sanitario', 'Comunicaciones', 'Logística', 'Mar', 'Uniformidad', 'Vehículos', 'Varios'];
         $categoryChoices = array_unique(array_merge($defaultCategories, $existingCategories));
         $categoryChoices = array_combine($categoryChoices, $categoryChoices);
 
         $existingNatures = array_filter($this->materialRepository->findAllExistingNatures());
         $natureChoices = [
             'Consumible (Fungible)' => Material::NATURE_CONSUMABLE,
-            'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL
+            'Equipo Técnico (No Fungible)' => Material::NATURE_TECHNICAL,
+            'Otros' => Material::NATURE_OTHER,
+            'Accesorios' => Material::NATURE_ACCESSORIES
         ];
+
+        // If it's a new form and category is Communications, we might want to tweak labels,
+        // but since ChoiceType is built once, we'd need to use a Form Event or pass options.
+        // For now, let's keep all choices and handle labeling/filtering in JS if needed.
+
         foreach ($existingNatures as $nature) {
             if (!in_array($nature, $natureChoices)) {
                 $natureChoices[$nature] = $nature;
             }
         }
+
+        $existingSubFamilies = array_filter($this->materialRepository->findAllExistingSubFamilies());
+        $defaultSubFamilies = [
+            'Analgésicos' => 'Analgésicos',
+            'Curas' => 'Curas',
+            'Inmovilización' => 'Inmovilización',
+            'Vía Aérea' => 'ViaAerea',
+            'Diagnóstico' => 'Diagnostico',
+            'Sueroterapia' => 'Sueroterapia',
+            'Medicación' => 'Medicacion',
+            'Material de Entrenamiento' => 'Entrenamiento'
+        ];
+        $subFamilyChoices = array_unique(array_merge($defaultSubFamilies, array_combine($existingSubFamilies, $existingSubFamilies)));
 
         $builder
             ->add('name', TextType::class, [
@@ -92,10 +112,11 @@ class MaterialType extends AbstractType
                 'choices' => [
                     'Letras (XS-3XL)' => 'LETTER',
                     'Ropa (32-60)' => 'NUMBER_CLOTHING',
-                    'Calzado (35-48)' => 'NUMBER_SHOES'
+                    'Calzado (35-48)' => 'NUMBER_SHOES',
+                    'Única' => 'UNICA'
                 ],
                 'attr' => ['class' => 'form-control'],
-                'placeholder' => 'Sin tallaje (Unico)'
+                'placeholder' => 'Seleccionar tallaje'
             ])
             ->add('stock', TextType::class, [
                 'label' => 'STOCK TOTAL',
@@ -116,16 +137,7 @@ class MaterialType extends AbstractType
             ->add('subFamily', ChoiceType::class, [
                 'label' => 'SUBFAMILIA',
                 'required' => false,
-                'choices' => [
-                    'Analgésicos' => 'Analgésicos',
-                    'Curas' => 'Curas',
-                    'Inmovilización' => 'Inmovilización',
-                    'Vía Aérea' => 'ViaAerea',
-                    'Diagnóstico' => 'Diagnostico',
-                    'Sueroterapia' => 'Sueroterapia',
-                    'Medicación' => 'Medicacion',
-                    'Material de Entrenamiento' => 'Entrenamiento'
-                ],
+                'choices' => $subFamilyChoices,
                 'attr' => ['class' => 'form-control']
             ])
             ->add('barcode', TextType::class, [

@@ -94,4 +94,19 @@ class MaterialRepository extends ServiceEntityRepository
 
         return array_column($results, 'nature');
     }
+
+    /**
+     * Returns all unique subfamilies present in the material database.
+     */
+    public function findAllExistingSubFamilies(): array
+    {
+        $results = $this->createQueryBuilder('m')
+            ->select('DISTINCT m.subFamily')
+            ->where('m.subFamily IS NOT NULL')
+            ->orderBy('m.subFamily', 'ASC')
+            ->getQuery()
+            ->getScalarResult();
+
+        return array_column($results, 'subFamily');
+    }
 }

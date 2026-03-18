@@ -1,6 +1,12 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.6.1] - 20-03-2026 (Versión Actual)
+## [1.7.0] - 21-03-2026 (Versión Actual)
+- **Formularios:** Rediseño completo de los formularios de alta de material por categorías (Sanitario, Comunicaciones, Logística, Uniformidad, Vehículos).
+- **UX/UI:** Optimización de campos dinámicos y adaptación automática del tamaño de cajas de texto al contenido.
+- **Funcionalidad:** Implementación de "Añadir" en cabecera para lotes y gestión de subfamilias dinámicas con guardado permanente.
+- **Naturaleza:** Incorporación de nuevas naturalezas "Otros" y "Accesorios" con lógica de campos obligatorios específicos.
+
+## [1.6.1] - 20-03-2026
 - **Corrección:** Mejora en la lógica de conteo de materiales "actualizados" vs "creados" durante la importación, funcionando correctamente incluso para registros nuevos no guardados aún.
 - **Corrección:** Refinamiento en la detección de materiales duplicados por nombre; ahora solo se agrupan si no se proporcionan identificadores únicos (EAN/Serie), evitando fusiones accidentales de productos distintos.
 - **Corrección:** Soporte para códigos de barras largos y en notación científica provenientes de Excel, asegurando que se capturen como texto exacto.
