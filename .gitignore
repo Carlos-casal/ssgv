@@ -37,3 +37,6 @@ test-results/
 
 /vendor/
 /public/assets//vendor/
+var/tmp/*.xlsx
+test_*.php
+public/test_db.php

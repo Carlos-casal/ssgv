@@ -59,7 +59,7 @@ class ExcelImportService
             'brandModel' => ['marca', 'modelo', 'brand', 'model'],
             'alias' => ['alias'],
             'serialNumber' => ['serie', 's/n', 'serial'],
-            'networkId' => ['id', 'red', 'issi', 'imei', 'network'],
+            'networkId' => ['id de red', 'red', 'issi', 'imei', 'network'],
             'phoneNumber' => ['teléfono', 'móvil', 'phone'],
             'purchaseDate' => ['compra', 'purchase'],
             'warrantyEndDate' => ['garantía', 'fin', 'warranty'],
@@ -175,6 +175,7 @@ class ExcelImportService
     {
         $this->materialCache = [];
         $this->batchCache = [];
+        $this->countedMaterials = [];
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
@@ -248,6 +249,7 @@ class ExcelImportService
                 if ($category) $material->setCategory($category);
                 if ($subFamily) $material->setSubFamily($subFamily);
                 if ($barcode && $barcode !== 'S/N') $material->setBarcode($barcode);
+                if ($serialNumber && $serialNumber !== 'S/N') $material->setSerialNumber($serialNumber);
                 if ($safetyStock) $material->setSafetyStock($safetyStock);
                 if ($batchNumber) $material->setBatchNumber($batchNumber);
                 if ($expirationDate) $material->setExpirationDate($expirationDate);
@@ -356,16 +358,22 @@ class ExcelImportService
      */
     private function findExistingMaterial(?string $name, ?string $barcode, ?string $serialNumber, ?string $networkId): ?Material
     {
+        // Normalize variables to null if empty or explicitly 'S/N'
+        $barcode = !empty(trim($barcode)) && trim($barcode) !== 'S/N' ? trim($barcode) : null;
+        $serialNumber = !empty(trim($serialNumber)) && trim($serialNumber) !== 'S/N' ? trim($serialNumber) : null;
+        $networkId = !empty(trim($networkId)) && trim($networkId) !== 'S/N' ? trim($networkId) : null;
+        $name = !empty(trim($name)) ? trim($name) : null;
+
         // 1. Try to find in session cache first (prevents duplicate creation of new items before flush)
         foreach ($this->materialCache as $m) {
             // Priority: Barcode, SerialNumber, NetworkId (Technical ID)
-            if ($barcode && $barcode !== 'S/N' && $m->getBarcode() === $barcode) return $m;
-            if ($serialNumber && $serialNumber !== 'S/N' && $m->getSerialNumber() === $serialNumber) return $m;
-            if ($networkId && $networkId !== 'S/N' && $m->getNetworkId() === $networkId) return $m;
+            if ($barcode && $m->getBarcode() === $barcode) return $m;
+            if ($serialNumber && $m->getSerialNumber() === $serialNumber) return $m;
+            if ($networkId && $m->getNetworkId() === $networkId) return $m;
         }
 
         // Only match by Name if NO unique identifiers are provided in the Excel row
-        $hasUniqueId = ($barcode && $barcode !== 'S/N') || ($serialNumber && $serialNumber !== 'S/N') || ($networkId && $networkId !== 'S/N');
+        $hasUniqueId = $barcode || $serialNumber || $networkId;
         if (!$hasUniqueId && $name) {
             foreach ($this->materialCache as $m) {
                 if ($m->getName() === $name) return $m;
@@ -374,13 +382,13 @@ class ExcelImportService
 
         // 2. Try to find in database
         $material = null;
-        if ($barcode && $barcode !== 'S/N') {
+        if ($barcode) {
             $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
         }
-        if (!$material && $serialNumber && $serialNumber !== 'S/N') {
+        if (!$material && $serialNumber) {
             $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
         }
-        if (!$material && $networkId && $networkId !== 'S/N') {
+        if (!$material && $networkId) {
             $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
         }
 
