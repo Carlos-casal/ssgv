@@ -9,7 +9,13 @@
         <span>
             Alta de {{ material.category ?: 'Nuevo Material' }}
         </span>
-        <div>
+        <div class="d-flex align-items-center">
+            <div id="header-add-btn-container" class="mr-2" data-material-dynamic-form-target="headerAddBtnContainer">
+                {# Dinámicamente inyectado o visible vía Stimulus #}
+                <button type="button" class="btn btn-danger shadow-sm px-4" data-action="click->material-dynamic-form#addBatchRow">
+                    <i class="fas fa-plus mr-1"></i> Añadir
+                </button>
+            </div>
             <button type="submit" form="material-form" class="btn btn-primary shadow-sm px-4" aria-label="Guardar nuevo material" title="Guardar">
                 <i class="fas fa-save mr-2"></i> Guardar
             </button>
@@ -115,7 +121,7 @@
                     </div>
                 </div>
 
-            {% elseif material.category in ['Logística', 'Mar'] %}
+            {% elseif material.category in ['Logística', 'Mar', 'Vehículos'] %}
                 {# LOGÍSTICA / MAR LAYOUT (Simplified) #}
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-header bg-white py-3">
@@ -133,9 +139,19 @@
                             <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA / MODELO'}) }}</div>
                             <div class="col-md-6">{{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}</div>
                         </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6">
+                                <label class="form-label">Subfamilia</label>
+                                <div class="input-group">
+                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
+                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                         <div class="d-none">
                             {{ form_row(form.category) }}
-                            {{ form_row(form.subFamily) }}
                         </div>
                     </div>
                 </div>
@@ -156,10 +172,25 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">
-                                {{ form_row(form.nature) }}
+                                {{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Prenda</label>
+                                <div class="input-group">
+                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
+                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mt-2">
+                            <div class="col-md-6" id="sizing-type-container">
+                                {{ form_row(form.sizingType) }}
                             </div>
                         </div>
                     </div>
+                </div>
             {% else %}
                 {# SANITARIO / GENERIC LAYOUT #}
                 {# BLOQUE A: IDENTIDAD DEL MATERIAL #}
@@ -190,9 +221,14 @@
                         </div>
                         <div class="row mt-3">
                             <div class="col-md-6">
-                                {% if material.category == 'Sanitario' %}
-                                    <label class="form-label">Subfamilia</label>
-                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input'}}) }}
+                                {% if material.category in ['Sanitario', 'Uniformidad', 'Logística'] %}
+                                    <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
+                                    <div class="input-group">
+                                        {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
+                                        <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
                                 {% else %}
                                     <div class="d-none">{{ form_row(form.subFamily) }}</div>
                                 {% endif %}
@@ -259,13 +295,6 @@
 
         {# Columna Derecha (4) - BLOQUE D E IMAGEN #}
         <div class="col-lg-4">
-            {# Botón Añadir Lote para Consumibles #}
-            <div class="mb-4" data-material-dynamic-form-target="addBatchBtnContainer">
-                <button type="button" class="btn btn-danger btn-block shadow-sm py-3" data-action="click->material-dynamic-form#addBatchRow">
-                    <i class="fas fa-plus-circle mr-2"></i> AÑADIR OTRO LOTE / PRECIO
-                </button>
-            </div>
-
             {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
             <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #1cc88a !important;" data-material-dynamic-form-target="stockAndCostsBlock">
                 <div class="card-header bg-white py-3 border-bottom-1">
@@ -276,7 +305,7 @@
                 
                 <div class="card-body p-4">
                     <div class="form-grid">
-                        {# Fila: Uds/Envase y Nº Envases #}
+                        {# Fila: Uds/Envase #}
                         <div class="form-group" data-material-dynamic-form-target="unitsPerPackageContainer" data-redundant-multi-batch="true">
                             <label class="form-label">Unidades por Envase<span class="text-red-500">*</span></label>
                             {{ form_widget(form.unitsPerPackage, {
@@ -290,8 +319,8 @@
                         </div>
 
                         {# Nº Envases #}
-                        <div class="form-group" data-redundant-multi-batch="true">
-                            <label class="form-label">Nº Envases<span class="text-red-500">*</span></label>
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="numPackagesContainer">
+                            <label class="form-label">Total Nº Envases<span class="text-red-500">*</span></label>
                             {{ form_widget(form.numPackages, {
                                 'attr': {
                                     'class': 'form-input border-blue-400',
@@ -318,7 +347,7 @@
                         </div>
 
                         {# Stock Mínimo - Span 2 #}
-                        <div class="form-group col-span-2 border-b border-gray-100 pb-2">
+                        <div class="form-group col-span-2 border-b border-gray-100 pb-2" data-material-dynamic-form-target="safetyStockContainer">
                             <label class="form-label">Stock Mínimo (Nº Envases)<span class="text-red-500">*</span></label>
                             {{ form_widget(form.safetyStock, {
                                 'attr': {
@@ -330,8 +359,8 @@
                         </div>
 
                         {# Coste Total #}
-                        <div class="form-group" data-redundant-multi-batch="true">
-                            <label class="form-label">Precio Compra (IVA inc.)<span class="text-red-500">*</span></label>
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="totalPriceContainer">
+                            <label class="form-label">Coste Total<span class="text-red-500">*</span></label>
                             {{ form_widget(form.totalPrice, {
                                 'attr': {
                                     'class': 'form-input border-emerald-400',
@@ -343,7 +372,7 @@
                         </div>
 
                         {# % Margen #}
-                        <div class="form-group" data-redundant-multi-batch="true">
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="discountPercentageContainer">
                             <label class="form-label">% Margen</label>
                             {{ form_widget(form.discountPercentage, {
                                 'attr': {
@@ -356,7 +385,7 @@
                         </div>
 
                         {# Coste con Dto #}
-                        <div class="form-group" data-redundant-multi-batch="true">
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="discountedPriceContainer">
                             <label class="form-label">Coste con Dto</label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.discountedPrice, {
@@ -372,7 +401,7 @@
                         </div>
 
                         {# Precio/Ud #}
-                        <div class="form-group" data-redundant-multi-batch="true">
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="unitPriceContainer">
                             <label class="form-label">Precio/Ud</label>
                             <div class="currency-wrapper">
                                 {{ form_widget(form.unitPrice, {
@@ -388,7 +417,7 @@
                         </div>
 
                         {# IVA #}
-                        <div class="form-group" data-redundant-multi-batch="true">
+                        <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="ivaContainer">
                             <label class="form-label">IVA (%)</label>
                             {{ form_widget(form.iva, {
                                 'attr': {
@@ -440,6 +469,30 @@
         {% if form.hasMicrophone is defined and not form.hasMicrophone.rendered %}{{ form_row(form.hasMicrophone) }}{% endif %}
     </div>
     {{ form_end(form) }}
+</div>
+
+<!-- Modal Añadir Subfamilia / Prenda -->
+<div class="modal fade" id="addSubFamilyModal" tabindex="-1" aria-labelledby="addSubFamilyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="addSubFamilyModalLabel">
+                    <i class="fas fa-plus-circle mr-2"></i> Añadir {{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div class="form-group">
+                    <label class="form-label">Nombre de la nueva {{ material.category == 'Uniformidad' ? 'prenda' : 'subfamilia' }}</label>
+                    <input type="text" id="new-subfamily-name" class="form-control" placeholder="Ej: Nueva Categoría">
+                </div>
+            </div>
+            <div class="modal-footer bg-light border-0">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary px-4" data-action="click->material-dynamic-form#saveNewSubFamily">Guardar y Seleccionar</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Modal Aviso Código de Barras Duplicado (Equipo Técnico) -->

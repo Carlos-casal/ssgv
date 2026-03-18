@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput', 'batchesContainer', 'addBatchBtnContainer', 'stockAndCostsBlock'];
+    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput', 'batchesContainer', 'addBatchBtnContainer', 'stockAndCostsBlock', 'headerAddBtnContainer', 'subFamilySelect', 'numPackagesContainer', 'safetyStockContainer', 'totalPriceContainer', 'discountPercentageContainer', 'discountedPriceContainer', 'unitPriceContainer', 'ivaContainer'];
 
     connect() {
         this.initialUnits = JSON.parse(this.element.dataset.initialUnits || '[]');
@@ -14,9 +14,60 @@ export default class extends Controller {
             this.numPackagesInputTarget.value = String(initialCount);
         }
 
+        this.setupCategorySpecifics();
         this.toggleTechnicalBlock();
         this.performCalculations();
         this.setupValidation();
+        this.initAutoWidth();
+        this.updateHeaderAddButton();
+        this.customizeBlockD();
+    }
+
+    setupCategorySpecifics() {
+        const category = this.element.dataset.materialCategory;
+        if (category === 'Comunicaciones' && this.hasNatureSelectTarget) {
+            // Requirement: Change "Consumible" to "Accesorios"
+            Array.from(this.natureSelectTarget.options).forEach(option => {
+                if (option.value === 'CONSUMIBLE') {
+                    option.text = 'Accesorios';
+                }
+            });
+        }
+    }
+
+    initAutoWidth() {
+        const inputs = this.element.querySelectorAll('input[type="text"]:not([name*="[name]"]), input[type="number"], select');
+        inputs.forEach(input => {
+            this.adjustInputWidth(input);
+            input.addEventListener('input', () => this.adjustInputWidth(input));
+            input.addEventListener('change', () => this.adjustInputWidth(input));
+        });
+    }
+
+    adjustInputWidth(input) {
+        if (input.tagName === 'SELECT') {
+            const temp = document.createElement('span');
+            temp.style.visibility = 'hidden';
+            temp.style.position = 'absolute';
+            temp.style.whiteSpace = 'pre';
+            temp.style.font = window.getComputedStyle(input).font;
+            temp.innerText = input.options[input.selectedIndex]?.text || '';
+            document.body.appendChild(temp);
+            input.style.width = (temp.getBoundingClientRect().width + 40) + 'px';
+            document.body.removeChild(temp);
+        } else {
+            const value = input.value || input.placeholder || '';
+            const temp = document.createElement('span');
+            temp.style.visibility = 'hidden';
+            temp.style.position = 'absolute';
+            temp.style.whiteSpace = 'pre';
+            temp.style.font = window.getComputedStyle(input).font;
+            temp.innerText = value;
+            document.body.appendChild(temp);
+            const width = temp.getBoundingClientRect().width;
+            input.style.width = Math.max(width + 20, 50) + 'px';
+            document.body.removeChild(temp);
+        }
     }
 
     enforceNumericConstraints(event) {
@@ -328,8 +379,11 @@ export default class extends Controller {
         if (!this.hasNatureSelectTarget) return;
 
         const nature = this.natureSelectTarget.value;
+        const category = this.element.dataset.materialCategory;
+
         const isTechnical = nature === 'EQUIPO_TECNICO';
-        const isConsumable = nature === 'CONSUMIBLE';
+        const isConsumable = nature === 'CONSUMIBLE' || (category === 'Comunicaciones' && nature === 'ACCESORIOS');
+        const isOther = nature === 'OTROS';
 
         if (this.hasTechnicalBlockTarget) {
             this.technicalBlockTarget.classList.add('d-none');
@@ -347,8 +401,8 @@ export default class extends Controller {
         }
 
         if (this.hasBatchesContainerTarget) {
-            this.batchesContainerTarget.classList.toggle('d-none', !isConsumable);
-            if (isConsumable && this.batchesContainerTarget.children.length === 0) {
+            this.batchesContainerTarget.classList.toggle('d-none', !isConsumable && !isOther);
+            if ((isConsumable || isOther) && this.batchesContainerTarget.children.length === 0) {
                 if (this.initialBatches && this.initialBatches.length > 0) {
                     this.initialBatches.forEach(batch => this.addBatchRow(null, batch));
                 } else {
@@ -358,28 +412,132 @@ export default class extends Controller {
         }
 
         if (this.hasAddBatchBtnContainerTarget) {
-            this.addBatchBtnContainerTarget.classList.toggle('d-none', !isConsumable);
+            this.addBatchBtnContainerTarget.classList.toggle('d-none', !isConsumable && !isOther);
         }
 
         if (this.hasStockAndCostsBlockTarget) {
-            // No longer hiding the block, but we might want to hide specific fields inside it
-            // if we are in multi-batch mode.
-            // For now, let's keep it visible so Stock Mínimo is accessible.
             this.stockAndCostsBlockTarget.classList.remove('d-none');
 
             // Toggle specific fields that are redundant in multi-batch
             const redundantFields = this.stockAndCostsBlockTarget.querySelectorAll('[data-redundant-multi-batch="true"]');
             redundantFields.forEach(field => {
-                field.classList.toggle('d-none', isConsumable && this.batchesContainerTarget.children.length > 0);
+                field.classList.toggle('d-none', (isConsumable || isOther) && this.batchesContainerTarget.children.length > 0);
             });
         }
 
         this.handleNatureChange();
+        this.updateHeaderAddButton();
+        this.customizeBlockD();
+    }
+
+    updateHeaderAddButton() {
+        if (!this.hasHeaderAddBtnContainerTarget) return;
+        const nature = this.natureSelectTarget?.value;
+        const category = this.element.dataset.materialCategory;
+        const show = nature === 'EQUIPO_TECNICO' || nature === 'CONSUMIBLE' || (category === 'Comunicaciones' && nature === 'ACCESORIOS') || nature === 'OTROS';
+        this.headerAddBtnContainerTarget.classList.toggle('d-none', !show);
+    }
+
+    customizeBlockD() {
+        const category = this.element.dataset.materialCategory;
+        const nature = this.natureSelectTarget?.value;
+        const isSanitarioOrComms = category === 'Sanitario' || category === 'Comunicaciones';
+        const isOther = nature === 'OTROS' || (category === 'Sanitario' && nature === 'OTROS');
+
+        if (isSanitarioOrComms || isOther) {
+            if (this.hasUnitsPerPackageContainerTarget) this.unitsPerPackageContainerTarget.classList.remove('d-none');
+            if (this.hasNumPackagesContainerTarget) this.numPackagesContainerTarget.classList.remove('d-none');
+            if (this.hasTotalPriceContainerTarget) this.totalPriceContainerTarget.classList.remove('d-none');
+
+            // Hide others for specific view
+            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.classList.add('d-none');
+            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.classList.add('d-none');
+            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.classList.add('d-none');
+            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.classList.add('d-none');
+            if (this.hasIvaContainerTarget) this.ivaContainerTarget.classList.add('d-none');
+
+            // Specific requirement for "Otros": price and numPackages are mandatory
+            if (isOther) {
+                const priceInput = this.totalPriceContainerTarget?.querySelector('input');
+                const numInput = this.numPackagesContainerTarget?.querySelector('input');
+                if (priceInput) priceInput.dataset.required = "true";
+                if (numInput) numInput.dataset.required = "true";
+            }
+        } else {
+            // Restore visibility for other categories
+            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.classList.remove('d-none');
+            if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.classList.remove('d-none');
+            if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.classList.remove('d-none');
+            if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.classList.remove('d-none');
+            if (this.hasIvaContainerTarget) this.ivaContainerTarget.classList.remove('d-none');
+        }
+    }
+
+    async saveNewSubFamily() {
+        const nameInput = document.getElementById('new-subfamily-name');
+        const name = nameInput.value.trim();
+        if (!name) return;
+
+        try {
+            const response = await fetch('/material/subfamily/new', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: name })
+            });
+
+            if (!response.ok) throw new Error('Error al guardar la subfamilia');
+
+            const option = document.createElement('option');
+            option.value = name;
+            option.text = name;
+            this.subFamilySelectTarget.add(option);
+            this.subFamilySelectTarget.value = name;
+
+            // Close modal
+            const modalElement = document.getElementById('addSubFamilyModal');
+            let modalInstance;
+            if (window.bootstrap) {
+                modalInstance = window.bootstrap.Modal.getInstance(modalElement) || new window.bootstrap.Modal(modalElement);
+            } else if (typeof bootstrap !== 'undefined') {
+                modalInstance = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            }
+
+            if (modalInstance) {
+                modalInstance.hide();
+            }
+
+            nameInput.value = '';
+            this.adjustInputWidth(this.subFamilySelectTarget);
+        } catch (error) {
+            console.error('Error saving subfamily:', error);
+            alert('No se pudo guardar la subfamilia. Inténtalo de nuevo.');
+        }
     }
 
     handleNatureChange() {
         if (!this.hasNatureSelectTarget) return;
-        const isTechnical = this.natureSelectTarget.value === 'EQUIPO_TECNICO';
+        const nature = this.natureSelectTarget.value;
+        const category = this.element.dataset.materialCategory;
+        const isTechnical = nature === 'EQUIPO_TECNICO';
+
+        // Requirement: Hide "Tipo de tallaje" for Sanitario
+        const sizingContainer = document.getElementById('sizing-type-container') || this.element.querySelector('[name*="[sizingType]"]')?.closest('.col-md-6');
+        if (sizingContainer) {
+            sizingContainer.classList.toggle('d-none', category === 'Sanitario');
+        }
+
+        // Requirement: Hide Expiration Date for Communications if not consumable (Accesorios)
+        if (category === 'Comunicaciones') {
+            const expirationInput = this.element.querySelector('[name*="[expirationDate]"]');
+            if (expirationInput) {
+                expirationInput.closest('.col-md-6')?.classList.toggle('d-none', nature !== 'CONSUMIBLE');
+            }
+
+            // Toggle visibility of fields based on Nature/Equipment Type
+            this.toggleCommsFields(nature);
+        }
 
         // Toggle units per package visibility
         if (this.hasUnitsPerPackageContainerTarget) {

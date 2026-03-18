@@ -816,6 +816,23 @@ class MaterialController extends AbstractController
         ]);
     }
 
+    #[Route('/subfamily/new', name: 'app_material_subfamily_new', methods: ['POST'])]
+    public function newSubFamily(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+        $name = $data['name'] ?? null;
+
+        if (!$name) {
+            return new JsonResponse(['error' => 'Nombre requerido'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // SubFamily is just a string in the Material entity, so we don't need to create a new entity.
+        // By adding it to the UI and then saving a Material with it, it will appear in findAllExistingSubFamilies()
+        // in the next form load.
+
+        return new JsonResponse(['success' => true, 'name' => $name]);
+    }
+
     #[Route('/unit/{id}/status', name: 'app_material_unit_status', methods: ['GET', 'POST'])]
     public function changeUnitStatus(Request $request, MaterialUnit $unit, MaterialManager $materialManager): Response
     {
