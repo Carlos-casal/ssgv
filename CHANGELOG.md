@@ -1,6 +1,13 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.1] - 21-03-2026 (Versión Actual)
+## [1.7.3] - 22-03-2026 (Versión Actual)
+- **UX/UI:** Rediseño completo de formularios de material y vehículos con diseño unificado de tarjetas.
+- **Formularios:** Implementación de "Bloque A" optimizado (Nombre y Código de Barras en la misma fila).
+- **Cálculos:** Agregación en tiempo real de lotes múltiples en el bloque de "Stock y Costes".
+- **Dynamic UI:** Adaptación automática del ancho de campos según el contenido y ocultación de campos irrelevantes por categoría.
+- **Gestión:** Integración de modal para añadir subfamilias/prendas sobre la marcha.
+
+## [1.7.1] - 21-03-2026
 - **UX/UI:** Implementación de tooltips descriptivos en la barra lateral cuando está colapsada.
 - **UX/UI:** Corrección de la alineación de iconos en el desplegable de "Añadir Material" del almacén (iconos a la izquierda del texto).
 

@@ -202,9 +202,22 @@
                     </div>
                     <div class="card-body pt-0">
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-8">
                                 <label class="form-label pt-1">Nombre Comercial<span class="text-red-500">*</span></label>
                                 {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ej: Paracetamol 500mg', 'data-required': 'true'}}) }}
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label pt-1">Código de Barras<span class="text-red-500">*</span></label>
+                                {{ form_widget(form.barcode, {
+                                    'attr': {
+                                        'class': 'form-input',
+                                        'data-required': 'true',
+                                        'data-material-dynamic-form-target': 'barcodeInput',
+                                        'data-action': 'input->material-dynamic-form#checkBarcodeUniqueness',
+                                        'data-check-url': path('app_material_check_barcode')
+                                    }
+                                }) }}
+                                <div class="text-danger font-weight-bold mt-1" style="font-size: 0.7rem;">{{ form_errors(form.barcode) }}</div>
                             </div>
                         </div>
                         <div class="d-flex flex-wrap align-items-end gap-3 mt-3">
@@ -231,22 +244,6 @@
                                 {% else %}
                                     <div class="d-none">{{ form_row(form.subFamily) }}</div>
                                 {% endif %}
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label class="form-label">Código de Barras / QR<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.barcode, {
-                                    'attr': {
-                                        'class': 'form-input',
-                                        'data-required': 'true',
-                                        'data-material-dynamic-form-target': 'barcodeInput',
-                                        'data-action': 'input->material-dynamic-form#checkBarcodeUniqueness',
-                                        'data-check-url': path('app_material_check_barcode')
-                                    }
-                                }) }}
-                                <div class="text-danger font-weight-bold mt-1">{{ form_errors(form.barcode) }}</div>
-                                <p class="text-hint">Escanea o introduce el código de barras del artículo.</p>
                             </div>
                         </div>
                         <div class="row mt-3">
