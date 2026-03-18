@@ -247,7 +247,9 @@ class Material
     #[ORM\PreUpdate]
     public function syncNatureWithCategory(): void
     {
-        // Only auto-sync if nature is default or empty, to allow custom nature values from import
+        // Only auto-sync if nature is default or empty, to allow custom nature values from import.
+        // If the user explicitly sets it to something else (like via Excel), we don't overwrite it.
+        // We assume 'CONSUMIBLE' is the default and only overwrite it if the category implies TECHNICAL.
         if (empty($this->nature) || $this->nature === self::NATURE_CONSUMABLE) {
             $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
             if (in_array($this->category, $technicalCategories)) {

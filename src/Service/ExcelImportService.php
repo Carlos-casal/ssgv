@@ -100,6 +100,7 @@ class ExcelImportService
     {
         $this->materialCache = [];
         $this->batchCache = [];
+        $this->countedMaterials = [];
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
@@ -237,7 +238,7 @@ class ExcelImportService
                 } else {
                     // Avoid double-counting "updated" for same material in different rows
                     // We only count it as updated once per session
-                    if (!$this->isAlreadyCounted($material, $result['errors'])) {
+                    if (!$this->isAlreadyCounted($material)) {
                         $result['updated']++;
                     }
                 }
@@ -341,14 +342,12 @@ class ExcelImportService
     }
 
     private array $countedMaterials = [];
-    private function isAlreadyCounted(Material $material, array &$errors): bool
+    private function isAlreadyCounted(Material $material): bool
     {
-        if ($material->getId() && in_array($material->getId(), $this->countedMaterials)) {
+        if (in_array($material, $this->countedMaterials, true)) {
             return true;
         }
-        if ($material->getId()) {
-            $this->countedMaterials[] = $material->getId();
-        }
+        $this->countedMaterials[] = $material;
         return false;
     }
 
@@ -359,10 +358,18 @@ class ExcelImportService
     {
         // 1. Try to find in session cache first (prevents duplicate creation of new items before flush)
         foreach ($this->materialCache as $m) {
+            // Priority: Barcode, SerialNumber, NetworkId (Technical ID)
             if ($barcode && $barcode !== 'S/N' && $m->getBarcode() === $barcode) return $m;
             if ($serialNumber && $serialNumber !== 'S/N' && $m->getSerialNumber() === $serialNumber) return $m;
             if ($networkId && $networkId !== 'S/N' && $m->getNetworkId() === $networkId) return $m;
-            if ($name && $m->getName() === $name) return $m;
+        }
+
+        // Only match by Name if NO unique identifiers are provided in the Excel row
+        $hasUniqueId = ($barcode && $barcode !== 'S/N') || ($serialNumber && $serialNumber !== 'S/N') || ($networkId && $networkId !== 'S/N');
+        if (!$hasUniqueId && $name) {
+            foreach ($this->materialCache as $m) {
+                if ($m->getName() === $name) return $m;
+            }
         }
 
         // 2. Try to find in database
@@ -376,7 +383,9 @@ class ExcelImportService
         if (!$material && $networkId && $networkId !== 'S/N') {
             $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
         }
-        if (!$material && $name) {
+
+        // Again, only by Name if no unique ID provided
+        if (!$material && !$hasUniqueId && $name) {
             $material = $this->materialRepository->findOneBy(['name' => $name]);
         }
 
@@ -456,9 +465,14 @@ class ExcelImportService
                     // Not a valid date after all
                 }
             }
+
+            // For numbers that might be scientific notation in raw value, formatted value is often better for barcodes
+            if (is_numeric($value) && (strpos((string)$value, 'E+') !== false || strlen((string)$value) > 10)) {
+                $value = $cell->getFormattedValue();
+            }
         }
 
-        return is_string($value) ? trim($value) : $value;
+        return is_string($value) ? trim($value) : (string)$value;
     }
 
     private function getDateValue($worksheet, $col, $row): ?\DateTimeImmutable
