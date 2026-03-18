@@ -53,13 +53,9 @@ class MaterialType extends AbstractType
             }
         }
 
-        $existingSubFamilies = array_filter($this->materialRepository->findAllExistingSubFamilies());
-        $defaultSubFamilies = [
+        $subFamilyChoices = [
             'Material de Entrenamiento' => 'Material de Entrenamiento'
         ];
-
-        $subFamilyChoices = array_merge($defaultSubFamilies, array_combine($existingSubFamilies, $existingSubFamilies));
-        ksort($subFamilyChoices);
 
         $builder
             ->add('name', TextType::class, [
