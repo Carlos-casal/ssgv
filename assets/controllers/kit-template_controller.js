@@ -4,15 +4,13 @@ export default class extends Controller {
     static targets = ["container", "prototype"];
 
     connect() {
-        console.log("Kit Template Controller connected");
+        this.index = this.containerTarget.querySelectorAll('.kit-item-row').length;
     }
 
     addItem(event) {
         if (event) {
             event.preventDefault();
         }
-
-        console.log("Adding item at index:", this.index);
 
         // Use the content of the template tag
         const html = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);

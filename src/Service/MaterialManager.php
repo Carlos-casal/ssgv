@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Location;
 use App\Entity\Material;
+use App\Entity\MaterialBatch;
 use App\Entity\MaterialUnit;
 use App\Entity\MaterialStock;
 use App\Entity\MaterialMovement;

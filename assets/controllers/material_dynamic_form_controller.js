@@ -938,8 +938,6 @@ export default class extends Controller {
     }
 
     handleAddButton(event) {
-        window.alert('Button clicked!');
-        console.log('handleAddButton triggered', { nature: this.natureSelectTarget?.value });
         if (event) {
             event.preventDefault();
             event.stopPropagation();
@@ -957,7 +955,6 @@ export default class extends Controller {
     }
 
     addBatchRow(event = null, initialData = null) {
-        console.log('addBatchRow triggered', { index: this.batchesContainerTarget?.children.length });
         if (!this.hasBatchesContainerTarget) return;
 
         const index = this.batchesContainerTarget.children.length;
