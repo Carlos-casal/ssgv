@@ -117,6 +117,57 @@ class KitController extends AbstractController
         ]);
     }
 
+    #[Route('/templates/{id}/edit', name: 'app_kit_template_edit', methods: ['GET', 'POST'])]
+    public function editTemplate(Request $request, KitTemplate $template, EntityManagerInterface $entityManager): Response
+    {
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('kit_template', $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Token CSRF inválido.');
+            }
+            $name = $request->request->get('name');
+            $containerType = $request->request->get('container_type');
+            $description = $request->request->get('description');
+            $items = $request->request->all('items');
+
+            $template->setName($name);
+            $template->setContainerType($containerType);
+            $template->setDescription($description);
+
+            // Clear existing items
+            foreach ($template->getItems() as $item) {
+                $entityManager->remove($item);
+            }
+            $template->getItems()->clear();
+
+            foreach ($items as $itemData) {
+                if (empty($itemData['material']) || empty($itemData['quantity'])) continue;
+
+                $item = new KitTemplateItem();
+                $item->setMaterial($entityManager->getReference(Material::class, $itemData['material']));
+                $item->setQuantity((int)$itemData['quantity']);
+                $template->addItem($item);
+            }
+
+            $entityManager->flush();
+            $this->addFlash('success', 'Plantilla actualizada correctamente.');
+
+            return $this->redirectToRoute('app_kit_template_index');
+        }
+
+        $materials = $entityManager->getRepository(Material::class)->createQueryBuilder('m')
+            ->where('m.nature = :nature')
+            ->orWhere('m.category = :category')
+            ->setParameter('nature', Material::NATURE_CONSUMABLE)
+            ->setParameter('category', 'Sanitario')
+            ->getQuery()
+            ->getResult();
+
+        return $this->render('kit/template_edit.html.twig', [
+            'template' => $template,
+            'materials' => $materials,
+        ]);
+    }
+
     #[Route('/new', name: 'app_kit_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
