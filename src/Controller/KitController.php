@@ -181,9 +181,21 @@ class KitController extends AbstractController
 
             $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
 
-            // 1. Create the physical unit
-            $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín'])
-                        ?? $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
+            // 1. Create the physical unit (The kit container itself)
+            $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
+            }
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
+            }
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy([]);
+            }
+
+            if (!$material) {
+                throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
+            }
 
             $unit = new MaterialUnit();
             $unit->setMaterial($material);
@@ -201,23 +213,11 @@ class KitController extends AbstractController
 
             $entityManager->persist($unit);
             $entityManager->persist($location);
-
-            // 3. Transfer stock from central warehouse to the kit based on template
-            $centralWarehouse = $materialManager->getCentralWarehouse();
-            foreach ($template->getItems() as $item) {
-                $materialManager->transfer(
-                    $item->getMaterial(),
-                    $centralWarehouse,
-                    $location,
-                    $item->getQuantity(),
-                    'Carga inicial de botiquín',
-                    null
-                );
-            }
-
             $entityManager->flush();
 
-            return $this->redirectToRoute('app_kit_index');
+            // Redirect to refill preview for initial load
+            $this->addFlash('info', 'Botiquín creado. Procede a realizar la carga inicial.');
+            return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
         }
 
         return $this->render('kit/new.html.twig', [
@@ -272,40 +272,186 @@ class KitController extends AbstractController
     }
 
     #[Route('/{id}/refill', name: 'app_kit_refill', methods: ['POST'])]
-    public function refill(Request $request, MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
+    public function refill(MaterialUnit $unit): Response
     {
-        if (!$this->isCsrfTokenValid('kit_refill', $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF inválido.');
-        }
+        return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
+    }
+
+    #[Route('/{id}/refill/preview', name: 'app_kit_refill_preview', methods: ['GET'])]
+    public function refillPreview(MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
+    {
         $template = $unit->getTemplate();
-        $location = $unit->getKitLocation();
+        if (!$template) {
+            throw $this->createNotFoundException('Este botiquín no tiene una plantilla asignada.');
+        }
+
+        $kitLocation = $unit->getKitLocation();
         $centralWarehouse = $materialManager->getCentralWarehouse();
+
+        $proposals = [];
+        $shortages = [];
 
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
-            $targetQty = $item->getQuantity();
+            $idealQty = $item->getQuantity();
 
             $currentStock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
                 'material' => $material,
-                'location' => $location
+                'location' => $kitLocation
             ]);
-
             $currentQty = $currentStock ? $currentStock->getQuantity() : 0;
-            $diff = $targetQty - $currentQty;
 
-            if ($diff > 0) {
-                $materialManager->transfer(
-                    $material,
-                    $centralWarehouse,
-                    $location,
-                    $diff,
-                    'Reposición de botiquín ' . $unit->getAlias(),
-                    null
+            $needed = $idealQty - $currentQty;
+            if ($needed <= 0) continue;
+
+            // Find stock in Central Warehouse using FIFO
+            $availableInWarehouse = 0;
+            if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+                $batches = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->findBy(
+                    ['material' => $material],
+                    ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
                 );
+
+                $remainingNeeded = $needed;
+                foreach ($batches as $batch) {
+                    $stock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
+                        'material' => $material,
+                        'location' => $centralWarehouse,
+                        'batch' => $batch
+                    ]);
+
+                    if ($stock && $stock->getQuantity() > 0) {
+                        $take = min($remainingNeeded, $stock->getQuantity());
+                        $proposals[] = [
+                            'material' => $material,
+                            'quantity' => $take,
+                            'origin' => $centralWarehouse,
+                            'batch' => $batch,
+                            'unit' => null
+                        ];
+                        $remainingNeeded -= $take;
+                        $availableInWarehouse += $take;
+                        if ($remainingNeeded <= 0) break;
+                    }
+                }
+
+                if ($remainingNeeded > 0) {
+                    // Check non-batch stock in warehouse
+                    $stock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
+                        'material' => $material,
+                        'location' => $centralWarehouse,
+                        'batch' => null
+                    ]);
+                    if ($stock && $stock->getQuantity() > 0) {
+                        $take = min($remainingNeeded, $stock->getQuantity());
+                        $proposals[] = [
+                            'material' => $material,
+                            'quantity' => $take,
+                            'origin' => $centralWarehouse,
+                            'batch' => null,
+                            'unit' => null
+                        ];
+                        $remainingNeeded -= $take;
+                        $availableInWarehouse += $take;
+                    }
+                }
+
+                if ($remainingNeeded > 0) {
+                    $shortages[] = [
+                        'material' => $material,
+                        'needed' => $remainingNeeded,
+                        'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
+                    ];
+                }
+            } else {
+                // Technical Equipment - Move specific units
+                $units = $entityManager->getRepository(MaterialUnit::class)->findBy(
+                    ['material' => $material, 'location' => $centralWarehouse],
+                    ['lastUsedAt' => 'ASC'],
+                    $needed
+                );
+
+                foreach ($units as $u) {
+                    $proposals[] = [
+                        'material' => $material,
+                        'quantity' => 1,
+                        'origin' => $centralWarehouse,
+                        'batch' => null,
+                        'unit' => $u
+                    ];
+                }
+
+                if (count($units) < $needed) {
+                    $shortages[] = [
+                        'material' => $material,
+                        'needed' => $needed - count($units),
+                        'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
+                    ];
+                }
             }
         }
 
-        $this->addFlash('success', 'Botiquín repuesto según su plantilla.');
+        return $this->render('kit/refill_preview.html.twig', [
+            'unit' => $unit,
+            'proposals' => $proposals,
+            'shortages' => $shortages
+        ]);
+    }
+
+    #[Route('/{id}/refill/confirm', name: 'app_kit_refill_confirm', methods: ['POST'])]
+    public function refillConfirm(Request $request, MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('kit_refill_confirm', $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        $proposals = json_decode($request->request->get('proposals_data'), true);
+        $kitLocation = $unit->getKitLocation();
+
+        foreach ($proposals as $p) {
+            $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
+            $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
+            $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
+            $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
+
+            $materialManager->transfer(
+                $material,
+                $origin,
+                $kitLocation,
+                (int)$p['quantity'],
+                'Reposición de botiquín ' . $unit->getAlias(),
+                null,
+                'UNICA',
+                $unitToMove,
+                $batch
+            );
+        }
+
+        $this->addFlash('success', 'Botiquín repuesto correctamente.');
         return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
+    }
+
+    private function findAlternativeLocations(Material $material, Location $warehouse, Location $excludeKit, EntityManagerInterface $entityManager): array
+    {
+        $stocks = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+            ->where('ms.material = :material')
+            ->andWhere('ms.location != :warehouse')
+            ->andWhere('ms.location != :kit')
+            ->andWhere('ms.quantity > 0')
+            ->setParameter('material', $material)
+            ->setParameter('warehouse', $warehouse)
+            ->setParameter('kit', $excludeKit)
+            ->getQuery()
+            ->getResult();
+
+        $alternatives = [];
+        foreach ($stocks as $s) {
+            $alternatives[] = [
+                'location' => $s->getLocation()->getName(),
+                'quantity' => $s->getQuantity(),
+                'type' => $s->getLocation()->getType()
+            ];
+        }
+        return $alternatives;
     }
 }
