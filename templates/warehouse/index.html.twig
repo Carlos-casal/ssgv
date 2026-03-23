@@ -109,7 +109,11 @@
                                             <td class="fw-bold">{{ material.name }}</td>
                                             <td>
                                                 <span class="badge {{ material.isLowStock ? 'bg-danger' : 'bg-success' }}">
-                                                    {{ material.stock }}
+                                                    {% if material.nature == 'EQUIPO_TECNICO' %}
+                                                        {{ material.units|length }}
+                                                    {% else %}
+                                                        {{ material.stock }}
+                                                    {% endif %}
                                                 </span>
                                             </td>
                                             <td>

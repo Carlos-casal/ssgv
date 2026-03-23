@@ -1,6 +1,12 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.5] - 23-03-2026 (Versión Actual)
+## [1.7.6] - 23-03-2026 (Versión Actual)
+- **Logística:** Sincronización completa de stock por ubicación para equipos técnicos. Ahora aparecen correctamente desglosados en el panel de almacén.
+- **Trazabilidad:** Implementada lógica de de-duplicación al crear materiales. Si se intenta dar de alta un producto ya existente (mismo nombre/EAN), se reutiliza el registro maestro y se añaden las nuevas unidades al mismo.
+- **UX/UI:** Mejora visual en la detección de faltas de stock durante la reposición de botiquines.
+- **Corrección:** Solucionado problema de "Stock global" erróneo en el panel de almacén para materiales técnicos.
+
+## [1.7.5] - 23-03-2026
 - **Gestión:** Implementado nuevo sistema de reposición de botiquines con vista previa y confirmación.
 - **Logística:** Aplicación estricta de lógica FIFO (First-In-First-Out) seleccionando automáticamente los lotes más antiguos del almacén.
 - **Trazabilidad:** Los equipos técnicos ahora conservan su identidad, número de serie y alias al ser trasladados a botiquines.

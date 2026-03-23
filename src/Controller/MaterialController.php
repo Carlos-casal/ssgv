@@ -86,6 +86,26 @@ class MaterialController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            // DE-DUPLICATION LOGIC:
+            // Check if a material with the same name and barcode already exists
+            // This prevents creating a new master record if it's already in the database
+            $existingMaterial = null;
+            if ($material->getBarcode()) {
+                $existingMaterial = $entityManager->getRepository(Material::class)->findOneBy([
+                    'barcode' => $material->getBarcode()
+                ]);
+            }
+            if (!$existingMaterial) {
+                $existingMaterial = $entityManager->getRepository(Material::class)->findOneBy([
+                    'name' => $material->getName(),
+                    'category' => $material->getCategory()
+                ]);
+            }
+
+            if ($existingMaterial) {
+                $material = $existingMaterial;
+            }
+
             // Handle image upload
             $imageFile = $form->get('imageFile')->getData();
             if ($imageFile) {

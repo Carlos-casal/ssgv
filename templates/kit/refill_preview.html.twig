@@ -71,12 +71,18 @@
                                         </td>
                                     </tr>
                                 {% else %}
-                                    <tr>
-                                        <td colspan="4" class="text-center py-5">
-                                            <div class="text-green-500 mb-2"><i data-lucide="check-circle" class="w-8 h-8 mx-auto"></i></div>
-                                            <div class="font-black text-slate-400 uppercase tracking-tight">El botiquín ya está completo según su plantilla</div>
-                                        </td>
-                                    </tr>
+                                    {% if shortages|length == 0 %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5">
+                                                <div class="text-green-500 mb-2"><i data-lucide="check-circle" class="w-8 h-8 mx-auto"></i></div>
+                                                <div class="font-black text-slate-400 uppercase tracking-tight">El botiquín ya está completo según su plantilla</div>
+                                            </td>
+                                        </tr>
+                                    {% else %}
+                                        <tr>
+                                            <td colspan="4" class="text-center py-5 text-slate-400 italic">No hay transferencias posibles desde el almacén central para cubrir las faltas.</td>
+                                        </tr>
+                                    {% endif %}
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -99,15 +105,15 @@
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 border-start border-red-200" style="border-width: 0 0 0 4px !important;">
                 <div class="card-header bg-transparent py-3 border-bottom border-red-100">
-                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 m-0">Faltas de Stock (Almacén)</h5>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 m-0">Faltas de Stock (Almacén Central)</h5>
                 </div>
                 <div class="card-body p-4">
                     {% for s in shortages %}
                         <div class="mb-4 last:mb-0">
                             <div class="flex justify-between items-start mb-2">
                                 <div>
-                                    <div class="font-black text-slate-800 uppercase leading-none">{{ s.material.name }}</div>
-                                    <div class="text-[10px] text-red-400 font-bold mt-1">FALTAN {{ s.needed }} UNIDADES</div>
+                                    <div class="font-black text-slate-800 uppercase leading-none text-red-600">{{ s.material.name }}</div>
+                                    <div class="text-[11px] text-red-400 font-black mt-1">FALTAN {{ s.needed }} UNIDADES</div>
                                 </div>
                             </div>
 

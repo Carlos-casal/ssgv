@@ -144,29 +144,31 @@ class MaterialManager
     }
 
     /**
-     * Creates a new material unit and updates global stock.
+     * Creates a new material unit and updates global and local stock.
      */
     public function createUnit(Material $material, array $data, ?Location $location = null): MaterialUnit
     {
         $unit = new MaterialUnit();
         $unit->setMaterial($material);
         $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
-        $unit->setSerialNumber($data['serialNumber'] ?? null);
+        $unit->setSerialNumber($data['serial_number'] ?? $data['serialNumber'] ?? null);
         $unit->setAlias($data['alias'] ?? null);
-        $unit->setNetworkId($data['networkId'] ?? null);
-        $unit->setPhoneNumber($data['phoneNumber'] ?? null);
-        $unit->setPttStatus($data['pttStatus'] ?? 'OK');
-        $unit->setCoverStatus($data['coverStatus'] ?? 'OK');
-        $unit->setBatteryStatus($data['batteryStatus'] ?? '100%');
-        $unit->setLocation($location ?: $this->getCentralWarehouse());
+        $unit->setNetworkId($data['network_id'] ?? $data['networkId'] ?? null);
+        $unit->setPhoneNumber($data['phone_number'] ?? $data['phoneNumber'] ?? null);
+        $unit->setPttStatus($data['ptt_status'] ?? $data['pttStatus'] ?? 'OK');
+        $unit->setCoverStatus($data['cover_status'] ?? $data['coverStatus'] ?? 'OK');
+        $unit->setBatteryStatus($data['battery_status'] ?? $data['batteryStatus'] ?? '100%');
+
+        $finalLocation = $location ?: $this->getCentralWarehouse();
+        $unit->setLocation($finalLocation);
 
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
 
         $this->entityManager->persist($unit);
 
-        // Update global stock for technical equipment
-        $material->setStock($material->getStock() + 1);
+        // Synchronize stock for this unit in the location
+        $this->updateStockWithBatch($material, $finalLocation, 1, null, 'UNICA');
 
         return $unit;
     }
@@ -198,8 +200,12 @@ class MaterialManager
         $currentUser = $this->security->getUser();
 
         if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
+            if ($origin) {
+                $this->updateStockWithBatch($material, $origin, -$quantity, null, $size);
+            }
             if ($destination) {
                 $unit->setLocation($destination);
+                $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
             }
             $this->recordMovement($material, $quantity, $reason, $origin, $destination, $responsible, $size, $batch);
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
