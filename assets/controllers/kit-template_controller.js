@@ -12,8 +12,9 @@ export default class extends Controller {
             event.preventDefault();
         }
 
-        // Use the content of the template tag
-        const html = this.prototypeTarget.innerHTML.replace(/__index__/g, this.index);
+        const template = this.prototypeTarget;
+        // Use .innerHTML as it works for both <template> and normal tags in Stimulus
+        const html = template.innerHTML.replace(/__index__/g, this.index);
         this.containerTarget.insertAdjacentHTML('beforeend', html);
         this.index++;
 
