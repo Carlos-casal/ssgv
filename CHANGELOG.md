@@ -1,6 +1,11 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.3] - 22-03-2026 (Versión Actual)
+## [1.7.4] - 22-03-2026 (Versión Actual)
+- **Corrección:** Solucionado error `MappingException` (Class App\Service\MaterialBatch does not exist) al reponer botiquines.
+- **UX/UI:** Mejora en la visualización del inventario de botiquines; ahora muestra todos los productos de la plantilla (incluso sin stock) comparados con el stock real.
+- **Corrección:** Corregido error en el controlador de plantillas de botiquín que impedía añadir más de un producto en la creación inicial.
+
+## [1.7.3] - 22-03-2026
 - **UX/UI:** Rediseño completo de formularios de material y vehículos con diseño unificado de tarjetas.
 - **Formularios:** Implementación de "Bloque A" optimizado (Nombre y Código de Barras en la misma fila).
 - **Cálculos:** Agregación en tiempo real de lotes múltiples en el bloque de "Stock y Costes".
