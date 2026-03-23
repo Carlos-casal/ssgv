@@ -1,6 +1,13 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.4] - 22-03-2026 (Versión Actual)
+## [1.7.5] - 23-03-2026 (Versión Actual)
+- **Gestión:** Implementado nuevo sistema de reposición de botiquines con vista previa y confirmación.
+- **Logística:** Aplicación estricta de lógica FIFO (First-In-First-Out) seleccionando automáticamente los lotes más antiguos del almacén.
+- **Trazabilidad:** Los equipos técnicos ahora conservan su identidad, número de serie y alias al ser trasladados a botiquines.
+- **Inteligencia:** El sistema detecta automáticamente faltas de stock en el almacén central e informa de ubicaciones alternativas (otros vehículos o botiquines) donde encontrar el material.
+- **Corrección:** Robustecida la creación de botiquines para evitar fallos cuando no existe un material específico llamado "Botiquín".
+
+## [1.7.4] - 22-03-2026
 - **Corrección:** Solucionado error `MappingException` (Class App\Service\MaterialBatch does not exist) al reponer botiquines.
 - **UX/UI:** Mejora en la visualización del inventario de botiquines; ahora muestra todos los productos de la plantilla (incluso sin stock) comparados con el stock real.
 - **Corrección:** Corregido error en el controlador de plantillas de botiquín que impedía añadir más de un producto en la creación inicial.
