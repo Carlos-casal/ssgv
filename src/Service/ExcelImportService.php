@@ -354,46 +354,30 @@ class ExcelImportService
     }
 
     /**
-     * Finds a material by various unique identifiers, checking both the database and the current session cache.
+     * Finds a master material record.
+     * Prioritizes Barcode/EAN, then Name.
+     * Crucially: Serial Number is for identifying the UNIT, not the Material.
      */
     private function findExistingMaterial(?string $name, ?string $barcode, ?string $serialNumber, ?string $networkId): ?Material
     {
-        // Normalize variables to null if empty or explicitly 'S/N'
         $barcode = !empty(trim($barcode)) && trim($barcode) !== 'S/N' ? trim($barcode) : null;
-        $serialNumber = !empty(trim($serialNumber)) && trim($serialNumber) !== 'S/N' ? trim($serialNumber) : null;
-        $networkId = !empty(trim($networkId)) && trim($networkId) !== 'S/N' ? trim($networkId) : null;
         $name = !empty(trim($name)) ? trim($name) : null;
 
-        // 1. Try to find in session cache first (prevents duplicate creation of new items before flush)
+        // 1. Check cache first
         foreach ($this->materialCache as $m) {
-            // Priority: Barcode, SerialNumber, NetworkId (Technical ID)
             if ($barcode && $m->getBarcode() === $barcode) return $m;
-            if ($serialNumber && $m->getSerialNumber() === $serialNumber) return $m;
-            if ($networkId && $m->getNetworkId() === $networkId) return $m;
+            // Only by name if no barcode
+            if (!$barcode && $name && $m->getName() === $name) return $m;
         }
 
-        // Only match by Name if NO unique identifiers are provided in the Excel row
-        $hasUniqueId = $barcode || $serialNumber || $networkId;
-        if (!$hasUniqueId && $name) {
-            foreach ($this->materialCache as $m) {
-                if ($m->getName() === $name) return $m;
-            }
-        }
-
-        // 2. Try to find in database
+        // 2. Check DB
         $material = null;
         if ($barcode) {
             $material = $this->materialRepository->findOneBy(['barcode' => $barcode]);
         }
-        if (!$material && $serialNumber) {
-            $material = $this->materialRepository->findOneBy(['serialNumber' => $serialNumber]);
-        }
-        if (!$material && $networkId) {
-            $material = $this->materialRepository->findOneBy(['networkId' => $networkId]);
-        }
 
-        // Again, only by Name if no unique ID provided
-        if (!$material && !$hasUniqueId && $name) {
+        if (!$material && $name) {
+            // Find by name, but check category too if multiple products share a name
             $material = $this->materialRepository->findOneBy(['name' => $name]);
         }
 

@@ -18,7 +18,7 @@ class WarehouseController extends AbstractController
         VehicleRepository $vehicleRepository,
         LocationReviewRepository $reviewRepository
     ): Response {
-        $materials = $materialRepository->findAll();
+        $materials = $materialRepository->findBy([], ['id' => 'DESC']);
         $vehicles = $vehicleRepository->findAll();
         $recentReviews = $reviewRepository->findBy([], ['reviewDate' => 'DESC'], 5);
 

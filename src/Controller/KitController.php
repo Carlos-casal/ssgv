@@ -295,11 +295,21 @@ class KitController extends AbstractController
             $material = $item->getMaterial();
             $idealQty = $item->getQuantity();
 
-            $currentStock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
-                'material' => $material,
-                'location' => $kitLocation
-            ]);
-            $currentQty = $currentStock ? $currentStock->getQuantity() : 0;
+            // Calculate current stock in the kit correctly
+            $currentQty = 0;
+            if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+                $stocks = $entityManager->getRepository(MaterialStock::class)->findBy([
+                    'material' => $material,
+                    'location' => $kitLocation
+                ]);
+                foreach ($stocks as $s) $currentQty += $s->getQuantity();
+            } else {
+                // For Technical, count physical units assigned to this location
+                $currentQty = $entityManager->getRepository(MaterialUnit::class)->count([
+                    'material' => $material,
+                    'location' => $kitLocation
+                ]);
+            }
 
             $needed = $idealQty - $currentQty;
             if ($needed <= 0) continue;
