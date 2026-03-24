@@ -101,11 +101,19 @@ class MaterialController extends AbstractController
             ]);
         } else {
             // Requirement: "en el segundo despegable aparecerá todos los que están operativos incluyendo los que están en otro servicio pero este en rojo"
-            // We fetch ALL operational units and mark their availability individually
-            $allUnits = $entityManager->getRepository(\App\Entity\MaterialUnit::class)->findBy([
-                'material' => $material,
-                'operationalStatus' => 'OPERATIVO'
-            ]);
+            // We fetch ALL operational units and mark their availability individually.
+            // Requirement: "equipo técnico que no esté dentro de botiquines"
+            // We must filter out units that are currently located inside a KIT.
+            $qb = $entityManager->getRepository(\App\Entity\MaterialUnit::class)->createQueryBuilder('u')
+                ->leftJoin('u.location', 'l')
+                ->where('u.material = :material')
+                ->andWhere('u.operationalStatus = :status')
+                ->andWhere('l.type != :kitType OR l.type IS NULL')
+                ->setParameter('material', $material)
+                ->setParameter('status', 'OPERATIVO')
+                ->setParameter('kitType', \App\Entity\Location::TYPE_KIT);
+
+            $allUnits = $qb->getQuery()->getResult();
 
             $suggestedData = [];
             $totalAvailable = 0;
