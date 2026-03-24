@@ -79,7 +79,7 @@
                                 {% endfor %}
 
                                 {# Add technical unit counts #}
-                                {% for techUnit in unit.kitLocation.materialUnits %}
+                                {% for techUnit in unit.kitLocation.units %}
                                     {% if techUnit != unit %} {# Don't count the kit itself #}
                                         {% set materialId = techUnit.material.id %}
                                         {% set currentCount = locationQuantities[materialId] ?? 0 %}
@@ -131,7 +131,7 @@
                                             {% if stock.material.id == materialId %}{% set extraMaterial = stock.material %}{% endif %}
                                         {% endfor %}
                                         {% if not extraMaterial %}
-                                            {% for techUnit in unit.kitLocation.materialUnits %}
+                                            {% for techUnit in unit.kitLocation.units %}
                                                 {% if techUnit.material.id == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
                                             {% endfor %}
                                         {% endif %}
