@@ -1,6 +1,13 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.6] - 23-03-2026 (Versión Actual)
+## [1.7.7] - 23-03-2026 (Versión Actual)
+- **Gestión:** Corrección en el cálculo de "Stock Actual" en el inventario de botiquines; ahora suma correctamente todos los lotes y tallas.
+- **Logística:** Habilitada la edición manual en las propuestas de reposición. Los usuarios pueden ahora cambiar lotes, unidades técnicas y ajustar cantidades antes de confirmar traslados.
+- **Optimización:** Reducción drástica de consultas a base de datos (N+1) en los listados de botiquines y plantillas mediante carga ansiosa (Eager Loading).
+- **UX/UI:** Solucionado error que obligaba a pulsar dos veces para añadir productos a una plantilla.
+- **Backend:** Mejora en la precisión del cálculo de faltantes al reponer kits, agregando stock por material en lugar de por entrada individual.
+
+## [1.7.6] - 23-03-2026
 - **Logística:** Sincronización completa de stock por ubicación para equipos técnicos. Ahora aparecen correctamente desglosados en el panel de almacén.
 - **Trazabilidad:** Implementada lógica de de-duplicación al crear materiales. Si se intenta dar de alta un producto ya existente (mismo nombre/EAN), se reutiliza el registro maestro y se añaden las nuevas unidades al mismo.
 - **UX/UI:** Mejora visual en la detección de faltas de stock durante la reposición de botiquines.

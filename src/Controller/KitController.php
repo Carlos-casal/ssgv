@@ -23,7 +23,12 @@ class KitController extends AbstractController
     #[Route('/', name: 'app_kit_index', methods: ['GET'])]
     public function index(MaterialUnitRepository $unitRepository): Response
     {
+        // Eager load template and kitLocation to avoid N+1 queries in the list view
         $kits = $unitRepository->createQueryBuilder('u')
+            ->leftJoin('u.template', 't')
+            ->addSelect('t')
+            ->leftJoin('u.kitLocation', 'kl')
+            ->addSelect('kl')
             ->where('u.template IS NOT NULL')
             ->getQuery()
             ->getResult();
@@ -36,7 +41,12 @@ class KitController extends AbstractController
     #[Route('/templates', name: 'app_kit_template_index', methods: ['GET'])]
     public function templateIndex(KitTemplateRepository $templateRepository): Response
     {
-        $templates = $templateRepository->findAll();
+        // Eager load items to avoid N+1 queries when counting products in index
+        $templates = $templateRepository->createQueryBuilder('t')
+            ->leftJoin('t.items', 'i')
+            ->addSelect('i')
+            ->getQuery()
+            ->getResult();
 
         return $this->render('kit/template_index.html.twig', [
             'templates' => $templates,
