@@ -251,40 +251,72 @@
                     </div>
                 </div>
 
-                {# Contenedor para Lotes de Consumibles #}
-                <div id="batches-container" data-material-dynamic-form-target="batchesContainer">
-                </div>
-
-                {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (FALLBACK) #}
-                <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-danger text-uppercase">
-                            Seguridad y Trazabilidad
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <label class="form-label">Lote</label>
-                                {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input'}}) }}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Fecha de Caducidad</label>
-                                {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input'}}) }}
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label">Proveedor</label>
-                                {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
-                            </div>
-                        </div>
-                        <div class="d-none">{{ form_row(form.category) }}</div>
-                    </div>
-                </div>
-
-                {# Contenedor para Bloques Técnicos Dinámicos #}
-                <div id="technical-blocks-container" class="d-none" data-material-dynamic-form-target="technicalBlocksContainer">
-                </div>
             {% endif %}
+
+            {# Contenedores Comunes para Dinámica de Materiales #}
+            <div id="batches-container" data-material-dynamic-form-target="batchesContainer">
+            </div>
+
+            {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (OTROS) #}
+            <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #f6c23e !important;" data-material-dynamic-form-target="technicalBlock">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-warning text-uppercase">
+                        Bloque B: Seguridad y Trazabilidad (Otros)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Marca y Modelo</label>
+                            {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Número de Serie (S/N)</label>
+                            {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha de Compra</label>
+                            {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fin de Garantía</label>
+                            {{ form_widget(form.warrantyEndDate, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (FALLBACK) #}
+            <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
+                <div class="card-header bg-white py-3">
+                    <h6 class="m-0 font-weight-bold text-danger text-uppercase">
+                        Bloque B: Seguridad y Trazabilidad (Lote Único)
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label class="form-label">Lote</label>
+                            {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Fecha de Caducidad</label>
+                            {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Proveedor</label>
+                            {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
+                        </div>
+                    </div>
+                    <div class="d-none">{{ form_row(form.category) }}</div>
+                </div>
+            </div>
+
+            {# Contenedor para Bloques Técnicos Dinámicos #}
+            <div id="technical-blocks-container" class="d-none" data-material-dynamic-form-target="technicalBlocksContainer">
+            </div>
         </div>
 
         {# Columna Derecha (4) #}
