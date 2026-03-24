@@ -69,9 +69,22 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                {% set locationStocks = {} %}
+                                {% set locationQuantities = {} %}
+
+                                {# Aggregate consumable stock #}
                                 {% for stock in unit.kitLocation.stocks %}
-                                    {% set locationStocks = locationStocks|merge({(stock.material.id): stock}) %}
+                                    {% set materialId = stock.material.id %}
+                                    {% set currentCount = locationQuantities[materialId] ?? 0 %}
+                                    {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + stock.quantity}) %}
+                                {% endfor %}
+
+                                {# Add technical unit counts #}
+                                {% for techUnit in unit.kitLocation.materialUnits %}
+                                    {% if techUnit != unit %} {# Don't count the kit itself #}
+                                        {% set materialId = techUnit.material.id %}
+                                        {% set currentCount = locationQuantities[materialId] ?? 0 %}
+                                        {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + 1}) %}
+                                    {% endif %}
                                 {% endfor %}
 
                                 {% set displayedMaterialIds = [] %}
@@ -79,8 +92,7 @@
                                 {# First, items in the template #}
                                 {% for item in unit.template.items %}
                                     {% set displayedMaterialIds = displayedMaterialIds|merge([item.material.id]) %}
-                                    {% set stock = locationStocks[item.material.id] ?? null %}
-                                    {% set currentQty = stock ? stock.quantity : 0 %}
+                                    {% set currentQty = locationQuantities[item.material.id] ?? 0 %}
                                     <tr>
                                         <td class="ps-4">
                                             <div class="d-flex align-items-center">
@@ -111,39 +123,52 @@
                                 {% endfor %}
 
                                 {# Then, extra items in the location #}
-                                {% for stock in unit.kitLocation.stocks %}
-                                    {% if stock.material.id not in displayedMaterialIds %}
-                                        <tr class="bg-slate-50">
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center opacity-75">
-                                                    {% if stock.material.imagePath %}
-                                                        <img src="{{ asset('uploads/material/' ~ stock.material.imagePath) }}" class="rounded-2 me-3" style="width: 40px; height: 40px; object-fit: cover;">
-                                                    {% else %}
-                                                        <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
-                                                            <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
+                                {% for materialId, quantity in locationQuantities %}
+                                    {% if materialId not in displayedMaterialIds %}
+                                        {# Find a material object to get name and image #}
+                                        {% set extraMaterial = null %}
+                                        {% for stock in unit.kitLocation.stocks %}
+                                            {% if stock.material.id == materialId %}{% set extraMaterial = stock.material %}{% endif %}
+                                        {% endfor %}
+                                        {% if not extraMaterial %}
+                                            {% for techUnit in unit.kitLocation.materialUnits %}
+                                                {% if techUnit.material.id == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
+                                            {% endfor %}
+                                        {% endif %}
+
+                                        {% if extraMaterial %}
+                                            <tr class="bg-slate-50">
+                                                <td class="ps-4">
+                                                    <div class="d-flex align-items-center opacity-75">
+                                                        {% if extraMaterial.imagePath %}
+                                                            <img src="{{ asset('uploads/material/' ~ extraMaterial.imagePath) }}" class="rounded-2 me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                                                        {% else %}
+                                                            <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
+                                                                <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
+                                                            </div>
+                                                        {% endif %}
+                                                        <div>
+                                                            <div class="font-bold text-slate-800">{{ extraMaterial.name }} <small class="text-slate-400">(Extra)</small></div>
+                                                            <div class="text-[10px] text-slate-400 uppercase font-bold">{{ extraMaterial.category }}</div>
                                                         </div>
-                                                    {% endif %}
-                                                    <div>
-                                                        <div class="font-bold text-slate-800">{{ stock.material.name }} <small class="text-slate-400">(Extra)</small></div>
-                                                        <div class="text-[10px] text-slate-400 uppercase font-bold">{{ stock.material.category }}</div>
                                                     </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                {% set status = stock.material.expirationStatus %}
-                                                <span class="w-3 h-3 rounded-full inline-block bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500"></span>
-                                            </td>
-                                            <td class="text-end font-monospace">
-                                                {{ stock.quantity }}
-                                            </td>
-                                            <td class="text-end text-slate-400 font-monospace pe-4">
-                                                -
-                                            </td>
-                                        </tr>
+                                                </td>
+                                                <td class="text-center">
+                                                    {% set status = extraMaterial.expirationStatus %}
+                                                    <span class="w-3 h-3 rounded-full inline-block bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500"></span>
+                                                </td>
+                                                <td class="text-end font-monospace">
+                                                    {{ quantity }}
+                                                </td>
+                                                <td class="text-end text-slate-400 font-monospace pe-4">
+                                                    -
+                                                </td>
+                                            </tr>
+                                        {% endif %}
                                     {% endif %}
                                 {% endfor %}
 
-                                {% if unit.template.items|length == 0 and unit.kitLocation.stocks|length == 0 %}
+                                {% if unit.template.items|length == 0 and locationQuantities|length == 0 %}
                                     <tr>
                                         <td colspan="4" class="text-center py-5 text-slate-400 italic">Este botiquín está vacío y no tiene plantilla asignada.</td>
                                     </tr>

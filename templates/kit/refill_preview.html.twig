@@ -10,13 +10,15 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<div class="container-fluid px-4" data-controller="kit-refill" data-kit-refill-origin-id-value="{{ centralWarehouse.id }}">
     <div class="row g-4">
         <div class="col-lg-8">
             <div class="card border-0 shadow-sm rounded-3 mb-4">
                 <div class="card-header bg-white py-3 border-bottom border-slate-100 d-flex justify-content-between align-items-center">
                     <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 m-0">Transferencias Propuestas (FIFO)</h5>
-                    <span class="badge bg-blue-50 text-blue-600 font-black px-3 py-1 rounded-pill">{{ proposals|length }} MOVIMIENTOS</span>
+                    <button type="button" class="btn btn-outline-primary btn-sm" data-action="kit-refill#addRow">
+                         <i data-lucide="plus" class="w-3 h-3 inline"></i> AÑADIR MANUAL
+                    </button>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -24,102 +26,126 @@
                             <thead class="bg-slate-50">
                                 <tr>
                                     <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Material</th>
-                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0">Identificación (Lote/Serie)</th>
-                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0">Caducidad</th>
-                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4">Cantidad</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0">Lote / Unidad</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4" style="width: 150px;">Cantidad</th>
+                                    <th class="border-0" style="width: 50px;"></th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% set proposals_json = [] %}
+                            <tbody data-kit-refill-target="container">
                                 {% for p in proposals %}
-                                    {% set proposals_json = proposals_json|merge([{
-                                        'material_id': p.material.id,
-                                        'origin_id': p.origin.id,
-                                        'quantity': p.quantity,
-                                        'batch_id': p.batch ? p.batch.id : null,
-                                        'unit_id': p.unit ? p.unit.id : null
-                                    }]) %}
-                                    <tr>
+                                    <tr class="refill-row" data-material-id="{{ p.material.id }}" data-nature="{{ p.material.nature }}">
                                         <td class="ps-4">
                                             <div class="font-bold text-slate-800">{{ p.material.name }}</div>
                                             <div class="text-[9px] text-slate-400 uppercase font-black">{{ p.material.category }}</div>
+                                            <input type="hidden" class="material-id" value="{{ p.material.id }}">
                                         </td>
                                         <td>
-                                            {% if p.batch is defined and p.batch is not null %}
-                                                <span class="badge bg-slate-100 text-slate-600 font-mono">LOTE: {{ p.batch.batchNumber }}</span>
-                                            {% elseif p.unit is defined and p.unit is not null %}
-                                                <span class="badge bg-blue-50 text-blue-600 font-mono">S/N: {{ p.unit.serialNumber }}</span>
-                                                {% if p.unit.alias %}
-                                                    <div class="text-[10px] text-blue-400 font-bold mt-1">Alias: {{ p.unit.alias }}</div>
-                                                {% endif %}
-                                            {% else %}
-                                                <span class="text-slate-400 italic">Genérico (Sin lote)</span>
-                                            {% endif %}
+                                            <select class="form-select form-select-sm identifier-select" data-action="change->kit-refill#updateAvailable">
+                                                {% for opt in warehouseOptions[p.material.id] %}
+                                                    {% set selected = false %}
+                                                    {% if p.material.nature == 'CONSUMIBLE' %}
+                                                        {% if p.batch and p.batch.id == opt.id %}{% set selected = true %}{% elseif not p.batch and opt.id == 'NO_BATCH' %}{% set selected = true %}{% endif %}
+                                                    {% else %}
+                                                        {% if p.unit and p.unit.id == opt.id %}{% set selected = true %}{% endif %}
+                                                    {% endif %}
+                                                    <option value="{{ opt.id }}" data-available="{{ opt.available }}" {{ selected ? 'selected' : '' }}>
+                                                        {{ opt.label }} (Disp: {{ opt.available }})
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </td>
+                                        <td class="pe-4">
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" class="form-control text-end font-bold quantity-input"
+                                                       value="{{ p.quantity }}" min="1"
+                                                       data-action="input->kit-refill#validateQuantity"
+                                                       {{ p.material.nature == 'EQUIPO' ? 'readonly' : '' }}>
+                                                <span class="input-group-text bg-white">uds.</span>
+                                            </div>
                                         </td>
                                         <td>
-                                            {% set expDate = p.batch ? p.batch.expirationDate : (p.unit ? p.unit.material.expirationDate : null) %}
-                                            {% if expDate %}
-                                                <span class="text-xs font-bold {{ expDate < date() ? 'text-red-500' : 'text-slate-600' }}">
-                                                    {{ expDate|date('d/m/Y') }}
-                                                </span>
-                                            {% else %}
-                                                <span class="text-slate-300">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="text-end pe-4 font-monospace font-bold">
-                                            {{ p.quantity }}
+                                            <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-refill#removeRow">
+                                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                            </button>
                                         </td>
                                     </tr>
-                                {% else %}
-                                    {% if shortages|length == 0 %}
-                                        <tr>
-                                            <td colspan="4" class="text-center py-5">
-                                                <div class="text-green-500 mb-2"><i data-lucide="check-circle" class="w-8 h-8 mx-auto"></i></div>
-                                                <div class="font-black text-slate-400 uppercase tracking-tight">El botiquín ya está completo según su plantilla</div>
-                                            </td>
-                                        </tr>
-                                    {% else %}
-                                        <tr>
-                                            <td colspan="4" class="text-center py-5 text-slate-400 italic">No hay transferencias posibles desde el almacén central para cubrir las faltas.</td>
-                                        </tr>
-                                    {% endif %}
                                 {% endfor %}
+                                {% if proposals|length == 0 %}
+                                    <tr class="empty-row">
+                                        <td colspan="4" class="text-center py-5">
+                                            <div class="text-slate-400 italic">No hay propuestas automáticas.</div>
+                                        </td>
+                                    </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
                 </div>
-                {% if proposals|length > 0 %}
-                    <div class="card-footer bg-slate-50 p-4 border-top border-slate-100 d-flex justify-content-end">
-                        <form action="{{ path('app_kit_refill_confirm', {id: unit.id}) }}" method="POST">
-                            <input type="hidden" name="_token" value="{{ csrf_token('kit_refill_confirm') }}">
-                            <input type="hidden" name="proposals_data" value="{{ proposals_json|json_encode }}">
-                            <button type="submit" class="btn btn-primary px-5 font-black uppercase shadow-md">
-                                <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> CONFIRMAR Y TRASLADAR
-                            </button>
-                        </form>
-                    </div>
-                {% endif %}
+                <div class="card-footer bg-slate-50 p-4 border-top border-slate-100 d-flex justify-content-end">
+                    <form action="{{ path('app_kit_refill_confirm', {id: unit.id}) }}" method="POST" data-action="submit->kit-refill#submit">
+                        <input type="hidden" name="_token" value="{{ csrf_token('kit_refill_confirm') }}">
+                        <input type="hidden" name="proposals_data" id="proposals_data">
+                        <button type="submit" class="btn btn-primary px-5 font-black uppercase shadow-md">
+                            <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> CONFIRMAR Y TRASLADAR
+                        </button>
+                    </form>
+                </div>
             </div>
+
+            {# Hidden Template for adding rows #}
+            <template data-kit-refill-target="prototype">
+                <tr class="refill-row" data-material-id="__MAT_ID__" data-nature="__NATURE__">
+                    <td class="ps-4">
+                        <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
+                            <option value="" disabled selected>Selecciona Material...</option>
+                            {% for item in unit.template.items %}
+                                <option value="{{ item.material.id }}" data-nature="{{ item.material.nature }}">{{ item.material.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td class="identifier-container">
+                        <select class="form-select form-select-sm identifier-select" disabled>
+                            <option value="">Selecciona Lote/Unidad...</option>
+                        </select>
+                    </td>
+                    <td class="pe-4">
+                        <div class="input-group input-group-sm">
+                            <input type="number" class="form-control text-end font-bold quantity-input" value="1" min="1" data-action="input->kit-refill#validateQuantity">
+                            <span class="input-group-text bg-white">uds.</span>
+                        </div>
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-link text-red-400 p-0" data-action="click->kit-refill#removeRow">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                </tr>
+            </template>
         </div>
 
         <div class="col-lg-4">
+            {# Pass warehouse options to JS #}
+            <script id="warehouse-options-data" type="application/json">
+                {{ warehouseOptions|json_encode|raw }}
+            </script>
+
             <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 border-start border-red-200" style="border-width: 0 0 0 4px !important;">
                 <div class="card-header bg-transparent py-3 border-bottom border-red-100">
-                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 m-0">Faltas de Stock (Almacén Central)</h5>
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 m-0">Carencias (Vs Plantilla)</h5>
                 </div>
                 <div class="card-body p-4">
                     {% for s in shortages %}
                         <div class="mb-4 last:mb-0">
-                            <div class="flex justify-between items-start mb-2">
+                            <div class="flex justify-between items-start mb-1">
                                 <div>
                                     <div class="font-black text-slate-800 uppercase leading-none text-red-600">{{ s.material.name }}</div>
-                                    <div class="text-[11px] text-red-400 font-black mt-1">FALTAN {{ s.needed }} UNIDADES</div>
+                                    <div class="text-[10px] text-red-500 font-black mt-1 uppercase">Faltan {{ s.needed }} unidades</div>
                                 </div>
                             </div>
 
                             {% if s.alternatives %}
                                 <div class="bg-white rounded-lg p-2 border border-red-100 shadow-sm mt-2">
-                                    <div class="text-[9px] font-black text-slate-400 uppercase mb-2">DISPONIBLE EN OTRAS UBICACIONES:</div>
+                                    <div class="text-[9px] font-black text-slate-400 uppercase mb-2">En otras ubicaciones:</div>
                                     {% for alt in s.alternatives %}
                                         <div class="flex justify-between items-center text-xs mb-1 last:mb-0">
                                             <span class="text-slate-600"><i data-lucide="{{ alt.type == 'KIT' ? 'briefcase' : 'truck' }}" class="w-3 h-3 inline mr-1"></i> {{ alt.location }}</span>
@@ -127,14 +153,12 @@
                                         </div>
                                     {% endfor %}
                                 </div>
-                            {% else %}
-                                <div class="text-[9px] text-slate-400 italic">No hay stock disponible en ninguna otra ubicación.</div>
                             {% endif %}
                         </div>
                     {% else %}
                         <div class="text-center py-4">
                             <i data-lucide="check-circle" class="w-8 h-8 text-green-500 mx-auto mb-2"></i>
-                            <div class="text-xs font-bold text-slate-500 uppercase">Stock suficiente en almacén</div>
+                            <div class="text-xs font-bold text-slate-500 uppercase">Sin carencias críticas</div>
                         </div>
                     {% endfor %}
                 </div>
