@@ -404,7 +404,7 @@ export default class extends Controller {
         const isOther = nature === 'OTROS';
 
         if (this.hasTechnicalBlockTarget) {
-            this.technicalBlockTarget.classList.add('d-none');
+            this.technicalBlockTarget.classList.toggle('d-none', !isOther);
         }
 
         if (this.hasConsumableBlockTarget) {
@@ -437,7 +437,7 @@ export default class extends Controller {
             this.stockAndCostsBlockTarget.classList.remove('d-none');
 
             // Toggle specific fields that are redundant in multi-batch
-            const isMultiBatchActive = this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0;
+            const isMultiBatchActive = this.hasBatchesContainerTarget && this.batchesContainerTarget.children.length > 0 && (isConsumable || isOther);
             const redundantFields = this.stockAndCostsBlockTarget.querySelectorAll('[data-redundant-multi-batch="true"]');
             redundantFields.forEach(field => {
                 const isTotalField = field.dataset.materialDynamicFormTarget === 'numPackagesContainer' ||
