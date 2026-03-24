@@ -300,6 +300,7 @@ class KitController extends AbstractController
 
         $proposals = [];
         $shortages = [];
+        $warehouseOptions = []; // To store all available batches/units for each material
 
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
@@ -324,97 +325,96 @@ class KitController extends AbstractController
             $needed = $idealQty - $currentQty;
             if ($needed <= 0) continue;
 
-            // Find stock in Central Warehouse using FIFO
+            $options = [];
             $availableInWarehouse = 0;
+
             if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-                $batches = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->findBy(
-                    ['material' => $material],
-                    ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
-                );
+                $stocksInWarehouse = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+                    ->leftJoin('ms.batch', 'b')
+                    ->where('ms.material = :material')
+                    ->andWhere('ms.location = :location')
+                    ->andWhere('ms.quantity > 0')
+                    ->setParameter('material', $material)
+                    ->setParameter('location', $centralWarehouse)
+                    ->orderBy('b.expirationDate', 'ASC')
+                    ->addOrderBy('b.createdAt', 'ASC')
+                    ->getQuery()
+                    ->getResult();
 
+                foreach ($stocksInWarehouse as $stock) {
+                    $options[] = [
+                        'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
+                        'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
+                        'available' => $stock->getQuantity()
+                    ];
+                    $availableInWarehouse += $stock->getQuantity();
+                }
+
+                // Initial FIFO proposal based on options
                 $remainingNeeded = $needed;
-                foreach ($batches as $batch) {
-                    $stock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
+                foreach ($stocksInWarehouse as $stock) {
+                    if ($remainingNeeded <= 0) break;
+                    $take = min($remainingNeeded, $stock->getQuantity());
+                    $proposals[] = [
                         'material' => $material,
-                        'location' => $centralWarehouse,
-                        'batch' => $batch
-                    ]);
-
-                    if ($stock && $stock->getQuantity() > 0) {
-                        $take = min($remainingNeeded, $stock->getQuantity());
-                        $proposals[] = [
-                            'material' => $material,
-                            'quantity' => $take,
-                            'origin' => $centralWarehouse,
-                            'batch' => $batch,
-                            'unit' => null
-                        ];
-                        $remainingNeeded -= $take;
-                        $availableInWarehouse += $take;
-                        if ($remainingNeeded <= 0) break;
-                    }
+                        'quantity' => $take,
+                        'origin' => $centralWarehouse,
+                        'batch' => $stock->getBatch(),
+                        'unit' => null
+                    ];
+                    $remainingNeeded -= $take;
                 }
 
-                if ($remainingNeeded > 0) {
-                    // Check non-batch stock in warehouse
-                    $stock = $entityManager->getRepository(MaterialStock::class)->findOneBy([
-                        'material' => $material,
-                        'location' => $centralWarehouse,
-                        'batch' => null
-                    ]);
-                    if ($stock && $stock->getQuantity() > 0) {
-                        $take = min($remainingNeeded, $stock->getQuantity());
-                        $proposals[] = [
-                            'material' => $material,
-                            'quantity' => $take,
-                            'origin' => $centralWarehouse,
-                            'batch' => null,
-                            'unit' => null
-                        ];
-                        $remainingNeeded -= $take;
-                        $availableInWarehouse += $take;
-                    }
-                }
-
-                if ($remainingNeeded > 0) {
+                if ($needed > $availableInWarehouse) {
                     $shortages[] = [
                         'material' => $material,
-                        'needed' => $remainingNeeded,
+                        'needed' => $needed - $availableInWarehouse,
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
                     ];
                 }
             } else {
-                // Technical Equipment - Move specific units
-                $units = $entityManager->getRepository(MaterialUnit::class)->findBy(
-                    ['material' => $material, 'location' => $centralWarehouse],
-                    ['lastUsedAt' => 'ASC'],
-                    $needed
+                // Technical Equipment
+                $unitsInWarehouse = $entityManager->getRepository(MaterialUnit::class)->findBy(
+                    ['material' => $material, 'location' => $centralWarehouse]
                 );
 
-                foreach ($units as $u) {
+                foreach ($unitsInWarehouse as $u) {
+                    $options[] = [
+                        'id' => $u->getId(),
+                        'label' => 'S/N: ' . $u->getSerialNumber() . ($u->getAlias() ? ' (' . $u->getAlias() . ')' : ''),
+                        'available' => 1
+                    ];
+                    $availableInWarehouse += 1;
+                }
+
+                // Initial FIFO proposal
+                for ($i = 0; $i < min($needed, count($unitsInWarehouse)); $i++) {
                     $proposals[] = [
                         'material' => $material,
                         'quantity' => 1,
                         'origin' => $centralWarehouse,
                         'batch' => null,
-                        'unit' => $u
+                        'unit' => $unitsInWarehouse[$i]
                     ];
                 }
 
-                if (count($units) < $needed) {
+                if ($needed > $availableInWarehouse) {
                     $shortages[] = [
                         'material' => $material,
-                        'needed' => $needed - count($units),
+                        'needed' => $needed - $availableInWarehouse,
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
                     ];
                 }
             }
+            $warehouseOptions[$material->getId()] = $options;
         }
 
         return $this->render('kit/refill_preview.html.twig', [
             'unit' => $unit,
             'proposals' => $proposals,
-            'shortages' => $shortages
+            'shortages' => $shortages,
+            'warehouseOptions' => $warehouseOptions,
+            'centralWarehouse' => $centralWarehouse
         ]);
     }
 
