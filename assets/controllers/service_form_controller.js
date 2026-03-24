@@ -273,14 +273,20 @@ export default class extends Controller {
                 const optNature = option.dataset.nature;
 
                 let matches = false;
-                if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
-                    // Primary columns: match category AND must be Technical or Others (includes Kits)
+                if (category === 'Sanitario') {
+                    // "Sanitario" column: ONLY Kits (Nature: OTROS)
+                    matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
+                } else if (['Comunicaciones', 'Logística'].includes(category)) {
+                    // Technical columns: match category AND must be Technical or Others
                     matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
                 } else if (category === 'Otros') {
                     // "Otros" column: Catch-all for anything else
-                    const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                    // Includes consumables from all categories and technical equipment NOT in the main 3 columns
+                    const isInMainSanitario = (optCategory === 'Sanitario' && optNature === 'OTROS');
+                    const isInMainTechnical = ['Comunicaciones', 'Logística'].includes(optCategory) &&
                                              (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                    matches = !isTechnicalInMain;
+
+                    matches = !isInMainSanitario && !isInMainTechnical;
                 }
 
                 if (!matches) {
@@ -325,12 +331,15 @@ export default class extends Controller {
                     const optNature = option.dataset.nature;
 
                     let matches = false;
-                    if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
+                    if (category === 'Sanitario') {
+                        matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
+                    } else if (['Comunicaciones', 'Logística'].includes(category)) {
                         matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
                     } else if (category === 'Otros') {
-                        const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                        const isInMainSanitario = (optCategory === 'Sanitario' && optNature === 'OTROS');
+                        const isInMainTechnical = ['Comunicaciones', 'Logística'].includes(optCategory) &&
                                                  (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                        matches = !isTechnicalInMain;
+                        matches = !isInMainSanitario && !isInMainTechnical;
                     }
 
                     if (!matches) {
@@ -412,12 +421,15 @@ export default class extends Controller {
                 const optNature = option.dataset.nature;
 
                 let matches = false;
-                if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
+                if (category === 'Sanitario') {
+                    matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
+                } else if (['Comunicaciones', 'Logística'].includes(category)) {
                     matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
                 } else if (category === 'Otros') {
-                    const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                    const isInMainSanitario = (optCategory === 'Sanitario' && optNature === 'OTROS');
+                    const isInMainTechnical = ['Comunicaciones', 'Logística'].includes(optCategory) &&
                                              (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                    matches = !isTechnicalInMain;
+                    matches = !isInMainSanitario && !isInMainTechnical;
                 }
 
                 if (!matches) {
@@ -570,7 +582,7 @@ export default class extends Controller {
                     statusLabel.className = 'availability-status text-[10px] mt-1';
                 }
 
-                if (data.nature === 'EQUIPO_TECNICO' && data.suggestedUnits && unitSelector) {
+                if ((data.nature === 'EQUIPO_TECNICO' || data.nature === 'OTROS') && data.suggestedUnits && unitSelector) {
                     this.updateUnitSelector(unitSelector, data.suggestedUnits);
                 }
             } else {
