@@ -263,7 +263,7 @@ export default class extends Controller {
             quantityInput.value = 1;
         }
 
-        // Filter the material dropdown by category
+        // Filter the material dropdown by column/category
         const select = wrapper.querySelector('select');
         if (select) {
             Array.from(select.options).forEach(option => {
@@ -273,15 +273,14 @@ export default class extends Controller {
                 const optNature = option.dataset.nature;
 
                 let matches = false;
-                if (category === 'Otros') {
-                    // For Otros column, allow nature OTROS, or explicitly 'Otros' category, or no category
-                    matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
-                } else {
-                    matches = (optCategory === category);
-                    // Specific rule for Sanitario: only Technical Equipment and Others
-                    if (category === 'Sanitario') {
-                        matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                    }
+                if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
+                    // Primary columns: match category AND must be Technical or Others (includes Kits)
+                    matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                } else if (category === 'Otros') {
+                    // "Otros" column: Catch-all for anything else
+                    const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                                             (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                    matches = !isTechnicalInMain;
                 }
 
                 if (!matches) {
@@ -326,13 +325,12 @@ export default class extends Controller {
                     const optNature = option.dataset.nature;
 
                     let matches = false;
-                    if (category === 'Otros') {
-                        matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
-                    } else {
-                        matches = (optCategory === category);
-                        if (category === 'Sanitario') {
-                            matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                        }
+                    if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
+                        matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                    } else if (category === 'Otros') {
+                        const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                                                 (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                        matches = !isTechnicalInMain;
                     }
 
                     if (!matches) {
@@ -414,13 +412,12 @@ export default class extends Controller {
                 const optNature = option.dataset.nature;
 
                 let matches = false;
-                if (category === 'Otros') {
-                    matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
-                } else {
-                    matches = (optCategory === category);
-                    if (category === 'Sanitario') {
-                        matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                    }
+                if (['Sanitario', 'Comunicaciones', 'Logística'].includes(category)) {
+                    matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                } else if (category === 'Otros') {
+                    const isTechnicalInMain = ['Sanitario', 'Comunicaciones', 'Logística'].includes(optCategory) &&
+                                             (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                    matches = !isTechnicalInMain;
                 }
 
                 if (!matches) {
