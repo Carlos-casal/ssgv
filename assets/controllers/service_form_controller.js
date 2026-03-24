@@ -267,16 +267,24 @@ export default class extends Controller {
         const select = wrapper.querySelector('select');
         if (select) {
             Array.from(select.options).forEach(option => {
-                // If the option has a category and it doesn't match, remove it
-                const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+                if (!option.value) return;
 
-                // Specific rule for Sanitario: only Technical Equipment
-                let matchesNature = true;
-                if (category === 'Sanitario') {
-                    matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                const optCategory = option.dataset.category;
+                const optNature = option.dataset.nature;
+
+                let matches = false;
+                if (category === 'Otros') {
+                    // For Otros column, allow nature OTROS, or explicitly 'Otros' category, or no category
+                    matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
+                } else {
+                    matches = (optCategory === category);
+                    // Specific rule for Sanitario: only Technical Equipment and Others
+                    if (category === 'Sanitario') {
+                        matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                    }
                 }
 
-                if (option.value && (!matchesCategory || !matchesNature)) {
+                if (!matches) {
                     option.remove();
                 }
             });
@@ -312,22 +320,29 @@ export default class extends Controller {
             const selects = column.querySelectorAll('select.material-selector');
             selects.forEach(select => {
                 Array.from(select.options).forEach(option => {
-                    const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+                    if (!option.value) return;
 
-                    // Specific rule for Sanitario: only Technical Equipment
-                    let matchesNature = true;
-                    if (category === 'Sanitario') {
-                        matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                    const optCategory = option.dataset.category;
+                    const optNature = option.dataset.nature;
+
+                    let matches = false;
+                    if (category === 'Otros') {
+                        matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
+                    } else {
+                        matches = (optCategory === category);
+                        if (category === 'Sanitario') {
+                            matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                        }
                     }
 
-                    if (option.value && (!matchesCategory || !matchesNature)) {
+                    if (!matches) {
                         option.remove();
                     }
                 });
 
                 // Initial check for unit container visibility
                 const nature = select.options[select.selectedIndex]?.dataset.nature;
-                if (nature === 'EQUIPO_TECNICO') {
+                if (nature === 'EQUIPO_TECNICO' || nature === 'OTROS') {
                     select.closest('.material-item')?.querySelector('.unit-selection-container')?.classList.remove('hidden');
                 }
             });
@@ -393,15 +408,22 @@ export default class extends Controller {
         const select = wrapper.querySelector('select.material-selector');
         if (select) {
             Array.from(select.options).forEach(option => {
-                const matchesCategory = option.value && option.dataset.category && option.dataset.category === category;
+                if (!option.value) return;
 
-                // Specific rule for Sanitario: only Technical Equipment
-                let matchesNature = true;
-                if (category === 'Sanitario') {
-                    matchesNature = option.dataset.nature === 'EQUIPO_TECNICO';
+                const optCategory = option.dataset.category;
+                const optNature = option.dataset.nature;
+
+                let matches = false;
+                if (category === 'Otros') {
+                    matches = (optNature === 'OTROS') || (optCategory === 'Otros') || (!optCategory);
+                } else {
+                    matches = (optCategory === category);
+                    if (category === 'Sanitario') {
+                        matches = matches && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                    }
                 }
 
-                if (option.value && (!matchesCategory || !matchesNature)) {
+                if (!matches) {
                     option.remove();
                 }
             });
@@ -436,7 +458,7 @@ export default class extends Controller {
         const qtyInput = select.closest('.material-item')?.querySelector('.quantity-input');
         const qty = parseInt(qtyInput?.value || 0);
 
-        if (nature === 'EQUIPO_TECNICO') {
+        if (nature === 'EQUIPO_TECNICO' || nature === 'OTROS') {
             unitContainer?.classList.remove('hidden');
 
             // If selecting technical material and quantity is > 1, trigger split
