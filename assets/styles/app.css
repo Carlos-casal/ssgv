@@ -86,6 +86,12 @@ html, body {
     color: var(--text-primary) !important;
 }
 
+html.dark .form-select option,
+html.dark select option {
+    background-color: #1f2937 !important;
+    color: #FFFFFF !important;
+}
+
 .form-input[readonly] {
     opacity: 0.8;
 }

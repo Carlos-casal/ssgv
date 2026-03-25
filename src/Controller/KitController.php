@@ -335,6 +335,16 @@ class KitController extends AbstractController
 
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
+
+            // Exclude the kit container itself from refill proposals
+            if (
+                str_contains(strtolower($material->getName()), 'botiquín') ||
+                str_contains(strtolower($material->getName()), 'contenedor') ||
+                $material->getId() === $unit->getMaterial()->getId()
+            ) {
+                continue;
+            }
+
             $idealQty = $item->getQuantity();
 
             // Calculate current stock in the kit correctly
