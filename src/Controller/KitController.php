@@ -425,8 +425,14 @@ class KitController extends AbstractController
             throw $this->createAccessDeniedException('Token CSRF inválido.');
         }
 
-        $proposals = json_decode($request->request->get('proposals_data'), true);
+        $proposalsData = $request->request->get('proposals_data');
+        $proposals = $proposalsData ? json_decode($proposalsData, true) : [];
         $kitLocation = $unit->getKitLocation();
+
+        if (empty($proposals)) {
+            $this->addFlash('warning', 'No se han recibido datos de la propuesta.');
+            return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
+        }
 
         foreach ($proposals as $p) {
             $material = $entityManager->getRepository(Material::class)->find($p['material_id']);

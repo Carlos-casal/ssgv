@@ -39,19 +39,9 @@ class WhatsAppMessageGenerator
     {
         $message = [];
 
-        // Helper for date formatting
-        $dateFormatter = new \IntlDateFormatter(
-            'es_ES',
-            \IntlDateFormatter::FULL,
-            \IntlDateFormatter::NONE,
-            null,
-            null,
-            'EEEE d \'de\' MMMM'
-        );
-
         // Header
         if ($service->getStartDate()) {
-            $message[] = "*" . $dateFormatter->format($service->getStartDate()) . "*";
+            $message[] = "*" . $this->formatSpanishDate($service->getStartDate()) . "*";
         }
         $message[] = "*" . $service->getTitle() . "*";
         $message[] = ""; // Newline
@@ -155,5 +145,28 @@ class WhatsAppMessageGenerator
 
 
         return implode("\n", $message);
+    }
+
+    /**
+     * Formats a date in Spanish (e.g., "martes 24 de marzo") without depending on the Intl extension locale support,
+     * which might be missing or limited in some environments (like the sandbox polyfill).
+     */
+    private function formatSpanishDate(\DateTimeInterface $date): string
+    {
+        $days = [
+            'Sunday' => 'domingo', 'Monday' => 'lunes', 'Tuesday' => 'martes',
+            'Wednesday' => 'miércoles', 'Thursday' => 'jueves', 'Friday' => 'viernes', 'Saturday' => 'sábado'
+        ];
+        $months = [
+            'January' => 'enero', 'February' => 'febrero', 'March' => 'marzo', 'April' => 'abril',
+            'May' => 'mayo', 'June' => 'junio', 'July' => 'julio', 'August' => 'agosto',
+            'September' => 'septiembre', 'October' => 'octubre', 'November' => 'noviembre', 'December' => 'diciembre'
+        ];
+
+        $dayName = $days[$date->format('l')];
+        $dayNum = $date->format('j');
+        $monthName = $months[$date->format('F')];
+
+        return sprintf('%s %d de %s', $dayName, $dayNum, $monthName);
     }
 }
