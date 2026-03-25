@@ -42,6 +42,32 @@ class MaterialController extends AbstractController
         ], Response::HTTP_CREATED);
     }
 
+    #[Route('/kits/list', name: 'api_kits_list', methods: ['GET'])]
+    public function kitsList(EntityManagerInterface $entityManager): Response
+    {
+        $kits = $entityManager->getRepository(\App\Entity\MaterialUnit::class)->createQueryBuilder('u')
+            ->leftJoin('u.material', 'm')
+            ->leftJoin('u.template', 't')
+            ->where('u.template IS NOT NULL')
+            ->andWhere('u.operationalStatus = :status')
+            ->setParameter('status', 'OPERATIVO')
+            ->getQuery()
+            ->getResult();
+
+        $data = [];
+        foreach ($kits as $kit) {
+            $data[] = [
+                'id' => $kit->getId(),
+                'alias' => $kit->getAlias(),
+                'serialNumber' => $kit->getSerialNumber(),
+                'materialId' => $kit->getMaterial()->getId(),
+                'materialName' => $kit->getMaterial()->getName(),
+                'templateName' => $kit->getTemplate()->getName()
+            ];
+        }
+        return $this->json($data);
+    }
+
     #[Route('/list', name: 'api_material_list', methods: ['GET'])]
     public function list(EntityManagerInterface $entityManager): Response
     {

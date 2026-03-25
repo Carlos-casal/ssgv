@@ -36,9 +36,12 @@ export default class extends Controller {
         "estimatedPeopleInput"
     ];
 
-    connect() {
+    async connect() {
         console.log("Service Form Controller: Connecting...");
         try {
+            this.kits = [];
+            await this.fetchKits();
+
             if (this.hasModalTarget) {
                 this.setupAttendanceModal();
             }
@@ -244,6 +247,17 @@ export default class extends Controller {
         }
     }
 
+    async fetchKits() {
+        try {
+            const response = await fetch('/api/material/kits/list');
+            if (response.ok) {
+                this.kits = await response.json();
+            }
+        } catch (error) {
+            console.error('Error fetching kits:', error);
+        }
+    }
+
     // Materials Logic
     addMaterial(event) {
         const category = event.currentTarget.dataset.category;
@@ -266,17 +280,29 @@ export default class extends Controller {
         // Filter the material dropdown by column/category
         const select = wrapper.querySelector('select');
         if (select) {
-            Array.from(select.options).forEach(option => {
-                if (!option.value) return;
+            if (category === 'Sanitario') {
+                // Populate Sanitario with physical kits
+                select.innerHTML = '<option value="">Selecciona un botiquín</option>';
+                this.kits.forEach(kit => {
+                    const label = `${kit.alias || 'Sin Alias'} [${kit.serialNumber || 'S/N'}] (${kit.templateName})`;
+                    const option = new Option(label, kit.materialId);
+                    option.dataset.category = 'Sanitario';
+                    option.dataset.nature = 'OTROS';
+                    option.dataset.unitId = kit.id;
+                    select.appendChild(option);
+                });
+            } else {
+                Array.from(select.options).forEach(option => {
+                    if (!option.value) return;
 
-                const optCategory = option.dataset.category;
-                const optNature = option.dataset.nature;
+                    const optCategory = option.dataset.category;
+                    const optNature = option.dataset.nature;
 
-                let matches = false;
-                if (category === 'Sanitario') {
-                    // "Sanitario" column: ONLY Kits (Nature: OTROS)
-                    matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
-                } else if (['Comunicaciones', 'Logística'].includes(category)) {
+                    let matches = false;
+                    if (category === 'Sanitario') {
+                        // "Sanitario" column: ONLY Kits (Nature: OTROS)
+                        matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
+                    } else if (['Comunicaciones', 'Logística'].includes(category)) {
                     // Technical columns: match category AND must be Technical or Others
                     matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
                 } else if (category === 'Otros') {
@@ -324,30 +350,52 @@ export default class extends Controller {
             const category = column.dataset.materialCategory;
             const selects = column.querySelectorAll('select.material-selector');
             selects.forEach(select => {
-                Array.from(select.options).forEach(option => {
-                    if (!option.value) return;
+                if (category === 'Sanitario') {
+                    // Special handling for Sanitario kits on existing items
+                    const currentValue = select.value;
+                    const unitSelector = select.closest('.material-item')?.querySelector('.unit-selector');
+                    const currentUnitId = unitSelector?.value;
 
-                    const optCategory = option.dataset.category;
-                    const optNature = option.dataset.nature;
+                    select.innerHTML = '<option value="">Selecciona un botiquín</option>';
+                    this.kits.forEach(kit => {
+                        const label = `${kit.alias || 'Sin Alias'} [${kit.serialNumber || 'S/N'}] (${kit.templateName})`;
+                        const isSelected = (kit.materialId == currentValue && kit.id == currentUnitId);
+                        const option = new Option(label, kit.materialId, isSelected, isSelected);
+                        option.dataset.category = 'Sanitario';
+                        option.dataset.nature = 'OTROS';
+                        option.dataset.unitId = kit.id;
+                        select.appendChild(option);
+                    });
 
-                    let matches = false;
-                    if (category === 'Sanitario') {
-                        // User request: "me tiene que mostrar todos los Botiquines"
-                        // This corresponds to Nature: OTROS in Sanitario category.
-                        matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
-                    } else if (['Comunicaciones', 'Logística'].includes(category)) {
-                        matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                    } else if (category === 'Otros') {
-                        const isInMainSanitario = (optCategory === 'Sanitario' && optNature === 'OTROS');
-                        const isInMainTechnical = ['Comunicaciones', 'Logística'].includes(optCategory) &&
-                                                 (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
-                        matches = !isInMainSanitario && !isInMainTechnical;
+                    if (currentUnitId) {
+                        select.closest('.material-item')?.querySelector('.unit-selection-container')?.classList.add('hidden');
                     }
+                } else {
+                    Array.from(select.options).forEach(option => {
+                        if (!option.value) return;
 
-                    if (!matches) {
-                        option.remove();
-                    }
-                });
+                        const optCategory = option.dataset.category;
+                        const optNature = option.dataset.nature;
+
+                        let matches = false;
+                        if (category === 'Sanitario') {
+                            // User request: "me tiene que mostrar todos los Botiquines"
+                            // This corresponds to Nature: OTROS in Sanitario category.
+                            matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
+                        } else if (['Comunicaciones', 'Logística'].includes(category)) {
+                            matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                        } else if (category === 'Otros') {
+                            const isInMainSanitario = (optCategory === 'Sanitario' && optNature === 'OTROS');
+                            const isInMainTechnical = ['Comunicaciones', 'Logística'].includes(optCategory) &&
+                                                     (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
+                            matches = !isInMainSanitario && !isInMainTechnical;
+                        }
+
+                        if (!matches) {
+                            option.remove();
+                        }
+                    });
+                }
 
                 // Initial check for unit container visibility
                 const nature = select.options[select.selectedIndex]?.dataset.nature;
@@ -464,12 +512,19 @@ export default class extends Controller {
 
     onMaterialSelectChange(event) {
         const select = event.currentTarget;
-        const nature = select.options[select.selectedIndex]?.dataset.nature;
+        const selectedOption = select.options[select.selectedIndex];
+        const nature = selectedOption?.dataset.nature;
+        const unitId = selectedOption?.dataset.unitId;
         const unitContainer = select.closest('.material-item')?.querySelector('.unit-selection-container');
+        const unitSelector = select.closest('.material-item')?.querySelector('.unit-selector');
         const qtyInput = select.closest('.material-item')?.querySelector('.quantity-input');
         const qty = parseInt(qtyInput?.value || 0);
 
-        if (nature === 'EQUIPO_TECNICO' || nature === 'OTROS') {
+        if (unitId && unitSelector) {
+            // Auto-select the physical unit for kits
+            unitSelector.innerHTML = `<option value="${unitId}" selected>${selectedOption.text}</option>`;
+            unitContainer?.classList.add('hidden');
+        } else if (nature === 'EQUIPO_TECNICO' || nature === 'OTROS') {
             unitContainer?.classList.remove('hidden');
 
             // If selecting technical material and quantity is > 1, trigger split
