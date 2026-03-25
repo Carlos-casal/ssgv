@@ -49,7 +49,7 @@
                     <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Información de Ubicación</h5>
                 </div>
                 <div class="card-body p-4">
-                    <p class="text-sm mb-2"><strong class="text-slate-600">Nombre Ubicación:</strong><br> {{ unit.kitLocation.name }}</p>
+                    <p class="text-sm mb-2"><strong class="text-slate-600">Nombre Ubicación:</strong><br> {{ unit.kitLocation ? unit.kitLocation.name : 'N/A' }}</p>
                     <p class="text-sm mb-0"><strong class="text-slate-600">Tipo:</strong><br> Móvil (Kit)</p>
                 </div>
             </div>
@@ -88,21 +88,23 @@
                             <tbody>
                                 {% set locationQuantities = {} %}
 
-                                {# Aggregate consumable stock #}
-                                {% for stock in unit.kitLocation.stocks %}
-                                    {% set materialId = stock.material.id %}
-                                    {% set currentCount = locationQuantities[materialId] ?? 0 %}
-                                    {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + stock.quantity}) %}
-                                {% endfor %}
-
-                                {# Add technical unit counts #}
-                                {% for techUnit in unit.kitLocation.units %}
-                                    {% if techUnit != unit %} {# Don't count the kit itself #}
-                                        {% set materialId = techUnit.material.id %}
+                                {% if unit.kitLocation %}
+                                    {# Aggregate consumable stock #}
+                                    {% for stock in unit.kitLocation.stocks %}
+                                        {% set materialId = stock.material.id %}
                                         {% set currentCount = locationQuantities[materialId] ?? 0 %}
-                                        {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + 1}) %}
-                                    {% endif %}
-                                {% endfor %}
+                                        {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + stock.quantity}) %}
+                                    {% endfor %}
+
+                                    {# Add technical unit counts #}
+                                    {% for techUnit in unit.kitLocation.units %}
+                                        {% if techUnit != unit %} {# Don't count the kit itself #}
+                                            {% set materialId = techUnit.material.id %}
+                                            {% set currentCount = locationQuantities[materialId] ?? 0 %}
+                                            {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + 1}) %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endif %}
 
                                 {% set displayedMaterialIds = [] %}
 

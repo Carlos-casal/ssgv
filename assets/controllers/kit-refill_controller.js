@@ -51,7 +51,12 @@ export default class extends Controller {
             html += `<option value="">No hay stock en almacén</option>`;
         } else {
             options.forEach(opt => {
-                html += `<option value="${opt.id}" data-available="${opt.available}">${opt.label} (Disp: ${opt.available})</option>`;
+            const style = opt.busy ? 'style="color: red !important; font-weight: bold;"' : '';
+            const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
+            const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
+            const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ' (OCUPADO)' : '');
+
+            html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
             });
         }
         html += `</select>`;
@@ -68,7 +73,23 @@ export default class extends Controller {
 
     updateAvailable(event) {
         const select = event.currentTarget;
+        const selectedOption = select.options[select.selectedIndex];
         const row = select.closest('.refill-row');
+
+        // Requirement: Warning if an occupied unit is selected
+        if (row.dataset.nature === 'EQUIPO' && selectedOption.dataset.busy === 'true') {
+            const kitName = selectedOption.dataset.locationName || 'otro botiquín';
+            if (!confirm(`ADVERTENCIA: Esta unidad está actualmente asignada a "${kitName}". Si confirmas, se retirará de su ubicación actual para incorporarla a este botiquín. ¿Deseas continuar?`)) {
+                // Revert to the first available option
+                for (let i = 0; i < select.options.length; i++) {
+                    if (select.options[i].dataset.busy !== 'true') {
+                        select.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
         this.validateQuantity({ target: row.querySelector('.quantity-input') });
     }
 

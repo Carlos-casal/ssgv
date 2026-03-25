@@ -338,10 +338,10 @@ export default class extends Controller {
                     option.remove();
                 }
             });
+            }
         }
-    }
 
-    const column = container.querySelector(`[data-material-category="${category}"]`);
+        const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
         }
@@ -1266,6 +1266,7 @@ export default class extends Controller {
     }
 
     handleMainFormSubmit(event) {
+        console.log("handleMainFormSubmit triggered");
         if (!event.currentTarget.checkValidity()) {
             event.preventDefault();
             this.validateForm(event.currentTarget);
@@ -1275,6 +1276,13 @@ export default class extends Controller {
             if (firstError) {
                 firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
+        }
+    }
+
+    submitForm(event) {
+        console.log("submitForm manual triggered");
+        if (this.hasFormTarget) {
+            this.formTarget.requestSubmit();
         }
     }
 

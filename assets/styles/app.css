@@ -58,11 +58,11 @@ html, body {
     background-color: var(--bg-main) !important;
 }
 
-.text-gray-800, .text-gray-900, .text-slate-900 {
+.text-gray-800, .text-gray-900, .text-slate-800, .text-slate-900 {
     color: var(--text-primary) !important;
 }
 
-.text-muted, .text-gray-500, .text-slate-500 {
+.text-muted, .text-gray-400, .text-gray-500, .text-slate-400, .text-slate-500, .text-gray-600, .text-gray-700, .text-slate-600, .text-slate-700 {
     color: var(--text-secondary) !important;
 }
 
