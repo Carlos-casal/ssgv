@@ -26,11 +26,14 @@
                         </div>
                         <div class="mb-3">
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Tipo de Contenedor</label>
-                            <select name="container_type" class="form-select form-select-sm" required>
-                                <option value="Mochila" {{ template.containerType == 'Mochila' ? 'selected' : '' }}>Mochila</option>
-                                <option value="Bolsa" {{ template.containerType == 'Bolsa' ? 'selected' : '' }}>Bolsa</option>
-                                <option value="Riñonera" {{ template.containerType == 'Riñonera' ? 'selected' : '' }}>Riñonera</option>
-                            </select>
+                            <input type="text" name="container_type" class="form-control form-control-sm font-bold" list="container-types" placeholder="Ej: Mochila, Maletín..." value="{{ template.containerType }}" required>
+                            <datalist id="container-types">
+                                <option value="Mochila">
+                                <option value="Bolsa">
+                                <option value="Riñonera">
+                                <option value="Maletín">
+                                <option value="Caja">
+                            </datalist>
                         </div>
                         <div>
                             <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Descripción / Notas</label>
@@ -62,10 +65,10 @@
                                     {% for item in template.items %}
                                         <tr class="kit-item-row">
                                             <td class="ps-4">
-                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm material-select" required>
+                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm material-select" data-action="change->kit-template#filterOptions" required>
                                                     <option value="" disabled>Selecciona material...</option>
                                                     {% for material in materials %}
-                                                        <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }} (Stock: {{ material.stock }})</option>
+                                                        <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }}</option>
                                                     {% endfor %}
                                                 </select>
                                             </td>
@@ -88,10 +91,10 @@
                         <template data-kit-template-target="prototype">
                             <tr class="kit-item-row">
                                 <td class="ps-4">
-                                    <select name="items[__index__][material]" class="form-select form-select-sm material-select" required>
+                                    <select name="items[__index__][material]" class="form-select form-select-sm material-select" data-action="change->kit-template#filterOptions" required>
                                         <option value="" disabled selected>Selecciona material...</option>
                                         {% for material in materials %}
-                                            <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>
+                                            <option value="{{ material.id }}">{{ material.name }}</option>
                                         {% endfor %}
                                     </select>
                                 </td>

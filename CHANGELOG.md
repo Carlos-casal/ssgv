@@ -1,6 +1,12 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.7.7] - 23-03-2026 (Versión Actual)
+## [1.8.0] - 24-03-2026 (Versión Actual)
+- **Gestión de Plantillas:** Implementada la funcionalidad para eliminar plantillas de botiquines existentes con confirmación de seguridad.
+- **UX/UI:** Rediseño del selector de "Tipo de Contenedor" en plantillas; ahora permite texto libre con sugerencias (datalist) en lugar de una lista cerrada.
+- **UX/UI:** Optimización de los desplegables de materiales en la edición de plantillas; ahora solo muestran el nombre comercial del producto para una interfaz más limpia.
+- **Inteligencia de Formulario:** Implementado filtrado dinámico en tiempo real en la edición de plantillas. Al seleccionar un material en una fila, este desaparece automáticamente de las opciones de las demás filas para evitar duplicados accidentales.
+
+## [1.7.7] - 23-03-2026
 - **Gestión:** Corrección en el cálculo de "Stock Actual" en el inventario de botiquines; ahora suma correctamente todos los lotes y tallas.
 - **Logística:** Habilitada la edición manual en las propuestas de reposición. Los usuarios pueden ahora cambiar lotes, unidades técnicas y ajustar cantidades antes de confirmar traslados.
 - **Optimización:** Reducción drástica de consultas a base de datos (N+1) en los listados de botiquines y plantillas mediante carga ansiosa (Eager Loading).
