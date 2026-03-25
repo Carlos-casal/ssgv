@@ -211,26 +211,35 @@ class KitController extends AbstractController
             if (!$this->isCsrfTokenValid('kit_new', $request->request->get('_token'))) {
                 throw $this->createAccessDeniedException('Token CSRF inválido.');
             }
-            $templateId = $request->request->get('template_id');
-            $alias = $request->request->get('alias');
-            $serialNumber = $request->request->get('serial_number');
 
-            $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
-            if (!$template) {
-                throw $this->createNotFoundException('Plantilla no encontrada.');
-            }
-
-            // Instead of persisting now, we show a confirmation/preview screen
-            // with all the products that WILL be added.
-            return $this->render('kit/new_preview.html.twig', [
-                'template' => $template,
-                'alias' => $alias,
-                'serial_number' => $serialNumber
+            return $this->redirectToRoute('app_kit_new_preview', [
+                'template_id' => $request->request->get('template_id'),
+                'alias' => $request->request->get('alias'),
+                'serial_number' => $request->request->get('serial_number'),
             ]);
         }
 
         return $this->render('kit/new.html.twig', [
             'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
+        ]);
+    }
+
+    #[Route('/new/preview', name: 'app_kit_new_preview', methods: ['GET'])]
+    public function newPreview(Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $templateId = $request->query->get('template_id');
+        $alias = $request->query->get('alias');
+        $serialNumber = $request->query->get('serial_number');
+
+        $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
+        if (!$template) {
+            throw $this->createNotFoundException('Plantilla no encontrada.');
+        }
+
+        return $this->render('kit/new_preview.html.twig', [
+            'template' => $template,
+            'alias' => $alias,
+            'serial_number' => $serialNumber
         ]);
     }
 
