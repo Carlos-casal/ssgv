@@ -320,8 +320,9 @@ export default class extends Controller {
                 }
             });
         }
+    }
 
-        const column = container.querySelector(`[data-material-category="${category}"]`);
+    const column = container.querySelector(`[data-material-category="${category}"]`);
         if (column) {
             column.appendChild(wrapper.firstChild);
         }

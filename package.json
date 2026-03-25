@@ -19,11 +19,11 @@
     "@symfony/stimulus-bridge": "^4.0.1",
     "@symfony/ux-turbo": "^2.31.0",
     "bootstrap": "^5.3.8",
-    "lucide": "^0.562.0",
-    "lucide-react": "^0.344.0",
+    "lucide": "^1.6.0",
+    "lucide-react": "^1.6.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "tinymce": "^8.2.1"
+    "tinymce": "^8.3.2"
   },
   "devDependencies": {
     "@babel/core": "^7.28.6",
