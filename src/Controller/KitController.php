@@ -205,7 +205,7 @@ class KitController extends AbstractController
     }
 
     #[Route('/new', name: 'app_kit_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('kit_new', $request->request->get('_token'))) {
@@ -215,55 +215,83 @@ class KitController extends AbstractController
             $alias = $request->request->get('alias');
             $serialNumber = $request->request->get('serial_number');
 
-            // Fix for unique constraint violation on empty string in serial_number
-            if (empty($serialNumber)) {
-                $serialNumber = null;
-            }
-
             $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
-
-            // 1. Create the physical unit (The kit container itself)
-            $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
-            if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
-            }
-            if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
-            }
-            if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy([]);
+            if (!$template) {
+                throw $this->createNotFoundException('Plantilla no encontrada.');
             }
 
-            if (!$material) {
-                throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
-            }
-
-            $unit = new MaterialUnit();
-            $unit->setMaterial($material);
-            $unit->setAlias($alias);
-            $unit->setSerialNumber($serialNumber);
-            $unit->setTemplate($template);
-            $unit->setOperationalStatus('OPERATIVO');
-
-            // 2. Create the mobile location
-            $location = new Location();
-            $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
-            $location->setType(Location::TYPE_KIT);
-            $location->setMaterialUnit($unit);
-            $unit->setKitLocation($location);
-
-            $entityManager->persist($unit);
-            $entityManager->persist($location);
-            $entityManager->flush();
-
-            // Redirect to refill preview for initial load
-            $this->addFlash('info', 'Botiquín creado. Procede a realizar la carga inicial.');
-            return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
+            // Instead of persisting now, we show a confirmation/preview screen
+            // with all the products that WILL be added.
+            return $this->render('kit/new_preview.html.twig', [
+                'template' => $template,
+                'alias' => $alias,
+                'serial_number' => $serialNumber
+            ]);
         }
 
         return $this->render('kit/new.html.twig', [
             'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
         ]);
+    }
+
+    #[Route('/create-confirm', name: 'app_kit_create_confirm', methods: ['POST'])]
+    public function createConfirm(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
+    {
+        if (!$this->isCsrfTokenValid('kit_create_confirm', $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        $templateId = $request->request->get('template_id');
+        $alias = $request->request->get('alias');
+        $serialNumber = $request->request->get('serial_number');
+
+        if (empty($serialNumber)) {
+            $serialNumber = null;
+        }
+
+        $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
+        if (!$template) {
+            throw $this->createNotFoundException('Plantilla no encontrada.');
+        }
+
+        // 1. Create the physical unit
+        $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
+        if (!$material) {
+            $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
+        }
+        if (!$material) {
+            $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
+        }
+        if (!$material) {
+            $material = $entityManager->getRepository(Material::class)->findOneBy([]);
+        }
+
+        if (!$material) {
+            throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
+        }
+
+        $unit = new MaterialUnit();
+        $unit->setMaterial($material);
+        $unit->setAlias($alias);
+        $unit->setSerialNumber($serialNumber);
+        $unit->setTemplate($template);
+        $unit->setOperationalStatus('OPERATIVO');
+
+        // 2. Create the mobile location
+        $location = new Location();
+        $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
+        $location->setType(Location::TYPE_KIT);
+        $location->setMaterialUnit($unit);
+        $unit->setKitLocation($location);
+
+        $entityManager->persist($unit);
+        $entityManager->persist($location);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Botiquín "' . ($alias ?: 'Sin Alias') . '" registrado correctamente.');
+
+        // Go to the final refill preview to actually load the materials
+        return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
     }
 
     #[Route('/{id}/inventory', name: 'app_kit_inventory', methods: ['GET'])]
@@ -470,6 +498,33 @@ class KitController extends AbstractController
             'warehouseOptions' => $warehouseOptions,
             'centralWarehouse' => $centralWarehouse
         ]);
+    }
+
+    #[Route('/{id}/delete', name: 'app_kit_delete', methods: ['POST'])]
+    public function deleteKit(Request $request, MaterialUnit $unit, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('delete_kit_' . $unit->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        // If the kit has a specific location, we might want to handle its stock first.
+        // For now, if we delete the kit, we delete its mobile location (cascade will handle units/stocks inside it if configured,
+        // but here we might want to move them back to central if they are not empty?
+        // User just asked to delete the kit from the list.)
+
+        $location = $unit->getKitLocation();
+        if ($location) {
+            // Check if there is stock inside. If so, we might prevent deletion or move it.
+            // Simplified: just remove the unit and its associated location.
+            $entityManager->remove($location);
+        }
+
+        $entityManager->remove($unit);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Botiquín eliminado correctamente.');
+
+        return $this->redirectToRoute('app_kit_index');
     }
 
     #[Route('/{id}/refill/confirm', name: 'app_kit_refill_confirm', methods: ['POST'])]

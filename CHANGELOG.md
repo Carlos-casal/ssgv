@@ -1,6 +1,14 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.8.0] - 24-03-2026 (Versión Actual)
+## [1.8.5] - 25-03-2026 (Versión Actual)
+- **Logística (Botiquines):** Implementada la funcionalidad para eliminar botiquines físicos directamente desde el listado general en `/kits` con confirmación de seguridad.
+- **Logística (Botiquines):** Corregido error de "Creación Anticipada"; los botiquines ahora solo se registran en la base de datos tras una confirmación explícita en una nueva vista previa.
+- **UX/UI:** Implementada una vista previa detallada antes del registro del kit, asegurando que todos los productos de la plantilla coincidan fielmente con el inventario futuro.
+- **Correcciones:** Solucionado el problema de visibilidad de productos en la carga inicial que omitía elementos de la plantilla en ciertos flujos.
+- **UX/UI (FIFO):** Corregido el contraste de los desplegables de lote/unidad en modo oscuro para garantizar legibilidad.
+- **Lógica (Reposición):** Los botiquines y contenedores han sido excluidos automáticamente de las propuestas de reposición y de la lista de materiales manuales para evitar transferencias de contenedores dentro de otros contenedores.
+
+## [1.8.0] - 24-03-2026
 - **Gestión de Plantillas:** Implementada la funcionalidad para eliminar plantillas de botiquines existentes con confirmación de seguridad.
 - **UX/UI:** Rediseño del selector de "Tipo de Contenedor" en plantillas; ahora permite texto libre con sugerencias (datalist) en lugar de una lista cerrada.
 - **UX/UI:** Optimización de los desplegables de materiales en la edición de plantillas; ahora solo muestran el nombre comercial del producto para una interfaz más limpia.
