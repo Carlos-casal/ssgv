@@ -378,19 +378,32 @@ class KitController extends AbstractController
                     ];
                 }
             } else {
-                // Technical Equipment
-                $unitsInWarehouse = $entityManager->getRepository(MaterialUnit::class)->findBy(
-                    ['material' => $material, 'location' => $centralWarehouse]
-                );
+                // Technical Equipment - Get ALL units but identify those in other kits
+                $allUnits = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
+                    ->leftJoin('u.location', 'l')
+                    ->where('u.material = :material')
+                    ->andWhere('u.operationalStatus = :status')
+                    ->setParameter('material', $material)
+                    ->setParameter('status', 'OPERATIVO')
+                    ->getQuery()
+                    ->getResult();
 
-                foreach ($unitsInWarehouse as $u) {
+                foreach ($allUnits as $u) {
+                    $isBusy = ($u->getLocation() && $u->getLocation()->getType() === Location::TYPE_KIT && $u->getLocation() !== $kitLocation);
                     $options[] = [
                         'id' => $u->getId(),
-                        'label' => 'S/N: ' . $u->getSerialNumber() . ($u->getAlias() ? ' (' . $u->getAlias() . ')' : ''),
-                        'available' => 1
+                        'label' => $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId()),
+                        'available' => 1,
+                        'busy' => $isBusy,
+                        'locationName' => $u->getLocation() ? $u->getLocation()->getName() : null
                     ];
-                    $availableInWarehouse += 1;
+                    if ($u->getLocation() === $centralWarehouse) {
+                        $availableInWarehouse += 1;
+                    }
                 }
+
+                $unitsInWarehouse = array_filter($allUnits, fn($u) => $u->getLocation() === $centralWarehouse);
+                $unitsInWarehouse = array_values($unitsInWarehouse);
 
                 // Initial FIFO proposal
                 for ($i = 0; $i < min($needed, count($unitsInWarehouse)); $i++) {
@@ -441,9 +454,14 @@ class KitController extends AbstractController
 
         foreach ($proposals as $p) {
             $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
-            $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
             $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
             $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
+
+            // Determine origin dynamically if it was moved in the UI (occupied units)
+            $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
+            if ($unitToMove && $unitToMove->getLocation()) {
+                $origin = $unitToMove->getLocation();
+            }
 
             $materialManager->transfer(
                 $material,

@@ -48,8 +48,13 @@
                                                     {% else %}
                                                         {% if p.unit and p.unit.id == opt.id %}{% set selected = true %}{% endif %}
                                                     {% endif %}
-                                                    <option value="{{ opt.id }}" data-available="{{ opt.available }}" {{ selected ? 'selected' : '' }}>
-                                                        {{ opt.label }} (Disp: {{ opt.available }})
+                                                    <option value="{{ opt.id }}"
+                                                            data-available="{{ opt.available }}"
+                                                            data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
+                                                            data-location-name="{{ opt.locationName|default('') }}"
+                                                            style="{{ opt.busy|default(false) ? 'color: red !important; font-weight: bold;' : '' }}"
+                                                            {{ selected ? 'selected' : '' }}>
+                                                        {{ opt.label }} {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% elseif opt.busy|default(false) %} (OCUPADO){% endif %}
                                                     </option>
                                                 {% endfor %}
                                             </select>

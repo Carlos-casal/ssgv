@@ -68,7 +68,7 @@
             <a href="{{ path('app_service_show', {id: service.id}) }}" class="btn btn-outline-secondary btn-sm px-3">
                 <i data-lucide="x" class="w-4 h-4 inline mr-1"></i> Cancelar
             </a>
-            <button type="submit" form="edit-service-form-element" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
+            <button type="button" data-action="click->service-form#submitForm" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
                 <i data-lucide="save" class="w-4 h-4 inline mr-1"></i> GUARDAR CAMBIOS
             </button>
         </div>
