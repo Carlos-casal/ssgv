@@ -45,12 +45,15 @@
                             <a href="{{ path('app_kit_template_edit', {'id': template.id}) }}" class="btn btn-outline-secondary btn-sm rounded-pill font-bold">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5 inline mr-1"></i> EDITAR PLANTILLA
                             </a>
-                            <form action="{{ path('app_kit_template_delete', {'id': template.id}) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar esta plantilla? Esta acción no se puede deshacer.');">
-                                <input type="hidden" name="_token" value="{{ csrf_token('delete_template_' ~ template.id) }}">
-                                <button type="submit" class="btn btn-link text-red-500 text-xs font-bold uppercase tracking-widest p-0">
-                                    <i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i> ELIMINAR
-                                </button>
-                            </form>
+                            <button type="button"
+                                    class="btn btn-link text-red-500 text-xs font-bold uppercase tracking-widest p-0"
+                                    data-bs-toggle="modal"
+                                    data-bs-target="#deleteTemplateModal"
+                                    data-template-id="{{ template.id }}"
+                                    data-template-name="{{ template.name }}"
+                                    data-template-token="{{ csrf_token('delete_template_' ~ template.id) }}">
+                                <i data-lucide="trash-2" class="w-3 h-3 inline mr-1"></i> ELIMINAR
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -67,4 +70,50 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Delete Template Modal -->
+<div class="modal fade" id="deleteTemplateModal" tabindex="-1" aria-labelledby="deleteTemplateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-white border-0 pt-4 px-4 pb-2">
+                <div class="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mb-0">
+                    <i data-lucide="alert-triangle" class="w-6 h-6 text-red-600"></i>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body px-4 pb-4">
+                <h4 class="font-black text-slate-800 mb-2 uppercase tracking-tight" id="deleteTemplateModalLabel">¿Eliminar plantilla?</h4>
+                <p class="text-slate-500 text-sm mb-0">Estás a punto de eliminar la plantilla <span id="modalTemplateName" class="font-bold text-slate-800"></span>. Esta acción no se puede deshacer y los botiquines que usen esta plantilla se quedarán sin configuración.</p>
+            </div>
+            <div class="modal-footer bg-slate-50 border-0 p-4 d-flex gap-2">
+                <button type="button" class="btn btn-light px-4 font-bold uppercase text-xs tracking-widest" data-bs-dismiss="modal">CANCELAR</button>
+                <form id="deleteTemplateForm" method="POST" action="">
+                    <input type="hidden" name="_token" id="deleteTemplateToken" value="">
+                    <button type="submit" class="btn btn-danger px-4 font-black uppercase text-xs tracking-widest shadow-sm">ELIMINAR DEFINITIVAMENTE</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteModal = document.getElementById('deleteTemplateModal');
+    if (deleteModal) {
+        deleteModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const templateId = button.getAttribute('data-template-id');
+            const templateName = button.getAttribute('data-template-name');
+
+            const modalTemplateName = deleteModal.querySelector('#modalTemplateName');
+            const deleteForm = deleteModal.querySelector('#deleteTemplateForm');
+            const tokenInput = deleteModal.querySelector('#deleteTemplateToken');
+
+            modalTemplateName.textContent = templateName;
+            deleteForm.action = '/kits/templates/' + templateId + '/delete';
+            tokenInput.value = button.getAttribute('data-template-token');
+        });
+    }
+});
+</script>
 {% endblock %}
