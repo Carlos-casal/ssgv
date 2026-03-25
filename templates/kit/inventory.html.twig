@@ -15,8 +15,11 @@
                     <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i> REPONER
                 </button>
             </form>
-            <a href="{{ path('app_kit_consume', {id: unit.id}) }}" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
+            <a href="{{ path('app_kit_consume', {id: unit.id}) }}" class="btn btn-outline-danger btn-sm px-4 font-bold">
                 <i data-lucide="minus-circle" class="w-4 h-4 inline mr-1"></i> REGISTRAR CONSUMO
+            </a>
+            <a href="{{ path('app_kit_refill_preview', {id: unit.id}) }}" class="btn btn-primary btn-sm px-4 shadow-sm font-bold">
+                <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1"></i> AÑADIR PRODUCTO EXTRA
             </a>
         </div>
     </div>
@@ -53,9 +56,23 @@
         </div>
 
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+            <div class="card border-0 shadow-sm rounded-3 mb-4">
+                <div class="card-header bg-white py-3 border-bottom border-slate-100 d-flex justify-content-between align-items-center">
                     <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Contenido Actual (Stock Real)</h5>
+                    <div class="flex items-center gap-4">
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase">Correcto</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-yellow-500"></span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase">Próxima Cad.</span>
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                            <span class="text-[9px] font-black text-slate-400 uppercase">Caducado</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body p-0">
                     <div class="table-responsive">
@@ -63,8 +80,8 @@
                             <thead class="bg-slate-50">
                                 <tr>
                                     <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Producto</th>
-                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-center">Estado</th>
-                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end">Stock Actual</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-center">Estado Cad.</th>
+                                    <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end" title="Cantidad física presente en este botiquín">Stock Actual</th>
                                     <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4">Ideal (Plantilla)</th>
                                 </tr>
                             </thead>
