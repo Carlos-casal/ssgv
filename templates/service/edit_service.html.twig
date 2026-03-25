@@ -282,8 +282,8 @@
                                          data-index="{{ form.serviceMaterials|length }}"
                                          data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
 
-                                        {% for category in ['Sanitario', 'Comunicaciones', 'Logística'] %}
-                                        <div class="col-md-4">
+                                        {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Otros'] %}
+                                        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
                                             <div class="d-flex justify-content-between align-items-center mb-2 px-1">
                                                 <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
                                                 <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">

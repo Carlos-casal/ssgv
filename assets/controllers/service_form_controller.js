@@ -332,6 +332,8 @@ export default class extends Controller {
 
                     let matches = false;
                     if (category === 'Sanitario') {
+                        // User request: "me tiene que mostrar todos los Botiquines"
+                        // This corresponds to Nature: OTROS in Sanitario category.
                         matches = (optCategory === 'Sanitario') && (optNature === 'OTROS');
                     } else if (['Comunicaciones', 'Logística'].includes(category)) {
                         matches = (optCategory === category) && (optNature === 'EQUIPO_TECNICO' || optNature === 'OTROS');
