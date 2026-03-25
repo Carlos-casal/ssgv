@@ -62,7 +62,7 @@
                                     {% for item in template.items %}
                                         <tr class="kit-item-row">
                                             <td class="ps-4">
-                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm" required>
+                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm material-select" required>
                                                     <option value="" disabled>Selecciona material...</option>
                                                     {% for material in materials %}
                                                         <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }} (Stock: {{ material.stock }})</option>
@@ -88,7 +88,7 @@
                         <template data-kit-template-target="prototype">
                             <tr class="kit-item-row">
                                 <td class="ps-4">
-                                    <select name="items[__index__][material]" class="form-select form-select-sm" required>
+                                    <select name="items[__index__][material]" class="form-select form-select-sm material-select" required>
                                         <option value="" disabled selected>Selecciona material...</option>
                                         {% for material in materials %}
                                             <option value="{{ material.id }}">{{ material.name }} (Stock: {{ material.stock }})</option>

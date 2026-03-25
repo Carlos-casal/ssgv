@@ -1,0 +1,105 @@
+{% extends 'layout/app.html.twig' %}
+
+{% block title %}Registrar Consumo: {{ unit.alias ?: unit.serialNumber }}{% endblock %}
+
+{% block page_title %}
+    <div class="d-flex align-items-center w-100">
+        <i data-lucide="minus-circle" class="w-6 h-6 text-red-600 mr-2"></i>
+        <span class="font-black tracking-tight uppercase">REGISTRAR CONSUMO DE BOTIQUÍN</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <form method="POST">
+                <input type="hidden" name="_token" value="{{ csrf_token('kit_consume') }}">
+                <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+                    <div class="card-header bg-white py-3 border-bottom border-slate-100">
+                        <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Seleccionar Cantidades Consumidas</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle mb-0">
+                                <thead class="bg-slate-50">
+                                    <tr>
+                                        <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Producto</th>
+                                        <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-center">Stock Kit</th>
+                                        <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4" style="width: 200px;">Consumo</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% set locationQuantities = {} %}
+                                    {% for stock in unit.kitLocation.stocks %}
+                                        {% set materialId = stock.material.id %}
+                                        {% set currentCount = locationQuantities[materialId] ?? 0 %}
+                                        {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + stock.quantity}) %}
+                                    {% endfor %}
+
+                                    {% for materialId, qty in locationQuantities %}
+                                        {% set material = null %}
+                                        {% for stock in unit.kitLocation.stocks %}
+                                            {% if stock.material.id == materialId %}{% set material = stock.material %}{% endif %}
+                                        {% endfor %}
+
+                                        {% if material and material.nature == 'CONSUMIBLE' %}
+                                            <tr>
+                                                <td class="ps-4">
+                                                    <div class="font-bold text-slate-800">{{ material.name }}</div>
+                                                    <div class="text-[9px] text-slate-400 uppercase font-black">{{ material.category }}</div>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-slate-100 text-slate-600 font-monospace">{{ qty }}</span>
+                                                </td>
+                                                <td class="pe-4">
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" name="consumption[{{ material.id }}]" class="form-control text-end font-bold" value="0" min="0" max="{{ qty }}">
+                                                        <span class="input-group-text bg-white">uds.</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+
+                                    {% if locationQuantities|length == 0 %}
+                                        <tr>
+                                            <td colspan="3" class="text-center py-5 text-slate-400 italic">No hay productos consumibles en este botiquín.</td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-slate-50 p-4 border-top border-slate-100 d-flex justify-content-end gap-2">
+                        <a href="{{ path('app_kit_inventory', {id: unit.id}) }}" class="btn btn-light px-4 font-bold">CANCELAR</a>
+                        <button type="submit" class="btn btn-danger px-5 font-black uppercase shadow-sm">
+                            <i data-lucide="check" class="w-4 h-4 inline mr-1"></i> REGISTRAR CONSUMO
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm rounded-3">
+                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Botiquín Origen</h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="bg-blue-50 w-12 h-12 rounded-full flex items-center justify-center me-3">
+                            <i data-lucide="briefcase" class="w-6 h-6 text-blue-600"></i>
+                        </div>
+                        <div>
+                            <h6 class="font-bold text-slate-800 mb-0">{{ unit.alias ?: 'Sin Alias' }}</h6>
+                            <p class="text-xs text-slate-400 mb-0">SN: {{ unit.serialNumber ?: 'N/A' }}</p>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-500 mb-0">El stock descontado se registrará como un ajuste negativo en la ubicación <strong>{{ unit.kitLocation.name }}</strong>.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -189,6 +189,11 @@ class KitController extends AbstractController
             $alias = $request->request->get('alias');
             $serialNumber = $request->request->get('serial_number');
 
+            // Fix for unique constraint violation on empty string in serial_number
+            if (empty($serialNumber)) {
+                $serialNumber = null;
+            }
+
             $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
 
             // 1. Create the physical unit (The kit container itself)
