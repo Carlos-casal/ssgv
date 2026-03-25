@@ -104,7 +104,10 @@
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
                             {% for item in unit.template.items %}
-                                <option value="{{ item.material.id }}" data-nature="{{ item.material.nature }}">{{ item.material.name }}</option>
+                                {# Exclude kit container from manual addition #}
+                                {% if 'botiquín' not in item.material.name|lower and 'contenedor' not in item.material.name|lower and item.material.id != unit.material.id %}
+                                    <option value="{{ item.material.id }}" data-nature="{{ item.material.nature }}">{{ item.material.name }}</option>
+                                {% endif %}
                             {% endfor %}
                         </select>
                     </td>
