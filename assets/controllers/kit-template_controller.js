@@ -39,7 +39,8 @@ export default class extends Controller {
     }
 
     filterOptions() {
-        const selects = this.containerTarget.querySelectorAll('.material-select');
+        // Find all selects with material-select class
+        const selects = document.querySelectorAll('.material-select');
         const selectedValues = Array.from(selects)
             .map(select => select.value)
             .filter(value => value !== "" && value !== null);
