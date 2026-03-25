@@ -116,14 +116,15 @@ class MaterialController extends AbstractController
         }
 
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $available = $materialManager->hasEnoughStock($material, $quantity);
+            $availableStock = $materialManager->getAvailableStock($material);
+            $available = $availableStock >= $quantity;
             return $this->json([
                 'available' => $available,
-                'stock' => $material->getStock(),
-                'totalAvailable' => $material->getStock(),
+                'stock' => $availableStock,
+                'totalAvailable' => $availableStock,
                 'suggestedUnits' => [],
                 'nature' => 'CONSUMIBLE',
-                'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles: ' . $material->getStock() . ')'
+                'message' => $available ? 'OK' : 'Stock insuficiente (Disponibles fuera de kits: ' . $availableStock . ')'
             ]);
         } else {
             // Requirement: "en el segundo despegable aparecerá todos los que están operativos incluyendo los que están en otro servicio pero este en rojo"

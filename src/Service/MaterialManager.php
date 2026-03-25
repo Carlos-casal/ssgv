@@ -321,6 +321,31 @@ class MaterialManager
     }
 
     /**
+     * Returns total stock available for a consumable, excluding items in KITS.
+     */
+    public function getAvailableStock(Material $material, ?string $size = null): int
+    {
+        if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
+            return 0;
+        }
+
+        $qb = $this->stockRepository->createQueryBuilder('ms')
+            ->select('SUM(ms.quantity)')
+            ->join('ms.location', 'l')
+            ->where('ms.material = :material')
+            ->andWhere('l.type != :kitType')
+            ->setParameter('material', $material)
+            ->setParameter('kitType', Location::TYPE_KIT);
+
+        if ($size) {
+            $qb->andWhere('ms.size = :size')
+                ->setParameter('size', $size);
+        }
+
+        return (int) $qb->getQuery()->getSingleScalarResult();
+    }
+
+    /**
      * Checks if a consumable has enough stock.
      */
     public function hasEnoughStock(Material $material, int $requestedQuantity, ?string $size = null, ?Location $location = null): bool

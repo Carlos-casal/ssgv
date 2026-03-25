@@ -281,16 +281,35 @@ export default class extends Controller {
         const select = wrapper.querySelector('select');
         if (select) {
             if (category === 'Sanitario') {
-                // Populate Sanitario with physical kits
-                select.innerHTML = '<option value="">Selecciona un botiquín</option>';
+                // Populate Sanitario with both kits AND other materials
+                const originalOptions = Array.from(select.options);
+                select.innerHTML = '<option value="">Selecciona botiquín o material</option>';
+
+                // 1. Add Kits Group
+                const kitGroup = document.createElement('optgroup');
+                kitGroup.label = "📦 BOTIQUINES REGISTRADOS";
                 this.kits.forEach(kit => {
                     const label = `${kit.alias || 'Sin Alias'} [${kit.serialNumber || 'S/N'}] (${kit.templateName})`;
                     const option = new Option(label, kit.materialId);
                     option.dataset.category = 'Sanitario';
                     option.dataset.nature = 'OTROS';
                     option.dataset.unitId = kit.id;
-                    select.appendChild(option);
+                    kitGroup.appendChild(option);
                 });
+                select.appendChild(kitGroup);
+
+                // 2. Add Other Materials Group (anything that is NOT a physical kit)
+                const materialGroup = document.createElement('optgroup');
+                materialGroup.label = "🚑 OTROS MATERIALES SANITARIOS";
+                originalOptions.forEach(option => {
+                    if (!option.value) return;
+                    if (option.dataset.category === 'Sanitario' && option.dataset.nature !== 'OTROS') {
+                        materialGroup.appendChild(option.cloneNode(true));
+                    }
+                });
+                if (materialGroup.children.length > 0) {
+                    select.appendChild(materialGroup);
+                }
             } else {
                 Array.from(select.options).forEach(option => {
                     if (!option.value) return;
@@ -352,12 +371,16 @@ export default class extends Controller {
             const selects = column.querySelectorAll('select.material-selector');
             selects.forEach(select => {
                 if (category === 'Sanitario') {
-                    // Special handling for Sanitario kits on existing items
+                    // Inclusive filtering for Sanitario (Kits + Materials)
                     const currentValue = select.value;
                     const unitSelector = select.closest('.material-item')?.querySelector('.unit-selector');
                     const currentUnitId = unitSelector?.value;
+                    const originalOptions = Array.from(select.options);
 
-                    select.innerHTML = '<option value="">Selecciona un botiquín</option>';
+                    select.innerHTML = '<option value="">Selecciona botiquín o material</option>';
+
+                    const kitGroup = document.createElement('optgroup');
+                    kitGroup.label = "📦 BOTIQUINES REGISTRADOS";
                     this.kits.forEach(kit => {
                         const label = `${kit.alias || 'Sin Alias'} [${kit.serialNumber || 'S/N'}] (${kit.templateName})`;
                         const isSelected = (kit.materialId == currentValue && kit.id == currentUnitId);
@@ -365,8 +388,25 @@ export default class extends Controller {
                         option.dataset.category = 'Sanitario';
                         option.dataset.nature = 'OTROS';
                         option.dataset.unitId = kit.id;
-                        select.appendChild(option);
+                        kitGroup.appendChild(option);
                     });
+                    select.appendChild(kitGroup);
+
+                    const materialGroup = document.createElement('optgroup');
+                    materialGroup.label = "🚑 OTROS MATERIALES SANITARIOS";
+                    originalOptions.forEach(option => {
+                        if (!option.value) return;
+                        // Avoid adding duplicates of the actual kit container material if it's generic
+                        if (option.dataset.category === 'Sanitario' && option.dataset.nature !== 'OTROS') {
+                            const isSelected = (option.value == currentValue && !currentUnitId);
+                            const clone = option.cloneNode(true);
+                            if (isSelected) clone.selected = true;
+                            materialGroup.appendChild(clone);
+                        }
+                    });
+                    if (materialGroup.children.length > 0) {
+                        select.appendChild(materialGroup);
+                    }
 
                     if (currentUnitId) {
                         select.closest('.material-item')?.querySelector('.unit-selection-container')?.classList.add('hidden');
