@@ -102,14 +102,19 @@ class KitController extends AbstractController
             foreach ($items as $itemData) {
                 if (empty($itemData['material']) || empty($itemData['quantity'])) continue;
 
+                $material = $entityManager->getRepository(Material::class)->find($itemData['material']);
+                if (!$material) continue;
+
                 $item = new KitTemplateItem();
-                $item->setMaterial($entityManager->getReference(Material::class, $itemData['material']));
+                $item->setMaterial($material);
                 $item->setQuantity((int)$itemData['quantity']);
                 $template->addItem($item);
             }
 
             $entityManager->persist($template);
             $entityManager->flush();
+
+            $this->addFlash('success', 'Plantilla creada correctamente.');
 
             return $this->redirectToRoute('app_kit_template_index');
         }
@@ -125,6 +130,27 @@ class KitController extends AbstractController
         return $this->render('kit/template_new.html.twig', [
             'materials' => $materials,
         ]);
+    }
+
+    #[Route('/templates/{id}/delete', name: 'app_kit_template_delete', methods: ['POST'])]
+    public function deleteTemplate(Request $request, KitTemplate $template, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('delete_template_' . $template->getId(), $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException('Token CSRF inválido.');
+        }
+
+        // Before deleting, nullify references in MaterialUnit to avoid FK issues
+        $units = $entityManager->getRepository(MaterialUnit::class)->findBy(['template' => $template]);
+        foreach ($units as $unit) {
+            $unit->setTemplate(null);
+        }
+
+        $entityManager->remove($template);
+        $entityManager->flush();
+
+        $this->addFlash('success', 'Plantilla eliminada correctamente.');
+
+        return $this->redirectToRoute('app_kit_template_index');
     }
 
     #[Route('/templates/{id}/edit', name: 'app_kit_template_edit', methods: ['GET', 'POST'])]

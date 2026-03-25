@@ -5,6 +5,7 @@ export default class extends Controller {
 
     connect() {
         this.index = this.containerTarget.querySelectorAll('.kit-item-row').length;
+        this.filterOptions();
     }
 
     addItem(event) {
@@ -21,6 +22,8 @@ export default class extends Controller {
         if (window.lucide) {
             window.lucide.createIcons();
         }
+
+        this.filterOptions();
     }
 
     removeItem(event) {
@@ -31,6 +34,32 @@ export default class extends Controller {
         const row = event.target.closest('.kit-item-row');
         if (row) {
             row.remove();
+            this.filterOptions();
         }
+    }
+
+    filterOptions() {
+        const selects = this.containerTarget.querySelectorAll('.material-select');
+        const selectedValues = Array.from(selects)
+            .map(select => select.value)
+            .filter(value => value !== "" && value !== null);
+
+        selects.forEach(select => {
+            const currentValue = select.value;
+            const options = select.querySelectorAll('option');
+
+            options.forEach(option => {
+                if (option.value === "" || option.value === currentValue) {
+                    option.style.display = "";
+                    option.disabled = false;
+                } else if (selectedValues.includes(option.value)) {
+                    option.style.display = "none";
+                    option.disabled = true;
+                } else {
+                    option.style.display = "";
+                    option.disabled = false;
+                }
+            });
+        });
     }
 }
