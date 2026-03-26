@@ -1,6 +1,13 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.8.5] - 25-03-2026 (Versión Actual)
+## [1.8.6] - 25-03-2026 (Versión Actual)
+- **Logística (Botiquines):** Implementada la separación física entre la "Identidad del Contenedor" (Alias, SN, Asociación de Plantilla) y la "Definición de Contenido" (Plantilla).
+- **UX/UI (Botiquines):** Nueva vista de edición de identidad para botiquines físicos, accesible desde el listado general e inventario.
+- **Correcciones (Cruce de Datos):** Solucionado el error que sobrescribía nombres de materiales maestros (ej: Pulse Oximeter) con el alias del botiquín al editar la plantilla.
+- **Correcciones (Duplicidad):** Refinada la lógica de de-duplicación en el alta de materiales para evitar la creación de registros maestros duplicados por confusión con alias operativos.
+- **Lógica (Refill):** Optimizada la detección de ítems técnicos en la propuesta de reposición; ahora se garantiza que elementos como pulsioxímetros siempre aparezcan como faltantes si no están físicamente en el kit.
+
+## [1.8.5] - 25-03-2026
 - **Logística (Botiquines):** Implementada la funcionalidad para eliminar botiquines físicos directamente desde el listado general en `/kits` con confirmación de seguridad.
 - **Logística (Botiquines):** Corregido error de "Creación Anticipada"; los botiquines ahora solo se registran en la base de datos tras una confirmación explícita en una nueva vista previa.
 - **UX/UI:** Implementada una vista previa detallada antes del registro del kit, asegurando que todos los productos de la plantilla coincidan fielmente con el inventario futuro.

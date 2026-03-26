@@ -92,17 +92,24 @@ class MaterialController extends AbstractController
             $existingMaterial = null;
             if ($material->getBarcode()) {
                 $existingMaterial = $entityManager->getRepository(Material::class)->findOneBy([
-                    'barcode' => $material->getBarcode()
+                    'barcode' => $material->getBarcode(),
+                    'category' => $material->getCategory() // Ensure same category to allow duplicate barcodes in different families if needed (unlikely, but safer)
                 ]);
             }
+
+            // Only search by name if barcode didn't provide a unique hit
             if (!$existingMaterial) {
+                // If the user entered a name that looks like a Kit Alias (Mochila SVB XX), we should be careful
+                // For now, only match EXACT master material names in the same category
                 $existingMaterial = $entityManager->getRepository(Material::class)->findOneBy([
                     'name' => $material->getName(),
                     'category' => $material->getCategory()
                 ]);
             }
 
-            if ($existingMaterial) {
+            if ($existingMaterial && $existingMaterial->getId() !== $material->getId()) {
+                // We found a DIFFERENT material with the same name/barcode.
+                // We switch to the existing one to avoid duplicates.
                 $material = $existingMaterial;
             }
 
