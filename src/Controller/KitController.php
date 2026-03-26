@@ -275,14 +275,19 @@ class KitController extends AbstractController
 
             // 1. Create the physical unit
             $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
+            
             if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
-            }
-            if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
-            }
-            if (!$material) {
-                $material = $entityManager->getRepository(Material::class)->findOneBy([]);
+                // Instanciar un nuevo Material tipo Botiquín automáticamente en lugar de heredar un random
+                $material = new Material();
+                $material->setName('Botiquín');
+                $material->setCategory('Sanitario');
+                $material->setNature(Material::NATURE_TECHNICAL);
+                $material->setOperationalStatus('OPERATIVO');
+                $material->setStock(0);
+                $entityManager->persist($material);
+                
+                // Hacemos flush inmediato del material para que tenga ID si fuera necesario
+                $entityManager->flush();
             }
 
             if (!$material) {
