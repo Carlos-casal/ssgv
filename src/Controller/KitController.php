@@ -373,12 +373,8 @@ class KitController extends AbstractController
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
 
-            // Exclude the kit container itself from refill proposals
-            if (
-                str_contains(strtolower($material->getName()), 'botiquín') ||
-                str_contains(strtolower($material->getName()), 'contenedor') ||
-                $material->getId() === $unit->getMaterial()->getId()
-            ) {
+            // Exclude ONLY the material assigned to the physical unit (the container itself)
+            if ($material->getId() === $unit->getMaterial()->getId()) {
                 continue;
             }
 
@@ -443,11 +439,21 @@ class KitController extends AbstractController
                     $remainingNeeded -= $take;
                 }
 
-                if ($needed > $availableInWarehouse) {
+                if ($remainingNeeded > 0) {
                     $shortages[] = [
                         'material' => $material,
-                        'needed' => $needed - $availableInWarehouse,
+                        'needed' => $remainingNeeded,
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
+                    ];
+
+                    // Add a placeholder for the missing quantity so it always appears in the table
+                    $proposals[] = [
+                        'material' => $material,
+                        'quantity' => $remainingNeeded,
+                        'origin' => $centralWarehouse,
+                        'batch' => null,
+                        'unit' => null,
+                        'placeholder' => true
                     ];
                 }
             } else {
@@ -501,6 +507,20 @@ class KitController extends AbstractController
                         'needed' => $needed - $availableInWarehouse,
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
                     ];
+                }
+
+                // If no unit was available in warehouse for some of the needed ones, add placeholders
+                if ($needed > count($unitsInWarehouse)) {
+                    for ($i = 0; $i < ($needed - count($unitsInWarehouse)); $i++) {
+                        $proposals[] = [
+                            'material' => $material,
+                            'quantity' => 1,
+                            'origin' => $centralWarehouse,
+                            'batch' => null,
+                            'unit' => null,
+                            'placeholder' => true
+                        ];
+                    }
                 }
             }
             $warehouseOptions[$material->getId()] = $options;

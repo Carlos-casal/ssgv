@@ -33,7 +33,10 @@
                             </thead>
                             <tbody data-kit-refill-target="container">
                                 {% for p in proposals %}
-                                    <tr class="refill-row" data-material-id="{{ p.material.id }}" data-nature="{{ p.material.nature }}">
+                                    <tr class="refill-row {{ p.placeholder|default(false) ? 'opacity-75' : '' }}"
+                                        data-material-id="{{ p.material.id }}"
+                                        data-nature="{{ p.material.nature }}"
+                                        style="{{ p.placeholder|default(false) ? 'border-left: 3px solid #f87171;' : '' }}">
                                         <td class="ps-4">
                                             <div class="font-bold text-slate-800 dark:text-slate-200">
                                                 {% if p.unit and p.unit.alias %}
