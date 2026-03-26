@@ -79,6 +79,7 @@
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm identifier-select dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-300" data-action="change->kit-refill#updateAvailable">
+                                                {% set found_default = false %}
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     {% set selected = false %}
                                                     {% if p.material.nature == 'CONSUMIBLE' %}
@@ -86,6 +87,14 @@
                                                     {% else %}
                                                         {% if p.unit and p.unit.id == opt.id %}{% set selected = true %}{% endif %}
                                                     {% endif %}
+
+                                                    {# If no specific unit is selected yet (placeholder) or if the previous logic didn't find a match,
+                                                       pick the FIRST available (not busy) unit. #}
+                                                    {% if not selected and not found_default and not opt.busy|default(false) %}
+                                                        {% set selected = true %}
+                                                        {% set found_default = true %}
+                                                    {% endif %}
+
                                                     <option value="{{ opt.id }}"
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"

@@ -253,7 +253,7 @@ class KitController extends AbstractController
     }
 
     #[Route('/new', name: 'app_kit_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    public function new(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         if ($request->isMethod('POST')) {
             if (!$this->isCsrfTokenValid('kit_new', $request->request->get('_token'))) {
@@ -294,14 +294,31 @@ class KitController extends AbstractController
                 throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
             }
 
-            // 1. Create the physical unit using MaterialManager to handle stock and location correctly
-            $unit = $materialManager->createUnit($material, [
-                'alias' => $alias,
-                'serialNumber' => $serialNumber,
-                'operationalStatus' => 'OPERATIVO'
-            ], $materialManager->getCentralWarehouse());
+            // 1. DEDUPLICATION: Check if a MaterialUnit already exists with this serial number
+            // to avoid creating duplicate physical units if the user is "re-registering" an existing backpack.
+            $unit = null;
+            if ($serialNumber) {
+                $unit = $entityManager->getRepository(MaterialUnit::class)->findOneBy(['serialNumber' => $serialNumber]);
+            }
 
-            $unit->setTemplate($template);
+            if ($unit) {
+                // If it exists, update it rather than creating a new one
+                if ($alias) $unit->setAlias($alias);
+                $unit->setTemplate($template);
+                // If it had a location, keep it or move to central if it was "lost"
+                if (!$unit->getLocation() && !$unit->getKitLocation()) {
+                    $unit->setLocation($materialManager->getCentralWarehouse());
+                }
+            } else {
+                // 1b. Create a NEW physical unit using MaterialManager
+                $unit = $materialManager->createUnit($material, [
+                    'alias' => $alias,
+                    'serialNumber' => $serialNumber,
+                    'operationalStatus' => 'OPERATIVO'
+                ], $materialManager->getCentralWarehouse());
+
+                $unit->setTemplate($template);
+            }
 
             // 2. Create the mobile location linked to this unit
             $location = new Location();
@@ -672,6 +689,14 @@ class KitController extends AbstractController
             }
 
             // Flush transfers
+            $entityManager->flush();
+
+            // 2b. Clean up orphan stocks (quantity 0) to avoid showing empty rows in dashboard
+            foreach ($location->getStocks() as $stock) {
+                if ($stock->getQuantity() <= 0) {
+                    $entityManager->remove($stock);
+                }
+            }
             $entityManager->flush();
 
             // 3. Manually nullify MaterialMovement references to this location (destinations or origins)
