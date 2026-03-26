@@ -566,9 +566,21 @@ class KitController extends AbstractController
             throw $this->createAccessDeniedException('Token CSRF inválido.');
         }
 
+        if (!$unit->getTemplate()) {
+            throw $this->createNotFoundException('Este material no es un botiquín.');
+        }
+
         $location = $unit->getKitLocation();
         if ($location) {
             $centralWarehouse = $materialManager->getCentralWarehouse();
+
+            // Ensure entities are managed before transfers
+            if (!$entityManager->contains($location)) {
+                $location = $entityManager->merge($location);
+            }
+            if (!$entityManager->contains($centralWarehouse)) {
+                $centralWarehouse = $entityManager->merge($centralWarehouse);
+            }
 
             // 1. Move all consumables (MaterialStock) back to central warehouse
             foreach ($location->getStocks() as $stock) {
@@ -578,7 +590,7 @@ class KitController extends AbstractController
                         $location,
                         $centralWarehouse,
                         $stock->getQuantity(),
-                        'Devolución por eliminación de botiquín ' . $unit->getAlias(),
+                        'Devolución por eliminación de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                         null,
                         $stock->getSize(),
                         null,
@@ -589,7 +601,7 @@ class KitController extends AbstractController
 
             // 2. Move all technical units (MaterialUnit) back to central warehouse
             foreach ($location->getUnits() as $otherUnit) {
-                // Skip the kit container itself if it's in its own location (shouldn't be, but safe to check)
+                // Skip the kit container itself
                 if ($otherUnit->getId() === $unit->getId()) continue;
 
                 $materialManager->transfer(
@@ -597,7 +609,7 @@ class KitController extends AbstractController
                     $location,
                     $centralWarehouse,
                     1,
-                    'Devolución por eliminación de botiquín ' . $unit->getAlias(),
+                    'Devolución por eliminación de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                     null,
                     'UNICA',
                     $otherUnit,
@@ -612,16 +624,18 @@ class KitController extends AbstractController
             // This is a safety measure if SET NULL is not correctly cascaded at DB level
             $entityManager->createQueryBuilder()
                 ->update(\App\Entity\MaterialMovement::class, 'm')
-                ->set('m.origin', 'NULL')
+                ->set('m.origin', ':nullValue')
                 ->where('m.origin = :loc')
+                ->setParameter('nullValue', null)
                 ->setParameter('loc', $location)
                 ->getQuery()
                 ->execute();
 
             $entityManager->createQueryBuilder()
                 ->update(\App\Entity\MaterialMovement::class, 'm')
-                ->set('m.destination', 'NULL')
+                ->set('m.destination', ':nullValue')
                 ->where('m.destination = :loc')
+                ->setParameter('nullValue', null)
                 ->setParameter('loc', $location)
                 ->getQuery()
                 ->execute();
