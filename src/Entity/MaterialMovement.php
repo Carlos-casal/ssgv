@@ -30,9 +30,11 @@ class MaterialMovement
     private ?User $user = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Location $origin = null;
 
     #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Location $destination = null;
 
     #[ORM\ManyToOne]
