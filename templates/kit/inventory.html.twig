@@ -9,6 +9,9 @@
             <span class="font-black tracking-tight uppercase">BOTIQUÍN: {{ unit.alias ?: unit.serialNumber }}</span>
         </div>
         <div class="d-flex gap-2">
+            <a href="{{ path('app_kit_edit', {id: unit.id}) }}" class="btn btn-outline-amber btn-sm px-3 font-bold">
+                <i data-lucide="edit-3" class="w-4 h-4 inline mr-1"></i> IDENTIDAD
+            </a>
             <form action="{{ path('app_kit_refill', {id: unit.id}) }}" method="POST" onsubmit="return confirm('¿Reponer todos los productos hasta completar la plantilla?')">
                 <input type="hidden" name="_token" value="{{ csrf_token('kit_refill') }}">
                 <button type="submit" class="btn btn-outline-primary btn-sm">

@@ -204,6 +204,54 @@ class KitController extends AbstractController
         ]);
     }
 
+    #[Route('/{id}/edit', name: 'app_kit_edit', methods: ['GET', 'POST'])]
+    public function edit(Request $request, MaterialUnit $unit, EntityManagerInterface $entityManager): Response
+    {
+        if (!$unit->getTemplate()) {
+            throw $this->createNotFoundException('Este material no es un botiquín.');
+        }
+
+        if ($request->isMethod('POST')) {
+            if (!$this->isCsrfTokenValid('kit_edit_' . $unit->getId(), $request->request->get('_token'))) {
+                throw $this->createAccessDeniedException('Token CSRF inválido.');
+            }
+
+            $templateId = $request->request->get('template_id');
+            $alias = $request->request->get('alias');
+            $serialNumber = $request->request->get('serial_number');
+
+            if (empty($serialNumber)) {
+                $serialNumber = null;
+            }
+
+            $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
+            if (!$template) {
+                throw $this->createNotFoundException('Plantilla no encontrada.');
+            }
+
+            $unit->setAlias($alias);
+            $unit->setSerialNumber($serialNumber);
+            $unit->setTemplate($template);
+
+            // Update location name to reflect new alias/SN
+            $location = $unit->getKitLocation();
+            if ($location) {
+                $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
+            }
+
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Botiquín actualizado correctamente.');
+
+            return $this->redirectToRoute('app_kit_index');
+        }
+
+        return $this->render('kit/edit.html.twig', [
+            'unit' => $unit,
+            'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
+        ]);
+    }
+
     #[Route('/new', name: 'app_kit_new', methods: ['GET', 'POST'])]
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
@@ -340,8 +388,12 @@ class KitController extends AbstractController
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
 
-            // Exclude ONLY the material assigned to the physical unit (the container itself)
-            if ($material->getId() === $unit->getMaterial()->getId()) {
+            // EXCLUSION LOGIC:
+            // We only exclude the material assigned to the kit unit IF it is the kit container.
+            // But we must NOT exclude it if it's a valid template item that just happens to be the same material (rare, but possible).
+            // Actually, the main risk is excluding something like "Botiquín" when it's just a general name.
+            // We only skip if the material ID is the exact same one that represents the kit itself.
+            if ($material->getId() === $unit->getMaterial()->getId() && $material->getName() === 'Botiquín') {
                 continue;
             }
 
