@@ -12,14 +12,20 @@ export default class extends Controller {
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Initialize Modal
+        this.confirmModal = null;
+        if (typeof bootstrap !== 'undefined') {
+            const modalEl = document.getElementById('transferConfirmModal');
+            if (modalEl) {
+                this.confirmModal = new bootstrap.Modal(modalEl);
+            }
+        }
     }
 
     addRow() {
         const template = this.prototypeTarget.innerHTML;
-        const newRow = document.createElement('tr');
-        newRow.className = 'refill-row';
-        newRow.innerHTML = template;
-        this.containerTarget.appendChild(newRow);
+        this.containerTarget.insertAdjacentHTML('beforeend', template);
 
         const emptyRow = this.containerTarget.querySelector('.empty-row');
         if (emptyRow) emptyRow.remove();
@@ -76,18 +82,49 @@ export default class extends Controller {
         const selectedOption = select.options[select.selectedIndex];
         const row = select.closest('.refill-row');
 
+        // Store original value to revert if needed
+        if (!select.dataset.lastValid) {
+            select.dataset.lastValid = select.value;
+        }
+
         // Requirement: Warning if an occupied unit is selected
-        if (row.dataset.nature === 'EQUIPO' && selectedOption.dataset.busy === 'true') {
+        if (row.dataset.nature !== 'CONSUMIBLE' && row.dataset.nature !== 'OTROS' && selectedOption.dataset.busy === 'true') {
             const kitName = selectedOption.dataset.locationName || 'otro botiquín';
-            if (!confirm(`ADVERTENCIA: Esta unidad está actualmente asignada a "${kitName}". Si confirmas, se retirará de su ubicación actual para incorporarla a este botiquín. ¿Deseas continuar?`)) {
-                // Revert to the first available option
-                for (let i = 0; i < select.options.length; i++) {
-                    if (select.options[i].dataset.busy !== 'true') {
-                        select.selectedIndex = i;
-                        break;
+            const message = `Este material ya está asignado al botiquín [${kitName}]. ¿Deseas transferirlo a este nuevo dispositivo?`;
+
+            if (this.confirmModal) {
+                document.getElementById('transferModalMessage').textContent = message;
+                this.confirmModal.show();
+
+                const confirmBtn = document.getElementById('confirmTransferBtn');
+                const onConfirm = () => {
+                    select.dataset.lastValid = select.value;
+                    this.confirmModal.hide();
+                    confirmBtn.removeEventListener('click', onConfirm);
+                };
+
+                confirmBtn.addEventListener('click', onConfirm);
+
+                const modalEl = document.getElementById('transferConfirmModal');
+                const onHide = () => {
+                    if (select.value !== select.dataset.lastValid) {
+                        select.value = select.dataset.lastValid;
                     }
+                    modalEl.removeEventListener('hidden.bs.modal', onHide);
+                    confirmBtn.removeEventListener('click', onConfirm);
+                };
+                modalEl.addEventListener('hidden.bs.modal', onHide);
+
+            } else {
+                // Fallback to confirm if bootstrap modal is not available
+                if (!confirm(message)) {
+                    select.value = select.dataset.lastValid;
+                } else {
+                    select.dataset.lastValid = select.value;
                 }
             }
+        } else {
+            select.dataset.lastValid = select.value;
         }
 
         this.validateQuantity({ target: row.querySelector('.quantity-input') });

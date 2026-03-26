@@ -247,7 +247,7 @@ class KitController extends AbstractController
     public function createConfirm(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         if (!$this->isCsrfTokenValid('kit_create_confirm', $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF inválido.');
+            return new Response('Token CSRF inválido.', Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $templateId = $request->request->get('template_id');
@@ -452,25 +452,31 @@ class KitController extends AbstractController
                 }
             } else {
                 // Technical Equipment - Get ALL units but identify those in other kits
+                // Order: location_id ASC (NULLS FIRST in many DBs, but let's be explicit with CASE or just sort in PHP if needed)
+                // We'll use id ASC as a proxy for FIFO (registration date)
                 $allUnits = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
                     ->leftJoin('u.location', 'l')
                     ->where('u.material = :material')
                     ->andWhere('u.operationalStatus = :status')
                     ->setParameter('material', $material)
                     ->setParameter('status', 'OPERATIVO')
+                    ->orderBy('u.location', 'ASC') // NULLs (unassigned) first in many SQL dialects
+                    ->addOrderBy('u.id', 'ASC')
                     ->getQuery()
                     ->getResult();
 
                 foreach ($allUnits as $u) {
                     $isBusy = ($u->getLocation() && $u->getLocation()->getType() === Location::TYPE_KIT && $u->getLocation() !== $kitLocation);
+                    $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
+
                     $options[] = [
                         'id' => $u->getId(),
-                        'label' => $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId()),
+                        'label' => $label,
                         'available' => 1,
                         'busy' => $isBusy,
-                        'locationName' => $u->getLocation() ? $u->getLocation()->getName() : null
+                        'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin asignar'
                     ];
-                    if ($u->getLocation() === $centralWarehouse) {
+                    if ($u->getLocation() === $centralWarehouse || !$u->getLocation()) {
                         $availableInWarehouse += 1;
                     }
                 }
@@ -540,7 +546,7 @@ class KitController extends AbstractController
     public function refillConfirm(Request $request, MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
         if (!$this->isCsrfTokenValid('kit_refill_confirm', $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException('Token CSRF inválido.');
+            return new Response('Token CSRF inválido.', Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
         $proposalsData = $request->request->get('proposals_data');
