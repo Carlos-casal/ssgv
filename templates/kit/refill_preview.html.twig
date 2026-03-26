@@ -13,9 +13,9 @@
 <div class="container-fluid px-4" data-controller="kit-refill" data-kit-refill-origin-id-value="{{ centralWarehouse.id }}">
     <div class="row g-4">
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm rounded-3 mb-4">
-                <div class="card-header bg-white py-3 border-bottom border-slate-100 d-flex justify-content-between align-items-center">
-                    <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 m-0">Transferencias Propuestas (FIFO)</h5>
+            <div class="card border-0 shadow-sm rounded-3 mb-4 dark:bg-slate-800">
+                <div class="card-header bg-white dark:bg-slate-800 py-3 border-bottom border-slate-100 dark:border-slate-700 d-flex justify-content-between align-items-center">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-blue-600 dark:text-blue-400 m-0">Transferencias Propuestas (FIFO)</h5>
                     <button type="button" class="btn btn-outline-primary btn-sm" data-action="kit-refill#addRow">
                          <i data-lucide="plus" class="w-3 h-3 inline"></i> AÑADIR MANUAL
                     </button>
@@ -23,9 +23,9 @@
                 <div class="card-body p-0">
                     <div class="table-responsive">
                         <table class="table align-middle mb-0">
-                            <thead class="bg-slate-50">
+                            <thead class="bg-slate-50 dark:bg-slate-900/50">
                                 <tr>
-                                    <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Material</th>
+                                    <th class="ps-4 text-[10px] font-black uppercase text-slate-400 border-0">Material / Alias</th>
                                     <th class="text-[10px] font-black uppercase text-slate-400 border-0">Lote / Unidad</th>
                                     <th class="text-[10px] font-black uppercase text-slate-400 border-0 text-end pe-4" style="width: 150px;">Cantidad</th>
                                     <th class="border-0" style="width: 50px;"></th>
@@ -35,12 +35,18 @@
                                 {% for p in proposals %}
                                     <tr class="refill-row" data-material-id="{{ p.material.id }}" data-nature="{{ p.material.nature }}">
                                         <td class="ps-4">
-                                            <div class="font-bold text-slate-800">{{ p.material.name }}</div>
-                                            <div class="text-[9px] text-slate-400 uppercase font-black">{{ p.material.category }}</div>
+                                            <div class="font-bold text-slate-800 dark:text-slate-200">
+                                                {% if p.unit and p.unit.alias %}
+                                                    {{ p.unit.alias }} <span class="text-slate-400 text-[10px] font-normal">({{ p.material.name }})</span>
+                                                {% else %}
+                                                    {{ p.material.name }}
+                                                {% endif %}
+                                            </div>
+                                            <div class="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black">{{ p.material.category }}</div>
                                             <input type="hidden" class="material-id" value="{{ p.material.id }}">
                                         </td>
                                         <td>
-                                            <select class="form-select form-select-sm identifier-select" data-action="change->kit-refill#updateAvailable">
+                                            <select class="form-select form-select-sm identifier-select dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-300" data-action="change->kit-refill#updateAvailable">
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     {% set selected = false %}
                                                     {% if p.material.nature == 'CONSUMIBLE' %}
@@ -52,20 +58,20 @@
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"
-                                                            style="{{ opt.busy|default(false) ? 'color: red !important; font-weight: bold;' : '' }}"
+                                                            style="{{ opt.busy|default(false) ? 'color: #f87171 !important; font-weight: bold;' : '' }}"
                                                             {{ selected ? 'selected' : '' }}>
-                                                        {{ opt.label }} {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% elseif opt.busy|default(false) %} (OCUPADO){% endif %}
+                                                        {{ opt.label }} {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% elseif opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}
                                                     </option>
                                                 {% endfor %}
                                             </select>
                                         </td>
                                         <td class="pe-4">
                                             <div class="input-group input-group-sm">
-                                                <input type="number" class="form-control text-end font-bold quantity-input"
+                                                <input type="number" class="form-control text-end font-bold quantity-input dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-300"
                                                        value="{{ p.quantity }}" min="1"
                                                        data-action="input->kit-refill#validateQuantity"
                                                        {{ p.material.nature == 'EQUIPO' ? 'readonly' : '' }}>
-                                                <span class="input-group-text bg-white">uds.</span>
+                                                <span class="input-group-text bg-white dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-400">uds.</span>
                                             </div>
                                         </td>
                                         <td>
@@ -86,7 +92,7 @@
                         </table>
                     </div>
                 </div>
-                <div class="card-footer bg-slate-50 p-4 border-top border-slate-100 d-flex justify-content-end">
+                <div class="card-footer bg-slate-50 dark:bg-slate-900/20 p-4 border-top border-slate-100 dark:border-slate-700 d-flex justify-content-end">
                     <form action="{{ path('app_kit_refill_confirm', {id: unit.id}) }}" method="POST" data-action="submit->kit-refill#submit">
                         <input type="hidden" name="_token" value="{{ csrf_token('kit_refill_confirm') }}">
                         <input type="hidden" name="proposals_data" id="proposals_data">
@@ -137,27 +143,27 @@
                 {{ warehouseOptions|json_encode|raw }}
             </script>
 
-            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 border-start border-red-200" style="border-width: 0 0 0 4px !important;">
-                <div class="card-header bg-transparent py-3 border-bottom border-red-100">
-                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 m-0">Carencias (Vs Plantilla)</h5>
+            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 dark:bg-red-900/10 border-start border-red-200 dark:border-red-900/50" style="border-width: 0 0 0 4px !important;">
+                <div class="card-header bg-transparent py-3 border-bottom border-red-100 dark:border-red-900/20">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 m-0">Carencias (Vs Plantilla)</h5>
                 </div>
                 <div class="card-body p-4">
                     {% for s in shortages %}
                         <div class="mb-4 last:mb-0">
                             <div class="flex justify-between items-start mb-1">
                                 <div>
-                                    <div class="font-black text-slate-800 uppercase leading-none text-red-600">{{ s.material.name }}</div>
-                                    <div class="text-[10px] text-red-500 font-black mt-1 uppercase">Faltan {{ s.needed }} unidades</div>
+                                    <div class="font-black text-slate-800 dark:text-slate-200 uppercase leading-none text-red-600 dark:text-red-400">{{ s.material.name }}</div>
+                                    <div class="text-[10px] text-red-500 dark:text-red-400 font-black mt-1 uppercase">Faltan {{ s.needed }} unidades</div>
                                 </div>
                             </div>
 
                             {% if s.alternatives %}
-                                <div class="bg-white rounded-lg p-2 border border-red-100 shadow-sm mt-2">
-                                    <div class="text-[9px] font-black text-slate-400 uppercase mb-2">En otras ubicaciones:</div>
+                                <div class="bg-white dark:bg-slate-900/30 rounded-lg p-2 border border-red-100 dark:border-red-900/20 shadow-sm mt-2">
+                                    <div class="text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase mb-2">En otras ubicaciones:</div>
                                     {% for alt in s.alternatives %}
                                         <div class="flex justify-between items-center text-xs mb-1 last:mb-0">
-                                            <span class="text-slate-600"><i data-lucide="{{ alt.type == 'KIT' ? 'briefcase' : 'truck' }}" class="w-3 h-3 inline mr-1"></i> {{ alt.location }}</span>
-                                            <span class="font-bold text-blue-600">{{ alt.quantity }}</span>
+                                            <span class="text-slate-600 dark:text-slate-400"><i data-lucide="{{ alt.type == 'KIT' ? 'briefcase' : 'truck' }}" class="w-3 h-3 inline mr-1"></i> {{ alt.location }}</span>
+                                            <span class="font-bold text-blue-600 dark:text-blue-400">{{ alt.quantity }}</span>
                                         </div>
                                     {% endfor %}
                                 </div>
@@ -172,23 +178,46 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-3">
-                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+            <div class="card border-0 shadow-sm rounded-3 dark:bg-slate-800">
+                <div class="card-header bg-white dark:bg-slate-800 py-3 border-bottom border-slate-100 dark:border-slate-700">
                     <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Resumen de Operación</h5>
                 </div>
                 <div class="card-body p-4">
                     <div class="text-sm mb-3">
-                        <strong class="text-slate-600">Destino:</strong><br>
-                        <span class="font-bold text-blue-600">{{ unit.alias ?: unit.serialNumber }}</span>
+                        <strong class="text-slate-600 dark:text-slate-400">Destino:</strong><br>
+                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ unit.alias ?: unit.serialNumber }}</span>
                     </div>
                     <div class="text-sm mb-3">
-                        <strong class="text-slate-600">Origen Principal:</strong><br>
-                        <span class="font-bold text-slate-800">Almacén Central</span>
+                        <strong class="text-slate-600 dark:text-slate-400">Origen Principal:</strong><br>
+                        <span class="font-bold text-slate-800 dark:text-slate-200">Almacén Central</span>
                     </div>
-                    <hr class="my-4 border-slate-100">
-                    <a href="{{ path('app_kit_inventory', {id: unit.id}) }}" class="btn btn-outline-secondary w-100 rounded-pill font-bold">
+                    <hr class="my-4 border-slate-100 dark:border-slate-700">
+                    <a href="{{ path('app_kit_inventory', {id: unit.id}) }}" class="btn btn-outline-secondary w-100 rounded-pill font-bold dark:text-slate-300 dark:border-slate-600">
                         CANCELAR Y VOLVER
                     </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Confirmation Modal for transfers #}
+    <div class="modal fade" id="transferConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden dark:bg-slate-900">
+                <div class="p-4 bg-orange-500 text-white text-center">
+                    <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                    </div>
+                    <h5 class="font-black uppercase tracking-tight m-0">ADVERTENCIA DE TRASLADO</h5>
+                </div>
+                <div class="modal-body p-4 text-center">
+                    <p class="text-slate-600 dark:text-slate-400 mb-0" id="transferModalMessage">
+                        Este material ya está asignado a otro dispositivo. ¿Deseas transferirlo a este nuevo botiquín?
+                    </p>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0 gap-2">
+                    <button type="button" class="btn btn-light flex-grow rounded-3 font-bold uppercase py-2" data-bs-dismiss="modal">CANCELAR</button>
+                    <button type="button" class="btn btn-orange-500 flex-grow rounded-3 font-black text-white uppercase py-2" id="confirmTransferBtn">SÍ, TRASLADAR</button>
                 </div>
             </div>
         </div>
