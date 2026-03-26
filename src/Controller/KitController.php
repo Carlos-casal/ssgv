@@ -568,7 +568,47 @@ class KitController extends AbstractController
 
         $location = $unit->getKitLocation();
         if ($location) {
-            // 1. Manually nullify MaterialMovement references to this location (destinations or origins)
+            $centralWarehouse = $materialManager->getCentralWarehouse();
+
+            // 1. Move all consumables (MaterialStock) back to central warehouse
+            foreach ($location->getStocks() as $stock) {
+                if ($stock->getQuantity() > 0) {
+                    $materialManager->transfer(
+                        $stock->getMaterial(),
+                        $location,
+                        $centralWarehouse,
+                        $stock->getQuantity(),
+                        'Devolución por eliminación de botiquín ' . $unit->getAlias(),
+                        null,
+                        $stock->getSize(),
+                        null,
+                        $stock->getBatch()
+                    );
+                }
+            }
+
+            // 2. Move all technical units (MaterialUnit) back to central warehouse
+            foreach ($location->getUnits() as $otherUnit) {
+                // Skip the kit container itself if it's in its own location (shouldn't be, but safe to check)
+                if ($otherUnit->getId() === $unit->getId()) continue;
+
+                $materialManager->transfer(
+                    $otherUnit->getMaterial(),
+                    $location,
+                    $centralWarehouse,
+                    1,
+                    'Devolución por eliminación de botiquín ' . $unit->getAlias(),
+                    null,
+                    'UNICA',
+                    $otherUnit,
+                    null
+                );
+            }
+
+            // Flush transfers
+            $entityManager->flush();
+
+            // 3. Manually nullify MaterialMovement references to this location (destinations or origins)
             // This is a safety measure if SET NULL is not correctly cascaded at DB level
             $entityManager->createQueryBuilder()
                 ->update(\App\Entity\MaterialMovement::class, 'm')
@@ -586,24 +626,11 @@ class KitController extends AbstractController
                 ->getQuery()
                 ->execute();
 
-            // 2. Clean up associated stocks and technical units inside the kit
-            foreach ($location->getStocks() as $stock) {
-                $entityManager->remove($stock);
-            }
-
-            foreach ($location->getUnits() as $otherUnit) {
-                // Return units to central warehouse
-                $otherUnit->setLocation($materialManager->getCentralWarehouse());
-            }
-
-            // Flush changes before deleting the location to clear references
-            $entityManager->flush();
-
-            // 3. Break the circular reference: Unit -> Location -> Unit
+            // 4. Break the circular reference: Unit -> Location -> Unit
             $unit->setKitLocation(null);
             $entityManager->flush();
 
-            // 4. Remove the Location entity
+            // 5. Remove the Location entity
             $entityManager->remove($location);
             $entityManager->flush();
         }
