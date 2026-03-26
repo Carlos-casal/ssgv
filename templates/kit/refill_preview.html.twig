@@ -32,6 +32,35 @@
                                 </tr>
                             </thead>
                             <tbody data-kit-refill-target="container">
+                                {# Existing Contents (Non-editable, just for context) #}
+                                {% for item in currentContents %}
+                                    <tr class="bg-blue-50/30 dark:bg-blue-900/10">
+                                        <td class="ps-4">
+                                            <div class="font-bold text-blue-800 dark:text-blue-300">
+                                                {% if item.unit and item.unit.alias %}
+                                                    {{ item.unit.alias }} <span class="text-blue-400 text-[10px] font-normal">({{ item.material.name }})</span>
+                                                {% else %}
+                                                    {{ item.material.name }}
+                                                {% endif %}
+                                                <span class="ms-2 badge bg-blue-100 text-blue-600 text-[9px] uppercase">EN BOTIQUÍN</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="text-xs text-slate-500">
+                                                {% if item.material.nature == 'CONSUMIBLE' %}
+                                                    {{ item.batch ? 'Lote: ' ~ item.batch.batchNumber : 'Sin Lote' }}
+                                                {% else %}
+                                                    {{ item.unit.serialNumber ?: 'S/N' }}
+                                                {% endif %}
+                                            </span>
+                                        </td>
+                                        <td class="pe-4 text-end">
+                                            <span class="font-black text-blue-700 dark:text-blue-400">{{ item.quantity }} uds.</span>
+                                        </td>
+                                        <td></td>
+                                    </tr>
+                                {% endfor %}
+
                                 {% for p in proposals %}
                                     <tr class="refill-row {{ p.placeholder|default(false) ? 'opacity-75' : '' }}"
                                         data-material-id="{{ p.material.id }}"
@@ -112,10 +141,10 @@
                     <td class="ps-4">
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
-                            {% for item in unit.template.items %}
+                            {% for m in allMaterials %}
                                 {# Exclude kit container from manual addition #}
-                                {% if 'botiquín' not in item.material.name|lower and 'contenedor' not in item.material.name|lower and item.material.id != unit.material.id %}
-                                    <option value="{{ item.material.id }}" data-nature="{{ item.material.nature }}">{{ item.material.name }}</option>
+                                {% if 'botiquín' not in m.name|lower and 'contenedor' not in m.name|lower and m.id != unit.material.id %}
+                                    <option value="{{ m.id }}" data-nature="{{ m.nature }}">{{ m.name }}</option>
                                 {% endif %}
                             {% endfor %}
                         </select>
