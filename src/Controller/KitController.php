@@ -529,11 +529,18 @@ class KitController extends AbstractController
 
         $location = $unit->getKitLocation();
         if ($location) {
-            // Check if there is stock inside. If so, we might prevent deletion or move it.
-            // Simplified: just remove the unit and its associated location.
+            // Before removing location, handle its stocks and units to avoid integrity issues
+            foreach ($location->getStocks() as $stock) {
+                $entityManager->remove($stock);
+            }
+            foreach ($location->getUnits() as $otherUnit) {
+                $otherUnit->setLocation($materialManager->getCentralWarehouse());
+            }
+
             $entityManager->remove($location);
         }
 
+        $unit->setKitLocation(null);
         $entityManager->remove($unit);
         $entityManager->flush();
 
