@@ -29,11 +29,11 @@ class MaterialMovement
     #[ORM\ManyToOne]
     private ?User $user = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Location $origin = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(cascade: ['persist'])]
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?Location $destination = null;
 
