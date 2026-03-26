@@ -294,21 +294,22 @@ class KitController extends AbstractController
                 throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
             }
 
-            $unit = new MaterialUnit();
-            $unit->setMaterial($material);
-            $unit->setAlias($alias);
-            $unit->setSerialNumber($serialNumber);
-            $unit->setTemplate($template);
-            $unit->setOperationalStatus('OPERATIVO');
+            // 1. Create the physical unit using MaterialManager to handle stock and location correctly
+            $unit = $materialManager->createUnit($material, [
+                'alias' => $alias,
+                'serialNumber' => $serialNumber,
+                'operationalStatus' => 'OPERATIVO'
+            ], $materialManager->getCentralWarehouse());
 
-            // 2. Create the mobile location
+            $unit->setTemplate($template);
+
+            // 2. Create the mobile location linked to this unit
             $location = new Location();
             $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
             $location->setType(Location::TYPE_KIT);
             $location->setMaterialUnit($unit);
             $unit->setKitLocation($location);
 
-            $entityManager->persist($unit);
             $entityManager->persist($location);
             $entityManager->flush();
 
@@ -388,67 +389,118 @@ class KitController extends AbstractController
 
         $proposals = [];
         $shortages = [];
+        $currentContents = [];
         $warehouseOptions = []; // To store all available batches/units for each material
 
-        foreach ($template->getItems() as $item) {
-            $material = $item->getMaterial();
+        // 1. Map existing stock in the kit (to avoid "disappearance" on reload/back)
+        foreach ($kitLocation->getStocks() as $stock) {
+            if ($stock->getQuantity() <= 0) continue;
+            $currentContents[] = [
+                'material' => $stock->getMaterial(),
+                'quantity' => $stock->getQuantity(),
+                'batch' => $stock->getBatch(),
+                'unit' => null
+            ];
+        }
+        foreach ($kitLocation->getUnits() as $kitUnit) {
+            if ($kitUnit->getId() === $unit->getId()) continue; // Skip container
+            $currentContents[] = [
+                'material' => $kitUnit->getMaterial(),
+                'quantity' => 1,
+                'batch' => null,
+                'unit' => $kitUnit
+            ];
+        }
 
+        // 2. Proposals for items IN THE TEMPLATE (FIFO)
+        foreach ($template->getItems() as $item) {
+            $this->addMaterialOptionsToRefill($item->getMaterial(), $unit, $kitLocation, $centralWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity());
+        }
+
+        // 3. Proposals for ALL OTHER materials in inventory (empty lists for manual addition)
+        foreach ($allMaterials as $m) {
+            if (isset($warehouseOptions[$m->getId()])) continue; // Skip if already processed for template
+            $this->addMaterialOptionsToRefill($m, $unit, $kitLocation, $centralWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true);
+        }
+
+        return $this->render('kit/refill_preview.html.twig', [
+            'unit' => $unit,
+            'proposals' => $proposals,
+            'shortages' => $shortages,
+            'currentContents' => $currentContents,
+            'warehouseOptions' => $warehouseOptions,
+            'centralWarehouse' => $centralWarehouse,
+            'allMaterials' => $allMaterials
+        ]);
+    }
+
+    private function addMaterialOptionsToRefill(
+        Material $material,
+        MaterialUnit $unit,
+        Location $kitLocation,
+        Location $centralWarehouse,
+        &$proposals,
+        &$shortages,
+        &$warehouseOptions,
+        EntityManagerInterface $entityManager,
+        int $idealQty = 0,
+        bool $manualOnly = false
+    ): void {
             // EXCLUSION LOGIC:
             // We only exclude the material assigned to the kit unit IF it is the kit container.
             // But we must NOT exclude it if it's a valid template item that just happens to be the same material (rare, but possible).
             // Actually, the main risk is excluding something like "Botiquín" when it's just a general name.
             // We only skip if the material ID is the exact same one that represents the kit itself.
-            if ($material->getId() === $unit->getMaterial()->getId() && $material->getName() === 'Botiquín') {
-                continue;
+        if ($material->getId() === $unit->getMaterial()->getId() && $material->getName() === 'Botiquín') {
+            return;
+        }
+
+        // Calculate current stock in the kit correctly
+        $currentQty = 0;
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $stocks = $entityManager->getRepository(MaterialStock::class)->findBy([
+                'material' => $material,
+                'location' => $kitLocation
+            ]);
+            foreach ($stocks as $s) $currentQty += $s->getQuantity();
+        } else {
+            // For Technical, count physical units assigned to this location
+            $currentQty = $entityManager->getRepository(MaterialUnit::class)->count([
+                'material' => $material,
+                'location' => $kitLocation
+            ]);
+        }
+
+        $needed = $idealQty - $currentQty;
+        if ($needed <= 0 && !$manualOnly) return;
+
+        $options = [];
+        $availableInWarehouse = 0;
+
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $stocksInWarehouse = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+                ->leftJoin('ms.batch', 'b')
+                ->where('ms.material = :material')
+                ->andWhere('ms.location = :location')
+                ->andWhere('ms.quantity > 0')
+                ->setParameter('material', $material)
+                ->setParameter('location', $centralWarehouse)
+                ->orderBy('b.expirationDate', 'ASC')
+                ->addOrderBy('b.createdAt', 'ASC')
+                ->getQuery()
+                ->getResult();
+
+            foreach ($stocksInWarehouse as $stock) {
+                $options[] = [
+                    'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
+                    'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
+                    'available' => $stock->getQuantity()
+                ];
+                $availableInWarehouse += $stock->getQuantity();
             }
 
-            $idealQty = $item->getQuantity();
-
-            // Calculate current stock in the kit correctly
-            $currentQty = 0;
-            if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-                $stocks = $entityManager->getRepository(MaterialStock::class)->findBy([
-                    'material' => $material,
-                    'location' => $kitLocation
-                ]);
-                foreach ($stocks as $s) $currentQty += $s->getQuantity();
-            } else {
-                // For Technical, count physical units assigned to this location
-                $currentQty = $entityManager->getRepository(MaterialUnit::class)->count([
-                    'material' => $material,
-                    'location' => $kitLocation
-                ]);
-            }
-
-            $needed = $idealQty - $currentQty;
-            if ($needed <= 0) continue;
-
-            $options = [];
-            $availableInWarehouse = 0;
-
-            if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-                $stocksInWarehouse = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
-                    ->leftJoin('ms.batch', 'b')
-                    ->where('ms.material = :material')
-                    ->andWhere('ms.location = :location')
-                    ->andWhere('ms.quantity > 0')
-                    ->setParameter('material', $material)
-                    ->setParameter('location', $centralWarehouse)
-                    ->orderBy('b.expirationDate', 'ASC')
-                    ->addOrderBy('b.createdAt', 'ASC')
-                    ->getQuery()
-                    ->getResult();
-
-                foreach ($stocksInWarehouse as $stock) {
-                    $options[] = [
-                        'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
-                        'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
-                        'available' => $stock->getQuantity()
-                    ];
-                    $availableInWarehouse += $stock->getQuantity();
-                }
-
-                // Initial FIFO proposal based on options
+            // Initial FIFO proposal based on options
+            if (!$manualOnly) {
                 $remainingNeeded = $needed;
                 foreach ($stocksInWarehouse as $stock) {
                     if ($remainingNeeded <= 0) break;
@@ -480,38 +532,48 @@ class KitController extends AbstractController
                         'placeholder' => true
                     ];
                 }
-            } else {
-                // Technical Equipment - Get ALL units but identify those in other kits
-                // Order: location_id ASC (NULLS FIRST in many DBs, but let's be explicit with CASE or just sort in PHP if needed)
-                // We'll use id ASC as a proxy for FIFO (registration date)
-                $allUnits = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
-                    ->leftJoin('u.location', 'l')
-                    ->where('u.material = :material')
-                    ->andWhere('u.operationalStatus = :status')
-                    ->setParameter('material', $material)
-                    ->setParameter('status', 'OPERATIVO')
-                    ->orderBy('u.location', 'ASC') // NULLs (unassigned) first in many SQL dialects
-                    ->addOrderBy('u.id', 'ASC')
-                    ->getQuery()
-                    ->getResult();
+            }
+        } else {
+            // Technical Equipment - Get ALL units but identify those in other kits
+            // ORDERING REQUIREMENT: Unassigned/Warehouse first, then by date (FIFO), then occupied at the end.
+            $allUnits = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
+                ->leftJoin('u.location', 'l')
+                ->where('u.material = :material')
+                ->andWhere('u.operationalStatus = :status')
+                ->setParameter('material', $material)
+                ->setParameter('status', 'OPERATIVO')
+                ->orderBy('u.id', 'ASC') // Registration date proxy
+                ->getQuery()
+                ->getResult();
 
-                foreach ($allUnits as $u) {
-                    $isBusy = ($u->getLocation() && $u->getLocation()->getType() === Location::TYPE_KIT && $u->getLocation() !== $kitLocation);
-                    $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
+            // Sort logic: (Warehouse or No Location) first, then others.
+            usort($allUnits, function($a, $b) use ($centralWarehouse) {
+                $aInWarehouse = ($a->getLocation() === $centralWarehouse || !$a->getLocation());
+                $bInWarehouse = ($b->getLocation() === $centralWarehouse || !$b->getLocation());
 
-                    $options[] = [
-                        'id' => $u->getId(),
-                        'label' => $label,
-                        'available' => 1,
-                        'busy' => $isBusy,
-                        'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin asignar'
-                    ];
-                    if ($u->getLocation() === $centralWarehouse || !$u->getLocation()) {
-                        $availableInWarehouse += 1;
-                    }
+                if ($aInWarehouse && !$bInWarehouse) return -1;
+                if (!$aInWarehouse && $bInWarehouse) return 1;
+                return $a->getId() <=> $b->getId();
+            });
+
+            foreach ($allUnits as $u) {
+                $isBusy = ($u->getLocation() && $u->getLocation()->getType() === Location::TYPE_KIT && $u->getLocation() !== $kitLocation);
+                $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
+
+                $options[] = [
+                    'id' => $u->getId(),
+                    'label' => $label,
+                    'available' => 1,
+                    'busy' => $isBusy,
+                    'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin asignar'
+                ];
+                if ($u->getLocation() === $centralWarehouse || !$u->getLocation()) {
+                    $availableInWarehouse += 1;
                 }
+            }
 
-                $unitsInWarehouse = array_filter($allUnits, fn($u) => $u->getLocation() === $centralWarehouse);
+            if (!$manualOnly) {
+                $unitsInWarehouse = array_filter($allUnits, fn($u) => ($u->getLocation() === $centralWarehouse || !$u->getLocation()));
                 $unitsInWarehouse = array_values($unitsInWarehouse);
 
                 // Initial FIFO proposal
@@ -547,16 +609,8 @@ class KitController extends AbstractController
                     }
                 }
             }
-            $warehouseOptions[$material->getId()] = $options;
         }
-
-        return $this->render('kit/refill_preview.html.twig', [
-            'unit' => $unit,
-            'proposals' => $proposals,
-            'shortages' => $shortages,
-            'warehouseOptions' => $warehouseOptions,
-            'centralWarehouse' => $centralWarehouse
-        ]);
+        $warehouseOptions[$material->getId()] = $options;
     }
 
     #[Route('/{id}/delete', name: 'app_kit_delete', methods: ['POST'])]
@@ -649,11 +703,14 @@ class KitController extends AbstractController
             $entityManager->flush();
         }
 
-        // 5. Finaly remove the Kit Unit
-        $entityManager->remove($unit);
+        // 6. Instead of deleting the Unit (Container), demote it and return to Central Warehouse
+        $unit->setTemplate(null);
+        $unit->setKitLocation(null);
+        $unit->setLocation($materialManager->getCentralWarehouse());
+
         $entityManager->flush();
 
-        $this->addFlash('success', 'Botiquín eliminado correctamente.');
+        $this->addFlash('success', 'Botiquín eliminado correctamente (el contenedor ha sido devuelto al Almacén Central).');
 
         return $this->redirectToRoute('app_kit_index');
     }
@@ -699,7 +756,10 @@ class KitController extends AbstractController
         }
 
         $this->addFlash('success', 'Botiquín repuesto correctamente.');
-        return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
+
+        // Use a 303 redirect to ensure browser history/back navigation handles the POST correctly
+        // and doesn't try to re-submit or show stale data.
+        return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()], Response::HTTP_SEE_OTHER);
     }
 
     private function findAlternativeLocations(Material $material, Location $warehouse, Location $excludeKit, EntityManagerInterface $entityManager): array

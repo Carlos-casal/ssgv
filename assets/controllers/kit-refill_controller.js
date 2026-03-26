@@ -54,15 +54,15 @@ export default class extends Controller {
 
         let html = `<select class="form-select form-select-sm identifier-select" data-action="change->kit-refill#updateAvailable">`;
         if (options.length === 0) {
-            html += `<option value="">No hay stock en almacén</option>`;
+            html += `<option value="">No hay stock disponible</option>`;
         } else {
             options.forEach(opt => {
-            const style = opt.busy ? 'style="color: red !important; font-weight: bold;"' : '';
-            const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
-            const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
-            const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ' (OCUPADO)' : '');
+                const style = opt.busy ? 'style="color: #f87171 !important; font-weight: bold;"' : '';
+                const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
+                const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
+                const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ` (OCUPADO: ${opt.locationName})` : '');
 
-            html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
+                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
             });
         }
         html += `</select>`;

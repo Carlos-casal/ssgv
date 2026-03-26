@@ -32,10 +32,10 @@ class Location
     #[ORM\OneToOne(mappedBy: 'kitLocation', targetEntity: MaterialUnit::class)]
     private ?MaterialUnit $materialUnit = null;
 
-    #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialStock::class, orphanRemoval: true)]
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialStock::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $stocks;
 
-    #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialUnit::class)]
+    #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialUnit::class, cascade: ['persist'])]
     private Collection $units;
 
     #[ORM\OneToMany(mappedBy: 'location', targetEntity: LocationReview::class, orphanRemoval: true)]

@@ -109,24 +109,24 @@
                                             <td class="fw-bold">{{ material.name }}</td>
                                             <td>
                                                 <span class="badge {{ material.isLowStock ? 'bg-danger' : 'bg-success' }}">
-                                                    {% if material.nature == 'EQUIPO_TECNICO' %}
-                                                        {{ material.units|length }}
-                                                    {% else %}
+                                                    {% if material.nature == 'CONSUMIBLE' %}
                                                         {{ material.stock }}
+                                                    {% else %}
+                                                        {{ material.units|length }}
                                                     {% endif %}
                                                 </span>
                                             </td>
                                             <td>
                                                 {% set loc_totals = {} %}
-                                                {% if material.nature == 'EQUIPO_TECNICO' %}
-                                                    {% for unit in material.units %}
-                                                        {% set loc_name = unit.location.name|default('Sin ubicación') %}
-                                                        {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + 1 }) %}
-                                                    {% endfor %}
-                                                {% else %}
+                                                {% if material.nature == 'CONSUMIBLE' %}
                                                     {% for stock in material.stocks %}
                                                         {% set loc_name = stock.location.name %}
                                                         {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + stock.quantity }) %}
+                                                    {% endfor %}
+                                                {% else %}
+                                                    {% for unit in material.units %}
+                                                        {% set loc_name = unit.location.name|default('Sin ubicación') %}
+                                                        {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + 1 }) %}
                                                     {% endfor %}
                                                 {% endif %}
 
@@ -273,7 +273,14 @@
                                         {% set loc_consumables = loc_consumables + s.quantity %}
                                     {% endfor %}
 
-                                    {% set loc_technical = loc.units|length %}
+                                    {% set loc_technical = 0 %}
+                                    {% for unit in loc.units %}
+                                        {# Count all technical units.
+                                           We skip those currently ACTING as kit containers ONLY if we want to separate 'Equipment' from 'Kits'.
+                                           But the user wants a global count. Let's count everything assigned to this location.
+                                        #}
+                                        {% set loc_technical = loc_technical + 1 %}
+                                    {% endfor %}
 
                                     {% set global_consumables = global_consumables + loc_consumables %}
                                     {% set global_technical = global_technical + loc_technical %}
