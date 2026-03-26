@@ -516,31 +516,55 @@ class KitController extends AbstractController
     }
 
     #[Route('/{id}/delete', name: 'app_kit_delete', methods: ['POST'])]
-    public function deleteKit(Request $request, MaterialUnit $unit, EntityManagerInterface $entityManager): Response
+    public function deleteKit(Request $request, MaterialUnit $unit, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         if (!$this->isCsrfTokenValid('delete_kit_' . $unit->getId(), $request->request->get('_token'))) {
             throw $this->createAccessDeniedException('Token CSRF inválido.');
         }
 
-        // If the kit has a specific location, we might want to handle its stock first.
-        // For now, if we delete the kit, we delete its mobile location (cascade will handle units/stocks inside it if configured,
-        // but here we might want to move them back to central if they are not empty?
-        // User just asked to delete the kit from the list.)
-
         $location = $unit->getKitLocation();
         if ($location) {
-            // Before removing location, handle its stocks and units to avoid integrity issues
+            // 1. Manually nullify MaterialMovement references to this location (destinations or origins)
+            // This is a safety measure if SET NULL is not correctly cascaded at DB level
+            $entityManager->createQueryBuilder()
+                ->update(\App\Entity\MaterialMovement::class, 'm')
+                ->set('m.origin', 'NULL')
+                ->where('m.origin = :loc')
+                ->setParameter('loc', $location)
+                ->getQuery()
+                ->execute();
+
+            $entityManager->createQueryBuilder()
+                ->update(\App\Entity\MaterialMovement::class, 'm')
+                ->set('m.destination', 'NULL')
+                ->where('m.destination = :loc')
+                ->setParameter('loc', $location)
+                ->getQuery()
+                ->execute();
+
+            // 2. Clean up associated stocks and technical units inside the kit
             foreach ($location->getStocks() as $stock) {
                 $entityManager->remove($stock);
             }
+
             foreach ($location->getUnits() as $otherUnit) {
+                // Return units to central warehouse
                 $otherUnit->setLocation($materialManager->getCentralWarehouse());
             }
 
+            // Flush changes before deleting the location to clear references
+            $entityManager->flush();
+
+            // 3. Break the circular reference: Unit -> Location -> Unit
+            $unit->setKitLocation(null);
+            $entityManager->flush();
+
+            // 4. Remove the Location entity
             $entityManager->remove($location);
+            $entityManager->flush();
         }
 
-        $unit->setKitLocation(null);
+        // 5. Finaly remove the Kit Unit
         $entityManager->remove($unit);
         $entityManager->flush();
 
