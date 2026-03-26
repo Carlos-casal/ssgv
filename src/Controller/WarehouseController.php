@@ -16,10 +16,12 @@ class WarehouseController extends AbstractController
     public function index(
         MaterialRepository $materialRepository,
         VehicleRepository $vehicleRepository,
-        LocationReviewRepository $reviewRepository
+        LocationReviewRepository $reviewRepository,
+        \App\Repository\LocationRepository $locationRepository
     ): Response {
         $materials = $materialRepository->findBy([], ['id' => 'DESC']);
         $vehicles = $vehicleRepository->findAll();
+        $locations = $locationRepository->findAll();
         $recentReviews = $reviewRepository->findBy([], ['reviewDate' => 'DESC'], 5);
 
         $totalValuation = 0;
@@ -72,6 +74,7 @@ class WarehouseController extends AbstractController
             'vehicle_count' => count($vehicles),
             'materials' => $materials,
             'recent_reviews' => $recentReviews,
+            'locations' => $locations,
         ]);
     }
 }

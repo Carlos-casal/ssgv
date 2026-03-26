@@ -240,6 +240,103 @@
         </div>
     </div>
 
+    <!-- Global Inventory Breakdown by Location -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white py-3 border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="fw-bold mb-0 text-slate-900">
+                        <i data-lucide="map-pin" class="w-5 h-5 me-2 text-indigo-600"></i>
+                        Inventario Global por Ubicación
+                    </h5>
+                    <span class="badge bg-indigo-100 text-indigo-600 px-3 py-2 rounded-pill">Total: {{ locations|length }} Ubicaciones</span>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-light dark:bg-slate-800">
+                                <tr class="text-xs text-muted text-uppercase">
+                                    <th class="ps-4 py-3">Ubicación</th>
+                                    <th>Tipo</th>
+                                    <th>Total Consumibles (Uds)</th>
+                                    <th>Total Equipos Técnicos</th>
+                                    <th class="text-end pe-4">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody class="text-sm dark:text-slate-100">
+                                {% set global_consumables = 0 %}
+                                {% set global_technical = 0 %}
+
+                                {% for loc in locations|sort((a, b) => a.type <=> b.type) %}
+                                    {% set loc_consumables = 0 %}
+                                    {% for s in loc.stocks %}
+                                        {% set loc_consumables = loc_consumables + s.quantity %}
+                                    {% endfor %}
+
+                                    {% set loc_technical = loc.units|length %}
+
+                                    {% set global_consumables = global_consumables + loc_consumables %}
+                                    {% set global_technical = global_technical + loc_technical %}
+
+                                    <tr>
+                                        <td class="ps-4 py-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="p-2 rounded bg-{{ loc.type == 'ALMACEN' ? 'primary' : (loc.type == 'KIT' ? 'info' : (loc.type == 'VEHICULO' ? 'warning' : 'secondary')) }} bg-opacity-10 me-3">
+                                                    <i data-lucide="{{ loc.type == 'ALMACEN' ? 'warehouse' : (loc.type == 'KIT' ? 'briefcase' : (loc.type == 'VEHICULO' ? 'truck' : 'map-pin')) }}"
+                                                       class="w-4 h-4 text-{{ loc.type == 'ALMACEN' ? 'primary' : (loc.type == 'KIT' ? 'info' : (loc.type == 'VEHICULO' ? 'warning' : 'secondary')) }}"></i>
+                                                </div>
+                                                <div>
+                                                    <span class="fw-bold d-block">{{ loc.name }}</span>
+                                                    {% if loc.type == 'KIT' and loc.materialUnit %}
+                                                        <small class="text-muted">ID: {{ loc.materialUnit.alias ?: loc.materialUnit.serialNumber }}</small>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-light text-slate-600 border border-slate-200">
+                                                {{ loc.type }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-medium {{ loc_consumables > 0 ? 'text-slate-900' : 'text-muted opacity-50' }}">
+                                                {{ loc_consumables|number_format(0, ',', '.') }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="fw-medium {{ loc_technical > 0 ? 'text-slate-900' : 'text-muted opacity-50' }}">
+                                                {{ loc_technical|number_format(0, ',', '.') }}
+                                            </span>
+                                        </td>
+                                        <td class="text-end pe-4">
+                                            {% if loc.type == 'KIT' and loc.materialUnit %}
+                                                <a href="{{ path('app_kit_inventory', {id: loc.materialUnit.id}) }}" class="btn btn-xs btn-outline-primary">
+                                                    Ver Inventario
+                                                </a>
+                                            {% elseif loc.type == 'VEHICULO' and loc.vehicle %}
+                                                <a href="{{ path('app_vehicle_show', {id: loc.vehicle.id}) }}" class="btn btn-xs btn-outline-primary">
+                                                    Ver Ficha
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot class="bg-indigo-50 dark:bg-indigo-900 bg-opacity-50">
+                                <tr class="fw-bold text-indigo-900 dark:text-indigo-100">
+                                    <td colspan="2" class="ps-4 py-3">TOTAL GLOBAL</td>
+                                    <td>{{ global_consumables|number_format(0, ',', '.') }} uds</td>
+                                    <td>{{ global_technical|number_format(0, ',', '.') }} equipos</td>
+                                    <td></td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Sections Grid -->
     <h5 class="fw-bold mb-3">Secciones del Almacén</h5>
     <div class="row g-4">
