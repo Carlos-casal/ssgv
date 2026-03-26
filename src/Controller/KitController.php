@@ -212,95 +212,62 @@ class KitController extends AbstractController
                 throw $this->createAccessDeniedException('Token CSRF inválido.');
             }
 
-            return $this->redirectToRoute('app_kit_new_preview', [
-                'template_id' => $request->request->get('template_id'),
-                'alias' => $request->request->get('alias'),
-                'serial_number' => $request->request->get('serial_number'),
-            ]);
+            $templateId = $request->request->get('template_id');
+            $alias = $request->request->get('alias');
+            $serialNumber = $request->request->get('serial_number');
+
+            if (empty($serialNumber)) {
+                $serialNumber = null;
+            }
+
+            $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
+            if (!$template) {
+                throw $this->createNotFoundException('Plantilla no encontrada.');
+            }
+
+            // 1. Create the physical unit
+            $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
+            }
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
+            }
+            if (!$material) {
+                $material = $entityManager->getRepository(Material::class)->findOneBy([]);
+            }
+
+            if (!$material) {
+                throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
+            }
+
+            $unit = new MaterialUnit();
+            $unit->setMaterial($material);
+            $unit->setAlias($alias);
+            $unit->setSerialNumber($serialNumber);
+            $unit->setTemplate($template);
+            $unit->setOperationalStatus('OPERATIVO');
+
+            // 2. Create the mobile location
+            $location = new Location();
+            $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
+            $location->setType(Location::TYPE_KIT);
+            $location->setMaterialUnit($unit);
+            $unit->setKitLocation($location);
+
+            $entityManager->persist($unit);
+            $entityManager->persist($location);
+            $entityManager->flush();
+
+            $this->addFlash('success', 'Botiquín "' . ($alias ?: 'Sin Alias') . '" registrado correctamente.');
+
+            // Redirect directly to refill preview
+            return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
         }
 
         return $this->render('kit/new.html.twig', [
             'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
         ]);
-    }
-
-    #[Route('/new/preview', name: 'app_kit_new_preview', methods: ['GET'])]
-    public function newPreview(Request $request, EntityManagerInterface $entityManager): Response
-    {
-        $templateId = $request->query->get('template_id');
-        $alias = $request->query->get('alias');
-        $serialNumber = $request->query->get('serial_number');
-
-        $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
-        if (!$template) {
-            throw $this->createNotFoundException('Plantilla no encontrada.');
-        }
-
-        return $this->render('kit/new_preview.html.twig', [
-            'template' => $template,
-            'alias' => $alias,
-            'serial_number' => $serialNumber
-        ]);
-    }
-
-    #[Route('/create-confirm', name: 'app_kit_create_confirm', methods: ['POST'])]
-    public function createConfirm(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
-    {
-        if (!$this->isCsrfTokenValid('kit_create_confirm', $request->request->get('_token'))) {
-            return new Response('Token CSRF inválido.', Response::HTTP_UNPROCESSABLE_ENTITY);
-        }
-
-        $templateId = $request->request->get('template_id');
-        $alias = $request->request->get('alias');
-        $serialNumber = $request->request->get('serial_number');
-
-        if (empty($serialNumber)) {
-            $serialNumber = null;
-        }
-
-        $template = $entityManager->getRepository(KitTemplate::class)->find($templateId);
-        if (!$template) {
-            throw $this->createNotFoundException('Plantilla no encontrada.');
-        }
-
-        // 1. Create the physical unit
-        $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
-        if (!$material) {
-            $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL]);
-        }
-        if (!$material) {
-            $material = $entityManager->getRepository(Material::class)->findOneBy(['category' => 'Sanitario']);
-        }
-        if (!$material) {
-            $material = $entityManager->getRepository(Material::class)->findOneBy([]);
-        }
-
-        if (!$material) {
-            throw new \Exception("No se ha encontrado ningún Material en la base de datos para asignar al Botiquín.");
-        }
-
-        $unit = new MaterialUnit();
-        $unit->setMaterial($material);
-        $unit->setAlias($alias);
-        $unit->setSerialNumber($serialNumber);
-        $unit->setTemplate($template);
-        $unit->setOperationalStatus('OPERATIVO');
-
-        // 2. Create the mobile location
-        $location = new Location();
-        $location->setName('Botiquín: ' . ($alias ?: $serialNumber));
-        $location->setType(Location::TYPE_KIT);
-        $location->setMaterialUnit($unit);
-        $unit->setKitLocation($location);
-
-        $entityManager->persist($unit);
-        $entityManager->persist($location);
-        $entityManager->flush();
-
-        $this->addFlash('success', 'Botiquín "' . ($alias ?: 'Sin Alias') . '" registrado correctamente.');
-
-        // Go to the final refill preview to actually load the materials
-        return $this->redirectToRoute('app_kit_refill_preview', ['id' => $unit->getId()]);
     }
 
     #[Route('/{id}/inventory', name: 'app_kit_inventory', methods: ['GET'])]
