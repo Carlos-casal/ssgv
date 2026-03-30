@@ -141,9 +141,17 @@
                             <span class="font-weight-bold text-gray-800">{{ (batch ? batch.unitPrice : material.unitPrice)|number_format(2, ',', '.') }}€</span>
                             <span class="text-xs text-muted">(IVA {{ batch ? batch.iva : material.iva }}%)</span>
                         </div>
+                        <div class="mt-2 pt-2 border-top">
+                            <span class="small text-muted font-weight-bold text-primary">Valoración Total:</span>
+                            <span class="h5 mb-0 font-weight-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
+                        </div>
                     {% else %}
                         <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Información de Lotes</div>
-                        <div class="small text-muted mb-2">Este material dispone de {{ material.batches|length }} lotes registrados. Consulta el detalle en la sección inferior.</div>
+                        <div class="small text-muted mb-2">Este material dispone de {{ material.batches|length }} lotes registrados.</div>
+                        <div class="mt-2 pt-2 border-top">
+                            <span class="small text-muted font-weight-bold text-primary">Valoración Total:</span>
+                            <span class="h5 mb-0 font-weight-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
+                        </div>
                         <div class="mt-2 p-2 bg-light rounded border">
                             <div class="text-xs font-bold text-uppercase mb-1">Próxima Caducidad</div>
                             {% set firstBatch = material.batches|first %}
@@ -331,8 +339,10 @@
                             <th class="text-center">Uds/Env</th>
                             <th class="text-center">Nº Envases</th>
                             <th class="text-center">Stock Unidades</th>
-                            <th class="text-end">P. Compra</th>
-                            <th class="text-end pe-4">P. Unitario</th>
+                             <th class="text-end">P. Compra</th>
+                            <th class="text-end">IVA (%)</th>
+                            <th class="text-end">Margen (%)</th>
+                            <th class="text-end pe-4">Valoración/Ud</th>
                         </tr>
                     </thead>
                     <tbody class="text-sm">
@@ -354,8 +364,10 @@
                                         {{ batchStock }}
                                     </span>
                                 </td>
-                                <td class="text-end">{{ batch.totalPrice|number_format(2, ',', '.') }}€</td>
-                                <td class="text-end pe-4 font-weight-bold">{{ batch.unitPrice|number_format(2, ',', '.') }}€</td>
+                                 <td class="text-end">{{ batch.totalPrice|number_format(2, ',', '.') }}€</td>
+                                <td class="text-end">{{ batch.iva }}%</td>
+                                <td class="text-end">{{ batch.marginPercentage|default('0') }}%</td>
+                                <td class="text-end pe-4 font-weight-bold text-primary">{{ batch.getValuationPerUnit()|number_format(2, ',', '.') }}€</td>
                             </tr>
                         {% endfor %}
                     </tbody>

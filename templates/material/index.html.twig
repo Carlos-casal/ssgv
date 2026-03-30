@@ -79,6 +79,7 @@
                             {% endif %}
                             <th>Naturaleza</th>
                             <th>Stock / Unidades</th>
+                            <th>Valoración</th>
                             <th>Estado</th>
                             <th>Acciones</th>
                         </tr>
@@ -130,6 +131,9 @@
                                 {% endif %}
                             </td>
                             <td>
+                                <span class="font-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
+                            </td>
+                            <td>
                                 {% if material.isLowStock %}
                                     <span class="px-3 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-black uppercase flex items-center w-fit">
                                         <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Reposición
@@ -141,13 +145,26 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <div class="btn-group">
-                                    <a href="{{ path('app_material_show', {'id': material.id}) }}" class="btn btn-sm btn-outline-primary" title="Ver Detalles">
-                                        <i class="fas fa-eye"></i>
+                                <div class="d-flex gap-2">
+                                    <a href="{{ path('app_material_show', {'id': material.id}) }}" 
+                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                       title="Ver Detalles" 
+                                       data-bs-toggle="tooltip">
+                                        <i data-lucide="eye" class="w-4 h-4 text-blue-600"></i>
                                     </a>
-                                    <a href="{{ path('app_material_edit', {'id': material.id}) }}" class="btn btn-sm btn-outline-secondary" title="Editar">
-                                        <i class="fas fa-edit"></i>
+                                    <a href="{{ path('app_material_edit', {'id': material.id}) }}" 
+                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                       title="Editar" 
+                                       data-bs-toggle="tooltip">
+                                        <i data-lucide="edit-3" class="w-4 h-4 text-slate-600"></i>
                                     </a>
+                                    {# Add delete button if needed, although it wasn't explicitly in the original code, the user mentioned trash icon #}
+                                    <button type="button" 
+                                            class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                            title="Eliminar" 
+                                            data-bs-toggle="tooltip">
+                                        <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>

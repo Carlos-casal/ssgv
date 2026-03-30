@@ -1,11 +1,23 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}Propuesta de Carga: {{ unit.alias ?: unit.serialNumber }}{% endblock %}
+{% block title %}
+    {% if is_new|default(false) %}
+        Propuesta de Carga: {{ unit.alias ?: unit.serialNumber }} (NUEVO)
+    {% else %}
+        Propuesta de Carga: {{ unit.alias ?: unit.serialNumber }}
+    {% endif %}
+{% endblock %}
 
 {% block page_title %}
     <div class="d-flex align-items-center w-100">
         <i data-lucide="refresh-cw" class="w-6 h-6 text-blue-600 mr-2"></i>
-        <span class="font-black tracking-tight uppercase">PROPUESTA DE CARGA / REPOSICIÓN</span>
+        <span class="font-black tracking-tight uppercase">
+            {% if is_new|default(false) %}
+                REGISTRO Y CARGA DE NUEVO BOTIQUÍN
+            {% else %}
+                PROPUESTA DE CARGA / REPOSICIÓN
+            {% endif %}
+        </span>
     </div>
 {% endblock %}
 
@@ -134,11 +146,19 @@
                     </div>
                 </div>
                 <div class="card-footer bg-slate-50 dark:bg-slate-900/20 p-4 border-top border-slate-100 dark:border-slate-700 d-flex justify-content-end">
-                    <form action="{{ path('app_kit_refill_confirm', {id: unit.id}) }}" method="POST" data-action="submit->kit-refill#submit">
-                        <input type="hidden" name="_token" value="{{ csrf_token('kit_refill_confirm') }}">
+                    {% set form_action = is_new|default(false) ? path('app_kit_new_confirm') : path('app_kit_refill_confirm', {id: unit.id}) %}
+                    {% set csrf_token_name = is_new|default(false) ? 'kit_new_confirm' : 'kit_refill_confirm' %}
+                    
+                    <form action="{{ form_action }}" method="POST" data-action="submit->kit-refill#submit">
+                        <input type="hidden" name="_token" value="{{ csrf_token(csrf_token_name) }}">
                         <input type="hidden" name="proposals_data" id="proposals_data">
                         <button type="submit" class="btn btn-primary px-5 font-black uppercase shadow-md">
-                            <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> CONFIRMAR Y TRASLADAR
+                            <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> 
+                            {% if is_new|default(false) %}
+                                CONFIGURAR Y TRASLADAR
+                            {% else %}
+                                CONFIRMAR Y TRASLADAR
+                            {% endif %}
                         </button>
                     </form>
                 </div>
@@ -219,6 +239,40 @@
                 </div>
             </div>
 
+            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 dark:bg-red-900/10 border-start border-red-200 dark:border-red-900/50" style="border-width: 0 0 0 4px !important;">
+                <div class="card-header bg-transparent py-3 border-bottom border-red-100 dark:border-red-900/20">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 m-0">Unidades en otros botiquines</h5>
+                </div>
+                <div class="card-body p-4">
+                    {% set has_busy = false %}
+                    {% for matId, opts in warehouseOptions %}
+                        {% for opt in opts %}
+                            {% if opt.busy|default(false) %}
+                                {% set has_busy = true %}
+                                <div class="mb-3 last:mb-0">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <div class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase">{{ opt.label }}</div>
+                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">Ubicación: {{ opt.locationName }}</div>
+                                        </div>
+                                        <button type="button" class="btn btn-xs btn-outline-red py-0 px-2 text-[10px] font-black" 
+                                                data-action="kit-refill#forceSelect" 
+                                                data-material-id="{{ matId }}" 
+                                                data-unit-id="{{ opt.id }}">
+                                            USAR ESTE
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+                    
+                    {% if not has_busy %}
+                        <div class="text-center py-2 text-xs text-slate-400 italic">No hay unidades ocupadas relevantes.</div>
+                    {% endif %}
+                </div>
+            </div>
+
             <div class="card border-0 shadow-sm rounded-3 dark:bg-slate-800">
                 <div class="card-header bg-white dark:bg-slate-800 py-3 border-bottom border-slate-100 dark:border-slate-700">
                     <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Resumen de Operación</h5>
@@ -230,35 +284,20 @@
                     </div>
                     <div class="text-sm mb-3">
                         <strong class="text-slate-600 dark:text-slate-400">Origen Principal:</strong><br>
-                        <span class="font-bold text-slate-800 dark:text-slate-200">Almacén Central</span>
+                        <span class="font-bold text-slate-800 dark:text-slate-200">Almacenes (Central / Farmacia / CECOM)</span>
                     </div>
                     <hr class="my-4 border-slate-100 dark:border-slate-700">
-                    <a href="{{ path('app_kit_inventory', {id: unit.id}) }}" class="btn btn-outline-secondary w-100 rounded-pill font-bold dark:text-slate-300 dark:border-slate-600">
-                        CANCELAR Y VOLVER
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    {# Confirmation Modal for transfers #}
-    <div class="modal fade" id="transferConfirmModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden dark:bg-slate-900">
-                <div class="p-4 bg-orange-500 text-white text-center">
-                    <div class="bg-white/20 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i data-lucide="alert-triangle" class="w-8 h-8"></i>
+                    <div class="d-grid">
+                        {% if is_new|default(false) %}
+                            <a href="{{ path('app_kit_new') }}" class="btn btn-outline-secondary rounded-pill font-bold dark:text-slate-300 dark:border-slate-600">
+                                CANCELAR Y VOLVER
+                            </a>
+                        {% else %}
+                            <a href="{{ path('app_kit_inventory', {id: unit.id}) }}" class="btn btn-outline-secondary rounded-pill font-bold dark:text-slate-300 dark:border-slate-600">
+                                CANCELAR Y VOLVER
+                            </a>
+                        {% endif %}
                     </div>
-                    <h5 class="font-black uppercase tracking-tight m-0">ADVERTENCIA DE TRASLADO</h5>
-                </div>
-                <div class="modal-body p-4 text-center">
-                    <p class="text-slate-600 dark:text-slate-400 mb-0" id="transferModalMessage">
-                        Este material ya está asignado a otro dispositivo. ¿Deseas transferirlo a este nuevo botiquín?
-                    </p>
-                </div>
-                <div class="modal-footer border-0 p-4 pt-0 gap-2">
-                    <button type="button" class="btn btn-light flex-grow rounded-3 font-bold uppercase py-2" data-bs-dismiss="modal">CANCELAR</button>
-                    <button type="button" class="btn btn-orange-500 flex-grow rounded-3 font-black text-white uppercase py-2" id="confirmTransferBtn">SÍ, TRASLADAR</button>
                 </div>
             </div>
         </div>

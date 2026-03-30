@@ -84,45 +84,34 @@ export default class extends Controller {
 
         // Store original value to revert if needed
         if (!select.dataset.lastValid) {
-            select.dataset.lastValid = select.value;
+            select.dataset.lastValid = select.value === selectedOption.value ? select.dataset.initialValue || select.value : select.value;
         }
 
         // Requirement: Warning if an occupied unit is selected
         if (row.dataset.nature !== 'CONSUMIBLE' && row.dataset.nature !== 'OTROS' && selectedOption.dataset.busy === 'true') {
             const kitName = selectedOption.dataset.locationName || 'otro botiquín';
-            const message = `Este material ya está asignado al botiquín [${kitName}]. ¿Deseas transferirlo a este nuevo dispositivo?`;
-
-            if (this.confirmModal) {
-                document.getElementById('transferModalMessage').textContent = message;
-                this.confirmModal.show();
-
-                const confirmBtn = document.getElementById('confirmTransferBtn');
-                const onConfirm = () => {
-                    select.dataset.lastValid = select.value;
-                    this.confirmModal.hide();
-                    confirmBtn.removeEventListener('click', onConfirm);
-                };
-
-                confirmBtn.addEventListener('click', onConfirm);
-
-                const modalEl = document.getElementById('transferConfirmModal');
-                const onHide = () => {
-                    if (select.value !== select.dataset.lastValid) {
-                        select.value = select.dataset.lastValid;
-                    }
-                    modalEl.removeEventListener('hidden.bs.modal', onHide);
-                    confirmBtn.removeEventListener('click', onConfirm);
-                };
-                modalEl.addEventListener('hidden.bs.modal', onHide);
-
-            } else {
-                // Fallback to confirm if bootstrap modal is not available
-                if (!confirm(message)) {
-                    select.value = select.dataset.lastValid;
-                } else {
-                    select.dataset.lastValid = select.value;
+            
+            Swal.fire({
+                title: '¿Confirmar Traslado?',
+                text: `Este material ya está asignado al botiquín [${kitName}]. ¿Deseas transferirlo a este nuevo dispositivo?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#f87171',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'SÍ, TRASLADAR',
+                cancelButtonText: 'CANCELAR',
+                customClass: {
+                    popup: 'rounded-4 border-0 shadow-lg',
+                    confirmButton: 'rounded-3 font-bold px-4 py-2',
+                    cancelButton: 'rounded-3 font-bold px-4 py-2'
                 }
-            }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    select.dataset.lastValid = select.value;
+                } else {
+                    select.value = select.dataset.lastValid;
+                }
+            });
         } else {
             select.dataset.lastValid = select.value;
         }
@@ -186,10 +175,64 @@ export default class extends Controller {
     }
 
     showToast(message, type = 'info') {
-        // Simple alert as fallback, assuming the project has a toast system but not specified
-        console.log(`[Refill] ${type}: ${message}`);
-        if (type === 'warning' || type === 'danger') {
-            alert(message);
+        const colors = {
+            info: '#3b82f6',
+            warning: '#f59e0b',
+            danger: '#ef4444',
+            success: '#10b981'
+        };
+
+        if (typeof Swal !== 'undefined') {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: type === 'danger' ? 'error' : type,
+                title: message,
+                background: '#fff',
+                color: '#1e293b'
+            });
+        } else {
+            console.log(`[Refill] ${type}: ${message}`);
+            if (type === 'warning' || type === 'danger') {
+                alert(message);
+            }
         }
+    }
+
+    forceSelect(event) {
+        const { materialId, unitId } = event.currentTarget.dataset;
+        
+        // 1. Find a row for this material that doesn't have a unit selected yet (placeholder)
+        let targetRow = Array.from(this.containerTarget.querySelectorAll('.refill-row')).find(row => {
+            const rowMatId = row.dataset.materialId || row.querySelector('.material-id')?.value;
+            const select = row.querySelector('.identifier-select');
+            return rowMatId === materialId && (!select || !select.value || select.options[select.selectedIndex]?.value === '');
+        });
+
+        if (!targetRow) {
+            // 2. If no semi-empty row found, add a new one
+            this.addRow();
+            targetRow = this.containerTarget.lastElementChild;
+            const matSelect = targetRow.querySelector('.material-selector');
+            if (matSelect) {
+                matSelect.value = materialId;
+                this.onMaterialChange({ currentTarget: matSelect });
+            }
+        }
+
+        // 3. Select the specific unit
+        const select = targetRow.querySelector('.identifier-select');
+        if (select) {
+            select.value = unitId;
+            this.updateAvailable({ currentTarget: select });
+        }
+        
+        // 4. Visual feedback
+        targetRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        targetRow.classList.add('bg-yellow-50', 'dark:bg-yellow-900/20', 'transition-colors');
+        setTimeout(() => targetRow.classList.remove('bg-yellow-50', 'dark:bg-yellow-900/20'), 2000);
     }
 }

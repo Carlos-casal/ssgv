@@ -117,7 +117,14 @@ class MaterialManager
         $currentUser = $this->security->getUser();
 
         if (!$location) {
-            $location = $this->getCentralWarehouse();
+            $location = $this->getDefaultLocation($material);
+        } else {
+            // If the user explicitly selects Central Warehouse, but it belongs to a specialized one:
+            $central = $this->getCentralWarehouse();
+            $default = $this->getDefaultLocation($material);
+            if ($location->getId() === $central->getId() && $default->getId() !== $central->getId()) {
+                $location = $default;
+            }
         }
 
         if ($quantity < 0 && !$batch && $material->getNature() === Material::NATURE_CONSUMABLE) {
@@ -159,7 +166,7 @@ class MaterialManager
         $unit->setCoverStatus($data['cover_status'] ?? $data['coverStatus'] ?? 'OK');
         $unit->setBatteryStatus($data['battery_status'] ?? $data['batteryStatus'] ?? '100%');
 
-        $finalLocation = $location ?: $this->getCentralWarehouse();
+        $finalLocation = $location ?: $this->getDefaultLocation($material);
         $unit->setLocation($finalLocation);
 
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
@@ -196,6 +203,16 @@ class MaterialManager
         ?MaterialUnit $unit = null,
         ?MaterialBatch $batch = null
     ): void {
+        // Auto-route specialized materials if origin or destination is Central Warehouse
+        $central = $this->getCentralWarehouse();
+        $default = $this->getDefaultLocation($material);
+        if ($destination && $destination->getId() === $central->getId() && $default->getId() !== $central->getId()) {
+            $destination = $default;
+        }
+        if ($origin && $origin->getId() === $central->getId() && $default->getId() !== $central->getId()) {
+            $origin = $default;
+        }
+
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
 
@@ -381,17 +398,76 @@ class MaterialManager
     }
 
     /**
+     * Returns the Default Location for a material based on its category.
+     */
+    public function getDefaultLocation(Material $material): Location
+    {
+        if ($material->getCategory() === 'Sanitario') {
+            return $this->getPharmacyWarehouse();
+        }
+
+        if ($material->getCategory() === 'Comunicaciones') {
+            return $this->getCecomWarehouse();
+        }
+
+        return $this->getCentralWarehouse();
+    }
+
+    /**
+     * Returns the Pharmacy Warehouse location (Almacén Farmacia).
+     */
+    public function getPharmacyWarehouse(): Location
+    {
+        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
+
+        if (!$warehouse) {
+            $warehouse = new Location();
+            $warehouse->setName('Almacén Farmacia');
+            $warehouse->setType(Location::TYPE_WAREHOUSE);
+            $this->entityManager->persist($warehouse);
+            $this->entityManager->flush();
+        }
+
+        return $warehouse;
+    }
+
+    /**
      * Returns the Central Warehouse location.
-     * Throws an exception if not found, as it should be created during system setup.
      */
     public function getCentralWarehouse(): Location
     {
-        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
 
         if (!$warehouse) {
-            // Auto-create central warehouse to avoid crashes during initial usage
+            // Priority 1: Check by name if findOneBy type returned wrong one
+            $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
+            
+            if (!$warehouse) {
+                // Priority 2: Check by type alone as fallback
+                $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+            }
+
+            if (!$warehouse) {
+                $warehouse = new Location();
+                $warehouse->setName('Almacén Central');
+                $warehouse->setType(Location::TYPE_WAREHOUSE);
+                $this->entityManager->persist($warehouse);
+                $this->entityManager->flush();
+            }
+        }
+
+        return $warehouse;
+    }
+    /**
+     * Returns the CECOM Warehouse location (Almacén CECOM).
+     */
+    public function getCecomWarehouse(): Location
+    {
+        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén CECOM']);
+
+        if (!$warehouse) {
             $warehouse = new Location();
-            $warehouse->setName('Almacén Central');
+            $warehouse->setName('Almacén CECOM');
             $warehouse->setType(Location::TYPE_WAREHOUSE);
             $this->entityManager->persist($warehouse);
             $this->entityManager->flush();

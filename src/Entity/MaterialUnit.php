@@ -11,6 +11,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: MaterialUnitRepository::class)]
 #[UniqueEntity(fields: ['serialNumber'], message: 'Este Número de Serie ya está registrado en otra unidad.', ignoreNull: true)]
+#[UniqueEntity(fields: ['alias'], message: 'Este Alias ya está en uso por otra unidad.', ignoreNull: true)]
 class MaterialUnit
 {
     #[ORM\Id]
@@ -47,7 +48,7 @@ class MaterialUnit
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $batteryStatus = '100%';
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 255, unique: true, nullable: true)]
     private ?string $alias = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -64,6 +65,15 @@ class MaterialUnit
 
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $discountPct = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $supplier = null;
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, options: ["default" => 21])]
+    private string $iva = '21';
+
+    #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
+    private ?string $marginPercentage = null;
 
     #[ORM\ManyToOne]
     private ?KitTemplate $template = null;
@@ -316,6 +326,53 @@ class MaterialUnit
         }
 
         return $this;
+    }
+
+    public function getSupplier(): ?string
+    {
+        return $this->supplier;
+    }
+
+    public function setSupplier(?string $supplier): static
+    {
+        $this->supplier = $supplier;
+
+        return $this;
+    }
+
+    public function getIva(): string
+    {
+        return $this->iva;
+    }
+
+    public function setIva(string $iva): static
+    {
+        $this->iva = $iva;
+
+        return $this;
+    }
+
+
+    public function getMarginPercentage(): ?string
+    {
+        return $this->marginPercentage;
+    }
+
+    public function setMarginPercentage(?string $marginPercentage): static
+    {
+        $this->marginPercentage = $marginPercentage;
+
+        return $this;
+    }
+
+    public function getValuation(): float
+    {
+        $basePrice = $this->purchasePrice ? (float)$this->purchasePrice : ($this->material ? (float)$this->material->getUnitPrice() : 0.0);
+        $margin = $this->marginPercentage ? (float)$this->marginPercentage : 0.0;
+        $ivaRate = (float)$this->iva;
+
+        $priceWithMargin = $basePrice + ($basePrice * $margin / 100);
+        return $priceWithMargin * (1 + $ivaRate / 100);
     }
 
     public function __toString(): string

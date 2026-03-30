@@ -56,13 +56,16 @@ class MaterialController extends AbstractController
 
         $materials = $qb->getQuery()->getResult();
 
-        return $this->render('material/index.html.twig', [
+        $response = $this->render('material/index.html.twig', [
             'materials' => $materials,
             'current_category' => $category,
             'current_size' => $size,
             'current_subfamily' => $subFamily,
             'current_section' => 'recursos'
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
+
     }
 
     #[Route('/new', name: 'app_material_new', methods: ['GET', 'POST'])]
@@ -256,13 +259,16 @@ class MaterialController extends AbstractController
         $unitsData = $request->request->all('units_data');
         $batchesData = $request->request->all('batches_data');
 
-        return $this->render('material/new.html.twig', [
+        $response = $this->render('material/new.html.twig', [
             'material' => $material,
             'form' => $form,
             'units_data' => $unitsData,
             'batches_data' => $batchesData,
             'current_section' => 'recursos'
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
+
     }
 
     #[Route('/import/template', name: 'app_material_import_template', methods: ['GET'])]
@@ -302,11 +308,14 @@ class MaterialController extends AbstractController
             $tempFilename = uniqid('import_') . '.xlsx';
             $file->move($tempPath, $tempFilename);
 
-            return $this->render('material/import_preview.html.twig', [
+            $response = $this->render('material/import_preview.html.twig', [
                 'preview' => $preview,
                 'temp_filename' => $tempFilename,
                 'current_section' => 'recursos'
             ]);
+            $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+            return $response;
+
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al procesar el archivo: ' . $e->getMessage());
             return $this->redirectToRoute('app_material_index');
@@ -423,11 +432,14 @@ class MaterialController extends AbstractController
     {
         $movements = $movementRepository->findBy(['material' => $material], ['createdAt' => 'DESC'], 10);
 
-        return $this->render('material/show.html.twig', [
+        $response = $this->render('material/show.html.twig', [
             'material' => $material,
             'material_movements' => $movements,
             'current_section' => 'recursos'
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
+
     }
 
     #[Route('/{id}/edit', name: 'app_material_edit', methods: ['GET', 'POST'])]
@@ -706,13 +718,16 @@ class MaterialController extends AbstractController
             }
         }
 
-        return $this->render('material/edit.html.twig', [
+        $response = $this->render('material/edit.html.twig', [
             'material' => $material,
             'form' => $form,
             'units_data' => $unitsData,
             'batches_data' => $batchesData,
             'current_section' => 'recursos'
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
+
     }
 
     #[Route('/{id}/unit/new', name: 'app_material_unit_new', methods: ['GET', 'POST'])]

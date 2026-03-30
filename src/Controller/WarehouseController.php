@@ -26,19 +26,33 @@ class WarehouseController extends AbstractController
 
         $totalValuation = 0;
         foreach ($materials as $material) {
-            if ($material->getNature() === \App\Entity\Material::NATURE_CONSUMABLE && !$material->getBatches()->isEmpty()) {
-                foreach ($material->getBatches() as $batch) {
-                    $batchStock = 0;
-                    foreach ($batch->getStocks() as $s) {
-                        $batchStock += $s->getQuantity();
-                    }
+            if ($material->getNature() === \App\Entity\Material::NATURE_CONSUMABLE) {
+                if (!$material->getBatches()->isEmpty()) {
+                    foreach ($material->getBatches() as $batch) {
+                        $batchStock = 0;
+                        foreach ($batch->getStocks() as $s) {
+                            $batchStock += $s->getQuantity();
+                        }
 
-                    $uPrice = str_replace(',', '.', (string)$batch->getUnitPrice());
-                    $totalValuation += (float)$uPrice * $batchStock;
+                        $uPrice = str_replace(',', '.', (string)$batch->getUnitPrice());
+                        $totalValuation += (float)$uPrice * $batchStock;
+                    }
+                } else {
+                    $uPrice = str_replace(',', '.', (string)$material->getUnitPrice());
+                    $totalValuation += (float)$uPrice * $material->getStock();
                 }
             } else {
-                $uPrice = str_replace(',', '.', (string)$material->getUnitPrice());
-                $totalValuation += (float)$uPrice * $material->getStock();
+                // For Technical/Equipment: Sum individual unit valuations
+                $units = $material->getUnits();
+                if (!$units->isEmpty()) {
+                    foreach ($units as $unit) {
+                        $totalValuation += $unit->getValuation();
+                    }
+                } else {
+                    // Fallback if no units exist yet
+                    $uPrice = str_replace(',', '.', (string)$material->getUnitPrice());
+                    $totalValuation += (float)$uPrice * $material->getStock();
+                }
             }
         }
 

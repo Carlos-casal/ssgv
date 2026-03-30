@@ -133,8 +133,8 @@
                                                 <div class="d-flex flex-wrap gap-1">
                                                     {% for loc, qty in loc_totals %}
                                                         {% if qty > 0 %}
-                                                            <span class="badge bg-light text-slate-600 border border-slate-100 font-normal">
-                                                                <i data-lucide="map-pin" class="w-2 h-2 inline me-0.5 opacity-50"></i>
+                                                            <span class="badge border font-normal {{ loc == 'Almacén Central' or loc == 'Almacén Farmacia' or loc == 'Almacén CECOM' ? 'bg-primary-subtle text-primary border-primary-subtle' : 'bg-light text-slate-600 border-slate-100' }}">
+                                                                <i data-lucide="{{ loc == 'Almacén Central' or loc == 'Almacén Farmacia' or loc == 'Almacén CECOM' ? 'warehouse' : 'briefcase' }}" class="w-2 h-2 inline me-0.5 opacity-50"></i>
                                                                 {{ loc }}: <span class="font-bold">{{ qty }}</span>
                                                             </span>
                                                         {% endif %}
@@ -270,15 +270,14 @@
                                 {% for loc in locations|sort((a, b) => a.type <=> b.type) %}
                                     {% set loc_consumables = 0 %}
                                     {% for s in loc.stocks %}
-                                        {% set loc_consumables = loc_consumables + s.quantity %}
+                                        {% if s.material.nature == 'CONSUMIBLE' %}
+                                            {% set loc_consumables = loc_consumables + s.quantity %}
+                                        {% endif %}
                                     {% endfor %}
 
                                     {% set loc_technical = 0 %}
                                     {% for unit in loc.units %}
-                                        {# Count all technical units.
-                                           We skip those currently ACTING as kit containers ONLY if we want to separate 'Equipment' from 'Kits'.
-                                           But the user wants a global count. Let's count everything assigned to this location.
-                                        #}
+                                        {# technical units are strictly separated from consumable stocks #}
                                         {% set loc_technical = loc_technical + 1 %}
                                     {% endfor %}
 

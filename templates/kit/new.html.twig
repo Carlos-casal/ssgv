@@ -29,15 +29,150 @@
                             <div class="form-text text-[10px] mt-2">Los productos se cargarán automáticamente según esta plantilla.</div>
                         </div>
 
-                        <div class="mb-4">
-                            <label for="alias" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Alias / Identificador</label>
-                            <input type="text" name="alias" id="alias" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: Botiquín Alfa 1">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="alias" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Alias / Identificador</label>
+                                <input type="text" name="alias" id="alias" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: Botiquín Alfa 1">
+                                <div id="alias_warning" class="text-[10px] text-red-500 font-bold mt-1 d-none">
+                                    <i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> Este alias ya está en uso.
+                                </div>
+                            </div>
+    
+                            <div class="col-md-6 mb-4">
+                                <label for="serial_number" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Número de Serie</label>
+                                <input type="text" name="serial_number" id="serial_number" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: SN-2024-001">
+                            </div>
                         </div>
 
-                        <div class="mb-5">
-                            <label for="serial_number" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Número de Serie</label>
-                            <input type="text" name="serial_number" id="serial_number" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: SN-2024-001">
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="supplier" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Proveedor</label>
+                                <input type="text" name="supplier" id="supplier" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: Cruz Roja Española">
+                            </div>
+    
+                            <div class="col-md-6 mb-4">
+                                <label for="purchase_price" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Precio de Compra</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.01" name="purchase_price" id="purchase_price" class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" placeholder="0.00">
+                                    <span class="input-group-text border-0 bg-slate-50 rounded-e-3 text-slate-400">€</span>
+                                </div>
+                            </div>
                         </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-4">
+                                <label for="margin_percentage" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">% Margen</label>
+                                <div class="input-group">
+                                    <input type="number" step="0.1" name="margin_percentage" id="margin_percentage" class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" placeholder="0.0">
+                                    <span class="input-group-text border-0 bg-slate-50 rounded-e-3 text-slate-400">%</span>
+                                </div>
+                            </div>
+    
+                            <div class="col-md-6 mb-4">
+                                <label for="iva" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">IVA (%)</label>
+                                <select name="iva" id="iva" class="form-select form-select-lg border-0 bg-slate-50 rounded-3 text-sm font-bold">
+                                    <option value="1.21" selected>21.00</option>
+                                    <option value="0.10">10.00</option>
+                                    <option value="0.04">4.00</option>
+                                    <option value="0">0.00</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="bg-blue-50/50 rounded-4 p-4 mb-5">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-black uppercase tracking-widest text-blue-600">Precio Total (Valuación)</span>
+                                <span class="text-2xl font-black text-blue-700" id="total_price_display">0.00 €</span>
+                            </div>
+                            <div id="iva_included_hint" class="text-[10px] text-blue-500 font-bold mt-2 d-none">
+                                * El precio de compra introducido se tratará como TOTAL. La base imponible se calculará automáticamente.
+                            </div>
+                                       <script>
+                            document.addEventListener('DOMContentLoaded', function() {
+                                const form = document.querySelector('form');
+                                const aliasInput = document.getElementById('alias');
+                                const aliasWarning = document.getElementById('alias_warning');
+                                const purchaseInput = document.getElementById('purchase_price');
+                                const marginInput = document.getElementById('margin_percentage');
+                                const ivaInput = document.getElementById('iva');
+                                const ivaHint = document.getElementById('iva_included_hint');
+                                const display = document.getElementById('total_price_display');
+                                let aliasAvailable = true;
+    
+                                function calculate() {
+                                    let inputPrice = parseFloat(purchaseInput.value) || 0;
+                                    const margin = parseFloat(marginInput.value) || 0;
+                                    const ivaVal = ivaInput.value;
+                                    
+                                    let basePrice = inputPrice;
+                                    let ivaRate = 0;
+
+                                    if (ivaVal === '1.21') {
+                                        // IVA is included in the input price (Inverse breakdown)
+                                        ivaRate = 0.21;
+                                        basePrice = inputPrice / 1.21;
+                                        ivaHint.classList.remove('d-none');
+                                    } else {
+                                        // IVA is NOT included
+                                        ivaRate = parseFloat(ivaVal) || 0;
+                                        ivaHint.classList.add('d-none');
+                                    }
+
+                                    // Valuation = (Base * (1 - Margin/100)) * (1 + ivaRate) if it's a discount
+                                    // But if IVA was included, the final valuation already has it.
+                                    // User Case 2: Price Total = Price Purchase - (Price Purchase * Discount)
+                                    // User Case 3: Inverse breakdown if 21% selected
+                                    
+                                    const discountAmount = inputPrice * (margin / 100);
+                                    const totalValuation = inputPrice - discountAmount;
+                                    
+                                    display.innerText = totalValuation.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+                                }
+
+
+                                async function checkAlias() {
+                                    const alias = aliasInput.value.trim();
+                                    if (alias.length < 3) {
+                                        aliasWarning.classList.add('d-none');
+                                        aliasInput.classList.remove('is-invalid');
+                                        aliasAvailable = true;
+                                        return;
+                                    }
+
+                                    try {
+                                        const response = await fetch(`{{ path('app_kit_check_alias') }}?alias=${encodeURIComponent(alias)}`);
+                                        const data = await response.json();
+                                        if (!data.available) {
+                                            aliasWarning.classList.remove('d-none');
+                                            aliasInput.classList.add('is-invalid');
+                                            aliasAvailable = false;
+                                        } else {
+                                            aliasWarning.classList.add('d-none');
+                                            aliasInput.classList.remove('is-invalid');
+                                            aliasAvailable = true;
+                                        }
+                                    } catch (e) {
+                                        console.error('Error checking alias', e);
+                                    }
+                                }
+
+                                form.addEventListener('submit', function(e) {
+                                    if (!aliasAvailable) {
+                                        e.preventDefault();
+                                        Swal.fire({
+                                            icon: 'error',
+                                            title: 'Alias no disponible',
+                                            text: 'Por favor, elige un identificador único para este botiquín.'
+                                        });
+                                    }
+                                });
+    
+                                purchaseInput.addEventListener('input', calculate);
+                                marginInput.addEventListener('input', calculate);
+                                ivaInput.addEventListener('change', calculate);
+                                aliasInput.addEventListener('input', checkAlias); // Changed to input for real-time
+                            });
+                        </script>          </script>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg rounded-3 font-black uppercase tracking-widest shadow-sm py-3">

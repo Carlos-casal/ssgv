@@ -186,6 +186,16 @@ class MaterialBatch
         return $this;
     }
 
+    public function getValuationPerUnit(): float
+    {
+        $basePrice = (float)$this->unitPrice;
+        $margin = $this->marginPercentage ? (float)$this->marginPercentage : 0.0;
+        $ivaRate = (float)$this->iva;
+
+        $priceWithMargin = $basePrice + ($basePrice * $margin / 100);
+        return $priceWithMargin * (1 + $ivaRate / 100);
+    }
+
     public function getSize(): ?string
     {
         return $this->size;

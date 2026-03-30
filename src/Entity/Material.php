@@ -782,8 +782,32 @@ class Material
         // Verifiquemos si hay un índice UNIQUE en la base de datos para la columna barcode.
     }
 
-    public function __toString(): string
+    public function getTotalValuation(): float
     {
-        return $this->name ?? '';
+        $total = 0.0;
+        if ($this->nature === self::NATURE_CONSUMABLE) {
+            if (!$this->batches->isEmpty()) {
+                foreach ($this->batches as $batch) {
+                    $batchStock = 0;
+                    foreach ($batch->getStocks() as $s) {
+                        $batchStock += $s->getQuantity();
+                    }
+                    $total += $batch->getValuationPerUnit() * $batchStock;
+                }
+            } else {
+                $uPrice = str_replace(',', '.', (string)$this->unitPrice);
+                $total += (float)$uPrice * $this->stock;
+            }
+        } else {
+            if (!$this->units->isEmpty()) {
+                foreach ($this->units as $unit) {
+                    $total += $unit->getValuation();
+                }
+            } else {
+                $uPrice = str_replace(',', '.', (string)$this->unitPrice);
+                $total += (float)$uPrice * $this->stock;
+            }
+        }
+        return $total;
     }
 }

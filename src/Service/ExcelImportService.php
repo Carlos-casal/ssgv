@@ -296,7 +296,7 @@ class ExcelImportService
                         }
                     } else {
                         // Technical bulk stock
-                        $this->materialManager->updateStockDirectly($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages);
+                        $this->materialManager->updateStockDirectly($material, $this->materialManager->getDefaultLocation($material), $unitsPerPackage * $numPackages);
                     }
                 } else {
                     // Consumable - Create or Update Batch
@@ -330,7 +330,7 @@ class ExcelImportService
                         $batch->setUnitPrice((string)($priceVal / $totalStockInBatch));
                     }
 
-                    $this->materialManager->updateStockWithBatch($material, $this->materialManager->getCentralWarehouse(), $unitsPerPackage * $numPackages, $batch);
+                    $this->materialManager->updateStockWithBatch($material, $this->materialManager->getDefaultLocation($material), $unitsPerPackage * $numPackages, $batch);
                 }
 
             } catch (\Exception $e) {
@@ -464,7 +464,14 @@ class ExcelImportService
             }
         }
 
-        return is_string($value) ? trim($value) : (string)$value;
+        $result = is_string($value) ? trim($value) : (string)$value;
+        
+        // Ensure UTF-8 encoding to prevent ?? characters
+        if (!empty($result) && !mb_check_encoding($result, 'UTF-8')) {
+            $result = mb_convert_encoding($result, 'UTF-8', 'ISO-8859-1');
+        }
+
+        return $result;
     }
 
     private function getDateValue($worksheet, $col, $row): ?\DateTimeImmutable

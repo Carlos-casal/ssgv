@@ -37,18 +37,18 @@
                         <tr class="{{ item.is_new ? 'table-primary' : '' }}">
                             <td class="text-center align-middle">
                                 {% if item.is_new %}
-                                    <span class="badge badge-primary">NUEVO</span>
+                                    <span class="badge bg-primary px-3 py-2 text-white font-black" style="letter-spacing: 0.05em;">NUEVO</span>
                                 {% else %}
-                                    <span class="badge badge-success">ACTUALIZAR</span>
+                                    <span class="badge bg-success px-3 py-2 text-white font-black" style="letter-spacing: 0.05em;">ACTUALIZAR</span>
                                 {% endif %}
                             </td>
                             <td class="align-middle">
-                                <div class="font-weight-bold">{{ item.name }}</div>
-                                <small class="text-muted">{{ item.barcode|default('Sin EAN') }}</small>
+                                <div class="font-black text-slate-900">{{ item.name }}</div>
+                                <small class="text-slate-500 font-bold">{{ item.barcode|default('Sin EAN') }}</small>
                             </td>
                             <td class="align-middle">
-                                <span class="badge badge-secondary">{{ item.category }}</span><br>
-                                <span class="badge badge-info">{{ item.nature }}</span>
+                                <span class="badge bg-slate-200 text-slate-700 border border-slate-300">{{ item.category }}</span><br>
+                                <span class="badge bg-blue-100 text-blue-700 border border-blue-200 mt-1">{{ item.nature }}</span>
                             </td>
                             <td class="text-center align-middle">{{ item.current_stock }}</td>
                             <td class="text-center align-middle text-success font-weight-bold">+{{ item.stock_to_add }}</td>

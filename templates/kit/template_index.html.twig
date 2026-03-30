@@ -8,7 +8,11 @@
             <i data-lucide="layout" class="w-6 h-6 text-blue-600 mr-2"></i>
             <span class="font-black tracking-tight uppercase">PLANTILLAS DE CONFIGURACIÓN</span>
         </div>
-        <div class="d-flex gap-2">
+        <div class="d-flex gap-2 items-center">
+            <a href="{{ path('app_kit_index') }}" class="btn btn-outline-secondary btn-sm px-3 shadow-sm font-bold d-flex align-items-center">
+                <i data-lucide="arrow-left" class="w-4 h-4 inline mr-1"></i> VOLVER
+            </a>
+
             {% if templates|length == 0 %}
                 <form action="{{ path('app_kit_template_seed_defaults') }}" method="POST">
                     <input type="hidden" name="_token" value="{{ csrf_token('seed_defaults') }}">

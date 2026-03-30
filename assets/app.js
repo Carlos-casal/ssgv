@@ -12,11 +12,22 @@ import './bootstrap.js';
 // Import and initialize Lucide icons
 import { createIcons, icons } from 'lucide';
 
-const initializeIcons = () => {
-    createIcons({ icons });
-    window.lucide = { createIcons: () => createIcons({ icons }) };
+const initializeTooltips = () => {
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
 };
 
-document.addEventListener('turbo:load', initializeIcons);
-document.addEventListener('DOMContentLoaded', initializeIcons);
-document.addEventListener('turbo:render', initializeIcons);
+document.addEventListener('turbo:load', () => {
+    initializeIcons();
+    initializeTooltips();
+});
+document.addEventListener('DOMContentLoaded', () => {
+    initializeIcons();
+    initializeTooltips();
+});
+document.addEventListener('turbo:render', () => {
+    initializeIcons();
+    initializeTooltips();
+});
