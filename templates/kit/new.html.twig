@@ -71,10 +71,10 @@
                             <div class="col-md-6 mb-4">
                                 <label for="iva" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">IVA (%)</label>
                                 <select name="iva" id="iva" class="form-select form-select-lg border-0 bg-slate-50 rounded-3 text-sm font-bold">
-                                    <option value="1.21" selected>21.00</option>
-                                    <option value="0.10">10.00</option>
-                                    <option value="0.04">4.00</option>
-                                    <option value="0">0.00</option>
+                                    <option value="1.21" selected>21</option>
+                                    <option value="0.10">10</option>
+                                    <option value="0.04">4</option>
+                                    <option value="0">0</option>
                                 </select>
                             </div>
                         </div>
@@ -104,27 +104,26 @@
                                     const margin = parseFloat(marginInput.value) || 0;
                                     const ivaVal = ivaInput.value;
                                     
-                                    let basePrice = inputPrice;
-                                    let ivaRate = 0;
+                                    // Requirement: Default IVA 21% (value 1.21) means "IVA Included"
+                                    // Calculation Case 2: Total = Purchase Price - (Purchase Price * Margin%)
+                                    // The user considers inputPrice as the final price if no margin is set.
+
+                                    const discountAmount = inputPrice * (margin / 100);
+                                    let totalValuation = inputPrice - discountAmount;
 
                                     if (ivaVal === '1.21') {
-                                        // IVA is included in the input price (Inverse breakdown)
-                                        ivaRate = 0.21;
-                                        basePrice = inputPrice / 1.21;
                                         ivaHint.classList.remove('d-none');
                                     } else {
-                                        // IVA is NOT included
-                                        ivaRate = parseFloat(ivaVal) || 0;
                                         ivaHint.classList.add('d-none');
+                                        // If user explicitly changes IVA from 21% to something else,
+                                        // we interpret this as "Input price was base, now apply new IVA"
+                                        // OR "Input price was total with 21%, now total with X%"
+                                        // Based on requirement: "the final price is already VAT included"
+                                        // This implies we don't need to increase the price if IVA changes,
+                                        // but the user might want to see how the base changes.
+                                        // However, the "Total Price" display should follow the requirement:
+                                        // "Total = Purchase - (Purchase * Discount)"
                                     }
-
-                                    // Valuation = (Base * (1 - Margin/100)) * (1 + ivaRate) if it's a discount
-                                    // But if IVA was included, the final valuation already has it.
-                                    // User Case 2: Price Total = Price Purchase - (Price Purchase * Discount)
-                                    // User Case 3: Inverse breakdown if 21% selected
-                                    
-                                    const discountAmount = inputPrice * (margin / 100);
-                                    const totalValuation = inputPrice - discountAmount;
                                     
                                     display.innerText = totalValuation.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
                                 }

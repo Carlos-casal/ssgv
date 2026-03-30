@@ -33,9 +33,11 @@ class KitController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->render('kit/index.html.twig', [
+        $response = $this->render('kit/index.html.twig', [
             'kits' => $kits,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/check-alias', name: 'app_kit_check_alias', methods: ['GET'])]
@@ -61,9 +63,11 @@ class KitController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->render('kit/template_index.html.twig', [
+        $response = $this->render('kit/template_index.html.twig', [
             'templates' => $templates,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/templates/seed-defaults', name: 'app_kit_template_seed_defaults', methods: ['POST'])]
@@ -140,9 +144,11 @@ class KitController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->render('kit/template_new.html.twig', [
+        $response = $this->render('kit/template_new.html.twig', [
             'materials' => $materials,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/templates/{id}/delete', name: 'app_kit_template_delete', methods: ['POST'])]
@@ -211,10 +217,12 @@ class KitController extends AbstractController
             ->getQuery()
             ->getResult();
 
-        return $this->render('kit/template_edit.html.twig', [
+        $response = $this->render('kit/template_edit.html.twig', [
             'template' => $template,
             'materials' => $materials,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/{id}/edit', name: 'app_kit_edit', methods: ['GET', 'POST'])]
@@ -259,10 +267,12 @@ class KitController extends AbstractController
             return $this->redirectToRoute('app_kit_index');
         }
 
-        return $this->render('kit/edit.html.twig', [
+        $response = $this->render('kit/edit.html.twig', [
             'unit' => $unit,
             'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/new', name: 'app_kit_new', methods: ['GET', 'POST'])]
@@ -298,15 +308,18 @@ class KitController extends AbstractController
             return $this->redirectToRoute('app_kit_new_preview');
         }
 
-        return $this->render('kit/new.html.twig', [
+        $response = $this->render('kit/new.html.twig', [
             'templates' => $entityManager->getRepository(KitTemplate::class)->findAll(),
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
 
     #[Route('/new/preview', name: 'app_kit_new_preview', methods: ['GET'])]
     public function newPreview(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
+        $centralWarehouse = $materialManager->getCentralWarehouse();
         $session = $request->getSession();
         $draft = $session->get('draft_kit');
 
@@ -353,14 +366,18 @@ class KitController extends AbstractController
         // Sort warehouse options by ID ascending to ensure oldest is first
         foreach ($warehouseOptions as $matId => &$options) {
             usort($options, function($a, $b) {
+                // If one is busy and other is not, busy goes last
+                $aBusy = $a['busy'] ?? false;
+                $bBusy = $b['busy'] ?? false;
+                if ($aBusy && !$bBusy) return 1;
+                if (!$aBusy && $bBusy) return -1;
+
                 if ($a['id'] === $b['id']) return 0;
                 if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
                 if ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') return -1;
                 return (int)$a['id'] - (int)$b['id'];
             });
         }
-
-        $centralWarehouse = $materialManager->getCentralWarehouse();
 
         $response = $this->render('kit/refill_preview.html.twig', [
             'unit' => $unit,
@@ -384,9 +401,11 @@ class KitController extends AbstractController
             throw $this->createNotFoundException('Este material no es un botiquín.');
         }
 
-        return $this->render('kit/inventory.html.twig', [
+        $response = $this->render('kit/inventory.html.twig', [
             'unit' => $unit,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/{id}/consume', name: 'app_kit_consume', methods: ['GET', 'POST'])]
@@ -418,9 +437,11 @@ class KitController extends AbstractController
             return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
         }
 
-        return $this->render('kit/consume.html.twig', [
+        $response = $this->render('kit/consume.html.twig', [
             'unit' => $unit,
         ]);
+        $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        return $response;
     }
 
     #[Route('/{id}/refill', name: 'app_kit_refill', methods: ['POST'])]
@@ -432,6 +453,7 @@ class KitController extends AbstractController
     #[Route('/{id}/refill/preview', name: 'app_kit_refill_preview', methods: ['GET'])]
     public function refillPreview(MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
+        $centralWarehouse = $materialManager->getCentralWarehouse();
         $template = $unit->getTemplate();
         if (!$template) {
             throw $this->createNotFoundException('Este botiquín no tiene una plantilla asignada.');
@@ -482,14 +504,18 @@ class KitController extends AbstractController
         // Sort warehouse options by ID ascending to ensure oldest is first
         foreach ($warehouseOptions as $matId => &$options) {
             usort($options, function($a, $b) {
+                // If one is busy and other is not, busy goes last
+                $aBusy = $a['busy'] ?? false;
+                $bBusy = $b['busy'] ?? false;
+                if ($aBusy && !$bBusy) return 1;
+                if (!$aBusy && $bBusy) return -1;
+
                 if ($a['id'] === $b['id']) return 0;
                 if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
                 if ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') return -1;
                 return (int)$a['id'] - (int)$b['id'];
             });
         }
-
-        $centralWarehouse = $materialManager->getCentralWarehouse();
 
         $response = $this->render('kit/refill_preview.html.twig', [
             'unit' => $unit,

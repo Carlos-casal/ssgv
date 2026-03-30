@@ -91,28 +91,31 @@
                                         </td>
                                         <td>
                                             <select class="form-select form-select-sm identifier-select dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-300" data-action="change->kit-refill#updateAvailable">
-                                                {% set found_default = false %}
+                                                {% set target_id = null %}
+                                                {% if p.material.nature == 'CONSUMIBLE' %}
+                                                    {% set target_id = p.batch ? p.batch.id : 'NO_BATCH' %}
+                                                {% else %}
+                                                    {% set target_id = p.unit ? p.unit.id : null %}
+                                                {% endif %}
+
+                                                {% if not target_id or (p.placeholder|default(false)) %}
+                                                    {# Placeholder or missing: find first available #}
+                                                    {% set found_avail = false %}
+                                                    {% for opt in warehouseOptions[p.material.id] %}
+                                                        {% if not found_avail and not opt.busy|default(false) %}
+                                                            {% set target_id = opt.id %}
+                                                            {% set found_avail = true %}
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                {% endif %}
+
                                                 {% for opt in warehouseOptions[p.material.id] %}
-                                                    {% set selected = false %}
-                                                    {% if p.material.nature == 'CONSUMIBLE' %}
-                                                        {% if p.batch and p.batch.id == opt.id %}{% set selected = true %}{% elseif not p.batch and opt.id == 'NO_BATCH' %}{% set selected = true %}{% endif %}
-                                                    {% else %}
-                                                        {% if p.unit and p.unit.id == opt.id %}{% set selected = true %}{% endif %}
-                                                    {% endif %}
-
-                                                    {# If no specific unit is selected yet (placeholder) or if the previous logic didn't find a match,
-                                                       pick the FIRST available (not busy) unit. #}
-                                                    {% if not selected and not found_default and not opt.busy|default(false) %}
-                                                        {% set selected = true %}
-                                                        {% set found_default = true %}
-                                                    {% endif %}
-
                                                     <option value="{{ opt.id }}"
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"
                                                             style="{{ opt.busy|default(false) ? 'color: #f87171 !important; font-weight: bold;' : '' }}"
-                                                            {{ selected ? 'selected' : '' }}>
+                                                            {{ opt.id == target_id ? 'selected' : '' }}>
                                                         {{ opt.label }} {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% elseif opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}
                                                     </option>
                                                 {% endfor %}
