@@ -15,7 +15,10 @@
         <div class="col-lg-6">
             <div class="card border-0 shadow-sm rounded-4">
                 <div class="card-body p-5">
-                    <form action="{{ path('app_kit_new') }}" method="POST">
+                    <form action="{{ path('app_kit_new') }}" method="POST"
+                          data-controller="kit-registration"
+                          data-kit-registration-check-alias-url-value="{{ path('app_kit_check_alias') }}"
+                          data-action="submit->kit-registration#handleSubmit">
                         <input type="hidden" name="_token" value="{{ csrf_token('kit_new') }}">
 
                         <div class="mb-4">
@@ -32,8 +35,13 @@
                         <div class="row">
                             <div class="col-md-6 mb-4">
                                 <label for="alias" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Alias / Identificador</label>
-                                <input type="text" name="alias" id="alias" class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" placeholder="Ej: Botiquín Alfa 1">
-                                <div id="alias_warning" class="text-[10px] text-red-500 font-bold mt-1 d-none">
+                                <input type="text" name="alias" id="alias" 
+                                       class="form-control form-control-lg border-0 bg-slate-50 rounded-3 text-sm font-bold" 
+                                       placeholder="Ej: Botiquín Alfa 1"
+                                       data-kit-registration-target="alias"
+                                       data-action="input->kit-registration#checkAlias">
+                                <div id="alias_warning" class="text-[10px] text-red-500 font-bold mt-1 d-none"
+                                     data-kit-registration-target="aliasWarning">
                                     <i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> Este alias ya está en uso.
                                 </div>
                             </div>
@@ -53,7 +61,11 @@
                             <div class="col-md-6 mb-4">
                                 <label for="purchase_price" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">Precio de Compra</label>
                                 <div class="input-group">
-                                    <input type="number" step="0.01" name="purchase_price" id="purchase_price" class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" placeholder="0.00">
+                                    <input type="number" step="0.01" name="purchase_price" id="purchase_price" 
+                                           class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" 
+                                           placeholder="0.00"
+                                           data-kit-registration-target="purchasePrice"
+                                           data-action="input->kit-registration#calculate">
                                     <span class="input-group-text border-0 bg-slate-50 rounded-e-3 text-slate-400">€</span>
                                 </div>
                             </div>
@@ -63,18 +75,25 @@
                             <div class="col-md-6 mb-4">
                                 <label for="margin_percentage" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">% Margen</label>
                                 <div class="input-group">
-                                    <input type="number" step="0.1" name="margin_percentage" id="margin_percentage" class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" placeholder="0.0">
+                                    <input type="number" step="0.1" name="margin_percentage" id="margin_percentage" 
+                                           class="form-control form-control-lg border-0 bg-slate-50 rounded-s-3 text-sm font-bold" 
+                                           placeholder="0.0"
+                                           data-kit-registration-target="margin"
+                                           data-action="input->kit-registration#calculate">
                                     <span class="input-group-text border-0 bg-slate-50 rounded-e-3 text-slate-400">%</span>
                                 </div>
                             </div>
     
                             <div class="col-md-6 mb-4">
                                 <label for="iva" class="form-label text-xs font-black uppercase tracking-widest text-slate-400">IVA (%)</label>
-                                <select name="iva" id="iva" class="form-select form-select-lg border-0 bg-slate-50 rounded-3 text-sm font-bold">
-                                    <option value="1.21" selected>21</option>
-                                    <option value="0.10">10</option>
-                                    <option value="0.04">4</option>
-                                    <option value="0">0</option>
+                                <select name="iva" id="iva" class="form-select form-select-lg border-0 bg-slate-50 rounded-3 text-sm font-bold"
+                                        data-kit-registration-target="iva"
+                                        data-action="change->kit-registration#calculate">
+                                    <option value="included" selected>IVA Incluido</option>
+                                    <option value="0.21">21%</option>
+                                    <option value="0.10">10%</option>
+                                    <option value="0.04">4%</option>
+                                    <option value="0">0%</option>
                                 </select>
                             </div>
                         </div>
@@ -82,96 +101,14 @@
                         <div class="bg-blue-50/50 rounded-4 p-4 mb-5">
                             <div class="flex justify-between items-center">
                                 <span class="text-xs font-black uppercase tracking-widest text-blue-600">Precio Total (Valuación)</span>
-                                <span class="text-2xl font-black text-blue-700" id="total_price_display">0.00 €</span>
+                                <span class="text-2xl font-black text-blue-700" id="total_price_display"
+                                      data-kit-registration-target="totalDisplay">0.00 €</span>
                             </div>
-                            <div id="iva_included_hint" class="text-[10px] text-blue-500 font-bold mt-2 d-none">
+                            <div id="iva_included_hint" class="text-[10px] text-blue-500 font-bold mt-2 d-none"
+                                 data-kit-registration-target="ivaHint">
                                 * El precio de compra introducido se tratará como TOTAL. La base imponible se calculará automáticamente.
                             </div>
-                                       <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const form = document.querySelector('form');
-                                const aliasInput = document.getElementById('alias');
-                                const aliasWarning = document.getElementById('alias_warning');
-                                const purchaseInput = document.getElementById('purchase_price');
-                                const marginInput = document.getElementById('margin_percentage');
-                                const ivaInput = document.getElementById('iva');
-                                const ivaHint = document.getElementById('iva_included_hint');
-                                const display = document.getElementById('total_price_display');
-                                let aliasAvailable = true;
-    
-                                function calculate() {
-                                    let inputPrice = parseFloat(purchaseInput.value) || 0;
-                                    const margin = parseFloat(marginInput.value) || 0;
-                                    const ivaVal = ivaInput.value;
-                                    
-                                    // Requirement: Default IVA 21% (value 1.21) means "IVA Included"
-                                    // Calculation Case 2: Total = Purchase Price - (Purchase Price * Margin%)
-                                    // The user considers inputPrice as the final price if no margin is set.
-
-                                    const discountAmount = inputPrice * (margin / 100);
-                                    let totalValuation = inputPrice - discountAmount;
-
-                                    if (ivaVal === '1.21') {
-                                        ivaHint.classList.remove('d-none');
-                                    } else {
-                                        ivaHint.classList.add('d-none');
-                                        // If user explicitly changes IVA from 21% to something else,
-                                        // we interpret this as "Input price was base, now apply new IVA"
-                                        // OR "Input price was total with 21%, now total with X%"
-                                        // Based on requirement: "the final price is already VAT included"
-                                        // This implies we don't need to increase the price if IVA changes,
-                                        // but the user might want to see how the base changes.
-                                        // However, the "Total Price" display should follow the requirement:
-                                        // "Total = Purchase - (Purchase * Discount)"
-                                    }
-                                    
-                                    display.innerText = totalValuation.toLocaleString('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
-                                }
-
-
-                                async function checkAlias() {
-                                    const alias = aliasInput.value.trim();
-                                    if (alias.length < 3) {
-                                        aliasWarning.classList.add('d-none');
-                                        aliasInput.classList.remove('is-invalid');
-                                        aliasAvailable = true;
-                                        return;
-                                    }
-
-                                    try {
-                                        const response = await fetch(`{{ path('app_kit_check_alias') }}?alias=${encodeURIComponent(alias)}`);
-                                        const data = await response.json();
-                                        if (!data.available) {
-                                            aliasWarning.classList.remove('d-none');
-                                            aliasInput.classList.add('is-invalid');
-                                            aliasAvailable = false;
-                                        } else {
-                                            aliasWarning.classList.add('d-none');
-                                            aliasInput.classList.remove('is-invalid');
-                                            aliasAvailable = true;
-                                        }
-                                    } catch (e) {
-                                        console.error('Error checking alias', e);
-                                    }
-                                }
-
-                                form.addEventListener('submit', function(e) {
-                                    if (!aliasAvailable) {
-                                        e.preventDefault();
-                                        Swal.fire({
-                                            icon: 'error',
-                                            title: 'Alias no disponible',
-                                            text: 'Por favor, elige un identificador único para este botiquín.'
-                                        });
-                                    }
-                                });
-    
-                                purchaseInput.addEventListener('input', calculate);
-                                marginInput.addEventListener('input', calculate);
-                                ivaInput.addEventListener('change', calculate);
-                                aliasInput.addEventListener('input', checkAlias); // Changed to input for real-time
-                            });
-                        </script>          </script>
+                        </div>
 
                         <div class="d-grid gap-2">
                             <button type="submit" class="btn btn-primary btn-lg rounded-3 font-black uppercase tracking-widest shadow-sm py-3">

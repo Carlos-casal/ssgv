@@ -12,6 +12,17 @@ import './bootstrap.js';
 // Import and initialize Lucide icons
 import { createIcons, icons } from 'lucide';
 
+const initializeIcons = () => {
+    createIcons({
+        icons,
+        attrs: {
+            class: 'lucide-icon',
+            'stroke-width': 2,
+        }
+    });
+};
+
+
 const initializeTooltips = () => {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {

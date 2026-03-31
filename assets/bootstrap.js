@@ -23,6 +23,8 @@ import SidebarController from './controllers/sidebar_controller.js';
 import ThemeController from './controllers/theme_controller.js';
 import NotificationController from './controllers/notification_controller.js';
 import KitRefillController from './controllers/kit-refill_controller.js';
+import KitRegistrationController from './controllers/kit_registration_controller.js';
+
 
 const app = startStimulusApp();
 
@@ -49,3 +51,5 @@ app.register('csrf-protection', CsrfProtectionController);
 app.register('hello', HelloController);
 app.register('material-comms-form', MaterialCommsFormController);
 app.register('kit-refill', KitRefillController);
+app.register('kit-registration', KitRegistrationController);
+
