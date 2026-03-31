@@ -577,38 +577,47 @@ class KitController extends AbstractController
         $availableInWarehouse = 0;
 
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $stocksInWarehouse = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+            $stocks = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
                 ->leftJoin('ms.batch', 'b')
+                ->leftJoin('ms.location', 'l')
                 ->where('ms.material = :material')
-                ->andWhere('ms.location = :location')
                 ->andWhere('ms.quantity > 0')
+                ->andWhere('l.type IN (:types)')
                 ->setParameter('material', $material)
-                ->setParameter('location', $centralWarehouse)
+                ->setParameter('types', [Location::TYPE_WAREHOUSE, Location::TYPE_KIT])
                 ->orderBy('b.createdAt', 'ASC') // FIFO: Oldest stock first
                 ->addOrderBy('b.expirationDate', 'ASC')
                 ->addOrderBy('b.id', 'ASC')
                 ->getQuery()
                 ->getResult();
 
-            foreach ($stocksInWarehouse as $stock) {
+            foreach ($stocks as $stock) {
+                $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() === Location::TYPE_KIT && $stock->getLocation() !== $kitLocation);
                 $options[] = [
                     'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
-                    'available' => $stock->getQuantity()
+                    'available' => $stock->getQuantity(),
+                    'busy' => $isBusy,
+                    'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar'
                 ];
-                $availableInWarehouse += $stock->getQuantity();
+                if (!$isBusy) {
+                    $availableInWarehouse += $stock->getQuantity();
+                }
             }
 
-            // Initial FIFO proposal based on options
+            // Initial FIFO proposal based on non-busy (warehouse) stocks
             if (!$manualOnly) {
                 $remainingNeeded = $needed;
-                foreach ($stocksInWarehouse as $stock) {
+                foreach ($stocks as $stock) {
+                    $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() === Location::TYPE_KIT && $stock->getLocation() !== $kitLocation);
+                    if ($isBusy) continue; // Do not auto-propose items from other kits
+                    
                     if ($remainingNeeded <= 0) break;
                     $take = min($remainingNeeded, $stock->getQuantity());
                     $proposals[] = [
                         'material' => $material,
                         'quantity' => $take,
-                        'origin' => $centralWarehouse,
+                        'origin' => $stock->getLocation(),
                         'batch' => $stock->getBatch(),
                         'unit' => null
                     ];

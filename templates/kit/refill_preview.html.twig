@@ -116,7 +116,9 @@
                                                             data-location-name="{{ opt.locationName|default('') }}"
                                                             style="{{ opt.busy|default(false) ? 'color: #f87171 !important; font-weight: bold;' : '' }}"
                                                             {{ opt.id == target_id ? 'selected' : '' }}>
-                                                        {{ opt.label }} {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% elseif opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}
+                                                        {{ opt.label }} 
+                                                        {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% endif %}
+                                                        {% if opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}
                                                     </option>
                                                 {% endfor %}
                                             </select>
