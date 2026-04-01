@@ -1,5 +1,4 @@
-// Force asset refresh
-import { startStimulusApp } from '@symfony/stimulus-bridge';
+import { Application } from '@hotwired/stimulus';
 import ModalController from './controllers/modal_controller.js';
 import ModalFormController from './controllers/modal_form_controller.js';
 import ResourceFormController from './controllers/resource_form_controller.js';
@@ -25,8 +24,7 @@ import NotificationController from './controllers/notification_controller.js';
 import KitRefillController from './controllers/kit-refill_controller.js';
 import KitRegistrationController from './controllers/kit_registration_controller.js';
 
-
-const app = startStimulusApp();
+const app = Application.start();
 
 app.register('notification', NotificationController);
 app.register('sidebar', SidebarController);
@@ -53,3 +51,4 @@ app.register('material-comms-form', MaterialCommsFormController);
 app.register('kit-refill', KitRefillController);
 app.register('kit-registration', KitRegistrationController);
 
+export { app };

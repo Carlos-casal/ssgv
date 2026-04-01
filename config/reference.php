@@ -1536,15 +1536,33 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     generate_final_classes?: bool|Param, // Default: true
  *     generate_final_entities?: bool|Param, // Default: false
  * }
- * @psalm-type WebpackEncoreConfig = array{
- *     output_path: scalar|Param|null, // The path where Encore is building the assets - i.e. Encore.setOutputPath()
- *     crossorigin?: false|"anonymous"|"use-credentials"|Param, // crossorigin value when Encore.enableIntegrityHashes() is used, can be false (default), anonymous or use-credentials // Default: false
- *     preload?: bool|Param, // preload all rendered script and link tags automatically via the http2 Link header. // Default: false
+ * @psalm-type PentatrionViteConfig = array{
+ *     public_directory?: scalar|Param|null, // Default: "public"
+ *     build_directory?: scalar|Param|null, // we only need build_directory to locate entrypoints.json file, it's the "base" vite config parameter without slashes. // Default: "build"
+ *     proxy_origin?: scalar|Param|null, // Allows to use different origin for asset proxy, eg. http://host.docker.internal:5173 // Default: null
+ *     absolute_url?: bool|Param, // Prepend the rendered link and script tags with an absolute URL. // Default: false
+ *     throw_on_missing_entry?: scalar|Param|null, // Throw exception when entry is not present in the entrypoints file // Default: false
+ *     throw_on_missing_asset?: scalar|Param|null, // Throw exception when asset is not present in the manifest file // Default: true
  *     cache?: bool|Param, // Enable caching of the entry point file(s) // Default: false
- *     strict_mode?: bool|Param, // Throw an exception if the entrypoints.json file is missing or an entry is missing from the data // Default: true
- *     builds?: array<string, scalar|Param|null>,
- *     script_attributes?: array<string, scalar|Param|null>,
- *     link_attributes?: array<string, scalar|Param|null>,
+ *     preload?: "none"|"link-tag"|"link-header"|Param, // preload all rendered script and link tags automatically via the http2 Link header. (symfony/web-link is required) Instead <link rel="modulepreload"> will be used. // Default: "link-tag"
+ *     crossorigin?: false|true|"anonymous"|"use-credentials"|Param, // crossorigin value, can be false, true (default), anonymous (same as true) or use-credentials // Default: true
+ *     script_attributes?: list<scalar|Param|null>,
+ *     link_attributes?: list<scalar|Param|null>,
+ *     preload_attributes?: list<scalar|Param|null>,
+ *     default_build?: scalar|Param|null, // Deprecated: The "default_build" option is deprecated. Use "default_config" instead. // Default: null
+ *     builds?: array<string, array{ // Default: []
+ *         build_directory?: scalar|Param|null, // Default: "build"
+ *         script_attributes?: list<scalar|Param|null>,
+ *         link_attributes?: list<scalar|Param|null>,
+ *         preload_attributes?: list<scalar|Param|null>,
+ *     }>,
+ *     default_config?: scalar|Param|null, // Default: null
+ *     configs?: array<string, array{ // Default: []
+ *         build_directory?: scalar|Param|null, // Default: "build"
+ *         script_attributes?: list<scalar|Param|null>,
+ *         link_attributes?: list<scalar|Param|null>,
+ *         preload_attributes?: list<scalar|Param|null>,
+ *     }>,
  * }
  * @psalm-type KnpPaginatorConfig = array{
  *     default_options?: array{
@@ -1635,7 +1653,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     twig_extra?: TwigExtraConfig,
  *     security?: SecurityConfig,
  *     monolog?: MonologConfig,
- *     webpack_encore?: WebpackEncoreConfig,
+ *     pentatrion_vite?: PentatrionViteConfig,
  *     knp_paginator?: KnpPaginatorConfig,
  *     stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     "when@dev"?: array{
@@ -1654,7 +1672,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
  *         maker?: MakerConfig,
- *         webpack_encore?: WebpackEncoreConfig,
+ *         pentatrion_vite?: PentatrionViteConfig,
  *         knp_paginator?: KnpPaginatorConfig,
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },
@@ -1671,7 +1689,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
- *         webpack_encore?: WebpackEncoreConfig,
+ *         pentatrion_vite?: PentatrionViteConfig,
  *         knp_paginator?: KnpPaginatorConfig,
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },
@@ -1689,7 +1707,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         twig_extra?: TwigExtraConfig,
  *         security?: SecurityConfig,
  *         monolog?: MonologConfig,
- *         webpack_encore?: WebpackEncoreConfig,
+ *         pentatrion_vite?: PentatrionViteConfig,
  *         knp_paginator?: KnpPaginatorConfig,
  *         stof_doctrine_extensions?: StofDoctrineExtensionsConfig,
  *     },

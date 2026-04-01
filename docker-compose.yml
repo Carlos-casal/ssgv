@@ -1,0 +1,44 @@
+services:
+  database:
+    image: mysql:8.4
+    container_name: symfony_db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ssgv
+    ports:
+      - "127.0.0.1:3306:3306"
+
+  php:
+    build: .
+    container_name: symfony_php
+    volumes:
+      - .:/var/www/symfony
+    environment:
+      DATABASE_URL: "mysql://root:root@database:3306/ssgv?serverVersion=8.4.0&charset=utf8mb4"
+
+  nginx:
+    image: nginx:alpine
+    container_name: symfony_nginx
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - .:/var/www/symfony
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - php
+      - database
+
+  # --- AÑADE ESTO DE AQUÍ ABAJO ---
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: symfony_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=database
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    depends_on:
+      - database
