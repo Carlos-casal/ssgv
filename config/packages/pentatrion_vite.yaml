@@ -15,7 +15,7 @@ pentatrion_vite:
 
     # name of your build directory
     # default: build
-    build_dir: build
+    build_directory: build
 
     # name of your proxy path
     # default: /build

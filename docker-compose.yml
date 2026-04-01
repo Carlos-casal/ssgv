@@ -27,3 +27,18 @@ services:
     depends_on:
       - php
       - database
+
+  # --- AÑADE ESTO DE AQUÍ ABAJO ---
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: symfony_phpmyadmin
+    restart: always
+    ports:
+      - "8081:80"
+    environment:
+      - PMA_ARBITRARY=1
+      - PMA_HOST=database
+      - PMA_USER=root
+      - PMA_PASSWORD=root
+    depends_on:
+      - database
