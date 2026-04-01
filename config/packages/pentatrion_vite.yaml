@@ -1,0 +1,29 @@
+pentatrion_vite:
+    # check if you're in dev mode or not
+    # if you're in dev mode, it will try to connect to the vite dev server
+    # otherwise it will use the manifest.json file
+    # default: false
+    # dev_server:
+    #     enabled: true
+    #     host: localhost
+    #     port: 5173
+    #     https: false
+
+    # name of your public directory
+    # default: public
+    # public_dir: public
+
+    # name of your build directory
+    # default: build
+    build_dir: build
+
+    # name of your proxy path
+    # default: /build
+    # proxy_path: /build
+
+    # name of your manifest file
+    # default: manifest.json
+    # manifest_file: manifest.json
+
+    # default: true
+    # throw_on_missing_entry: true
