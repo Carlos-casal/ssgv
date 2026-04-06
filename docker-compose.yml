@@ -4,9 +4,9 @@ services:
     container_name: symfony_db
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: ssgv
+      MYSQL_DATABASE: volunteer_management
     ports:
-      - "127.0.0.1:3306:3306"
+      - "3306:3306"
 
   php:
     build: .
@@ -14,13 +14,13 @@ services:
     volumes:
       - .:/var/www/symfony
     environment:
-      DATABASE_URL: "mysql://root:root@database:3306/ssgv?serverVersion=8.4.0&charset=utf8mb4"
+      DATABASE_URL: "mysql://root:root@database:3306/volunteer_management?serverVersion=8.4.0&charset=utf8mb4"
 
   nginx:
     image: nginx:alpine
     container_name: symfony_nginx
     ports:
-      - "127.0.0.1:8080:80"
+      - "8080:80"
     volumes:
       - .:/var/www/symfony
       - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
@@ -28,7 +28,6 @@ services:
       - php
       - database
 
-  # --- AÑADE ESTO DE AQUÍ ABAJO ---
   phpmyadmin:
     image: phpmyadmin
     container_name: symfony_phpmyadmin

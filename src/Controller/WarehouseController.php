@@ -21,7 +21,16 @@ class WarehouseController extends AbstractController
     ): Response {
         $materials = $materialRepository->findBy([], ['id' => 'DESC']);
         $vehicles = $vehicleRepository->findAll();
-        $locations = $locationRepository->findAll();
+        // Filter out Almacén Central and orphaned/deleted KIT locations
+        $locations = $locationRepository->createQueryBuilder('l')
+            ->leftJoin('l.materialUnit', 'mu')
+            ->where('l.name != :almacenCentral')
+            ->andWhere('l.type != :kitType OR mu.id IS NOT NULL')
+            ->setParameter('almacenCentral', 'Almacén Central')
+            ->setParameter('kitType', \App\Entity\Location::TYPE_KIT)
+            ->getQuery()
+            ->getResult();
+            
         $recentReviews = $reviewRepository->findBy([], ['reviewDate' => 'DESC'], 5);
 
         $totalValuation = 0;

@@ -577,15 +577,23 @@ class KitController extends AbstractController
         $availableInWarehouse = 0;
 
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-            $stocks = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+            $qb = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
                 ->leftJoin('ms.batch', 'b')
                 ->leftJoin('ms.location', 'l')
                 ->where('ms.material = :material')
                 ->andWhere('ms.quantity > 0')
-                ->andWhere('l.type IN (:types)')
-                ->setParameter('material', $material)
-                ->setParameter('types', [Location::TYPE_WAREHOUSE, Location::TYPE_KIT])
-                ->orderBy('b.createdAt', 'ASC') // FIFO: Oldest stock first
+                ->setParameter('material', $material);
+
+            if ($kitLocation && $kitLocation->getId()) {
+                $qb->andWhere('(l.type = :warehouseType OR l = :kitLoc)')
+                   ->setParameter('warehouseType', Location::TYPE_WAREHOUSE)
+                   ->setParameter('kitLoc', $kitLocation);
+            } else {
+                $qb->andWhere('l.type = :warehouseType')
+                   ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
+            }
+
+            $stocks = $qb->orderBy('b.createdAt', 'ASC') // FIFO: Oldest stock first
                 ->addOrderBy('b.expirationDate', 'ASC')
                 ->addOrderBy('b.id', 'ASC')
                 ->getQuery()
@@ -645,13 +653,23 @@ class KitController extends AbstractController
         } else {
             // Technical Equipment - Get ALL units but identify those in other kits
             // ORDERING REQUIREMENT: Unassigned/Warehouse first, then by date (FIFO), then occupied at the end.
-            $allUnits = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
+            $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
                 ->leftJoin('u.location', 'l')
                 ->where('u.material = :material')
                 ->andWhere('u.operationalStatus = :status')
                 ->setParameter('material', $material)
-                ->setParameter('status', 'OPERATIVO')
-                ->orderBy('u.id', 'ASC') // Registration date proxy
+                ->setParameter('status', 'OPERATIVO');
+
+            if ($kitLocation && $kitLocation->getId()) {
+                $qb->andWhere('(l IS NULL OR l.type != :kitType OR l = :kitLoc)')
+                   ->setParameter('kitType', Location::TYPE_KIT)
+                   ->setParameter('kitLoc', $kitLocation);
+            } else {
+                $qb->andWhere('(l IS NULL OR l.type != :kitType)')
+                   ->setParameter('kitType', Location::TYPE_KIT);
+            }
+
+            $allUnits = $qb->orderBy('u.id', 'ASC') // Registration date proxy
                 ->getQuery()
                 ->getResult();
 
