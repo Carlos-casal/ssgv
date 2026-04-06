@@ -107,7 +107,7 @@ class SecurityController extends AbstractController
                 ->subject('[Protección Civil Vigo] Restablecer contraseña')
                 ->htmlTemplate('emails/reset_password.html.twig')
                 ->context([
-                    'user_name' => $user->getVolunteer() ? $user->getVolunteer()->getName() : 'Usuario',
+                    'user_name' => $user->getName() ?: 'Usuario',
                     'reset_url' => $resetUrl,
                 ]);
 

@@ -111,4 +111,27 @@ class UserTest extends TestCase
         $user->eraseCredentials();
         $this->assertTrue(true);
     }
+
+    /**
+     * Tests the getName method.
+     */
+    public function testGetName(): void
+    {
+        $user = new User();
+        $this->assertNull($user->getName());
+
+        $volunteer = new Volunteer();
+        $volunteer->setName('Juan');
+        $volunteer->setLastName('Pérez García');
+        $user->setVolunteer($volunteer);
+
+        // Should return Name + first Last Name
+        $this->assertSame('Juan Pérez', $user->getName());
+
+        $volunteer->setLastName('Rodríguez');
+        $this->assertSame('Juan Rodríguez', $user->getName());
+
+        $volunteer->setLastName('');
+        $this->assertSame('Juan', $user->getName());
+    }
 }

@@ -246,4 +246,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
         return $this;
     }
+
+    /**
+     * Returns the name and first last name of the associated volunteer.
+     * This is used in templates that expect a "name" property on the User object.
+     *
+     * @return string|null
+     */
+    public function getName(): ?string
+    {
+        if (!$this->volunteer) {
+            return null;
+        }
+
+        $firstName = $this->volunteer->getName();
+        $lastName = $this->volunteer->getLastName();
+
+        if (!$lastName) {
+            return $firstName;
+        }
+
+        // Get only the first part of the last name (Nombre y primer apellido)
+        $parts = explode(' ', trim($lastName));
+        $firstLastName = $parts[0];
+
+        return trim($firstName . ' ' . $firstLastName);
+    }
 }
