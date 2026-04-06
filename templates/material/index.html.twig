@@ -32,7 +32,7 @@
                             <option value="{{ f }}" {{ current_subfamily == f ? 'selected' : '' }}>{{ f }}</option>
                         {% endfor %}
                     </select>
-                {% else %}
+                {% elseif current_category == 'Uniformidad' %}
                     <select name="size" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
                         <option value="">Filtrar por talla...</option>
                         <optgroup label="Letras">

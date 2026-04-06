@@ -69,7 +69,7 @@ export default class extends Controller {
         identifierContainer.innerHTML = html;
 
         const quantityInput = row.querySelector('.quantity-input');
-        if (nature === 'EQUIPO') {
+        if (nature === 'EQUIPO_TECNICO') {
             quantityInput.value = 1;
             quantityInput.readOnly = true;
         } else {
@@ -130,7 +130,7 @@ export default class extends Controller {
         const available = parseInt(select.options[select.selectedIndex].dataset.available || 0);
         let value = parseInt(input.value);
 
-        if (nature === 'EQUIPO') {
+        if (nature === 'EQUIPO_TECNICO') {
             input.value = 1;
         } else if (value > available) {
             input.value = available;
@@ -160,7 +160,7 @@ export default class extends Controller {
                 origin_id: this.originIdValue,
                 quantity: quantity,
                 batch_id: nature === 'CONSUMIBLE' ? (identifierSelect.value === 'NO_BATCH' ? null : identifierSelect.value) : null,
-                unit_id: nature === 'EQUIPO' ? identifierSelect.value : null
+                unit_id: nature === 'EQUIPO_TECNICO' ? identifierSelect.value : null
             };
             proposals.push(proposal);
         });

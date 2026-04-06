@@ -45,3 +45,4 @@ docker/db_data/
 var/tmp/*.xlsx
 test_*.php
 public/test_db.php
+.phpunit.cache/
