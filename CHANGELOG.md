@@ -1,6 +1,12 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.8.6] - 25-03-2026 (Versión Actual)
+## [1.8.7] - 25-03-2026 (Versión Actual)
+- **Identidad (Usuario):** Implementado el método `getName()` en la entidad `User` para centralizar la obtención del nombre amigable (Nombre y primer apellido) desde el perfil de voluntario.
+- **Correcciones (UX/UI):** Solucionado el error 500 en la vista de detalle de material (`material/show.html.twig`) al intentar acceder a la propiedad `name` inexistente en la clase `User`.
+- **Consistencia:** Actualizada la lógica de correos de recuperación de contraseña y el historial de trazabilidad de unidades técnicas para utilizar el nuevo método estandarizado de visualización de nombres.
+- **Trazabilidad:** Mejora en la visualización de responsables en el historial de movimientos de material, permitiendo la caída automática al email si no existe perfil de voluntario asociado.
+
+## [1.8.6] - 25-03-2026
 - **Logística (Botiquines):** Implementada la separación física entre la "Identidad del Contenedor" (Alias, SN, Asociación de Plantilla) y la "Definición de Contenido" (Plantilla).
 - **UX/UI (Botiquines):** Nueva vista de edición de identidad para botiquines físicos, accesible desde el listado general e inventario.
 - **Correcciones (Cruce de Datos):** Solucionado el error que sobrescribía nombres de materiales maestros (ej: Pulse Oximeter) con el alias del botiquín al editar la plantilla.
