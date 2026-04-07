@@ -582,16 +582,9 @@ class KitController extends AbstractController
                 ->leftJoin('ms.location', 'l')
                 ->where('ms.material = :material')
                 ->andWhere('ms.quantity > 0')
-                ->setParameter('material', $material);
-
-            if ($kitLocation && $kitLocation->getId()) {
-                $qb->andWhere('(l.type = :warehouseType OR l = :kitLoc)')
-                   ->setParameter('warehouseType', Location::TYPE_WAREHOUSE)
-                   ->setParameter('kitLoc', $kitLocation);
-            } else {
-                $qb->andWhere('l.type = :warehouseType')
-                   ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
-            }
+                ->andWhere('l.type = :warehouseType')
+                ->setParameter('material', $material)
+                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
 
             $stocks = $qb->orderBy('b.createdAt', 'ASC') // FIFO: Oldest stock first
                 ->addOrderBy('b.expirationDate', 'ASC')
@@ -600,26 +593,20 @@ class KitController extends AbstractController
                 ->getResult();
 
             foreach ($stocks as $stock) {
-                $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() === Location::TYPE_KIT && $stock->getLocation() !== $kitLocation);
                 $options[] = [
                     'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
-                    'busy' => $isBusy,
+                    'busy' => false,
                     'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar'
                 ];
-                if (!$isBusy) {
-                    $availableInWarehouse += $stock->getQuantity();
-                }
+                $availableInWarehouse += $stock->getQuantity();
             }
 
-            // Initial FIFO proposal based on non-busy (warehouse) stocks
+            // Initial FIFO proposal based on warehouse stocks
             if (!$manualOnly) {
                 $remainingNeeded = $needed;
                 foreach ($stocks as $stock) {
-                    $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() === Location::TYPE_KIT && $stock->getLocation() !== $kitLocation);
-                    if ($isBusy) continue; // Do not auto-propose items from other kits
-                    
                     if ($remainingNeeded <= 0) break;
                     $take = min($remainingNeeded, $stock->getQuantity());
                     $proposals[] = [
@@ -651,66 +638,42 @@ class KitController extends AbstractController
                 }
             }
         } else {
-            // Technical Equipment - Get ALL units but identify those in other kits
-            // ORDERING REQUIREMENT: Unassigned/Warehouse first, then by date (FIFO), then occupied at the end.
+            // Technical Equipment - Get only warehouse units
             $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
                 ->leftJoin('u.location', 'l')
                 ->where('u.material = :material')
                 ->andWhere('u.operationalStatus = :status')
+                ->andWhere('l.type = :warehouseType OR l IS NULL')
                 ->setParameter('material', $material)
-                ->setParameter('status', 'OPERATIVO');
+                ->setParameter('status', 'OPERATIVO')
+                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
 
-            if ($kitLocation && $kitLocation->getId()) {
-                $qb->andWhere('(l IS NULL OR l.type != :kitType OR l = :kitLoc)')
-                   ->setParameter('kitType', Location::TYPE_KIT)
-                   ->setParameter('kitLoc', $kitLocation);
-            } else {
-                $qb->andWhere('(l IS NULL OR l.type != :kitType)')
-                   ->setParameter('kitType', Location::TYPE_KIT);
-            }
-
-            $allUnits = $qb->orderBy('u.id', 'ASC') // Registration date proxy
+            $warehouseUnits = $qb->orderBy('u.id', 'ASC') // Registration date proxy
                 ->getQuery()
                 ->getResult();
 
-            // Sort logic: (Warehouse or No Location) first, then others.
-            usort($allUnits, function($a, $b) use ($centralWarehouse) {
-                $aInWarehouse = ($a->getLocation() === $centralWarehouse || !$a->getLocation());
-                $bInWarehouse = ($b->getLocation() === $centralWarehouse || !$b->getLocation());
-
-                if ($aInWarehouse && !$bInWarehouse) return -1;
-                if (!$aInWarehouse && $bInWarehouse) return 1;
-                return $a->getId() <=> $b->getId();
-            });
-
-            foreach ($allUnits as $u) {
-                $isBusy = ($u->getLocation() && $u->getLocation()->getType() === Location::TYPE_KIT && $u->getLocation() !== $kitLocation);
+            foreach ($warehouseUnits as $u) {
                 $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
 
                 $options[] = [
                     'id' => $u->getId(),
                     'label' => $label,
                     'available' => 1,
-                    'busy' => $isBusy,
+                    'busy' => false,
                     'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin asignar'
                 ];
-                if ($u->getLocation() === $centralWarehouse || !$u->getLocation()) {
-                    $availableInWarehouse += 1;
-                }
+                $availableInWarehouse += 1;
             }
 
             if (!$manualOnly) {
-                $unitsInWarehouse = array_filter($allUnits, fn($u) => ($u->getLocation() === $centralWarehouse || !$u->getLocation()));
-                $unitsInWarehouse = array_values($unitsInWarehouse);
-
-                // Initial FIFO proposal
-                for ($i = 0; $i < min($needed, count($unitsInWarehouse)); $i++) {
+                // Initial FIFO proposal from warehouse units
+                for ($i = 0; $i < min($needed, count($warehouseUnits)); $i++) {
                     $proposals[] = [
                         'material' => $material,
                         'quantity' => 1,
-                        'origin' => $centralWarehouse,
+                        'origin' => $warehouseUnits[$i]->getLocation() ?: $centralWarehouse,
                         'batch' => null,
-                        'unit' => $unitsInWarehouse[$i]
+                        'unit' => $warehouseUnits[$i]
                     ];
                 }
 
@@ -723,8 +686,8 @@ class KitController extends AbstractController
                 }
 
                 // If no unit was available in warehouse for some of the needed ones, add placeholders
-                if ($needed > count($unitsInWarehouse)) {
-                    for ($i = 0; $i < ($needed - count($unitsInWarehouse)); $i++) {
+                if ($needed > count($warehouseUnits)) {
+                    for ($i = 0; $i < ($needed - count($warehouseUnits)); $i++) {
                         $proposals[] = [
                             'material' => $material,
                             'quantity' => 1,
@@ -999,31 +962,62 @@ class KitController extends AbstractController
 
     private function findAlternativeLocations(Material $material, Location $warehouse, Location $excludeKit, EntityManagerInterface $entityManager): array
     {
-        $qb = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
-            ->where('ms.material = :material')
-            ->andWhere('ms.quantity > 0')
-            ->setParameter('material', $material);
-
-        if ($warehouse->getId()) {
-            $qb->andWhere('ms.location != :warehouse')
-               ->setParameter('warehouse', $warehouse);
-        }
-
-        if ($excludeKit->getId()) {
-            $qb->andWhere('ms.location != :kit')
-               ->setParameter('kit', $excludeKit);
-        }
-
-        $stocks = $qb->getQuery()->getResult();
-
         $alternatives = [];
-        foreach ($stocks as $s) {
-            $alternatives[] = [
-                'location' => $s->getLocation()->getName(),
-                'quantity' => $s->getQuantity(),
-                'type' => $s->getLocation()->getType()
-            ];
+
+        if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+            $qb = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
+                ->where('ms.material = :material')
+                ->andWhere('ms.quantity > 0')
+                ->setParameter('material', $material);
+
+            if ($warehouse->getId()) {
+                $qb->andWhere('ms.location != :warehouse')
+                   ->setParameter('warehouse', $warehouse);
+            }
+
+            if ($excludeKit->getId()) {
+                $qb->andWhere('ms.location != :kit')
+                   ->setParameter('kit', $excludeKit);
+            }
+
+            $stocks = $qb->getQuery()->getResult();
+
+            foreach ($stocks as $s) {
+                $alternatives[] = [
+                    'location' => $s->getLocation()->getName(),
+                    'quantity' => $s->getQuantity(),
+                    'type' => $s->getLocation()->getType()
+                ];
+            }
+        } else {
+            // For technical equipment, find units in other locations (Kits/Vehicles)
+            $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
+                ->join('u.location', 'l')
+                ->where('u.material = :material')
+                ->andWhere('l.type != :warehouseType')
+                ->andWhere('l != :excludeKit')
+                ->setParameter('material', $material)
+                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE)
+                ->setParameter('excludeKit', $excludeKit);
+
+            $units = $qb->getQuery()->getResult();
+
+            // Group by location
+            $grouped = [];
+            foreach ($units as $u) {
+                $locName = $u->getLocation()->getName();
+                if (!isset($grouped[$locName])) {
+                    $grouped[$locName] = [
+                        'location' => $locName,
+                        'quantity' => 0,
+                        'type' => $u->getLocation()->getType()
+                    ];
+                }
+                $grouped[$locName]['quantity']++;
+            }
+            $alternatives = array_values($grouped);
         }
+
         return $alternatives;
     }
 }
