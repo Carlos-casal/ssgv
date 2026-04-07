@@ -335,7 +335,8 @@ class MaterialController extends AbstractController
 
         try {
             $file = new \Symfony\Component\HttpFoundation\File\File($tempPath);
-            $result = $importService->processImport($file);
+            $resolutions = $request->request->all('conflict_resolutions');
+            $result = $importService->processImport($file, $resolutions);
 
             // Delete temp file
             unlink($tempPath);

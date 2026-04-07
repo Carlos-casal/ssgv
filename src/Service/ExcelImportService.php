@@ -109,11 +109,13 @@ class ExcelImportService
         $preview = [
             'total_rows' => 0,
             'materials' => [], // Grouped by target Material
+            'conflicts' => [], // Serial number conflicts
             'errors' => []
         ];
 
         $highestRow = $worksheet->getHighestRow();
-        
+        $seenSns = [];
+
         for ($row = 2; $row <= $highestRow; $row++) {
             $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
             if (empty($name)) continue;
@@ -121,7 +123,8 @@ class ExcelImportService
             $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
             $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
             $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
-            $sn = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
+            $sn = isset($map['serialNumber']) ? trim((string)$this->getCellValue($worksheet, $map['serialNumber'], $row)) : null;
+            if ($sn === '' || $sn === 'S/N') $sn = null;
             $nid = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
 
             $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
@@ -148,11 +151,61 @@ class ExcelImportService
                 ];
             }
 
+            // Check for Serial Number conflicts in EQUIPO_TECNICO
+            $resolvedNature = $material ? $material->getNature() : $nature;
+            if ($resolvedNature === Material::NATURE_TECHNICAL && $sn) {
+                $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
+                $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
+                $totalPrice = isset($map['totalPrice']) ? $this->getCellValue($worksheet, $map['totalPrice'], $row) : null;
+
+                $conflictType = null;
+                $existingUnit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $sn]);
+
+                if ($existingUnit) {
+                    $conflictType = 'database';
+                } elseif (isset($seenSns[$sn])) {
+                    $conflictType = 'excel';
+                }
+
+                if ($conflictType) {
+                    $preview['conflicts'][$sn] = [
+                        'type' => $conflictType,
+                        'serialNumber' => $sn,
+                        'existing' => $existingUnit ? [
+                            'alias' => $existingUnit->getAlias(),
+                            'brandModel' => $existingUnit->getMaterial()->getBrandModel(),
+                            'materialName' => $existingUnit->getMaterial()->getName(),
+                            'networkId' => $existingUnit->getNetworkId(),
+                            'phoneNumber' => $existingUnit->getPhoneNumber(),
+                            'price' => $existingUnit->getPurchasePrice(),
+                        ] : $seenSns[$sn],
+                        'new' => [
+                            'alias' => $alias,
+                            'brandModel' => $brandModel,
+                            'materialName' => $name,
+                            'networkId' => $nid,
+                            'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
+                            'price' => $totalPrice,
+                        ]
+                    ];
+                }
+
+                $seenSns[$sn] = [
+                    'alias' => $alias,
+                    'brandModel' => $brandModel,
+                    'materialName' => $name,
+                    'networkId' => $nid,
+                    'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
+                    'price' => $totalPrice,
+                ];
+            }
+
             $preview['materials'][$key]['stock_to_add'] += $stock;
 
             // For technical nature, track if we are creating a unit
-            $resolvedNature = $material ? $material->getNature() : $nature;
-            if ($resolvedNature === Material::NATURE_TECHNICAL && $sn && $sn !== 'S/N') {
+            if ($resolvedNature === Material::NATURE_TECHNICAL && $sn) {
+                // Only count as unit to create if it's NOT a conflict or we'll decide later
+                // Actually, let's just count them all for now, the UI will show conflicts separately
                 $preview['materials'][$key]['units_to_create']++;
             }
 
@@ -171,7 +224,7 @@ class ExcelImportService
     /**
      * Process the Excel import and create/update materials
      */
-    public function processImport(File $file): array
+    public function processImport(File $file, array $resolutions = []): array
     {
         $this->materialCache = [];
         $this->batchCache = [];
@@ -193,7 +246,8 @@ class ExcelImportService
         $images = $this->extractImagesFromWorksheet($worksheet);
         
         $highestRow = $worksheet->getHighestRow();
-        
+        $processedSns = [];
+
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
@@ -273,11 +327,26 @@ class ExcelImportService
 
                 // Handle Stock, Batches and Units
                 if ($material->getNature() === Material::NATURE_TECHNICAL) {
-                    if ($serialNumber && $serialNumber !== 'S/N') {
-                        $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $serialNumber]);
+                    $cleanSn = $serialNumber ? trim((string)$serialNumber) : null;
+                    if ($cleanSn === '' || $cleanSn === 'S/N') $cleanSn = null;
+
+                    if ($cleanSn) {
+                        $resolution = $resolutions[$cleanSn] ?? 'update';
+
+                        // If it's a duplicate within the same Excel and we already processed it
+                        if (in_array($cleanSn, $processedSns)) {
+                            if ($resolution === 'keep') {
+                                // Skip this row as we want to keep the one already processed
+                                continue;
+                            }
+                            // If resolution is 'update', we'll update the unit with THIS row's data
+                        }
+
+                        $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $cleanSn]);
+
                         if (!$unit) {
                             $this->materialManager->createUnit($material, [
-                                'serialNumber' => $serialNumber,
+                                'serialNumber' => $cleanSn,
                                 'alias' => $alias,
                                 'brandModel' => $brandModel,
                                 'purchasePrice' => $totalPrice,
@@ -287,12 +356,19 @@ class ExcelImportService
                                 'batteryStatus' => '100%',
                             ]);
                             $result['units_created']++;
+                            $processedSns[] = $cleanSn;
                         } else {
-                            if ($alias) $unit->setAlias($alias);
-                            if ($networkId && $networkId !== 'S/N') $unit->setNetworkId($networkId);
-                            if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
-                            if ($totalPrice) $unit->setPurchasePrice($totalPrice);
-                            if ($marginPct) $unit->setDiscountPct($marginPct);
+                            // Conflict resolution
+                            if ($resolution === 'update') {
+                                if ($alias) $unit->setAlias($alias);
+                                if ($networkId && $networkId !== 'S/N') $unit->setNetworkId($networkId);
+                                if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
+                                if ($totalPrice) $unit->setPurchasePrice($totalPrice);
+                                if ($marginPct) $unit->setDiscountPct($marginPct);
+                                // Ensure unit is linked to current material if it changed
+                                $unit->setMaterial($material);
+                            }
+                            $processedSns[] = $cleanSn;
                         }
                     } else {
                         // Technical bulk stock
