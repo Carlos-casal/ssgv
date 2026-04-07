@@ -176,9 +176,12 @@
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
                             {% for m in allMaterials %}
-                                {# Exclude kit container from manual addition #}
-                                {% if 'botiquín' not in m.name|lower and 'contenedor' not in m.name|lower and m.id != unit.material.id %}
-                                    <option value="{{ m.id }}" data-nature="{{ m.nature }}">{{ m.name }}</option>
+                                {# Exclude materials that HAVE NO AVAILABLE stock in warehouse #}
+                                {% if warehouseOptions[m.id]|default([])|length > 0 %}
+                                    {# Exclude kit container from manual addition #}
+                                    {% if 'botiquín' not in m.name|lower and 'contenedor' not in m.name|lower and m.id != unit.material.id %}
+                                        <option value="{{ m.id }}" data-nature="{{ m.nature }}">{{ m.name }}</option>
+                                    {% endif %}
                                 {% endif %}
                             {% endfor %}
                         </select>

@@ -579,7 +579,7 @@ class KitController extends AbstractController
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
             $qb = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
                 ->leftJoin('ms.batch', 'b')
-                ->leftJoin('ms.location', 'l')
+                ->join('ms.location', 'l') // STRICT JOIN
                 ->where('ms.material = :material')
                 ->andWhere('ms.quantity > 0')
                 ->andWhere('l.type = :warehouseType')
@@ -639,11 +639,13 @@ class KitController extends AbstractController
             }
         } else {
             // Technical Equipment - Get only warehouse units
+            // NOTE: We strictly only allow units that are explicitly in a Warehouse location.
+            // Units with NULL location are considered "unassigned" and should be assigned to a warehouse first.
             $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
-                ->leftJoin('u.location', 'l')
+                ->join('u.location', 'l') // STRICT JOIN
                 ->where('u.material = :material')
                 ->andWhere('u.operationalStatus = :status')
-                ->andWhere('l.type = :warehouseType OR l IS NULL')
+                ->andWhere('l.type = :warehouseType')
                 ->setParameter('material', $material)
                 ->setParameter('status', 'OPERATIVO')
                 ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
