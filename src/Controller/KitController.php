@@ -363,14 +363,16 @@ class KitController extends AbstractController
             $this->addMaterialOptionsToRefill($m, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true);
         }
 
-        // Sort warehouse options by ID ascending to ensure oldest is first
+        // Sort warehouse options: Non-busy first (Warehouse), then busy ones (Other locations/unassigned).
+        // Within groups, sort by ID ascending (oldest first).
         foreach ($warehouseOptions as $matId => &$options) {
             usort($options, function($a, $b) {
-                // If one is busy and other is not, busy goes last
                 $aBusy = $a['busy'] ?? false;
                 $bBusy = $b['busy'] ?? false;
-                if ($aBusy && !$bBusy) return 1;
-                if (!$aBusy && $bBusy) return -1;
+
+                if ($aBusy !== $bBusy) {
+                    return $aBusy ? 1 : -1;
+                }
 
                 if ($a['id'] === $b['id']) return 0;
                 if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
@@ -501,14 +503,16 @@ class KitController extends AbstractController
             $this->addMaterialOptionsToRefill($m, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true);
         }
 
-        // Sort warehouse options by ID ascending to ensure oldest is first
+        // Sort warehouse options: Non-busy first (Warehouse), then busy ones (Other locations/unassigned).
+        // Within groups, sort by ID ascending (oldest first).
         foreach ($warehouseOptions as $matId => &$options) {
             usort($options, function($a, $b) {
-                // If one is busy and other is not, busy goes last
                 $aBusy = $a['busy'] ?? false;
                 $bBusy = $b['busy'] ?? false;
-                if ($aBusy && !$bBusy) return 1;
-                if (!$aBusy && $bBusy) return -1;
+
+                if ($aBusy !== $bBusy) {
+                    return $aBusy ? 1 : -1;
+                }
 
                 if ($a['id'] === $b['id']) return 0;
                 if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
@@ -579,13 +583,12 @@ class KitController extends AbstractController
         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
             $qb = $entityManager->getRepository(MaterialStock::class)->createQueryBuilder('ms')
                 ->leftJoin('ms.batch', 'b')
-                ->join('ms.location', 'l') // STRICT JOIN
+                ->join('ms.location', 'l')
                 ->where('ms.material = :material')
                 ->andWhere('ms.quantity > 0')
-                ->andWhere('l.type = :warehouseType')
-                ->setParameter('material', $material)
-                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
+                ->setParameter('material', $material);
 
+            // Fetch everything but filter 'busy' in loop
             $stocks = $qb->orderBy('b.createdAt', 'ASC') // FIFO: Oldest stock first
                 ->addOrderBy('b.expirationDate', 'ASC')
                 ->addOrderBy('b.id', 'ASC')
@@ -593,14 +596,22 @@ class KitController extends AbstractController
                 ->getResult();
 
             foreach ($stocks as $stock) {
+                $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
+
+                // Skip if it is ALREADY in the current kit (avoid duplicates)
+                if ($stock->getLocation() === $kitLocation) continue;
+
                 $options[] = [
                     'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
-                    'busy' => false,
+                    'busy' => $isBusy,
                     'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar'
                 ];
-                $availableInWarehouse += $stock->getQuantity();
+
+                if (!$isBusy) {
+                    $availableInWarehouse += $stock->getQuantity();
+                }
             }
 
             // Initial FIFO proposal based on warehouse stocks
@@ -638,33 +649,39 @@ class KitController extends AbstractController
                 }
             }
         } else {
-            // Technical Equipment - Get only warehouse units
-            // NOTE: We strictly only allow units that are explicitly in a Warehouse location.
-            // Units with NULL location are considered "unassigned" and should be assigned to a warehouse first.
+            // Technical Equipment - Get ALL units
             $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
-                ->join('u.location', 'l') // STRICT JOIN
+                ->leftJoin('u.location', 'l')
                 ->where('u.material = :material')
                 ->andWhere('u.operationalStatus = :status')
-                ->andWhere('l.type = :warehouseType')
                 ->setParameter('material', $material)
-                ->setParameter('status', 'OPERATIVO')
-                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
+                ->setParameter('status', 'OPERATIVO');
 
-            $warehouseUnits = $qb->orderBy('u.id', 'ASC') // Registration date proxy
+            $allUnits = $qb->orderBy('u.id', 'ASC') // Registration date proxy
                 ->getQuery()
                 ->getResult();
 
-            foreach ($warehouseUnits as $u) {
+            $warehouseUnits = [];
+
+            foreach ($allUnits as $u) {
+                // Skip if it is ALREADY in the current kit
+                if ($u->getLocation() === $kitLocation) continue;
+
+                $isBusy = ($u->getLocation() === null || $u->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
                 $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
 
                 $options[] = [
                     'id' => $u->getId(),
                     'label' => $label,
                     'available' => 1,
-                    'busy' => false,
-                    'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin asignar'
+                    'busy' => $isBusy,
+                    'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar'
                 ];
-                $availableInWarehouse += 1;
+
+                if (!$isBusy) {
+                    $availableInWarehouse += 1;
+                    $warehouseUnits[] = $u;
+                }
             }
 
             if (!$manualOnly) {

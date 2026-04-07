@@ -114,7 +114,8 @@
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"
-                                                            style="{{ opt.busy|default(false) ? 'color: #f87171 !important; font-weight: bold;' : '' }}"
+                                                            class="{{ opt.busy|default(false) ? 'text-red-600 font-bold' : '' }}"
+                                                            style="{{ opt.busy|default(false) ? 'color: #dc2626 !important; font-weight: bold;' : '' }}"
                                                             {{ opt.id == target_id ? 'selected' : '' }}>
                                                         {{ opt.label }} 
                                                         {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% endif %}
@@ -176,7 +177,7 @@
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
                             {% for m in allMaterials %}
-                                {# Exclude materials that HAVE NO AVAILABLE stock in warehouse #}
+                                {# Exclude materials that HAVE NO AVAILABLE stock or units anywhere #}
                                 {% if warehouseOptions[m.id]|default([])|length > 0 %}
                                     {# Exclude kit container from manual addition #}
                                     {% if 'botiquín' not in m.name|lower and 'contenedor' not in m.name|lower and m.id != unit.material.id %}
