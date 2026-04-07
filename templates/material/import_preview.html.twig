@@ -19,6 +19,67 @@
                 <strong>Se han detectado {{ preview.total_rows }} filas</strong> en el archivo Excel, que afectan a <strong>{{ preview.materials|length }} materiales</strong>.
             </div>
 
+            <form method="post" action="{{ path('app_material_import_process') }}">
+                <input type="hidden" name="temp_filename" value="{{ temp_filename }}">
+
+            {% if preview.conflicts|length > 0 %}
+            <div class="card border-warning mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="m-0 font-weight-bold">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        Conflictos de Números de Serie Detectados
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted">Se han detectado números de serie que ya existen en el sistema o están repetidos en el Excel. Por favor, elige qué versión de los datos deseas conservar para cada caso.</p>
+
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered">
+                            <thead class="bg-light">
+                                <tr>
+                                    <th>S/N</th>
+                                    <th>Versión Actual / Existente</th>
+                                    <th>Versión Nueva (Excel)</th>
+                                    <th>Acción</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sn, conflict in preview.conflicts %}
+                                <tr>
+                                    <td class="font-bold align-middle">{{ sn }}</td>
+                                    <td class="small align-middle">
+                                        <div class="text-slate-700"><strong>Material:</strong> {{ conflict.existing.materialName }}</div>
+                                        <div class="text-slate-500"><strong>Alias:</strong> {{ conflict.existing.alias|default('-') }}</div>
+                                        <div class="text-slate-500"><strong>Modelo:</strong> {{ conflict.existing.brandModel|default('-') }}</div>
+                                    </td>
+                                    <td class="small align-middle">
+                                        <div class="text-primary font-bold"><strong>Material:</strong> {{ conflict.new.materialName }}</div>
+                                        <div class="text-primary"><strong>Alias:</strong> {{ conflict.new.alias|default('-') }}</div>
+                                        <div class="text-primary"><strong>Modelo:</strong> {{ conflict.new.brandModel|default('-') }}</div>
+                                    </td>
+                                    <td class="align-middle">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="conflict_resolutions[{{ sn }}]" id="keep_{{ sn }}" value="keep" checked>
+                                            <label class="form-check-label small" for="keep_{{ sn }}">
+                                                Mantener existente
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="conflict_resolutions[{{ sn }}]" id="update_{{ sn }}" value="update">
+                                            <label class="form-check-label small" for="update_{{ sn }}">
+                                                Actualizar con nuevo
+                                            </label>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <div class="table-responsive">
                 <table class="table table-hover table-bordered table-sm">
                     <thead class="bg-light">
@@ -84,13 +145,11 @@
                 <a href="{{ path('app_material_index') }}" class="btn btn-secondary">
                     <i class="fas fa-times mr-2"></i>Cancelar
                 </a>
-                <form method="post" action="{{ path('app_material_import_process') }}">
-                    <input type="hidden" name="temp_filename" value="{{ temp_filename }}">
-                    <button type="submit" class="btn btn-success btn-lg px-5">
-                        <i class="fas fa-check mr-2"></i>Confirmar Importación
-                    </button>
-                </form>
+                <button type="submit" class="btn btn-success btn-lg px-5">
+                    <i class="fas fa-check mr-2"></i>Confirmar Importación
+                </button>
             </div>
+            </form>
         </div>
     </div>
 </div>
