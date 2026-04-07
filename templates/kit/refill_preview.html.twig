@@ -244,39 +244,6 @@
                 </div>
             </div>
 
-            <div class="card border-0 shadow-sm rounded-3 mb-4 bg-red-50 dark:bg-red-900/10 border-start border-red-200 dark:border-red-900/50" style="border-width: 0 0 0 4px !important;">
-                <div class="card-header bg-transparent py-3 border-bottom border-red-100 dark:border-red-900/20">
-                    <h5 class="text-xs font-black uppercase tracking-widest text-red-600 dark:text-red-400 m-0">Unidades en otros botiquines</h5>
-                </div>
-                <div class="card-body p-4">
-                    {% set has_busy = false %}
-                    {% for matId, opts in warehouseOptions %}
-                        {% for opt in opts %}
-                            {% if opt.busy|default(false) %}
-                                {% set has_busy = true %}
-                                <div class="mb-3 last:mb-0">
-                                    <div class="flex justify-between items-start">
-                                        <div>
-                                            <div class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase">{{ opt.label }}</div>
-                                            <div class="text-[9px] text-slate-500 dark:text-slate-400 font-bold">Ubicación: {{ opt.locationName }}</div>
-                                        </div>
-                                        <button type="button" class="btn btn-xs btn-outline-red py-0 px-2 text-[10px] font-black" 
-                                                data-action="kit-refill#forceSelect" 
-                                                data-material-id="{{ matId }}" 
-                                                data-unit-id="{{ opt.id }}">
-                                            USAR ESTE
-                                        </button>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    {% endfor %}
-                    
-                    {% if not has_busy %}
-                        <div class="text-center py-2 text-xs text-slate-400 italic">No hay unidades ocupadas relevantes.</div>
-                    {% endif %}
-                </div>
-            </div>
 
             <div class="card border-0 shadow-sm rounded-3 dark:bg-slate-800">
                 <div class="card-header bg-white dark:bg-slate-800 py-3 border-bottom border-slate-100 dark:border-slate-700">
