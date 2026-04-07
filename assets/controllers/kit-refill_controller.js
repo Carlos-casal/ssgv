@@ -57,7 +57,7 @@ export default class extends Controller {
             html += `<option value="">No hay stock disponible</option>`;
         } else {
             options.forEach(opt => {
-                const style = opt.busy ? 'style="color: #f87171 !important; font-weight: bold;"' : '';
+                const style = opt.busy ? 'style="color: #dc2626 !important; font-weight: bold;"' : '';
                 const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
                 const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
                 const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ` (OCUPADO: ${opt.locationName})` : '');
