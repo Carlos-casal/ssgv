@@ -148,7 +148,7 @@ class MaterialManager
 
         // Standardize Entry reasons
         if ($quantity > 0 && (str_contains($reason, 'Inicialización') || str_contains($reason, 'proveedor'))) {
-            $reason = sprintf('Entrada: %s', $location->getName());
+            $reason = sprintf('Entrada: Registro Inicial / %s', $location->getName());
         }
 
         $movement = new MaterialMovement();
@@ -244,14 +244,14 @@ class MaterialManager
             // 1. Remove from current location if any
             if ($currentLocation) {
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, null, $responsible, $size, $batch, $now);
+                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, null, $responsible, $size, $batch, $now, true);
             }
 
             // 2. Add to new location
             if ($destination) {
                 $unit->setLocation($destination);
                 $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
-                $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now);
+                $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now, false);
             } else {
                 $unit->setLocation(null);
             }
@@ -274,11 +274,11 @@ class MaterialManager
                 if ($stock && $stock->getQuantity() > 0) {
                     $toSubtract = min($remainingToSubtract, $stock->getQuantity());
                     $this->updateStockWithBatch($material, $origin, -$toSubtract, $b, $size);
-                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, null, $responsible, $size, $b, $now);
+                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, null, $responsible, $size, $b, $now, true);
 
                     if ($destination) {
                         $this->updateStockWithBatch($material, $destination, $toSubtract, $b, $size);
-                        $this->recordMovement($material, $toSubtract, $transferReason, null, $destination, $responsible, $size, $b, $now);
+                        $this->recordMovement($material, $toSubtract, $transferReason, null, $destination, $responsible, $size, $b, $now, false);
                     }
 
                     $remainingToSubtract -= $toSubtract;
@@ -289,21 +289,21 @@ class MaterialManager
             // If still remaining, subtract from "no batch" stock if any
             if ($remainingToSubtract > 0) {
                 $this->updateStockWithBatch($material, $origin, -$remainingToSubtract, null, $size);
-                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, null, $responsible, $size, null, $now);
+                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, null, $responsible, $size, null, $now, true);
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null, $size);
-                    $this->recordMovement($material, $remainingToSubtract, $transferReason, null, $destination, $responsible, $size, null, $now);
+                    $this->recordMovement($material, $remainingToSubtract, $transferReason, null, $destination, $responsible, $size, null, $now, false);
                 }
             }
         } else {
             // Explicit batch or entry from null origin
             if ($origin) {
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $origin, null, $responsible, $size, $batch, $now);
+                $this->recordMovement($material, $quantity, $transferReason, $origin, null, $responsible, $size, $batch, $now, true);
             }
             if ($destination) {
                 $this->updateStockWithBatch($material, $destination, $quantity, $batch, $size);
-                $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now);
+                $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now, false);
             }
         }
 
@@ -319,14 +319,15 @@ class MaterialManager
         ?Volunteer $responsible,
         ?string $size = null,
         ?MaterialBatch $batch = null,
-        ?\DateTimeImmutable $createdAt = null
+        ?\DateTimeImmutable $createdAt = null,
+        bool $isWithdrawal = false
     ): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
-        $movement->setQuantity(abs($quantity));
+        $movement->setQuantity($isWithdrawal ? -abs($quantity) : abs($quantity));
         $movement->setReason($reason);
         $movement->setOrigin($origin);
         $movement->setDestination($destination);

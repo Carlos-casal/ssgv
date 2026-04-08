@@ -20,7 +20,7 @@ class MaterialMovement
     #[ORM\Column(length: 20, nullable: true)]
     private ?string $size = null;
 
-    #[ORM\Column]
+    #[ORM\Column(type: 'integer')]
     private int $quantity = 0;
 
     #[ORM\Column(length: 255)]
