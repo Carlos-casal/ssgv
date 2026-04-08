@@ -889,37 +889,45 @@ class KitController extends AbstractController
             return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
         }
 
-        foreach ($proposals as $p) {
-            $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
-            $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
-            $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
+        $entityManager->beginTransaction();
+        try {
+            foreach ($proposals as $p) {
+                $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
+                $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
+                $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
 
-            // Determine origin dynamically if it was moved in the UI (occupied units)
-            $originId = $p['origin_id'] ?? null;
-            $origin = $originId ? $entityManager->getRepository(Location::class)->find($originId) : null;
-            
-            if ($unitToMove && $unitToMove->getLocation()) {
-                $origin = $unitToMove->getLocation();
+                // Determine origin dynamically if it was moved in the UI (occupied units)
+                $originId = $p['origin_id'] ?? null;
+                $origin = $originId ? $entityManager->getRepository(Location::class)->find($originId) : null;
+
+                if ($unitToMove && $unitToMove->getLocation()) {
+                    $origin = $unitToMove->getLocation();
+                }
+
+                if (!$origin) {
+                    $origin = $materialManager->getCentralWarehouse();
+                }
+
+                $materialManager->transfer(
+                    $material,
+                    $origin,
+                    $kitLocation,
+                    (int)$p['quantity'],
+                    'Reposición de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
+                    null,
+                    'UNICA',
+                    $unitToMove,
+                    $batch
+                );
             }
 
-            if (!$origin) {
-                $origin = $materialManager->getCentralWarehouse();
-            }
-
-            $materialManager->transfer(
-                $material,
-                $origin,
-                $kitLocation,
-                (int)$p['quantity'],
-                'Reposición de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
-                null,
-                'UNICA',
-                $unitToMove,
-                $batch
-            );
+            $entityManager->flush();
+            $entityManager->commit();
+        } catch (\Exception $e) {
+            $entityManager->rollback();
+            $this->addFlash('error', 'Error al procesar el traslado: ' . $e->getMessage());
+            return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
         }
-
-        $entityManager->flush();
 
         $this->addFlash('success', $isNew ? 'Botiquín registrado y cargado correctamente.' : 'Botiquín repuesto correctamente.');
 
