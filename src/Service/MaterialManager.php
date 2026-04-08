@@ -173,6 +173,9 @@ class MaterialManager
      */
     public function createUnit(Material $material, array $data, ?Location $location = null): MaterialUnit
     {
+        $finalLocation = $location ?: $this->getDefaultLocation($material);
+        $reason = sprintf('Entrada: Registro Inicial / %s', $finalLocation->getName());
+
         $unit = new MaterialUnit();
         $unit->setMaterial($material);
         $unit->setCollectiveNumber($data['collectiveNumber'] ?? null);
@@ -184,7 +187,6 @@ class MaterialManager
         $unit->setCoverStatus($data['cover_status'] ?? $data['coverStatus'] ?? 'OK');
         $unit->setBatteryStatus($data['battery_status'] ?? $data['batteryStatus'] ?? '100%');
 
-        $finalLocation = $location ?: $this->getDefaultLocation($material);
         $unit->setLocation($finalLocation);
 
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
@@ -194,6 +196,9 @@ class MaterialManager
 
         // Synchronize stock for this unit in the location
         $this->updateStockWithBatch($material, $finalLocation, 1, null, 'UNICA');
+
+        // Log Initial Entry
+        $this->recordMovement($material, 1, $reason, null, $finalLocation, null, 'UNICA', null, new \DateTimeImmutable(), false);
 
         return $unit;
     }
@@ -324,10 +329,26 @@ class MaterialManager
     ): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
+        $timestamp = $createdAt ?: new \DateTimeImmutable();
+        $netQuantity = $isWithdrawal ? -abs($quantity) : abs($quantity);
+
+        // IDEMPOTENCY CHECK: Prevent exact duplicate records in the same transaction/second
+        $existing = $this->movementRepository->findOneBy([
+            'material' => $material,
+            'quantity' => $netQuantity,
+            'reason' => $reason,
+            'origin' => $origin,
+            'destination' => $destination,
+            'createdAt' => $timestamp
+        ]);
+
+        if ($existing) {
+            return;
+        }
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
-        $movement->setQuantity($isWithdrawal ? -abs($quantity) : abs($quantity));
+        $movement->setQuantity($netQuantity);
         $movement->setReason($reason);
         $movement->setOrigin($origin);
         $movement->setDestination($destination);
@@ -335,9 +356,7 @@ class MaterialManager
         $movement->setUser($currentUser);
         $movement->setSize($size);
         $movement->setBatch($batch);
-        if ($createdAt) {
-            $movement->setCreatedAt($createdAt);
-        }
+        $movement->setCreatedAt($timestamp);
 
         $this->getEntityManager()->persist($movement);
     }
@@ -350,6 +369,15 @@ class MaterialManager
     public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null, ?string $size = null): void
     {
         if ($size === null) $size = 'UNICA';
+
+        // Check for Initial Entry for Consumables
+        $isFirstEntry = false;
+        if ($delta > 0 && $material->getNature() === Material::NATURE_CONSUMABLE) {
+            $existingTotal = $this->stockRepository->findOneBy(['material' => $material, 'batch' => $batch, 'size' => $size]);
+            if (!$existingTotal || $existingTotal->getQuantity() === 0) {
+                $isFirstEntry = true;
+            }
+        }
 
         $criteria = [
             'material' => $material,
@@ -374,6 +402,11 @@ class MaterialManager
 
         // Robust global stock sync (applies to both Consumables and Technical bulk stock)
         $material->setStock($material->getStock() + $delta);
+
+        if ($isFirstEntry) {
+            $reason = sprintf('Entrada: Registro Inicial / %s', $location->getName());
+            $this->recordMovement($material, $delta, $reason, null, $location, null, $size, $batch, new \DateTimeImmutable(), false);
+        }
     }
 
     /**
