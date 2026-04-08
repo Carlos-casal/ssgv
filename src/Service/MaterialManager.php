@@ -238,12 +238,16 @@ class MaterialManager
         }
 
         if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
-            // Technical Unit Transfer
+            // Technical Unit Transfer (Explicitly Exclusive)
             $currentLocation = $unit->getLocation();
+
+            // 1. Remove from current location if any
             if ($currentLocation) {
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
                 $this->recordMovement($material, $quantity, $transferReason, $currentLocation, null, $responsible, $size, $batch, $now);
             }
+
+            // 2. Add to new location
             if ($destination) {
                 $unit->setLocation($destination);
                 $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
