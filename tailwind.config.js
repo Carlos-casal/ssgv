@@ -7,7 +7,11 @@ export default {
   ],
   darkMode: 'class',
   theme: {
-    extend: {},
+    extend: {
+      fontSize: {
+        'xxs': '0.6875rem', // 11px
+      },
+    },
   },
   plugins: [],
 };

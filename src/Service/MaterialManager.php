@@ -233,27 +233,29 @@ class MaterialManager
             // EXCLUSIVE TRANSFER LOGIC:
             // Ensure the unit is removed from its CURRENT location before moving to the new one.
             $currentLocation = $unit->getLocation();
+            $now = new \DateTimeImmutable();
 
-            // 1. If it has a current location, decrease stock there
+            // 1. Record Outgoing Movement if it has a current location
             if ($currentLocation) {
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
+
+                $outReason = sprintf('Retirada de %s para traspaso', $currentLocation->getName());
+                $this->recordMovement($material, $quantity, $outReason, $currentLocation, null, $responsible, $size, $batch, $now);
             }
 
-            // 2. If an origin was explicitly passed but differs from current location, handle that too
-            if ($origin && $origin !== $currentLocation) {
-                // This shouldn't happen often if data is clean, but for robustness:
-                $this->updateStockWithBatch($material, $origin, -$quantity, null, $size);
-            }
-
-            // 3. Move to destination and increase stock
+            // 2. Record Incoming Movement to Destination
             if ($destination) {
                 $unit->setLocation($destination);
                 $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
+
+                $inReason = $reason;
+                if ($currentLocation) {
+                    $inReason = sprintf('Traspasado desde %s hacia %s', $currentLocation->getName(), $destination->getName());
+                }
+                $this->recordMovement($material, $quantity, $inReason, null, $destination, $responsible, $size, $batch, $now);
             } else {
                 $unit->setLocation(null);
             }
-
-            $this->recordMovement($material, $quantity, $reason, $origin ?: $currentLocation, $destination, $responsible, $size, $batch);
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
             // FIFO logic for subtraction
             $remainingToSubtract = $quantity;
@@ -313,7 +315,8 @@ class MaterialManager
         ?Location $destination,
         ?Volunteer $responsible,
         ?string $size = null,
-        ?MaterialBatch $batch = null
+        ?MaterialBatch $batch = null,
+        ?\DateTimeImmutable $createdAt = null
     ): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
@@ -328,6 +331,9 @@ class MaterialManager
         $movement->setUser($currentUser);
         $movement->setSize($size);
         $movement->setBatch($batch);
+        if ($createdAt) {
+            $movement->setCreatedAt($createdAt);
+        }
 
         $this->getEntityManager()->persist($movement);
     }
