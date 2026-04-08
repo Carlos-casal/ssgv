@@ -230,14 +230,30 @@ class MaterialManager
         $currentUser = $this->security->getUser();
 
         if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
-            if ($origin) {
+            // EXCLUSIVE TRANSFER LOGIC:
+            // Ensure the unit is removed from its CURRENT location before moving to the new one.
+            $currentLocation = $unit->getLocation();
+
+            // 1. If it has a current location, decrease stock there
+            if ($currentLocation) {
+                $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
+            }
+
+            // 2. If an origin was explicitly passed but differs from current location, handle that too
+            if ($origin && $origin !== $currentLocation) {
+                // This shouldn't happen often if data is clean, but for robustness:
                 $this->updateStockWithBatch($material, $origin, -$quantity, null, $size);
             }
+
+            // 3. Move to destination and increase stock
             if ($destination) {
                 $unit->setLocation($destination);
                 $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
+            } else {
+                $unit->setLocation(null);
             }
-            $this->recordMovement($material, $quantity, $reason, $origin, $destination, $responsible, $size, $batch);
+
+            $this->recordMovement($material, $quantity, $reason, $origin ?: $currentLocation, $destination, $responsible, $size, $batch);
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
             // FIFO logic for subtraction
             $remainingToSubtract = $quantity;

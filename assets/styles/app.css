@@ -148,7 +148,7 @@ html.dark .dropdown-menu {
 html.dark .dropdown-menu .notification-header span,
 html.dark .dropdown-menu [data-notification-target="dropdown"] p,
 html.dark .dropdown-menu [data-notification-target="dropdown"] .text-xs,
-html.dark .dropdown-menu [data-notification-target="dropdown"] .text-[11px],
+html.dark .dropdown-menu [data-notification-target="dropdown"] .text-xxs,
 html.dark .dropdown-menu [data-notification-target="dropdown"] .opacity-80 {
     color: #f8fafc !important; /* slate-50 */
 }
