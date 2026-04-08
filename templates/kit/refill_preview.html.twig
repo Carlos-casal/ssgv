@@ -87,6 +87,7 @@
                                                 {% endif %}
                                             </div>
                                             <div class="text-[9px] text-slate-400 dark:text-slate-500 uppercase font-black">{{ p.material.category }}</div>
+                                            <div class="location-label text-[9px] font-bold mt-1"></div>
                                             <input type="hidden" class="material-id" value="{{ p.material.id }}">
                                         </td>
                                         <td>
@@ -98,16 +99,6 @@
                                                     {% set target_id = p.unit ? p.unit.id : null %}
                                                 {% endif %}
 
-                                                {% if not target_id or (p.placeholder|default(false)) %}
-                                                    {# Placeholder or missing: find first available #}
-                                                    {% set found_avail = false %}
-                                                    {% for opt in warehouseOptions[p.material.id] %}
-                                                        {% if not found_avail and not opt.busy|default(false) %}
-                                                            {% set target_id = opt.id %}
-                                                            {% set found_avail = true %}
-                                                        {% endif %}
-                                                    {% endfor %}
-                                                {% endif %}
 
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     <option value="{{ opt.id }}"
@@ -116,7 +107,7 @@
                                                             data-location-name="{{ opt.locationName|default('') }}"
                                                             class="{{ opt.busy|default(false) ? 'text-red-600 font-bold' : '' }}"
                                                             style="{{ opt.busy|default(false) ? 'color: #dc2626 !important; font-weight: bold;' : '' }}"
-                                                            {{ opt.id == target_id ? 'selected' : '' }}>
+                                                            {{ opt.selected|default(false) ? 'selected' : '' }}>
                                                         {{ opt.label }} 
                                                         {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% endif %}
                                                         {% if opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}
@@ -174,6 +165,7 @@
             <template data-kit-refill-target="prototype">
                 <tr class="refill-row" data-material-id="__MAT_ID__" data-nature="__NATURE__">
                     <td class="ps-4">
+                        <div class="font-bold text-slate-800 dark:text-slate-200 mb-1 manual-title" style="display:none;"></div>
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
                             {% for m in allMaterials %}
@@ -186,6 +178,7 @@
                                 {% endif %}
                             {% endfor %}
                         </select>
+                        <div class="location-label text-[9px] font-bold mt-1"></div>
                     </td>
                     <td class="identifier-container">
                         <select class="form-select form-select-sm identifier-select" disabled>

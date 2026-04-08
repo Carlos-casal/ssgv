@@ -9,6 +9,8 @@ export default class extends Controller {
     connect() {
         this.warehouseOptions = JSON.parse(document.getElementById('warehouse-options-data').textContent);
         this.updateAllAvailable();
+        this.validateAllRows();
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -37,7 +39,9 @@ export default class extends Controller {
 
     removeRow(event) {
         event.preventDefault();
-        event.currentTarget.closest('.refill-row').remove();
+        const row = event.currentTarget.closest('.refill-row');
+        row.remove();
+        this.validateAllRows();
     }
 
     onMaterialChange(event) {
@@ -48,6 +52,13 @@ export default class extends Controller {
 
         row.dataset.materialId = materialId;
         row.dataset.nature = nature;
+
+        const manualTitle = row.querySelector('.manual-title');
+        if (manualTitle) {
+            manualTitle.textContent = select.options[select.selectedIndex].text;
+            manualTitle.style.display = 'block';
+            select.style.display = 'none';
+        }
 
         const identifierContainer = row.querySelector('.identifier-container');
         const options = this.warehouseOptions[materialId] || [];
@@ -117,6 +128,7 @@ export default class extends Controller {
         }
 
         this.validateQuantity({ target: row.querySelector('.quantity-input') });
+        this.validateAllRows();
     }
 
     validateQuantity(event) {
@@ -143,6 +155,80 @@ export default class extends Controller {
             const input = row.querySelector('.quantity-input');
             if (input) this.validateQuantity({ target: input });
         });
+    }
+
+    validateAllRows() {
+        let hasBusySelection = false;
+        const rows = this.containerTarget.querySelectorAll('.refill-row');
+
+        rows.forEach(row => {
+            const select = row.querySelector('.identifier-select');
+            const locationLabel = row.querySelector('.location-label');
+
+            if (select && select.options[select.selectedIndex]) {
+                const opt = select.options[select.selectedIndex];
+                const isBusy = opt.dataset.busy === 'true';
+                const locationName = opt.dataset.locationName || '';
+
+                if (isBusy) {
+                    hasBusySelection = true;
+                    row.classList.add('bg-red-50', 'dark:bg-red-900/10');
+                } else {
+                    row.classList.remove('bg-red-50', 'dark:bg-red-900/10');
+                }
+
+                if (locationLabel) {
+                    if (locationName) {
+                        locationLabel.innerHTML = `<i data-lucide="map-pin" class="w-2 h-2 inline"></i> Ubicación: ${locationName}`;
+                        locationLabel.classList.toggle('text-red-500', isBusy);
+                        locationLabel.classList.toggle('text-slate-400', !isBusy);
+                    } else {
+                        locationLabel.innerHTML = '';
+                    }
+                }
+            }
+        });
+
+        // Update UI Icons for dynamic labels
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+
+        // Update Submit button state
+        const submitBtn = document.querySelector('form[data-action="submit->kit-refill#submit"] button[type="submit"]');
+        if (submitBtn) {
+            if (hasBusySelection) {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                this.showBusyWarning(true);
+            } else {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                this.showBusyWarning(false);
+            }
+        }
+    }
+
+    showBusyWarning(show) {
+        let alert = document.getElementById('busy-warning-alert');
+        if (show) {
+            if (!alert) {
+                alert = document.createElement('div');
+                alert.id = 'busy-warning-alert';
+                alert.className = 'alert alert-danger mb-4 shadow-sm animate__animated animate__fadeIn';
+                alert.innerHTML = `
+                    <div class="d-flex align-items-center">
+                        <i data-lucide="alert-circle" class="w-5 h-5 mr-3"></i>
+                        <div>
+                            <div class="font-black text-xs uppercase tracking-wider">Acción Bloqueada</div>
+                            <div class="small">Has seleccionado materiales que ya están asignados a otras ubicaciones. Debes seleccionar unidades disponibles en almacén o resolver los conflictos antes de guardar.</div>
+                        </div>
+                    </div>
+                `;
+                this.containerTarget.closest('.card').insertAdjacentElement('beforebegin', alert);
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        } else if (alert) {
+            alert.remove();
+        }
     }
 
     submit(event) {

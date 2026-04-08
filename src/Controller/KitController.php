@@ -375,9 +375,12 @@ class KitController extends AbstractController
                 }
 
                 if ($a['id'] === $b['id']) return 0;
-                if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
-                if ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') return -1;
-                return (int)$a['id'] - (int)$b['id'];
+
+                // NO_BATCH and NONE should be treated as high ID to go last in their group
+                $aId = ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') ? 999999 : (int)$a['id'];
+                $bId = ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') ? 999999 : (int)$b['id'];
+
+                return $aId <=> $bId;
             });
         }
 
@@ -515,9 +518,12 @@ class KitController extends AbstractController
                 }
 
                 if ($a['id'] === $b['id']) return 0;
-                if ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') return 1;
-                if ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') return -1;
-                return (int)$a['id'] - (int)$b['id'];
+
+                // NO_BATCH and NONE should be treated as high ID to go last in their group
+                $aId = ($a['id'] === 'NO_BATCH' || $a['id'] === 'NONE') ? 999999 : (int)$a['id'];
+                $bId = ($b['id'] === 'NO_BATCH' || $b['id'] === 'NONE') ? 999999 : (int)$b['id'];
+
+                return $aId <=> $bId;
             });
         }
 
@@ -595,17 +601,25 @@ class KitController extends AbstractController
                 ->getQuery()
                 ->getResult();
 
+            $foundAutoSelect = false;
             foreach ($stocks as $stock) {
                 $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
 
                 // Skip if it is ALREADY in the current kit (avoid duplicates)
                 if ($stock->getLocation() === $kitLocation) continue;
 
+                $shouldSelect = false;
+                if (!$isBusy && !$foundAutoSelect && $stock->getQuantity() > 0) {
+                    $shouldSelect = true;
+                    $foundAutoSelect = true;
+                }
+
                 $options[] = [
                     'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
                     'busy' => $isBusy,
+                    'selected' => $shouldSelect,
                     'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar'
                 ];
 
@@ -662,6 +676,7 @@ class KitController extends AbstractController
                 ->getResult();
 
             $warehouseUnits = [];
+            $foundAutoSelect = false;
 
             foreach ($allUnits as $u) {
                 // Skip if it is ALREADY in the current kit
@@ -670,11 +685,18 @@ class KitController extends AbstractController
                 $isBusy = ($u->getLocation() === null || $u->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
                 $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
 
+                $shouldSelect = false;
+                if (!$isBusy && !$foundAutoSelect) {
+                    $shouldSelect = true;
+                    $foundAutoSelect = true;
+                }
+
                 $options[] = [
                     'id' => $u->getId(),
                     'label' => $label,
                     'available' => 1,
                     'busy' => $isBusy,
+                    'selected' => $shouldSelect,
                     'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar'
                 ];
 
@@ -1014,10 +1036,13 @@ class KitController extends AbstractController
                 ->join('u.location', 'l')
                 ->where('u.material = :material')
                 ->andWhere('l.type != :warehouseType')
-                ->andWhere('l != :excludeKit')
                 ->setParameter('material', $material)
-                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE)
-                ->setParameter('excludeKit', $excludeKit);
+                ->setParameter('warehouseType', Location::TYPE_WAREHOUSE);
+
+            if ($excludeKit->getId()) {
+                $qb->andWhere('l != :excludeKit')
+                   ->setParameter('excludeKit', $excludeKit);
+            }
 
             $units = $qb->getQuery()->getResult();
 
