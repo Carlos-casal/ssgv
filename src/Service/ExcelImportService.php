@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Material;
 use App\Repository\MaterialRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use PhpOffice\PhpSpreadsheet\Shared\Date;
@@ -14,6 +15,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class ExcelImportService
 {
     private EntityManagerInterface $entityManager;
+    private ManagerRegistry $managerRegistry;
     private MaterialRepository $materialRepository;
     private MaterialManager $materialManager;
     private string $materialImagesDirectory;
@@ -22,11 +24,13 @@ class ExcelImportService
 
     public function __construct(
         EntityManagerInterface $entityManager,
+        ManagerRegistry $managerRegistry,
         MaterialRepository $materialRepository,
         MaterialManager $materialManager,
         string $materialImagesDirectory
     ) {
         $this->entityManager = $entityManager;
+        $this->managerRegistry = $managerRegistry;
         $this->materialRepository = $materialRepository;
         $this->materialManager = $materialManager;
         $this->materialImagesDirectory = $materialImagesDirectory;
@@ -221,6 +225,26 @@ class ExcelImportService
         return $preview;
     }
 
+    private function sanitizeNumeric(?string $value): ?string
+    {
+        if ($value === null) return null;
+        $clean = trim($value);
+        if ($clean === '') return null;
+
+        // Normalize decimal separator
+        return str_replace(',', '.', $clean);
+    }
+
+    private function ensureEntityManagerIsOpen(): void
+    {
+        if (!$this->entityManager->isOpen()) {
+            $this->entityManager = $this->managerRegistry->resetManager();
+            // Clear internal caches as they might hold detached entities
+            $this->materialCache = [];
+            $this->batchCache = [];
+        }
+    }
+
     /**
      * Process the Excel import and create/update materials
      */
@@ -250,6 +274,8 @@ class ExcelImportService
 
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
+                $this->ensureEntityManagerIsOpen();
+
                 $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
                 if (empty($name)) continue;
 
@@ -267,9 +293,11 @@ class ExcelImportService
                 $batchNumber = isset($map['batchNumber']) ? $this->getCellValue($worksheet, $map['batchNumber'], $row) : null;
                 $expirationDate = isset($map['expirationDate']) ? $this->getDateValue($worksheet, $map['expirationDate'], $row) : null;
                 $supplier = isset($map['supplier']) ? $this->getCellValue($worksheet, $map['supplier'], $row) : null;
-                $totalPrice = isset($map['totalPrice']) ? $this->getCellValue($worksheet, $map['totalPrice'], $row) : null;
-                $marginPct = isset($map['marginPct']) ? $this->getCellValue($worksheet, $map['marginPct'], $row) : null;
-                $iva = isset($map['iva']) ? $this->getCellValue($worksheet, $map['iva'], $row) : null;
+
+                $totalPrice = isset($map['totalPrice']) ? $this->sanitizeNumeric($this->getCellValue($worksheet, $map['totalPrice'], $row)) : null;
+                $marginPct = isset($map['marginPct']) ? $this->sanitizeNumeric($this->getCellValue($worksheet, $map['marginPct'], $row)) : null;
+                $iva = isset($map['iva']) ? $this->sanitizeNumeric($this->getCellValue($worksheet, $map['iva'], $row)) : null;
+
                 $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
                 $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
                 $serialNumber = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
@@ -409,12 +437,16 @@ class ExcelImportService
                     $this->materialManager->updateStockWithBatch($material, $this->materialManager->getDefaultLocation($material), $unitsPerPackage * $numPackages, $batch);
                 }
 
+                $this->entityManager->flush();
+
             } catch (\Exception $e) {
                 $result['errors'][] = "Fila {$row}: " . $e->getMessage();
+                // Optionally clear the EM to discard half-applied changes from this row
+                if ($this->entityManager->isOpen()) {
+                    $this->entityManager->clear();
+                }
             }
         }
-        
-        $this->entityManager->flush();
         
         return $result;
     }

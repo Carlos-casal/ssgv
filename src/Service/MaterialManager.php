@@ -18,19 +18,32 @@ use App\Repository\MaterialStockRepository;
 use App\Repository\MaterialMovementRepository;
 use App\Repository\ServiceMaterialRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Symfony\Bundle\SecurityBundle\Security;
 
 class MaterialManager
 {
+    private EntityManagerInterface $entityManager;
+
     public function __construct(
         private MaterialRepository $materialRepository,
         private MaterialUnitRepository $unitRepository,
         private MaterialStockRepository $stockRepository,
         private MaterialMovementRepository $movementRepository,
         private ServiceMaterialRepository $serviceMaterialRepository,
-        private EntityManagerInterface $entityManager,
+        private ManagerRegistry $managerRegistry,
         private Security $security
-    ) {}
+    ) {
+        $this->entityManager = $this->managerRegistry->getManager();
+    }
+
+    private function getEntityManager(): EntityManagerInterface
+    {
+        if (!$this->entityManager->isOpen()) {
+            $this->entityManager = $this->managerRegistry->resetManager();
+        }
+        return $this->entityManager;
+    }
 
     /**
      * Checks if a technical unit is available for a given time range.
@@ -143,11 +156,11 @@ class MaterialManager
         $movement->setOrigin($quantity < 0 ? $location : null);
         $movement->setResponsible($responsible);
         $movement->setBatch($batch);
-        $this->entityManager->persist($movement);
+        $this->getEntityManager()->persist($movement);
 
         $this->updateStockWithBatch($material, $location, $quantity, $batch, $size);
 
-        $this->entityManager->flush();
+        $this->getEntityManager()->flush();
     }
 
     /**
@@ -172,7 +185,7 @@ class MaterialManager
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
 
-        $this->entityManager->persist($unit);
+        $this->getEntityManager()->persist($unit);
 
         // Synchronize stock for this unit in the location
         $this->updateStockWithBatch($material, $finalLocation, 1, null, 'UNICA');
@@ -228,7 +241,7 @@ class MaterialManager
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
             // FIFO logic for subtraction
             $remainingToSubtract = $quantity;
-            $batches = $this->entityManager->getRepository(MaterialBatch::class)->findBy(
+            $batches = $this->getEntityManager()->getRepository(MaterialBatch::class)->findBy(
                 ['material' => $material],
                 ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
             );
@@ -273,7 +286,7 @@ class MaterialManager
             $this->recordMovement($material, $quantity, $reason, $origin, $destination, $responsible, $size, $batch);
         }
 
-        $this->entityManager->flush();
+        $this->getEntityManager()->flush();
     }
 
     private function recordMovement(
@@ -300,7 +313,7 @@ class MaterialManager
         $movement->setSize($size);
         $movement->setBatch($batch);
 
-        $this->entityManager->persist($movement);
+        $this->getEntityManager()->persist($movement);
     }
 
     public function updateStockDirectly(Material $material, Location $location, int $delta, ?string $size = null): void
@@ -328,7 +341,7 @@ class MaterialManager
             $stock->setSize($size);
             $stock->setBatch($batch);
             $stock->setQuantity(0);
-            $this->entityManager->persist($stock);
+            $this->getEntityManager()->persist($stock);
         }
 
         $stock->setQuantity($stock->getQuantity() + $delta);
@@ -418,14 +431,18 @@ class MaterialManager
      */
     public function getPharmacyWarehouse(): Location
     {
-        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
+        if (!$this->getEntityManager()->isOpen()) {
+            throw new \RuntimeException("EntityManager is closed. Cannot retrieve Pharmacy Warehouse.");
+        }
+
+        $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
 
         if (!$warehouse) {
             $warehouse = new Location();
             $warehouse->setName('Almacén Farmacia');
             $warehouse->setType(Location::TYPE_WAREHOUSE);
-            $this->entityManager->persist($warehouse);
-            $this->entityManager->flush();
+            $this->getEntityManager()->persist($warehouse);
+            $this->getEntityManager()->flush();
         }
 
         return $warehouse;
@@ -436,23 +453,27 @@ class MaterialManager
      */
     public function getCentralWarehouse(): Location
     {
-        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
+        if (!$this->getEntityManager()->isOpen()) {
+            throw new \RuntimeException("EntityManager is closed. Cannot retrieve Central Warehouse.");
+        }
+
+        $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
 
         if (!$warehouse) {
             // Priority 1: Check by name if findOneBy type returned wrong one
-            $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
+            $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
             
             if (!$warehouse) {
                 // Priority 2: Check by type alone as fallback
-                $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+                $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
             }
 
             if (!$warehouse) {
                 $warehouse = new Location();
                 $warehouse->setName('Almacén Central');
                 $warehouse->setType(Location::TYPE_WAREHOUSE);
-                $this->entityManager->persist($warehouse);
-                $this->entityManager->flush();
+                $this->getEntityManager()->persist($warehouse);
+                $this->getEntityManager()->flush();
             }
         }
 
@@ -463,14 +484,18 @@ class MaterialManager
      */
     public function getCecomWarehouse(): Location
     {
-        $warehouse = $this->entityManager->getRepository(Location::class)->findOneBy(['name' => 'Almacén CECOM']);
+        if (!$this->getEntityManager()->isOpen()) {
+            throw new \RuntimeException("EntityManager is closed. Cannot retrieve CECOM Warehouse.");
+        }
+
+        $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén CECOM']);
 
         if (!$warehouse) {
             $warehouse = new Location();
             $warehouse->setName('Almacén CECOM');
             $warehouse->setType(Location::TYPE_WAREHOUSE);
-            $this->entityManager->persist($warehouse);
-            $this->entityManager->flush();
+            $this->getEntityManager()->persist($warehouse);
+            $this->getEntityManager()->flush();
         }
 
         return $warehouse;
@@ -490,7 +515,7 @@ class MaterialManager
         $history->setReason($reason);
         $history->setUser($currentUser);
 
-        $this->entityManager->persist($history);
+        $this->getEntityManager()->persist($history);
 
         $unit->setOperationalStatus($status);
 
@@ -501,6 +526,6 @@ class MaterialManager
             $unit->setIsInMaintenance(false);
         }
 
-        $this->entityManager->flush();
+        $this->getEntityManager()->flush();
     }
 }
