@@ -235,10 +235,10 @@ export default class extends Controller {
             const listHtml = busyDetails.map(d => `<li><b>${d.label}</b> (en ${d.location})</li>`).join('');
 
             Swal.fire({
-                title: 'Confirmar Traspaso de Unidades',
+                title: 'Confirmar Traspaso Exclusivo',
                 html: `
                     <div class="text-start">
-                        <p>Las siguientes unidades serán retiradas de su ubicación actual:</p>
+                        <p>Las siguientes unidades serán retiradas de su ubicación actual y <b>dejarán de estar disponibles en su origen</b> inmediatamente:</p>
                         <ul class="small mb-3">${listHtml}</ul>
                         <p class="mb-0">¿Deseas confirmar el traslado a este nuevo kit?</p>
                     </div>

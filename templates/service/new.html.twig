@@ -302,14 +302,14 @@
                                             <div class="space-y-1">
                                                 {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <span class="text-xxs font-bold text-slate-600">{{ form[field].vars.label }}</span>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                         </div>
                                                     </div>
                                                 {% endfor %}
                                                 <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100 mt-2">
-                                                    <span class="text-[11px] font-bold text-slate-600">Hosp. Campaña</span>
+                                                    <span class="text-xxs font-bold text-slate-600">Hosp. Campaña</span>
                                                     <div class="form-check form-switch m-0 p-0">
                                                         {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                     </div>
@@ -322,7 +322,7 @@
                                             <div class="space-y-1">
                                                 {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-[11px] font-bold text-slate-600">{{ form[field].vars.label }}</span>
+                                                        <span class="text-xxs font-bold text-slate-600">{{ form[field].vars.label }}</span>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
                                                         </div>
@@ -337,7 +337,7 @@
                                                 {% for key, vehicle_choice in form.vehicles %}
                                                     {% set vehicle = form.vehicles.vars.choices[key].data %}
                                                     <div class="d-flex align-items-center justify-content-between py-1 border-bottom border-slate-100">
-                                                        <span class="text-[11px] text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
+                                                        <span class="text-xxs text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
                                                         <div class="form-check form-switch m-0 p-0">
                                                             <input class="form-check-input ms-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
                                                         </div>
