@@ -98,34 +98,7 @@ export default class extends Controller {
             select.dataset.lastValid = select.value === selectedOption.value ? select.dataset.initialValue || select.value : select.value;
         }
 
-        // Requirement: Warning if an occupied unit is selected
-        if (row.dataset.nature !== 'CONSUMIBLE' && row.dataset.nature !== 'OTROS' && selectedOption.dataset.busy === 'true') {
-            const kitName = selectedOption.dataset.locationName || 'otro botiquín';
-            
-            Swal.fire({
-                title: '¿Confirmar Traslado?',
-                text: `Este material ya está asignado al botiquín [${kitName}]. ¿Deseas transferirlo a este nuevo dispositivo?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#f87171',
-                cancelButtonColor: '#94a3b8',
-                confirmButtonText: 'SÍ, TRASLADAR',
-                cancelButtonText: 'CANCELAR',
-                customClass: {
-                    popup: 'rounded-4 border-0 shadow-lg',
-                    confirmButton: 'rounded-3 font-bold px-4 py-2',
-                    cancelButton: 'rounded-3 font-bold px-4 py-2'
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    select.dataset.lastValid = select.value;
-                } else {
-                    select.value = select.dataset.lastValid;
-                }
-            });
-        } else {
-            select.dataset.lastValid = select.value;
-        }
+        select.dataset.lastValid = select.value;
 
         this.validateQuantity({ target: row.querySelector('.quantity-input') });
         this.validateAllRows();
@@ -192,18 +165,10 @@ export default class extends Controller {
         // Update UI Icons for dynamic labels
         if (typeof lucide !== 'undefined') lucide.createIcons();
 
-        // Update Submit button state
+        // Update UI state based on selection
         const submitBtn = document.querySelector('form[data-action="submit->kit-refill#submit"] button[type="submit"]');
         if (submitBtn) {
-            if (hasBusySelection) {
-                submitBtn.disabled = true;
-                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                this.showBusyWarning(true);
-            } else {
-                submitBtn.disabled = false;
-                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                this.showBusyWarning(false);
-            }
+            this.showBusyWarning(hasBusySelection);
         }
     }
 
@@ -213,13 +178,13 @@ export default class extends Controller {
             if (!alert) {
                 alert = document.createElement('div');
                 alert.id = 'busy-warning-alert';
-                alert.className = 'alert alert-danger mb-4 shadow-sm animate__animated animate__fadeIn';
+                alert.className = 'alert alert-warning mb-4 shadow-sm animate__animated animate__fadeIn';
                 alert.innerHTML = `
                     <div class="d-flex align-items-center">
-                        <i data-lucide="alert-circle" class="w-5 h-5 mr-3"></i>
+                        <i data-lucide="info" class="w-5 h-5 mr-3"></i>
                         <div>
-                            <div class="font-black text-xs uppercase tracking-wider">Acción Bloqueada</div>
-                            <div class="small">Has seleccionado materiales que ya están asignados a otras ubicaciones. Debes seleccionar unidades disponibles en almacén o resolver los conflictos antes de guardar.</div>
+                            <div class="font-black text-xs uppercase tracking-wider">Aviso de Traslado</div>
+                            <div class="small">Has seleccionado unidades que están en otros botiquines o vehículos. Al guardar, se realizará un traspaso automático.</div>
                         </div>
                     </div>
                 `;
@@ -232,7 +197,15 @@ export default class extends Controller {
     }
 
     submit(event) {
+        if (event.currentTarget.dataset.confirmed === 'true') {
+            return;
+        }
+
+        event.preventDefault();
         const proposals = [];
+        let hasBusy = false;
+        const busyDetails = [];
+
         this.containerTarget.querySelectorAll('.refill-row').forEach(row => {
             const materialId = row.dataset.materialId || row.querySelector('.material-id')?.value;
             const nature = row.dataset.nature;
@@ -252,12 +225,45 @@ export default class extends Controller {
         });
 
         if (proposals.length === 0) {
-            event.preventDefault();
             this.showToast('No hay transferencias válidas para confirmar.', 'danger');
             return;
         }
 
         document.getElementById('proposals_data').value = JSON.stringify(proposals);
+
+        if (hasBusy) {
+            const listHtml = busyDetails.map(d => `<li><b>${d.label}</b> (en ${d.location})</li>`).join('');
+
+            Swal.fire({
+                title: 'Confirmar Traspaso de Unidades',
+                html: `
+                    <div class="text-start">
+                        <p>Las siguientes unidades serán retiradas de su ubicación actual:</p>
+                        <ul class="small mb-3">${listHtml}</ul>
+                        <p class="mb-0">¿Deseas confirmar el traslado a este nuevo kit?</p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3b82f6',
+                cancelButtonColor: '#94a3b8',
+                confirmButtonText: 'SÍ, TRASLADAR Y GUARDAR',
+                cancelButtonText: 'CANCELAR',
+                customClass: {
+                    popup: 'rounded-4 border-0 shadow-lg',
+                    confirmButton: 'rounded-3 font-bold px-4 py-2',
+                    cancelButton: 'rounded-3 font-bold px-4 py-2'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    event.currentTarget.dataset.confirmed = 'true';
+                    event.currentTarget.submit();
+                }
+            });
+        } else {
+            event.currentTarget.dataset.confirmed = 'true';
+            event.currentTarget.submit();
+        }
     }
 
     showToast(message, type = 'info') {
