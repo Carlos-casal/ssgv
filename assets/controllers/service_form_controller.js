@@ -642,7 +642,7 @@ export default class extends Controller {
         if (!startValue || !endValue) {
             if (statusLabel) {
                 statusLabel.innerHTML = '<i data-lucide="calendar" class="w-3 h-3 inline mr-1 text-slate-400"></i> <span class="text-slate-400 font-medium">Esperando fechas...</span>';
-                statusLabel.className = 'availability-status text-[10px] mt-1 italic';
+                statusLabel.className = 'availability-status text-xxs mt-1 italic';
                 if (window.lucide) window.lucide.createIcons();
             }
             return;
@@ -677,7 +677,7 @@ export default class extends Controller {
                 quantityInput?.classList.remove('is-invalid');
                 if (statusLabel) {
                     statusLabel.innerHTML = `<i data-lucide="check-circle" class="w-3 h-3 text-green-500 inline mr-1"></i> <span class="text-green-600 font-black uppercase">DISPONIBLES: ${data.totalAvailable}</span>`;
-                    statusLabel.className = 'availability-status text-[10px] mt-1';
+                    statusLabel.className = 'availability-status text-xxs mt-1';
                 }
 
                 if ((data.nature === 'EQUIPO_TECNICO' || data.nature === 'OTROS') && data.suggestedUnits && unitSelector) {
@@ -689,7 +689,7 @@ export default class extends Controller {
                 if (statusLabel) {
                     const totalStock = data.nature === 'EQUIPO_TECNICO' ? data.suggestedUnits.length : data.totalAvailable;
                     statusLabel.innerHTML = `<i data-lucide="alert-triangle" class="w-3 h-3 text-red-500 inline mr-1"></i> <span class="text-red-600 font-black">Stock insuficiente (Disp: ${data.totalAvailable} / Total: ${totalStock})</span>`;
-                    statusLabel.className = 'availability-status text-[10px] mt-1';
+                    statusLabel.className = 'availability-status text-xxs mt-1';
                 }
             }
 

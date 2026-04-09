@@ -177,13 +177,13 @@
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">INICIO</span>
+                                                <span class="input-group-text bg-light text-xxs py-0 px-2">INICIO</span>
                                         {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'startDateInput'}}) }}
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
-                                                <span class="input-group-text bg-light text-[10px] py-0 px-2">FIN</span>
+                                                <span class="input-group-text bg-light text-xxs py-0 px-2">FIN</span>
                                         {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'endDateInput'}}) }}
                                             </div>
                                         </div>
@@ -285,7 +285,7 @@
                                         {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Otros'] %}
                                         <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
                                             <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                                                <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
+                                                <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
                                                 <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">
                                                     <i data-lucide="plus-square" class="w-4 h-4"></i>
                                                 </button>
@@ -307,7 +307,7 @@
                                     <div class="row g-2">
                                         <!-- Personal -->
                                         <div class="col-6">
-                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Personal Requerido</span>
+                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Personal Requerido</span>
                                             <div class="space-y-1">
                                                 {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
@@ -321,7 +321,7 @@
                                         </div>
                                         <!-- Ambulancias -->
                                         <div class="col-6">
-                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Tipo Ambulancia</span>
+                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Tipo Ambulancia</span>
                                             <div class="space-y-1">
                                                 {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
@@ -335,7 +335,7 @@
                                         </div>
                                         <!-- Vehículos (Compact list) -->
                                         <div class="col-12 mt-2">
-                                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-tighter d-block mb-1">Asignar Vehículos</span>
+                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-1">Asignar Vehículos</span>
                                             <div class="overflow-y-auto" style="max-height: 200px;">
                                                 {% for key, vehicle_choice in form.vehicles %}
                                                     {% set vehicle = form.vehicles.vars.choices[key].data %}
@@ -382,7 +382,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
                             <h4 class="text-xs font-black uppercase tracking-wider text-green-700 mb-4 flex justify-between items-center">
                                 <span>Asistentes</span>
-                                <span class="bg-green-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
+                                <span class="bg-green-100 px-2 py-0.5 rounded-full text-xxs">{{ service.assistanceConfirmations|filter(c => c.status == 'attending')|length }}</span>
                             </h4>
                             <ul class="space-y-2">
                                 {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
@@ -401,7 +401,7 @@
                                                     {% if totalMinutes > 0 %}
                                                         {% set hours = (totalMinutes / 60)|round(0, 'floor') %}
                                                         {% set minutes = totalMinutes % 60 %}
-                                                        <span class="text-[9px] font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
+                                                        <span class="text-xxs font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
                                                     {% endif %}
                                                 {% endif %}
                                             </div>
@@ -450,7 +450,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
                             <h4 class="text-xs font-black uppercase tracking-wider text-orange-700 mb-4 flex justify-between items-center">
                                 <span>En Reserva</span>
-                                <span class="bg-orange-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
+                                <span class="bg-orange-100 px-2 py-0.5 rounded-full text-xxs">{{ service.assistanceConfirmations|filter(c => c.status == 'reserved')|length }}</span>
                             </h4>
                             <ul class="space-y-2">
                                 {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'reserved') %}
@@ -473,7 +473,7 @@
                         <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
                             <h4 class="text-xs font-black uppercase tracking-wider text-red-700 mb-4 flex justify-between items-center">
                                 <span>Bajas</span>
-                                <span class="bg-red-100 px-2 py-0.5 rounded-full text-[10px]">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
+                                <span class="bg-red-100 px-2 py-0.5 rounded-full text-xxs">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
                             </h4>
                             <ul class="space-y-2">
                                 {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}

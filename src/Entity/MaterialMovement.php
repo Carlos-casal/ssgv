@@ -44,6 +44,10 @@ class MaterialMovement
     #[ORM\JoinColumn(onDelete: 'SET NULL')]
     private ?MaterialBatch $batch = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?MaterialUnit $materialUnit = null;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -77,6 +81,18 @@ class MaterialMovement
     public function setBatch(?MaterialBatch $batch): static
     {
         $this->batch = $batch;
+
+        return $this;
+    }
+
+    public function getMaterialUnit(): ?MaterialUnit
+    {
+        return $this->materialUnit;
+    }
+
+    public function setMaterialUnit(?MaterialUnit $materialUnit): static
+    {
+        $this->materialUnit = $materialUnit;
 
         return $this;
     }

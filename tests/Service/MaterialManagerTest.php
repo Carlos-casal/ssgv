@@ -11,6 +11,7 @@ use App\Repository\MaterialMovementRepository;
 use App\Repository\ServiceMaterialRepository;
 use App\Service\MaterialManager;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use PHPUnit\Framework\TestCase;
 use Symfony\Bundle\SecurityBundle\Security;
 use App\Entity\User;
@@ -25,6 +26,7 @@ class MaterialManagerTest extends TestCase
     private $movementRepository;
     private $serviceMaterialRepository;
     private $entityManager;
+    private $registry;
     private $security;
     private $materialManager;
 
@@ -36,7 +38,11 @@ class MaterialManagerTest extends TestCase
         $this->movementRepository = $this->createMock(MaterialMovementRepository::class);
         $this->serviceMaterialRepository = $this->createMock(ServiceMaterialRepository::class);
         $this->entityManager = $this->createMock(EntityManagerInterface::class);
+        $this->registry = $this->createMock(ManagerRegistry::class);
         $this->security = $this->createMock(Security::class);
+
+        $this->entityManager->method('isOpen')->willReturn(true);
+        $this->registry->method('getManager')->willReturn($this->entityManager);
 
         $this->materialManager = new MaterialManager(
             $this->materialRepository,
@@ -44,8 +50,9 @@ class MaterialManagerTest extends TestCase
             $this->stockRepository,
             $this->movementRepository,
             $this->serviceMaterialRepository,
-            $this->entityManager,
-            $this->security
+            $this->registry,
+            $this->security,
+            $this->entityManager
         );
     }
 
@@ -109,9 +116,46 @@ class MaterialManagerTest extends TestCase
         $this->assertEquals(1, $this->materialManager->countAvailableUnits($material, $start, $end));
     }
 
+    private function mockMovementQueryBuilder()
+    {
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->method('getResult')->willReturn([]);
+
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('setParameter')->willReturnSelf();
+        $qb->method('getQuery')->willReturn($query);
+
+        $this->movementRepository->method('createQueryBuilder')->willReturn($qb);
+    }
+
     public function testAdjustStockCreatesMovement(): void
     {
+        // 1. Mock empty result from DB for the first call
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->method('getResult')->willReturn([]);
+
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('setParameter')->willReturnSelf();
+        $qb->method('getQuery')->willReturn($query);
+
+        $this->movementRepository->expects($this->atLeastOnce())
+            ->method('createQueryBuilder')
+            ->willReturn($qb);
+
+        // 2. Setup Material and Location with fixed IDs
         $material = new Material();
+        $reflection = new \ReflectionClass($material);
+        $property = $reflection->getProperty('id');
+        $property->setAccessible(true);
+        $property->setValue($material, 123);
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
 
@@ -137,6 +181,7 @@ class MaterialManagerTest extends TestCase
 
     public function testAdjustStockWithSizes(): void
     {
+        $this->mockMovementQueryBuilder();
         $material = new Material();
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
@@ -163,6 +208,7 @@ class MaterialManagerTest extends TestCase
 
     public function testTransferEntry(): void
     {
+        $this->mockMovementQueryBuilder();
         $material = new Material();
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
@@ -187,6 +233,7 @@ class MaterialManagerTest extends TestCase
 
     public function testTransferMove(): void
     {
+        $this->mockMovementQueryBuilder();
         $material = new Material();
         $material->setNature(Material::NATURE_CONSUMABLE);
         $material->setStock(10);
@@ -210,5 +257,40 @@ class MaterialManagerTest extends TestCase
 
         // Global stock should remain unchanged
         $this->assertEquals(10, $material->getStock());
+    }
+
+    public function testIdempotencyCacheCatchSameRequestDuplicates(): void
+    {
+        $this->mockMovementQueryBuilder();
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+        $material->setStock(10);
+
+        $destination = new \App\Entity\Location();
+        $destination->setName('Warehouse');
+        $reflectionLoc = new \ReflectionClass($destination);
+        $propLoc = $reflectionLoc->getProperty('id');
+        $propLoc->setAccessible(true);
+        $propLoc->setValue($destination, 456);
+
+        // 3. Track persist calls
+        $movementPersistCount = 0;
+        $this->entityManager->expects($this->any())
+            ->method('persist')
+            ->willReturnCallback(function($entity) use (&$movementPersistCount) {
+                if ($entity instanceof MaterialMovement) {
+                    $movementPersistCount++;
+                }
+            });
+
+        // 4. Execute calls
+        // In the first call, adjustStock calls recordMovement which populates the internal cache.
+        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', null, $destination);
+
+        // In the second identical call, recordMovement should return early due to cache.
+        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', null, $destination);
+
+        $this->assertEquals(20, $material->getStock());
+        $this->assertEquals(1, $movementPersistCount, "MaterialMovement should have been persisted exactly once");
     }
 }

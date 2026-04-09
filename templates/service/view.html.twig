@@ -83,7 +83,7 @@
                         {% set cat_materials = service.serviceMaterials|filter(sm => sm.material.category == category) %}
                         {% if cat_materials|length > 0 %}
                             <div>
-                                <h4 class="text-[10px] font-black uppercase text-slate-500 mb-2">{{ category }}</h4>
+                                <h4 class="text-xxs font-black uppercase text-slate-500 mb-2">{{ category }}</h4>
                                 <ul class="text-xs space-y-1">
                                     {% for sm in cat_materials %}
                                         <li><span class="font-bold">{{ sm.quantity }}x</span> {{ sm.material.name }}</li>
