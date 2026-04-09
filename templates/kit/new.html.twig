@@ -29,7 +29,7 @@
                                     <option value="{{ template.id }}">{{ template.name }} ({{ template.containerType }})</option>
                                 {% endfor %}
                             </select>
-                            <div class="form-text text-[10px] mt-2">Los productos se cargarán automáticamente según esta plantilla.</div>
+                            <div class="form-text text-xxs mt-2">Los productos se cargarán automáticamente según esta plantilla.</div>
                         </div>
 
                         <div class="row">
@@ -40,7 +40,7 @@
                                        placeholder="Ej: Botiquín Alfa 1"
                                        data-kit-registration-target="alias"
                                        data-action="input->kit-registration#checkAlias">
-                                <div id="alias_warning" class="text-[10px] text-red-500 font-bold mt-1 d-none"
+                                <div id="alias_warning" class="text-xxs text-red-500 font-bold mt-1 d-none"
                                      data-kit-registration-target="aliasWarning">
                                     <i data-lucide="alert-triangle" class="w-3 h-3 inline"></i> Este alias ya está en uso.
                                 </div>
@@ -104,7 +104,7 @@
                                 <span class="text-2xl font-black text-blue-700" id="total_price_display"
                                       data-kit-registration-target="totalDisplay">0.00 €</span>
                             </div>
-                            <div id="iva_included_hint" class="text-[10px] text-blue-500 font-bold mt-2 d-none"
+                            <div id="iva_included_hint" class="text-xxs text-blue-500 font-bold mt-2 d-none"
                                  data-kit-registration-target="ivaHint">
                                 * El precio de compra introducido se tratará como TOTAL. La base imponible se calculará automáticamente.
                             </div>

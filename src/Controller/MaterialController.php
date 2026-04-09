@@ -135,7 +135,6 @@ class MaterialController extends AbstractController
             }
 
             $entityManager->persist($material);
-            $entityManager->flush();
 
             // Handle dynamic batch creation for Consumables
             if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
@@ -171,7 +170,6 @@ class MaterialController extends AbstractController
                         $materialManager->updateStockWithBatch($material, $materialManager->getCentralWarehouse(), $totalStock, $batch);
                     }
                 }
-                $entityManager->flush();
             }
 
             // Handle dynamic unit creation for Communications or Technical Equipment
@@ -233,7 +231,6 @@ class MaterialController extends AbstractController
                         'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
                     ]);
                 }
-                $entityManager->flush();
             }
 
             // Handle initial stock from grid
@@ -252,6 +249,8 @@ class MaterialController extends AbstractController
                     $materialManager->adjustStock($material, $customQty, $reason, $customSize);
                 }
             }
+
+            $entityManager->flush();
 
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -493,7 +492,7 @@ class MaterialController extends AbstractController
                 }
             }
 
-            $entityManager->flush();
+            // $entityManager->flush(); // Removed redundant flush
 
             // Handle dynamic batch creation/update in edit
             if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
@@ -550,7 +549,6 @@ class MaterialController extends AbstractController
                         $materialManager->updateStockWithBatch($material, $materialManager->getCentralWarehouse(), $diff, $batch);
                     }
                 }
-                $entityManager->flush();
             }
 
             // Handle dynamic unit creation in edit (only for NEW units)
@@ -578,7 +576,6 @@ class MaterialController extends AbstractController
                         }
                     }
                 }
-                $entityManager->flush();
 
                 // Validate Serial Numbers for uniqueness (only for NEW units being added)
                 if (count($unitsData) > $existingCount) {
@@ -649,7 +646,6 @@ class MaterialController extends AbstractController
                             'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
                         ]);
                     }
-                    $entityManager->flush();
                 }
             }
 
@@ -669,6 +665,8 @@ class MaterialController extends AbstractController
                     $materialManager->adjustStock($material, $customQty, $reason, $customSize);
                 }
             }
+
+            $entityManager->flush();
 
             return $this->redirectToRoute('app_material_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -800,6 +798,8 @@ class MaterialController extends AbstractController
                 $data['materialUnit'] ?? null
             );
 
+            $entityManager->flush();
+
             $this->addFlash('success', 'Movimiento registrado correctamente.');
 
             return $this->redirectToRoute('app_material_show', ['id' => $material->getId()]);
@@ -836,6 +836,8 @@ class MaterialController extends AbstractController
         if ($quantity !== 0 && $size && empty($adjustments)) {
             $materialManager->adjustStock($material, $quantity, $reason, $size);
         }
+
+        $entityManager->flush();
 
         return $this->redirectToRoute('app_material_show', ['id' => $material->getId()], Response::HTTP_SEE_OTHER);
     }
@@ -877,7 +879,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/unit/{id}/status', name: 'app_material_unit_status', methods: ['GET', 'POST'])]
-    public function changeUnitStatus(Request $request, MaterialUnit $unit, MaterialManager $materialManager): Response
+    public function changeUnitStatus(Request $request, MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
         $form = $this->createForm(MaterialUnitStatusType::class, ['status' => $unit->getOperationalStatus()]);
         $form->handleRequest($request);
@@ -885,6 +887,8 @@ class MaterialController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
             $materialManager->changeUnitStatus($unit, $data['status'], $data['reason']);
+
+            $entityManager->flush();
 
             $this->addFlash('success', 'Estado modificado correctamente.');
             return $this->redirectToRoute('app_material_show', ['id' => $unit->getMaterial()->getId()], Response::HTTP_SEE_OTHER);

@@ -24,6 +24,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 class MaterialManager
 {
     private EntityManagerInterface $entityManager;
+    private array $recordedMovementsCache = [];
 
     public function __construct(
         private MaterialRepository $materialRepository,
@@ -32,9 +33,10 @@ class MaterialManager
         private MaterialMovementRepository $movementRepository,
         private ServiceMaterialRepository $serviceMaterialRepository,
         private ManagerRegistry $managerRegistry,
-        private Security $security
+        private Security $security,
+        EntityManagerInterface $entityManager
     ) {
-        $this->entityManager = $this->managerRegistry->getManager();
+        $this->entityManager = $entityManager;
     }
 
     private function getEntityManager(): EntityManagerInterface
@@ -146,26 +148,25 @@ class MaterialManager
             return;
         }
 
-        // Standardize Entry reasons
-        if ($quantity > 0 && (str_contains($reason, 'Inicialización') || str_contains($reason, 'proveedor'))) {
+        // Standardize Entry reasons (Tarea 3)
+        if ($quantity > 0 && (str_contains($reason, 'Inicialización') || str_contains($reason, 'proveedor') || str_contains($reason, 'Entrada'))) {
             $reason = sprintf('Entrada: Registro Inicial / %s', $location->getName());
         }
 
-        $movement = new MaterialMovement();
-        $movement->setMaterial($material);
-        $movement->setQuantity(abs($quantity));
-        $movement->setReason($reason);
-        $movement->setSize($size);
-        $movement->setUser($currentUser);
-        $movement->setDestination($quantity > 0 ? $location : null);
-        $movement->setOrigin($quantity < 0 ? $location : null);
-        $movement->setResponsible($responsible);
-        $movement->setBatch($batch);
-        $this->getEntityManager()->persist($movement);
+        $this->recordMovement(
+            $material,
+            abs($quantity),
+            $reason,
+            $quantity < 0 ? $location : null,
+            $quantity > 0 ? $location : null,
+            $responsible,
+            $size,
+            $batch,
+            new \DateTimeImmutable(),
+            $quantity < 0
+        );
 
         $this->updateStockWithBatch($material, $location, $quantity, $batch, $size);
-
-        $this->getEntityManager()->flush();
     }
 
     /**
@@ -199,7 +200,7 @@ class MaterialManager
 
         // Check if unit already has an ID (might be an update or a pre-filled object)
         // If it's truly new to the system, log initial entry.
-        $this->recordMovement($material, 1, $reason, null, $finalLocation, null, 'UNICA', null, new \DateTimeImmutable(), false);
+        $this->recordMovement($material, 1, $reason, null, $finalLocation, null, 'UNICA', null, new \DateTimeImmutable(), false, $unit);
 
         return $unit;
     }
@@ -250,12 +251,12 @@ class MaterialManager
             if ($currentLocation) {
                 // It's a transfer
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size, true);
-                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, null, $responsible, $size, $batch, $now, true);
+                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, null, $responsible, $size, $batch, $now, true, $unit);
 
                 if ($destination) {
                     $unit->setLocation($destination);
                     $this->updateStockWithBatch($material, $destination, $quantity, null, $size, true);
-                    $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now, false);
+                    $this->recordMovement($material, $quantity, $transferReason, null, $destination, $responsible, $size, $batch, $now, false, $unit);
                 } else {
                     $unit->setLocation(null);
                 }
@@ -264,7 +265,7 @@ class MaterialManager
                 if ($destination) {
                     $unit->setLocation($destination);
                     $this->updateStockWithBatch($material, $destination, $quantity, null, $size, true);
-                    $this->recordMovement($material, $quantity, $entryReason, null, $destination, $responsible, $size, $batch, $now, false);
+                    $this->recordMovement($material, $quantity, $entryReason, null, $destination, $responsible, $size, $batch, $now, false, $unit);
                 }
             }
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
@@ -320,7 +321,6 @@ class MaterialManager
             }
         }
 
-        $this->getEntityManager()->flush();
     }
 
     private function recordMovement(
@@ -333,26 +333,81 @@ class MaterialManager
         ?string $size = null,
         ?MaterialBatch $batch = null,
         ?\DateTimeImmutable $createdAt = null,
-        bool $isWithdrawal = false
+        bool $isWithdrawal = false,
+        ?MaterialUnit $unit = null
     ): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
         $timestamp = $createdAt ?: new \DateTimeImmutable();
         $netQuantity = $isWithdrawal ? -abs($quantity) : abs($quantity);
 
-        // IDEMPOTENCY CHECK: Prevent exact duplicate records in the same transaction/second
-        $existing = $this->movementRepository->findOneBy([
-            'material' => $material,
-            'quantity' => $netQuantity,
-            'reason' => $reason,
-            'origin' => $origin,
-            'destination' => $destination,
-            'createdAt' => $timestamp
-        ]);
+        // Standardize History Format (Tarea 3)
+        // Ensure transfers use strictly "Traspaso: [Origen] -> [Destino]"
+        if ($origin && $destination && !str_starts_with($reason, 'Entrada') && !str_starts_with($reason, 'Consumo')) {
+            $reason = sprintf('Traspaso: %s -> %s', $origin->getName(), $destination->getName());
+        }
 
-        if ($existing) {
+        // IDEMPOTENCY CHECK (Tarea 2)
+        // 1. Check Request Cache (for records not yet flushed)
+        $cacheKey = sprintf(
+            '%s_%d_%s_%s_%s_%s_%s',
+            $material->getId() ?? spl_object_hash($material),
+            $netQuantity,
+            md5($reason),
+            $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null',
+            $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null',
+            $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null',
+            $timestamp->format('Y-m-d_H:i')
+        );
+
+        if (isset($this->recordedMovementsCache[$cacheKey])) {
             return;
         }
+
+        // 2. Check Database (for records already persisted in the same minute)
+        $minuteStart = $timestamp->modify('midnight')->add(new \DateInterval('PT' . ($timestamp->format('H') * 3600 + $timestamp->format('i') * 60) . 'S'));
+
+        $qb = $this->movementRepository->createQueryBuilder('m')
+            ->where('m.material = :material')
+            ->andWhere('m.quantity = :quantity')
+            ->andWhere('m.reason = :reason')
+            ->andWhere('m.createdAt >= :minuteStart')
+            ->andWhere('m.createdAt <= :timestamp')
+            ->setParameter('material', $material)
+            ->setParameter('quantity', $netQuantity)
+            ->setParameter('reason', $reason)
+            ->setParameter('minuteStart', $minuteStart)
+            ->setParameter('timestamp', $timestamp);
+
+        if ($origin) {
+            $qb->andWhere('m.origin = :origin')->setParameter('origin', $origin);
+        } else {
+            $qb->andWhere('m.origin IS NULL');
+        }
+
+        if ($destination) {
+            $qb->andWhere('m.destination = :destination')->setParameter('destination', $destination);
+        } else {
+            $qb->andWhere('m.destination IS NULL');
+        }
+
+        if ($unit) {
+            $qb->andWhere('m.materialUnit = :unit')->setParameter('unit', $unit);
+        } else {
+            $qb->andWhere('m.materialUnit IS NULL');
+        }
+
+        if ($batch) {
+            $qb->andWhere('m.batch = :batch')->setParameter('batch', $batch);
+        }
+
+        $existing = $qb->getQuery()->getResult();
+        if (count($existing) > 0) {
+            $this->recordedMovementsCache[$cacheKey] = true;
+            return;
+        }
+
+        $this->recordedMovementsCache[$cacheKey] = true;
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
@@ -364,6 +419,7 @@ class MaterialManager
         $movement->setUser($currentUser);
         $movement->setSize($size);
         $movement->setBatch($batch);
+        $movement->setMaterialUnit($unit);
         $movement->setCreatedAt($timestamp);
 
         $this->getEntityManager()->persist($movement);
@@ -592,7 +648,5 @@ class MaterialManager
         } else if ($status === 'OPERATIVO') {
             $unit->setIsInMaintenance(false);
         }
-
-        $this->getEntityManager()->flush();
     }
 }

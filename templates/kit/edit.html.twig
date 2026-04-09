@@ -21,24 +21,24 @@
                     <input type="hidden" name="_token" value="{{ csrf_token('kit_edit_' ~ unit.id) }}">
                     <div class="card-body p-4">
                         <div class="mb-4">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Alias (Nombre Operativo)</label>
+                            <label class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Alias (Nombre Operativo)</label>
                             <input type="text" name="alias" class="form-control form-control-sm font-bold" value="{{ unit.alias }}" placeholder="Ej: Mochila SVB 1">
-                            <div class="form-text text-[10px] uppercase">Este es el nombre visible en servicios y almacén.</div>
+                            <div class="form-text text-xxs uppercase">Este es el nombre visible en servicios y almacén.</div>
                         </div>
 
                         <div class="mb-4">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Número de Serie (S/N)</label>
+                            <label class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Número de Serie (S/N)</label>
                             <input type="text" name="serial_number" class="form-control form-control-sm font-bold" value="{{ unit.serialNumber }}" placeholder="S/N grabado en el equipo">
                         </div>
 
                         <div class="mb-0">
-                            <label class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Configuración / Plantilla</label>
+                            <label class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1 d-block">Configuración / Plantilla</label>
                             <select name="template_id" class="form-select form-select-sm font-bold" required>
                                 {% for t in templates %}
                                     <option value="{{ t.id }}" {{ unit.template and unit.template.id == t.id ? 'selected' : '' }}>{{ t.name }} ({{ t.containerType }})</option>
                                 {% endfor %}
                             </select>
-                            <div class="form-text text-[10px] uppercase">Define qué materiales debe contener este botiquín.</div>
+                            <div class="form-text text-xxs uppercase">Define qué materiales debe contener este botiquín.</div>
                         </div>
                     </div>
                     <div class="card-footer bg-white p-4 border-top border-slate-100 d-flex justify-content-end gap-2">
@@ -49,7 +49,7 @@
             </div>
 
             <div class="mt-4 text-center">
-                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">¿Quieres cambiar el contenido sugerido?</p>
+                <p class="text-xxs font-black uppercase tracking-widest text-slate-400">¿Quieres cambiar el contenido sugerido?</p>
                 <a href="{{ path('app_kit_template_edit', {id: unit.template.id}) }}" class="btn btn-outline-secondary btn-sm">
                     <i data-lucide="settings" class="w-3 h-3 inline mr-1"></i> CONFIGURAR PRODUCTOS DE LA PLANTILLA
                 </a>

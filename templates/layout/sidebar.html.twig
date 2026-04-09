@@ -81,7 +81,7 @@
                                                 <i data-lucide="x" class="w-3 h-3"></i>
                                             </button>
                                         </div>
-                                        <p class="text-muted text-[10px] mb-1">
+                                        <p class="text-muted text-xxs mb-1">
                                             {% if alert.createdAt is defined %}
                                                 {% set diff = date().diff(date(alert.createdAt)) %}
                                                 {% if diff.days > 0 %}
@@ -139,7 +139,7 @@
             {% if is_granted('ROLE_ADMIN') %}
             <!-- OPERATIVA -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Operativa</p>
+                <p class="text-xxs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Operativa</p>
                 <ul class="space-y-1">
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_services_list' %}
@@ -157,7 +157,7 @@
 
             <!-- RECURSOS -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Recursos</p>
+                <p class="text-xxs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Recursos</p>
                 <ul class="space-y-1">
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_volunteer_list' %}
@@ -186,7 +186,7 @@
 
             <!-- LOGÍSTICA -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Logística</p>
+                <p class="text-xxs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Logística</p>
                 <ul class="space-y-1">
                     <li>
                         {% set active = app.request.attributes.get('_route') == 'app_warehouse_dashboard' %}
@@ -226,7 +226,7 @@
 
             <!-- SISTEMA -->
             <div class="px-6">
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Sistema</p>
+                <p class="text-xxs font-black uppercase tracking-[0.2em] text-slate-500 mb-4 ml-4 sidebar-section-title">Sistema</p>
                 <ul class="space-y-1">
                     <li>
                         <a href="#"
@@ -286,7 +286,7 @@
                 </div>
                 <div class="flex-1 min-w-0">
                     <p class="font-bold text-white text-xs truncate">{{ app.user.volunteer.name|default('Usuario') }}</p>
-                    <p class="text-[10px] text-slate-500 truncate">{{ app.user.email }}</p>
+                    <p class="text-xxs text-slate-500 truncate">{{ app.user.email }}</p>
                 </div>
             </div>
             <a href="{{ path('app_logout') }}" class="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white text-xs font-bold transition-all duration-200">
