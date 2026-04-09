@@ -444,6 +444,9 @@ class ExcelImportService
                 // Optionally clear the EM to discard half-applied changes from this row
                 if ($this->entityManager->isOpen()) {
                     $this->entityManager->clear();
+                    // Clear internal caches as they might hold detached entities after clear()
+                    $this->materialCache = [];
+                    $this->batchCache = [];
                 }
             }
         }
