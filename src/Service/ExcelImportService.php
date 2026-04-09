@@ -373,7 +373,7 @@ class ExcelImportService
                         $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $cleanSn]);
 
                         if (!$unit) {
-                            $this->materialManager->createUnit($material, [
+                            $newUnit = $this->materialManager->createUnit($material, [
                                 'serialNumber' => $cleanSn,
                                 'alias' => $alias,
                                 'brandModel' => $brandModel,
@@ -383,6 +383,18 @@ class ExcelImportService
                                 'phoneNumber' => $phoneNumber,
                                 'batteryStatus' => '100%',
                             ]);
+
+                            // RECORD INITIAL ENTRY (Tarea 2)
+                            $this->materialManager->adjustStock(
+                                $material,
+                                1,
+                                'Entrada: Registro Inicial / Carga Masiva',
+                                'UNICA',
+                                $this->materialManager->getDefaultLocation($material),
+                                null,
+                                null
+                            );
+
                             $result['units_created']++;
                             $processedSns[] = $cleanSn;
                         } else {
@@ -400,7 +412,7 @@ class ExcelImportService
                         }
                     } else {
                         // Technical bulk stock
-                        $this->materialManager->updateStockDirectly($material, $this->materialManager->getDefaultLocation($material), $unitsPerPackage * $numPackages);
+                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', null, $this->materialManager->getDefaultLocation($material));
                     }
                 } else {
                     // Consumable - Create or Update Batch
@@ -434,7 +446,15 @@ class ExcelImportService
                         $batch->setUnitPrice((string)($priceVal / $totalStockInBatch));
                     }
 
-                    $this->materialManager->updateStockWithBatch($material, $this->materialManager->getDefaultLocation($material), $unitsPerPackage * $numPackages, $batch);
+                    $this->materialManager->adjustStock(
+                        $material,
+                        $unitsPerPackage * $numPackages,
+                        'Entrada: Registro Inicial / Carga Masiva',
+                        null,
+                        $this->materialManager->getDefaultLocation($material),
+                        null,
+                        $batch
+                    );
                 }
 
                 $this->entityManager->flush();

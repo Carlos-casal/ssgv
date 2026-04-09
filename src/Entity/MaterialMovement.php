@@ -45,7 +45,7 @@ class MaterialMovement
     private ?MaterialBatch $batch = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    #[ORM\JoinColumn(name: 'material_unit_id', referencedColumnName: 'id', nullable: true, onDelete: 'SET NULL')]
     private ?MaterialUnit $materialUnit = null;
 
     #[ORM\Column]
