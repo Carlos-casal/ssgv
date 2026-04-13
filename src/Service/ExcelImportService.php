@@ -239,6 +239,7 @@ class ExcelImportService
     {
         if (!$this->entityManager->isOpen()) {
             $this->entityManager = $this->managerRegistry->resetManager();
+            $this->materialManager->clearCache();
             // Clear internal caches as they might hold detached entities
             $this->materialCache = [];
             $this->batchCache = [];
@@ -275,6 +276,8 @@ class ExcelImportService
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $this->ensureEntityManagerIsOpen();
+                // Clear idempotency cache for each row to allow multiple identical rows in same import (Tarea 3)
+                $this->materialManager->clearCache();
 
                 $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
                 if (empty($name)) continue;
@@ -373,6 +376,11 @@ class ExcelImportService
                         $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $cleanSn]);
 
                         if (!$unit) {
+                            // Re-fetch material from current EM to ensure it is managed
+                            if ($material->getId()) {
+                                $material = $this->entityManager->find(Material::class, $material->getId());
+                            }
+
                             $newUnit = $this->materialManager->createUnit($material, [
                                 'serialNumber' => $cleanSn,
                                 'alias' => $alias,
@@ -383,17 +391,6 @@ class ExcelImportService
                                 'phoneNumber' => $phoneNumber,
                                 'batteryStatus' => '100%',
                             ]);
-
-                            // RECORD INITIAL ENTRY (Tarea 2)
-                            $this->materialManager->adjustStock(
-                                $material,
-                                1,
-                                'Entrada: Registro Inicial / Carga Masiva',
-                                'UNICA',
-                                $this->materialManager->getDefaultLocation($material),
-                                null,
-                                null
-                            );
 
                             $result['units_created']++;
                             $processedSns[] = $cleanSn;
@@ -426,6 +423,9 @@ class ExcelImportService
                         $this->entityManager->persist($batch);
                         $this->addToBatchCache($batch);
                         $result['batches_created']++;
+                    } else {
+                        // Re-fetch batch to ensure it is managed
+                        $batch = $this->entityManager->find(\App\Entity\MaterialBatch::class, $batch->getId());
                     }
 
                     if ($expirationDate) $batch->setExpirationDate($expirationDate);
@@ -446,15 +446,22 @@ class ExcelImportService
                         $batch->setUnitPrice((string)($priceVal / $totalStockInBatch));
                     }
 
-                    $this->materialManager->adjustStock(
-                        $material,
-                        $unitsPerPackage * $numPackages,
-                        'Entrada: Registro Inicial / Carga Masiva',
-                        null,
-                        $this->materialManager->getDefaultLocation($material),
-                        null,
-                        $batch
-                    );
+                    // Re-fetch material to ensure it is managed
+                    if ($material->getId()) {
+                        $material = $this->entityManager->find(Material::class, $material->getId());
+                    }
+
+                    if ($numPackages > 0) {
+                        $this->materialManager->adjustStock(
+                            $material,
+                            $unitsPerPackage * $numPackages,
+                            'Entrada: Registro Inicial / Carga Masiva',
+                            null,
+                            $this->materialManager->getDefaultLocation($material),
+                            null,
+                            $batch
+                        );
+                    }
                 }
 
                 $this->entityManager->flush();
@@ -464,6 +471,7 @@ class ExcelImportService
                 // Optionally clear the EM to discard half-applied changes from this row
                 if ($this->entityManager->isOpen()) {
                     $this->entityManager->clear();
+                    $this->materialManager->clearCache();
                     // Clear internal caches as they might hold detached entities after clear()
                     $this->materialCache = [];
                     $this->batchCache = [];

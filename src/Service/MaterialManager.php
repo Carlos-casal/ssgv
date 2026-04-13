@@ -39,12 +39,17 @@ class MaterialManager
         $this->entityManager = $entityManager;
     }
 
-    private function getEntityManager(): EntityManagerInterface
+    public function getEntityManager(): EntityManagerInterface
     {
         if (!$this->entityManager->isOpen()) {
             $this->entityManager = $this->managerRegistry->resetManager();
         }
         return $this->entityManager;
+    }
+
+    public function clearCache(): void
+    {
+        $this->recordedMovementsCache = [];
     }
 
     /**
@@ -353,13 +358,14 @@ class MaterialManager
         // IDEMPOTENCY CHECK (Tarea 2)
         // 1. Check Request Cache (for records not yet flushed)
         $cacheKey = sprintf(
-            '%s_%d_%s_%s_%s_%s_%s',
+            '%s_%d_%s_%s_%s_%s_%s_%s',
             $material->getId() ?? spl_object_hash($material),
             $netQuantity,
             md5($reason),
             $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null',
             $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null',
             $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null',
+            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null',
             $timestamp->format('Y-m-d_H:i')
         );
 
