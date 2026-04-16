@@ -246,6 +246,16 @@ class MaterialManagerTest extends TestCase
         $this->stockRepository->method('findOneBy')
             ->willReturn(null);
 
+        // Expect exactly one persist for MaterialMovement
+        $movementPersists = 0;
+        $this->entityManager->expects($this->any())
+            ->method('persist')
+            ->willReturnCallback(function($entity) use (&$movementPersists) {
+                if ($entity instanceof MaterialMovement) {
+                    $movementPersists++;
+                }
+            });
+
         $this->materialManager->transfer(
             $material,
             $origin,
@@ -257,6 +267,45 @@ class MaterialManagerTest extends TestCase
 
         // Global stock should remain unchanged
         $this->assertEquals(10, $material->getStock());
+        $this->assertEquals(1, $movementPersists, "Should only persist one movement record for transfer");
+    }
+
+    public function testTransferConsolidation(): void
+    {
+        $this->mockMovementQueryBuilder();
+        $material = new Material();
+        $material->setNature(Material::NATURE_CONSUMABLE);
+
+        $origin = new \App\Entity\Location();
+        $origin->setName('Origin');
+        $destination = new \App\Entity\Location();
+        $destination->setName('Destination');
+
+        $this->stockRepository->method('findOneBy')->willReturn(null);
+
+        $recordedMovement = null;
+        $this->entityManager->expects($this->any())
+            ->method('persist')
+            ->willReturnCallback(function($entity) use (&$recordedMovement) {
+                if ($entity instanceof MaterialMovement) {
+                    $recordedMovement = $entity;
+                }
+            });
+
+        $this->materialManager->transfer(
+            $material,
+            $origin,
+            $destination,
+            5,
+            'Custom Reason',
+            null
+        );
+
+        $this->assertNotNull($recordedMovement);
+        $this->assertEquals(5, $recordedMovement->getQuantity());
+        $this->assertEquals($origin, $recordedMovement->getOrigin());
+        $this->assertEquals($destination, $recordedMovement->getDestination());
+        $this->assertStringContainsString('Traspaso: Origin -> Destination', $recordedMovement->getReason());
     }
 
     public function testIdempotencyCacheCatchSameRequestDuplicates(): void
