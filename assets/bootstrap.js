@@ -9,8 +9,6 @@ import PasswordVisibilityController from './controllers/password_visibility_cont
 import ForgotPasswordController from './controllers/forgot_password_controller.js';
 import PasswordValidationController from './controllers/password_validation_controller.js';
 import BulkUnitController from './controllers/bulk_unit_controller.js';
-import UniformityGridController from './controllers/uniformity_grid_controller.js';
-import MaterialSizingController from './controllers/material_sizing_controller.js';
 import MaterialDynamicFormController from './controllers/material_dynamic_form_controller.js';
 import KitTemplateController from './controllers/kit-template_controller.js';
 import ServiceDetailsController from './controllers/service_details_controller.js';
@@ -39,8 +37,6 @@ app.register('password-visibility', PasswordVisibilityController);
 app.register('forgot-password', ForgotPasswordController);
 app.register('password-validation', PasswordValidationController);
 app.register('bulk-unit', BulkUnitController);
-app.register('uniformity-grid', UniformityGridController);
-app.register('material-sizing', MaterialSizingController);
 app.register('material-dynamic-form', MaterialDynamicFormController);
 app.register('kit-template', KitTemplateController);
 app.register('service-details', ServiceDetailsController);

@@ -565,13 +565,6 @@ export default class extends Controller {
         const category = this.element.dataset.materialCategory;
         const isTechnical = nature === 'EQUIPO_TECNICO';
 
-        // Requirement: Hide "Tipo de tallaje" for Sanitario and Communications
-        const sizingContainer = document.getElementById('sizing-type-container') || this.element.querySelector('[name*="[sizingType]"]')?.closest('.col-md-6');
-        if (sizingContainer) {
-            const hideSizing = category === 'Sanitario' || category === 'Comunicaciones';
-            sizingContainer.classList.toggle('d-none', hideSizing);
-        }
-
         // Requirement: Hide Expiration Date for Communications if not consumable (Accesorios)
         if (category === 'Comunicaciones') {
             const expirationInput = this.element.querySelector('[name*="[expirationDate]"]');

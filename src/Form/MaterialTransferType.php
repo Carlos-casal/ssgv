@@ -40,11 +40,6 @@ class MaterialTransferType extends AbstractType
                 'label' => 'Cantidad',
                 'attr' => ['class' => 'form-control', 'min' => 1]
             ])
-            ->add('size', TextType::class, [
-                'label' => 'Talla (si aplica)',
-                'required' => false,
-                'attr' => ['class' => 'form-control']
-            ])
             ->add('reason', TextType::class, [
                 'label' => 'Motivo',
                 'attr' => ['class' => 'form-control', 'placeholder' => 'Ej: Reposición de ambulancia, Caducidad...']

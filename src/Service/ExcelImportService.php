@@ -390,7 +390,6 @@ class ExcelImportService
                                 $material,
                                 1,
                                 'Entrada: Registro Inicial / Carga Masiva',
-                                'UNICA',
                                 $this->materialManager->getDefaultLocation($material),
                                 null,
                                 null
@@ -452,7 +451,6 @@ class ExcelImportService
                         $material,
                         $unitsPerPackage * $numPackages,
                         'Entrada: Registro Inicial / Carga Masiva',
-                        null,
                         $this->materialManager->getDefaultLocation($material),
                         null,
                         $batch
@@ -528,11 +526,17 @@ class ExcelImportService
         }
     }
 
-    private function findExistingBatch(Material $material, string $batchNumber): ?\App\Entity\MaterialBatch
+    private function findExistingBatch(Material $material, string $batchNumber, ?string $totalPrice, ?string $marginPct, ?string $iva, int $unitsPerPackage): ?\App\Entity\MaterialBatch
     {
         // 1. Check cache
         foreach ($this->batchCache as $b) {
-            if ($b->getMaterial() === $material && $b->getBatchNumber() === $batchNumber) {
+            if ($b->getMaterial() === $material &&
+                $b->getBatchNumber() === $batchNumber &&
+                (string)$b->getTotalPrice() === (string)$totalPrice &&
+                (string)$b->getMarginPercentage() === (string)$marginPct &&
+                (string)$b->getIva() === (string)($iva ?? $material->getIva()) &&
+                $b->getUnitsPerPackage() === $unitsPerPackage
+            ) {
                 return $b;
             }
         }
@@ -540,7 +544,11 @@ class ExcelImportService
         // 2. Check DB
         $batch = $this->entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
             'material' => $material,
-            'batchNumber' => $batchNumber
+            'batchNumber' => $batchNumber,
+            'totalPrice' => $totalPrice,
+            'marginPercentage' => $marginPct,
+            'iva' => $iva ?? $material->getIva(),
+            'unitsPerPackage' => $unitsPerPackage
         ]);
 
         if ($batch) {

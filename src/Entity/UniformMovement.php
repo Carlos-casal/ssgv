@@ -15,7 +15,6 @@ class UniformMovement
     public const TYPE_EXCHANGE = 'exchange';
 
     public const REASON_NEW_ASSIGNMENT = 'new_assignment';
-    public const REASON_SIZE_CHANGE = 'size_change';
     public const REASON_DAMAGE = 'damage';
     public const REASON_RESIGNATION = 'resignation';
 
@@ -37,9 +36,6 @@ class UniformMovement
 
     #[ORM\Column(length: 50)]
     private ?string $reason = null;
-
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $size = null;
 
     #[ORM\Column]
     private int $quantity = 1;
@@ -111,18 +107,6 @@ class UniformMovement
     public function setReason(string $reason): static
     {
         $this->reason = $reason;
-
-        return $this;
-    }
-
-    public function getSize(): ?string
-    {
-        return $this->size;
-    }
-
-    public function setSize(?string $size): static
-    {
-        $this->size = $size;
 
         return $this;
     }

@@ -32,7 +32,6 @@ class MaterialController extends AbstractController
     public function index(Request $request, MaterialRepository $materialRepository, MaterialStockRepository $stockRepository): Response
     {
         $category = $request->query->get('category');
-        $size = $request->query->get('size');
         $subFamily = $request->query->get('subFamily');
 
         $qb = $materialRepository->createQueryBuilder('m');
@@ -47,19 +46,11 @@ class MaterialController extends AbstractController
                 ->setParameter('subFamily', $subFamily);
         }
 
-        if ($size) {
-            $qb->join('m.stocks', 'ms')
-                ->andWhere('ms.size = :size')
-                ->andWhere('ms.quantity > 0')
-                ->setParameter('size', $size);
-        }
-
         $materials = $qb->getQuery()->getResult();
 
         $response = $this->render('material/index.html.twig', [
             'materials' => $materials,
             'current_category' => $category,
-            'current_size' => $size,
             'current_subfamily' => $subFamily,
             'current_section' => 'recursos'
         ]);
@@ -140,34 +131,56 @@ class MaterialController extends AbstractController
             if ($request->request->has('batches_data') && $material->getNature() === Material::NATURE_CONSUMABLE) {
                 $batchesData = $request->request->all('batches_data');
                 foreach ($batchesData as $bData) {
-                    $batch = new \App\Entity\MaterialBatch();
-                    $batch->setMaterial($material);
-                    $batch->setBatchNumber($bData['batchNumber'] ?? 'LOTE');
+                    $batchNumber = $bData['batchNumber'] ?? 'LOTE';
+                    $unitsPerPackage = isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1;
+                    $numPackagesInRow = (int)str_replace('.', '', $bData['numPackages'] ?? 0);
+                    $totalPrice = isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null;
+                    $marginPercentage = isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null;
+                    $iva = isset($bData['iva']) ? (string)str_replace('.', '', $bData['iva']) : (string)$material->getIva();
+
+                    // Check for existing batch for consolidation in NEW action
+                    $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
+                        'material' => $material,
+                        'batchNumber' => $batchNumber,
+                        'unitsPerPackage' => $unitsPerPackage,
+                        'totalPrice' => $totalPrice,
+                        'marginPercentage' => $marginPercentage,
+                        'iva' => $iva
+                    ]);
+
+                    if (!$batch) {
+                        $batch = new \App\Entity\MaterialBatch();
+                        $batch->setMaterial($material);
+                        $entityManager->persist($batch);
+                    }
+
+                    $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
                         $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
                     }
                     $batch->setSupplier($bData['supplier'] ?? null);
-                    $batch->setUnitsPerPackage(isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1);
-                    $batch->setNumPackages(isset($bData['numPackages']) ? (int)str_replace('.', '', $bData['numPackages']) : 0);
-                    $batch->setTotalPrice(isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null);
-                    $batch->setMarginPercentage(isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null);
-                    $batch->setIva(isset($bData['iva']) ? (int)str_replace('.', '', $bData['iva']) : (int)$material->getIva());
+                    $batch->setUnitsPerPackage($unitsPerPackage);
+                    $batch->setNumPackages($batch->getNumPackages() + $numPackagesInRow);
+                    $batch->setTotalPrice($totalPrice);
+                    $batch->setMarginPercentage($marginPercentage);
+                    $batch->setIva((int)$iva);
 
                     // Calculate unit price for storage
-                    $totalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
-                    if ($totalStock > 0 && $batch->getTotalPrice()) {
+                    $currentTotalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
+                    if ($currentTotalStock > 0 && $batch->getTotalPrice()) {
                         $price = (float)$batch->getTotalPrice();
                         if ($batch->getMarginPercentage()) {
                             $price = $price - ($price * ((float)$batch->getMarginPercentage() / 100));
                         }
-                        $batch->setUnitPrice((string)($price / $totalStock));
+                        $batch->setUnitPrice((string)($price / $currentTotalStock));
                     }
 
                     $entityManager->persist($batch);
 
                     // Initialize stock for this batch in Central Warehouse
-                    if ($batch->getNumPackages() > 0) {
-                        $materialManager->adjustStock($material, $totalStock, 'Entrada: Registro Inicial', null, $materialManager->getCentralWarehouse(), null, $batch);
+                    $addedStock = $unitsPerPackage * $numPackagesInRow;
+                    if ($addedStock > 0) {
+                        $materialManager->adjustStock($material, $addedStock, 'Entrada: Registro Inicial', null, $materialManager->getCentralWarehouse(), null, $batch);
                     }
                 }
             }
@@ -237,16 +250,15 @@ class MaterialController extends AbstractController
             if ($request->request->has('initial_stock')) {
                 $adjustments = $request->request->all('initial_stock');
                 $reason = 'Inicialización de stock';
-                foreach ($adjustments as $size => $quantity) {
+                foreach ($adjustments as $quantity) {
                     if ($quantity > 0) {
-                        $materialManager->adjustStock($material, (int)$quantity, $reason, (string)$size);
+                        $materialManager->adjustStock($material, (int)$quantity, $reason);
                     }
                 }
                 // Handle custom
-                $customSize = $request->request->get('custom_size');
                 $customQty = (int)$request->request->get('custom_qty');
-                if ($customSize && $customQty > 0) {
-                    $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+                if ($customQty > 0) {
+                    $materialManager->adjustStock($material, $customQty, $reason);
                 }
             }
 
@@ -428,13 +440,22 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}', name: 'app_material_show', methods: ['GET'])]
-    public function show(Material $material, MaterialMovementRepository $movementRepository): Response
+    public function show(Request $request, Material $material, MaterialMovementRepository $movementRepository, \Knp\Component\Pager\PaginatorInterface $paginator): Response
     {
-        $movements = $movementRepository->findBy(['material' => $material], ['createdAt' => 'DESC'], 10);
+        $queryBuilder = $movementRepository->createQueryBuilder('m')
+            ->where('m.material = :material')
+            ->setParameter('material', $material)
+            ->orderBy('m.createdAt', 'DESC');
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
+            $request->query->getInt('page', 1),
+            5
+        );
 
         $response = $this->render('material/show.html.twig', [
             'material' => $material,
-            'material_movements' => $movements,
+            'pagination' => $pagination,
             'current_section' => 'recursos'
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
@@ -507,9 +528,28 @@ class MaterialController extends AbstractController
                 }
 
                 foreach ($batchesData as $bData) {
+                    $batchNumber = $bData['batchNumber'] ?? 'LOTE';
+                    $unitsPerPackage = isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1;
+                    $totalPrice = isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null;
+                    $marginPercentage = isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null;
+                    $iva = isset($bData['iva']) ? (string)str_replace('.', '', $bData['iva']) : (string)$material->getIva();
+
                     $batch = null;
-                    if (!empty($bData['id'])) {
+                    $isNewRowInForm = empty($bData['id']);
+                    if (!$isNewRowInForm) {
                         $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($bData['id']);
+                    }
+
+                    if (!$batch) {
+                        // Check for existing batch with same properties for consolidation
+                        $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
+                            'material' => $material,
+                            'batchNumber' => $batchNumber,
+                            'unitsPerPackage' => $unitsPerPackage,
+                            'totalPrice' => $totalPrice,
+                            'marginPercentage' => $marginPercentage,
+                            'iva' => $iva
+                        ]);
                     }
 
                     if (!$batch) {
@@ -518,7 +558,7 @@ class MaterialController extends AbstractController
                         $entityManager->persist($batch);
                     }
 
-                    $batch->setBatchNumber($bData['batchNumber'] ?? 'LOTE');
+                    $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
                         $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
                     }
@@ -526,11 +566,15 @@ class MaterialController extends AbstractController
 
                     $oldTotalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
 
-                    $batch->setUnitsPerPackage(isset($bData['unitsPerPackage']) ? (int)str_replace('.', '', $bData['unitsPerPackage']) : 1);
-                    $batch->setNumPackages(isset($bData['numPackages']) ? (int)str_replace('.', '', $bData['numPackages']) : 0);
-                    $batch->setTotalPrice(isset($bData['totalPrice']) ? str_replace(',', '.', str_replace('.', '', $bData['totalPrice'])) : null);
-                    $batch->setMarginPercentage(isset($bData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $bData['marginPercentage'])) : null);
-                    $batch->setIva(isset($bData['iva']) ? (int)str_replace('.', '', $bData['iva']) : (int)$material->getIva());
+                    $batch->setUnitsPerPackage($unitsPerPackage);
+                    if ($isNewRowInForm) {
+                        $batch->setNumPackages($batch->getNumPackages() + (int)str_replace('.', '', $bData['numPackages'] ?? 0));
+                    } else {
+                        $batch->setNumPackages(isset($bData['numPackages']) ? (int)str_replace('.', '', $bData['numPackages']) : 0);
+                    }
+                    $batch->setTotalPrice($totalPrice);
+                    $batch->setMarginPercentage($marginPercentage);
+                    $batch->setIva((int)$iva);
 
                     $newTotalStock = $batch->getUnitsPerPackage() * $batch->getNumPackages();
 
@@ -653,16 +697,15 @@ class MaterialController extends AbstractController
             if ($request->request->has('initial_stock')) {
                 $adjustments = $request->request->all('initial_stock');
                 $reason = 'Ajuste desde edición';
-                foreach ($adjustments as $size => $quantity) {
+                foreach ($adjustments as $quantity) {
                     if ($quantity > 0) {
-                        $materialManager->adjustStock($material, (int)$quantity, $reason, (string)$size);
+                        $materialManager->adjustStock($material, (int)$quantity, $reason);
                     }
                 }
                 // Handle custom
-                $customSize = $request->request->get('custom_size');
                 $customQty = (int)$request->request->get('custom_qty');
-                if ($customSize && $customQty > 0) {
-                    $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+                if ($customQty > 0) {
+                    $materialManager->adjustStock($material, $customQty, $reason);
                 }
             }
 
@@ -794,7 +837,6 @@ class MaterialController extends AbstractController
                 $data['quantity'],
                 $data['reason'],
                 $data['responsible'],
-                $data['size'],
                 $data['materialUnit'] ?? null
             );
 
@@ -813,7 +855,7 @@ class MaterialController extends AbstractController
     }
 
     #[Route('/{id}/stock/adjust', name: 'app_material_stock_adjust', methods: ['POST'])]
-    public function adjustStock(Request $request, Material $material, MaterialManager $materialManager): Response
+    public function adjustStock(Request $request, Material $material, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
         $reason = $request->request->get('reason', 'Ajuste manual');
 
@@ -824,17 +866,15 @@ class MaterialController extends AbstractController
         }
 
         // 2. Manual entry from custom column
-        $customSize = trim((string)$request->request->get('custom_size'));
         $customQty = (int)$request->request->get('custom_qty');
-        if ($customSize !== '' && $customQty !== 0) {
-            $materialManager->adjustStock($material, $customQty, $reason, $customSize);
+        if ($customQty !== 0) {
+            $materialManager->adjustStock($material, $customQty, $reason);
         }
 
         // 3. Individual adjustments (from old logic or API-like single calls)
         $quantity = (int)$request->request->get('quantity');
-        $size = $request->request->get('size');
-        if ($quantity !== 0 && $size && empty($adjustments)) {
-            $materialManager->adjustStock($material, $quantity, $reason, $size);
+        if ($quantity !== 0 && empty($adjustments)) {
+            $materialManager->adjustStock($material, $quantity, $reason);
         }
 
         $entityManager->flush();

@@ -46,9 +46,6 @@ class MaterialBatch
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $marginPercentage = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $size = null;
-
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
@@ -196,17 +193,6 @@ class MaterialBatch
         return $priceWithMargin * (1 + $ivaRate / 100);
     }
 
-    public function getSize(): ?string
-    {
-        return $this->size;
-    }
-
-    public function setSize(?string $size): static
-    {
-        $this->size = $size;
-
-        return $this;
-    }
 
     public function getCreatedAt(): ?\DateTimeImmutable
     {

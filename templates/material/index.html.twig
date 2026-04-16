@@ -32,23 +32,9 @@
                             <option value="{{ f }}" {{ current_subfamily == f ? 'selected' : '' }}>{{ f }}</option>
                         {% endfor %}
                     </select>
-                {% elseif current_category == 'Uniformidad' %}
-                    <select name="size" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
-                        <option value="">Filtrar por talla...</option>
-                        <optgroup label="Letras">
-                            {% for s in ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'] %}
-                                <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
-                            {% endfor %}
-                        </optgroup>
-                        <optgroup label="Números">
-                            {% for s in range(36, 56, 2) %}
-                                <option value="{{ s }}" {{ current_size == s ? 'selected' : '' }}>Talla {{ s }}</option>
-                            {% endfor %}
-                        </optgroup>
-                    </select>
                 {% endif %}
 
-                {% if current_size or current_subfamily %}
+                {% if current_subfamily %}
                     <a href="{{ path('app_material_index', {category: current_category}) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
                 {% endif %}
             </form>
