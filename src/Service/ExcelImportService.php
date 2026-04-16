@@ -412,12 +412,12 @@ class ExcelImportService
                         }
                     } else {
                         // Technical bulk stock
-                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', null, $this->materialManager->getDefaultLocation($material));
+                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', $this->materialManager->getDefaultLocation($material));
                     }
                 } else {
                     // Consumable - Create or Update Batch
                     $batchNumberValue = $batchNumber ?? 'LOTE-EXCEL';
-                    $batch = $this->findExistingBatch($material, $batchNumberValue);
+                    $batch = $this->findExistingBatch($material, $batchNumberValue, $totalPrice, $marginPct, $iva, $unitsPerPackage);
 
                     if (!$batch) {
                         $batch = new \App\Entity\MaterialBatch();
