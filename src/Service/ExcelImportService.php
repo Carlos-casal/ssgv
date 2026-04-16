@@ -318,6 +318,7 @@ class ExcelImportService
                     $material = new Material();
                     $material->setName($name);
                     $this->entityManager->persist($material);
+                    $this->entityManager->flush(); // Necesario para que tenga ID antes de que MaterialManager haga consultas
                     $isNew = true;
                     $result['created']++;
                     $this->addToCache($material);
@@ -421,6 +422,7 @@ class ExcelImportService
                         $batch->setMaterial($material);
                         $batch->setBatchNumber($batchNumberValue);
                         $this->entityManager->persist($batch);
+                        $this->entityManager->flush(); // Necesario para que tenga ID
                         $this->addToBatchCache($batch);
                         $result['batches_created']++;
                     } else {

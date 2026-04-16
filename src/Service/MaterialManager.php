@@ -199,6 +199,7 @@ class MaterialManager
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
 
         $this->getEntityManager()->persist($unit);
+        $this->getEntityManager()->flush(); // Garantiza que la unidad tenga ID antes de recordMovement
 
         // Synchronize stock for this unit in the location
         $this->updateStockWithBatch($material, $finalLocation, 1, null, 'UNICA');
