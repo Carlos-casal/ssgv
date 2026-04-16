@@ -251,16 +251,17 @@ class MaterialManager
             if ($currentLocation) {
                 // Withdrawal from origin
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $size, $batch, $now, true, $unit);
 
                 if ($destination) {
                     // Entry to destination
                     $unit->setLocation($destination);
                     $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
-                    $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $size, $batch, $now, false, $unit);
                 } else {
                     $unit->setLocation(null);
                 }
+
+                // Single record for transfer or exit
+                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $size, $batch, $now, $destination === null, $unit);
             } else {
                 // It's a new entry (Registration)
                 if ($destination) {
@@ -288,12 +289,13 @@ class MaterialManager
                 if ($stock && $stock->getQuantity() > 0) {
                     $toSubtract = min($remainingToSubtract, $stock->getQuantity());
                     $this->updateStockWithBatch($material, $origin, -$toSubtract, $b, $size);
-                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, true);
 
                     if ($destination) {
                         $this->updateStockWithBatch($material, $destination, $toSubtract, $b, $size);
-                        $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, false);
                     }
+
+                    // Single record for the specific batch transfer/exit
+                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, $destination === null);
 
                     $remainingToSubtract -= $toSubtract;
                     if ($remainingToSubtract <= 0) break;
@@ -302,24 +304,24 @@ class MaterialManager
 
             if ($remainingToSubtract > 0) {
                 $this->updateStockWithBatch($material, $origin, -$remainingToSubtract, null, $size);
-                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, true);
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null, $size);
-                    $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, false);
                 }
+                // Single record for the remaining (no batch) transfer/exit
+                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, $destination === null);
             }
         } else {
             // Explicit batch or entry from null origin (Registration/Initial Entry)
             if ($origin) {
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $size, $batch, $now, true);
             }
 
             if ($destination) {
                 $this->updateStockWithBatch($material, $destination, $quantity, $batch, $size);
-                $finalReason = $origin ? $transferReason : $entryReason;
-                $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $size, $batch, $now, false);
             }
+
+            $finalReason = $origin ? $transferReason : $entryReason;
+            $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $size, $batch, $now, $destination === null && $origin !== null);
         }
 
     }
