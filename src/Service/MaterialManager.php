@@ -256,15 +256,17 @@ class MaterialManager
             if ($currentLocation) {
                 // Withdrawal from origin
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $size, $batch, $now, true, $unit);
 
                 if ($destination) {
                     // Entry to destination
                     $unit->setLocation($destination);
                     $this->updateStockWithBatch($material, $destination, $quantity, null, $size);
+                    // Single record for transfer
                     $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $size, $batch, $now, false, $unit);
                 } else {
                     $unit->setLocation(null);
+                    // Pure exit
+                    $this->recordMovement($material, $quantity, $reason, $currentLocation, null, $responsible, $size, $batch, $now, true, $unit);
                 }
             } else {
                 // It's a new entry (Registration)
@@ -293,12 +295,13 @@ class MaterialManager
                 if ($stock && $stock->getQuantity() > 0) {
                     $toSubtract = min($remainingToSubtract, $stock->getQuantity());
                     $this->updateStockWithBatch($material, $origin, -$toSubtract, $b, $size);
-                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, true);
 
                     if ($destination) {
                         $this->updateStockWithBatch($material, $destination, $toSubtract, $b, $size);
-                        $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, false);
                     }
+
+                    // Single record for transfer (or withdrawal if destination is null)
+                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $size, $b, $now, ($destination === null));
 
                     $remainingToSubtract -= $toSubtract;
                     if ($remainingToSubtract <= 0) break;
@@ -307,23 +310,25 @@ class MaterialManager
 
             if ($remainingToSubtract > 0) {
                 $this->updateStockWithBatch($material, $origin, -$remainingToSubtract, null, $size);
-                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, true);
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null, $size);
-                    $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, false);
                 }
+                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, $size, null, $now, ($destination === null));
             }
         } else {
             // Explicit batch or entry from null origin (Registration/Initial Entry)
             if ($origin) {
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch, $size);
-                $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $size, $batch, $now, true);
             }
 
             if ($destination) {
                 $this->updateStockWithBatch($material, $destination, $quantity, $batch, $size);
-                $finalReason = $origin ? $transferReason : $entryReason;
-                $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $size, $batch, $now, false);
+            }
+
+            // Single record
+            if ($origin || $destination) {
+                $finalReason = $origin ? ($destination ? $transferReason : $reason) : $entryReason;
+                $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $size, $batch, $now, ($destination === null));
             }
         }
 
@@ -347,47 +352,39 @@ class MaterialManager
         $timestamp = $createdAt ?: new \DateTimeImmutable();
         $netQuantity = $isWithdrawal ? -abs($quantity) : abs($quantity);
 
-        // If it's a transfer between two locations, both records should mention origin and destination
-        // but only the quantity changes sign.
-
-        // Standardize History Format (Tarea 3)
-        // Ensure transfers use strictly "Traspaso: [Origen] -> [Destino]"
+        // Standardize History Format
         if ($origin && $destination && !str_starts_with($reason, 'Entrada') && !str_starts_with($reason, 'Consumo')) {
             $reason = sprintf('Traspaso: %s -> %s', $origin->getName(), $destination->getName());
         }
 
-        // IDEMPOTENCY CHECK (Tarea 2)
-        // 1. Check Request Cache (for records not yet flushed)
-        $cacheKey = sprintf(
-            '%s_%d_%s_%s_%s_%s_%s_%s',
-            $material->getId() ?? spl_object_hash($material),
-            $netQuantity,
-            md5($reason),
-            $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null',
-            $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null',
-            $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null',
-            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null',
-            $timestamp->format('Y-m-d_H:i')
-        );
-
-        if (isset($this->recordedMovementsCache[$cacheKey])) {
-            return;
+        // CONSOLIDATION & IDEMPOTENCY CHECK
+        // 1. Check Request Cache
+        foreach ($this->recordedMovementsCache as $cachedMovement) {
+            if ($cachedMovement instanceof MaterialMovement &&
+                $cachedMovement->getMaterial() === $material &&
+                $cachedMovement->getReason() === $reason &&
+                $cachedMovement->getOrigin() === $origin &&
+                $cachedMovement->getDestination() === $destination &&
+                $cachedMovement->getBatch() === $batch &&
+                $cachedMovement->getSize() === ($size ?: 'UNICA') &&
+                $cachedMovement->getMaterialUnit() === $unit
+            ) {
+                // Aggregate quantity for matching movements within same session/request
+                $cachedMovement->setQuantity($cachedMovement->getQuantity() + $netQuantity);
+                return;
+            }
         }
 
-        // 2. Check Database (for records already persisted in the same minute)
-        $minuteStart = $timestamp->modify('midnight')->add(new \DateInterval('PT' . ($timestamp->format('H') * 3600 + $timestamp->format('i') * 60) . 'S'));
+        // 2. Check Database (for records already persisted in the same hour)
+        $hourStart = $timestamp->modify('-1 hour');
 
         $qb = $this->movementRepository->createQueryBuilder('m')
             ->where('m.material = :material')
-            ->andWhere('m.quantity = :quantity')
             ->andWhere('m.reason = :reason')
-            ->andWhere('m.createdAt >= :minuteStart')
-            ->andWhere('m.createdAt <= :timestamp')
+            ->andWhere('m.createdAt >= :hourStart')
             ->setParameter('material', $material)
-            ->setParameter('quantity', $netQuantity)
             ->setParameter('reason', $reason)
-            ->setParameter('minuteStart', $minuteStart)
-            ->setParameter('timestamp', $timestamp);
+            ->setParameter('hourStart', $hourStart);
 
         if ($origin) {
             $qb->andWhere('m.origin = :origin')->setParameter('origin', $origin);
@@ -409,15 +406,20 @@ class MaterialManager
 
         if ($batch) {
             $qb->andWhere('m.batch = :batch')->setParameter('batch', $batch);
+        } else {
+            $qb->andWhere('m.batch IS NULL');
         }
+
+        $qb->andWhere('m.size = :size')->setParameter('size', $size ?: 'UNICA');
 
         $existing = $qb->getQuery()->getResult();
         if (count($existing) > 0) {
-            $this->recordedMovementsCache[$cacheKey] = true;
+            $movement = $existing[0];
+            // Aggregate quantity in database record if found
+            $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            $this->recordedMovementsCache[] = $movement;
             return;
         }
-
-        $this->recordedMovementsCache[$cacheKey] = true;
 
         $movement = new MaterialMovement();
         $movement->setMaterial($material);
@@ -427,12 +429,13 @@ class MaterialManager
         $movement->setDestination($destination);
         $movement->setResponsible($responsible);
         $movement->setUser($currentUser);
-        $movement->setSize($size);
+        $movement->setSize($size ?: 'UNICA');
         $movement->setBatch($batch);
         $movement->setMaterialUnit($unit);
         $movement->setCreatedAt($timestamp);
 
         $this->getEntityManager()->persist($movement);
+        $this->recordedMovementsCache[] = $movement;
     }
 
 
