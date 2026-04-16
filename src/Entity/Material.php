@@ -63,9 +63,6 @@ class Material
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $subFamily = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $sizingType = null; // 'LETTER', 'NUMBER_CLOTHING', 'NUMBER_SHOES'
-
     #[ORM\Column(type: 'date_immutable', nullable: true)]
     private ?\DateTimeImmutable $expirationDate = null;
 
@@ -196,17 +193,6 @@ class Material
         return $this;
     }
 
-    public function getSizingType(): ?string
-    {
-        return $this->sizingType;
-    }
-
-    public function setSizingType(?string $sizingType): static
-    {
-        $this->sizingType = $sizingType;
-
-        return $this;
-    }
 
     public function getTotalPrice(): ?string
     {

@@ -179,7 +179,7 @@ class MaterialManagerTest extends TestCase
         $this->assertEquals(15, $material->getStock());
     }
 
-    public function testAdjustStockWithSizes(): void
+    public function testAdjustStockWithLocation(): void
     {
         $this->mockMovementQueryBuilder();
         $material = new Material();
@@ -201,7 +201,7 @@ class MaterialManagerTest extends TestCase
         $this->entityManager->expects($this->atLeast(2))
             ->method('persist'); // Movement and new Stock (and possibly Location if it didn't exist)
 
-        $this->materialManager->adjustStock($material, 3, 'New size', 'XL');
+        $this->materialManager->adjustStock($material, 3, 'Adjustment', $location);
 
         $this->assertEquals(13, $material->getStock());
     }
@@ -334,10 +334,10 @@ class MaterialManagerTest extends TestCase
 
         // 4. Execute calls
         // In the first call, adjustStock calls recordMovement which populates the internal cache.
-        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', null, $destination);
+        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', $destination);
 
         // In the second identical call, recordMovement should return early due to cache.
-        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', null, $destination);
+        $this->materialManager->adjustStock($material, 5, 'Entrada: Registro Inicial / Warehouse', $destination);
 
         $this->assertEquals(20, $material->getStock());
         $this->assertEquals(1, $movementPersistCount, "MaterialMovement should have been persisted exactly once");

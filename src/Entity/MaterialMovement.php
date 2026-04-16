@@ -17,9 +17,6 @@ class MaterialMovement
     #[ORM\JoinColumn(nullable: false)]
     private ?Material $material = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $size = null;
-
     #[ORM\Column(type: 'integer')]
     private int $quantity = 0;
 
@@ -93,18 +90,6 @@ class MaterialMovement
     public function setMaterialUnit(?MaterialUnit $materialUnit): static
     {
         $this->materialUnit = $materialUnit;
-
-        return $this;
-    }
-
-    public function getSize(): ?string
-    {
-        return $this->size;
-    }
-
-    public function setSize(?string $size): static
-    {
-        $this->size = $size;
 
         return $this;
     }

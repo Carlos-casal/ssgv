@@ -22,9 +22,6 @@ class VolunteerUniform
     #[ORM\JoinColumn(nullable: false)]
     private ?Material $material = null;
 
-    #[ORM\Column(length: 50, nullable: true)]
-    private ?string $size = null;
-
     #[ORM\Column(options: ["default" => 1])]
     private int $quantity = 1;
 
@@ -64,18 +61,6 @@ class VolunteerUniform
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
-
-        return $this;
-    }
-
-    public function getSize(): ?string
-    {
-        return $this->size;
-    }
-
-    public function setSize(?string $size): static
-    {
-        $this->size = $size;
 
         return $this;
     }

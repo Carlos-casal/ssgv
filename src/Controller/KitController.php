@@ -770,7 +770,6 @@ class KitController extends AbstractController
                         $stock->getQuantity(),
                         'Devolución por eliminación de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                         null,
-                        $stock->getSize(),
                         null,
                         $stock->getBatch()
                     );
@@ -790,7 +789,6 @@ class KitController extends AbstractController
                     1,
                     'Devolución por eliminación de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                     null,
-                    'UNICA',
                     $otherUnit,
                     null
                 );
@@ -915,7 +913,6 @@ class KitController extends AbstractController
                     (int)$p['quantity'],
                     'Reposición de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                     null,
-                    'UNICA',
                     $unitToMove,
                     $batch
                 );

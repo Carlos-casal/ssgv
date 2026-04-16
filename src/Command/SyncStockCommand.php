@@ -60,15 +60,13 @@ class SyncStockCommand extends Command
 
             $stock = $this->entityManager->getRepository(MaterialStock::class)->findOneBy([
                 'material' => $material,
-                'location' => $location,
-                'size' => 'UNICA'
+                'location' => $location
             ]);
 
             if (!$stock) {
                 $stock = new MaterialStock();
                 $stock->setMaterial($material);
                 $stock->setLocation($location);
-                $stock->setSize('UNICA');
                 $stock->setQuantity(0);
                 $this->entityManager->persist($stock);
             }

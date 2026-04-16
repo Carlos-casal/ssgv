@@ -21,9 +21,6 @@ class MaterialStock
     #[ORM\JoinColumn(nullable: true)]
     private ?Location $location = null;
 
-    #[ORM\Column(length: 20, nullable: true)]
-    private ?string $size = null;
-
     #[ORM\Column(options: ["default" => 0])]
     private int $quantity = 0;
 
@@ -43,18 +40,6 @@ class MaterialStock
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
-
-        return $this;
-    }
-
-    public function getSize(): ?string
-    {
-        return $this->size;
-    }
-
-    public function setSize(?string $size): static
-    {
-        $this->size = $size;
 
         return $this;
     }

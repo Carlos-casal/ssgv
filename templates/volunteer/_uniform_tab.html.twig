@@ -16,7 +16,6 @@
                 <thead class="thead-light">
                     <tr>
                         <th>Material</th>
-                        <th>Talla</th>
                         <th>Cantidad</th>
                         <th>Fecha Entrega</th>
                         <th>Acciones</th>
@@ -29,7 +28,6 @@
                             <strong>{{ uniform.material.name }}</strong>
                             <br><small class="text-muted">{{ uniform.material.category }}</small>
                         </td>
-                        <td><span class="badge badge-info">{{ uniform.size|default('N/A') }}</span></td>
                         <td>{{ uniform.quantity }}</td>
                         <td>{{ uniform.assignedAt|date('d/m/Y') }}</td>
                         <td>
@@ -37,8 +35,7 @@
                                     data-toggle="modal"
                                     data-target="#returnUniformModal"
                                     data-uniform-id="{{ uniform.id }}"
-                                    data-material-name="{{ uniform.material.name }}"
-                                    data-size="{{ uniform.size }}">
+                                    data-material-name="{{ uniform.material.name }}">
                                 <i class="fas fa-undo mr-1"></i>Devolver/Cambiar
                             </button>
                         </td>
@@ -76,7 +73,6 @@
                         <th>Fecha</th>
                         <th>Acción</th>
                         <th>Material</th>
-                        <th>Talla</th>
                         <th>Cant.</th>
                         <th>Motivo</th>
                         <th>Usuario</th>
@@ -102,7 +98,6 @@
                             {% endif %}
                         </td>
                         <td>{{ movement.material.name }}</td>
-                        <td><span class="badge badge-secondary">{{ movement.size|default('N/A') }}</span></td>
                         <td>{{ movement.quantity }}</td>
                         <td>
                             {% if movement.reason == 'new_assignment' %}

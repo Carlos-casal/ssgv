@@ -348,7 +348,6 @@ class VolunteerController extends AbstractController
     public function assignUniform(Request $request, Volunteer $volunteer, EntityManagerInterface $entityManager): Response
     {
         $materialId = $request->request->get('material_id');
-        $size = $request->request->get('size');
         $quantity = (int)$request->request->get('quantity', 1);
         $notes = $request->request->get('notes');
 
@@ -361,7 +360,6 @@ class VolunteerController extends AbstractController
         $uniform = new VolunteerUniform();
         $uniform->setVolunteer($volunteer);
         $uniform->setMaterial($material);
-        $uniform->setSize($size);
         $uniform->setQuantity($quantity);
         $uniform->setStatus('active');
         $entityManager->persist($uniform);
@@ -371,7 +369,6 @@ class VolunteerController extends AbstractController
         $movement->setMaterial($material);
         $movement->setMovementType(UniformMovement::TYPE_DELIVERY);
         $movement->setReason(UniformMovement::REASON_NEW_ASSIGNMENT);
-        $movement->setSize($size);
         $movement->setQuantity($quantity);
         $movement->setNotes($notes);
         $movement->setCreatedBy($this->getUser());
@@ -388,7 +385,6 @@ class VolunteerController extends AbstractController
         $uniformId = $request->request->get('uniform_id');
         $reason = $request->request->get('reason');
         $returnToStock = $request->request->get('return_to_stock') === 'yes';
-        $newSize = $request->request->get('new_size');
 
         $uniform = $entityManager->getRepository(VolunteerUniform::class)->find($uniformId);
         if (!$uniform || $uniform->getVolunteer() !== $volunteer) {
@@ -400,21 +396,15 @@ class VolunteerController extends AbstractController
         $movement = new UniformMovement();
         $movement->setVolunteer($volunteer);
         $movement->setMaterial($material);
-        $movement->setMovementType($reason === 'size_change' ? UniformMovement::TYPE_EXCHANGE : UniformMovement::TYPE_RETURN);
+        $movement->setMovementType(UniformMovement::TYPE_RETURN);
         $movement->setReason($reason);
-        $movement->setSize($uniform->getSize());
         $movement->setQuantity($uniform->getQuantity());
         $movement->setReturnToStock($returnToStock);
         $movement->setCreatedBy($this->getUser());
         $entityManager->persist($movement);
 
-        if ($reason === 'size_change' && $newSize) {
-            $uniform->setSize($newSize);
-            $uniform->setAssignedAt(new \DateTime());
-        } else {
-            $uniform->setStatus('returned');
-            $entityManager->remove($uniform);
-        }
+        $uniform->setStatus('returned');
+        $entityManager->remove($uniform);
 
         if ($returnToStock && $material->getNature() === 'CONSUMIBLE') {
             $material->setStock($material->getStock() + $uniform->getQuantity());

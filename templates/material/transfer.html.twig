@@ -33,16 +33,12 @@
                         </div>
 
                         <div class="row mb-3">
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 {{ form_label(form.quantity) }}
                                 {{ form_widget(form.quantity) }}
                             </div>
-                            <div class="col-md-4">
-                                {{ form_label(form.size) }}
-                                {{ form_widget(form.size) }}
-                            </div>
                             {% if form.materialUnit is defined %}
-                            <div class="col-md-4">
+                            <div class="col-md-6">
                                 {{ form_label(form.materialUnit) }}
                                 {{ form_widget(form.materialUnit) }}
                             </div>
