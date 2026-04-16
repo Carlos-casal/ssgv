@@ -1,6 +1,13 @@
 # Historial de Cambios - Sistema de Gestión de Voluntarios
 
-## [1.8.7] - 25-03-2026 (Versión Actual)
+## [1.8.8] - 25-03-2026 (Versión Actual)
+- **Logística (Excel):** Refinada la lógica de importación masiva para manejar dinámicamente columnas según la naturaleza del material.
+- **Logística (Excel):** Implementada la regla de negocio que trata la columna "Lote" como "Número de Serie" para materiales de tipo `EQUIPO_TECNICO` cuando el campo de serie está vacío.
+- **Logística (Excel):** Implementada la restricción de visibilidad de "Talla"; ahora este campo solo se procesa y guarda para materiales de la categoría "Uniformidad".
+- **Trazabilidad (Excel):** Solucionado el problema de duplicación de registros en el historial. Ahora se genera una única entrada de "Registro Inicial" por material/ubicación/lote/talla, sumando todas las cantidades del archivo Excel.
+- **Arquitectura:** Optimizado `MaterialManager` para permitir el registro manual de movimientos y la actualización de stock sin generación automática de trazabilidad, facilitando operaciones masivas atómicas.
+
+## [1.8.7] - 25-03-2026
 - **Identidad (Usuario):** Implementado el método `getName()` en la entidad `User` para centralizar la obtención del nombre amigable (Nombre y primer apellido) desde el perfil de voluntario.
 - **Correcciones (UX/UI):** Solucionado el error 500 en la vista de detalle de material (`material/show.html.twig`) al intentar acceder a la propiedad `name` inexistente en la clase `User`.
 - **Consistencia:** Actualizada la lógica de correos de recuperación de contraseña y el historial de trazabilidad de unidades técnicas para utilizar el nuevo método estandarizado de visualización de nombres.

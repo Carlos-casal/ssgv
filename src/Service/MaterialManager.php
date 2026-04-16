@@ -126,7 +126,7 @@ class MaterialManager
     /**
      * Adjusts stock for a material and records a movement.
      */
-    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null): void
+    public function adjustStock(Material $material, int $quantity, string $reason, ?string $size = null, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null, bool $recordMovement = true): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
@@ -153,18 +153,20 @@ class MaterialManager
             $reason = sprintf('Entrada: Registro Inicial / %s', $location->getName());
         }
 
-        $this->recordMovement(
-            $material,
-            abs($quantity),
-            $reason,
-            $quantity < 0 ? $location : null,
-            $quantity > 0 ? $location : null,
-            $responsible,
-            $size,
-            $batch,
-            new \DateTimeImmutable(),
-            $quantity < 0
-        );
+        if ($recordMovement) {
+            $this->recordMovement(
+                $material,
+                abs($quantity),
+                $reason,
+                $quantity < 0 ? $location : null,
+                $quantity > 0 ? $location : null,
+                $responsible,
+                $size,
+                $batch,
+                new \DateTimeImmutable(),
+                $quantity < 0
+            );
+        }
 
         $this->updateStockWithBatch($material, $location, $quantity, $batch, $size);
     }
@@ -172,7 +174,7 @@ class MaterialManager
     /**
      * Creates a new material unit and updates global and local stock.
      */
-    public function createUnit(Material $material, array $data, ?Location $location = null): MaterialUnit
+    public function createUnit(Material $material, array $data, ?Location $location = null, bool $recordMovement = true): MaterialUnit
     {
         $finalLocation = $location ?: $this->getDefaultLocation($material);
         $reason = sprintf('Entrada: Registro Inicial / %s', $finalLocation->getName());
@@ -200,7 +202,9 @@ class MaterialManager
         $this->updateStockWithBatch($material, $finalLocation, 1, null, 'UNICA');
 
         // Log initial entry
-        $this->recordMovement($material, 1, $reason, null, $finalLocation, null, 'UNICA', null, new \DateTimeImmutable(), false, $unit);
+        if ($recordMovement) {
+            $this->recordMovement($material, 1, $reason, null, $finalLocation, null, 'UNICA', null, new \DateTimeImmutable(), false, $unit);
+        }
 
         return $unit;
     }
@@ -324,7 +328,7 @@ class MaterialManager
 
     }
 
-    private function recordMovement(
+    public function recordMovement(
         Material $material,
         int $quantity,
         string $reason,
@@ -430,7 +434,7 @@ class MaterialManager
     }
 
 
-    public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null, ?string $size = null): void
+    public function updateStockWithBatch(Material $material, Location $location, int $delta, ?MaterialBatch $batch = null, ?string $size = null): void
     {
         if ($size === null) $size = 'UNICA';
 

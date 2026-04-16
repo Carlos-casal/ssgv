@@ -67,7 +67,8 @@ class ExcelImportService
             'phoneNumber' => ['teléfono', 'móvil', 'phone'],
             'purchaseDate' => ['compra', 'purchase'],
             'warrantyEndDate' => ['garantía', 'fin', 'warranty'],
-            'description' => ['descripción', 'notas', 'description']
+            'description' => ['descripción', 'notas', 'description'],
+            'size' => ['talla', 'size']
         ];
 
         // Search in the first 3 rows for headers (in case there's some title or empty rows)
@@ -127,9 +128,29 @@ class ExcelImportService
             $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
             $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
             $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+            $nid = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
+
+            // Initial SN attempt
             $sn = isset($map['serialNumber']) ? trim((string)$this->getCellValue($worksheet, $map['serialNumber'], $row)) : null;
             if ($sn === '' || $sn === 'S/N') $sn = null;
-            $nid = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
+
+            // Try to find material to resolve real nature
+            $material = $this->findExistingMaterial($name, $barcode, $sn, $nid);
+            $resolvedNature = $material ? $material->getNature() : $nature;
+
+            // Logic: if EQUIPO_TECNICO, Batch is Serial Number
+            if ($resolvedNature === Material::NATURE_TECHNICAL) {
+                $batchValue = isset($map['batchNumber']) ? trim((string)$this->getCellValue($worksheet, $map['batchNumber'], $row)) : null;
+                if ($batchValue && (!$sn || $sn === 'S/N')) {
+                    $sn = $batchValue;
+                    if ($sn === '' || $sn === 'S/N') $sn = null;
+                    // Re-find material if SN changed to be sure
+                    if ($sn) {
+                        $material = $this->findExistingMaterial($name, $barcode, $sn, $nid);
+                        $resolvedNature = $material ? $material->getNature() : $nature;
+                    }
+                }
+            }
 
             $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
             if ($unitsPerPackage <= 0) $unitsPerPackage = 1;
@@ -137,8 +158,6 @@ class ExcelImportService
             $stock = $unitsPerPackage * $numPackages;
             
             $preview['total_rows']++;
-            
-            $material = $this->findExistingMaterial($name, $barcode, $sn, $nid);
             $key = $material ? 'm_' . $material->getId() : 'new_' . $name . '_' . ($barcode ?? '');
 
             if (!isset($preview['materials'][$key])) {
@@ -147,7 +166,7 @@ class ExcelImportService
                     'name' => $material ? $material->getName() : $name,
                     'barcode' => $material ? $material->getBarcode() : $barcode,
                     'category' => $material ? $material->getCategory() : $category,
-                    'nature' => $material ? $material->getNature() : $nature,
+                    'nature' => $resolvedNature,
                     'current_stock' => $material ? $material->getStock() : 0,
                     'stock_to_add' => 0,
                     'units_to_create' => 0,
@@ -156,7 +175,6 @@ class ExcelImportService
             }
 
             // Check for Serial Number conflicts in EQUIPO_TECNICO
-            $resolvedNature = $material ? $material->getNature() : $nature;
             if ($resolvedNature === Material::NATURE_TECHNICAL && $sn) {
                 $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
                 $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
@@ -253,6 +271,8 @@ class ExcelImportService
         $this->materialCache = [];
         $this->batchCache = [];
         $this->countedMaterials = [];
+        $movementsToRecord = []; // [hash => ['material' => M, 'qty' => Q, 'location' => L, 'size' => S, 'batch' => B, 'unit' => U]]
+
         $spreadsheet = IOFactory::load($file->getPathname());
         $worksheet = $spreadsheet->getActiveSheet();
         
@@ -302,13 +322,31 @@ class ExcelImportService
                 $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
                 $serialNumber = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
                 $networkId = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
+
+                // Initial material lookup to resolve nature
+                $material = $this->findExistingMaterial($name, $barcode, $serialNumber, $networkId);
+                $resolvedNature = $material ? $material->getNature() : $nature;
+
+                // Logic: if EQUIPO_TECNICO, Batch is Serial Number
+                if ($resolvedNature === Material::NATURE_TECHNICAL) {
+                    if ($batchNumber && (!$serialNumber || $serialNumber === 'S/N')) {
+                        $serialNumber = $batchNumber;
+                        // Re-find material with updated SN just in case
+                        $material = $this->findExistingMaterial($name, $barcode, $serialNumber, $networkId);
+                    }
+                }
+
                 $phoneNumber = isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null;
                 $purchaseDate = isset($map['purchaseDate']) ? $this->getDateValue($worksheet, $map['purchaseDate'], $row) : null;
                 $warrantyEndDate = isset($map['warrantyEndDate']) ? $this->getDateValue($worksheet, $map['warrantyEndDate'], $row) : null;
                 $description = isset($map['description']) ? $this->getCellValue($worksheet, $map['description'], $row) : null;
 
-                // Find or Create Material
-                $material = $this->findExistingMaterial($name, $barcode, $serialNumber, $networkId);
+                $size = isset($map['size']) ? $this->getCellValue($worksheet, $map['size'], $row) : null;
+                // Logic: ignore size if not UNIFORMIDAD (category)
+                $resolvedCategory = $material ? $material->getCategory() : $category;
+                if (mb_strtoupper($resolvedCategory ?? '') !== 'UNIFORMIDAD') {
+                    $size = null;
+                }
                 
                 $isNew = false;
                 if (!$material) {
@@ -383,18 +421,26 @@ class ExcelImportService
                                 'networkId' => $networkId,
                                 'phoneNumber' => $phoneNumber,
                                 'batteryStatus' => '100%',
-                            ]);
+                            ], null, false); // recordMovement = false
 
-                            // RECORD INITIAL ENTRY (Tarea 2)
-                            $this->materialManager->adjustStock(
-                                $material,
-                                1,
-                                'Entrada: Registro Inicial / Carga Masiva',
-                                'UNICA',
-                                $this->materialManager->getDefaultLocation($material),
-                                null,
-                                null
-                            );
+                            $location = $this->materialManager->getDefaultLocation($material);
+                            $movKey = sprintf('m_%d_l_%d_s_UNICA', $material->getId(), $location->getId());
+                            if (isset($movementsToRecord[$movKey])) {
+                                $movementsToRecord[$movKey]['qty'] += 1;
+                                // If it already exists, we might have units or bulk.
+                                // To keep the "one line per material" rule, we prioritize bulk
+                                // or just don't link the unit to the movement if there are multiple.
+                                $movementsToRecord[$movKey]['unit'] = null;
+                            } else {
+                                $movementsToRecord[$movKey] = [
+                                    'material' => $material,
+                                    'qty' => 1,
+                                    'location' => $location,
+                                    'size' => 'UNICA',
+                                    'batch' => null,
+                                    'unit' => $newUnit
+                                ];
+                            }
 
                             $result['units_created']++;
                             $processedSns[] = $cleanSn;
@@ -413,7 +459,23 @@ class ExcelImportService
                         }
                     } else {
                         // Technical bulk stock
-                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', null, $this->materialManager->getDefaultLocation($material));
+                        $qty = $unitsPerPackage * $numPackages;
+                        $location = $this->materialManager->getDefaultLocation($material);
+                        $this->materialManager->updateStockWithBatch($material, $location, $qty, null, 'UNICA');
+
+                        $movKey = sprintf('m_%d_l_%d_s_UNICA', $material->getId(), $location->getId());
+                        if (isset($movementsToRecord[$movKey])) {
+                            $movementsToRecord[$movKey]['qty'] += $qty;
+                        } else {
+                            $movementsToRecord[$movKey] = [
+                                'material' => $material,
+                                'qty' => $qty,
+                                'location' => $location,
+                                'size' => 'UNICA',
+                                'batch' => null,
+                                'unit' => null
+                            ];
+                        }
                     }
                 } else {
                     // Consumable - Create or Update Batch
@@ -448,15 +510,24 @@ class ExcelImportService
                         $batch->setUnitPrice((string)($priceVal / $totalStockInBatch));
                     }
 
-                    $this->materialManager->adjustStock(
-                        $material,
-                        $unitsPerPackage * $numPackages,
-                        'Entrada: Registro Inicial / Carga Masiva',
-                        null,
-                        $this->materialManager->getDefaultLocation($material),
-                        null,
-                        $batch
-                    );
+                    $qty = $unitsPerPackage * $numPackages;
+                    $location = $this->materialManager->getDefaultLocation($material);
+                    $sizeValue = $size ?? 'UNICA';
+                    $this->materialManager->updateStockWithBatch($material, $location, $qty, $batch, $sizeValue);
+
+                    $movKey = sprintf('m_%d_l_%d_s_%s_b_%d', $material->getId(), $location->getId(), $sizeValue, $batch->getId());
+                    if (isset($movementsToRecord[$movKey])) {
+                        $movementsToRecord[$movKey]['qty'] += $qty;
+                    } else {
+                        $movementsToRecord[$movKey] = [
+                            'material' => $material,
+                            'qty' => $qty,
+                            'location' => $location,
+                            'size' => $sizeValue,
+                            'batch' => $batch,
+                            'unit' => null
+                        ];
+                    }
                 }
 
                 $this->entityManager->flush();
@@ -472,6 +543,36 @@ class ExcelImportService
                 }
             }
         }
+
+        // Record Unified Movements
+        foreach ($movementsToRecord as $data) {
+            $this->ensureEntityManagerIsOpen();
+
+            // Re-fetch objects to ensure they are managed if EM was reset
+            $managedMaterial = $this->entityManager->getRepository(Material::class)->find($data['material']->getId());
+            $managedLocation = $this->entityManager->getRepository(\App\Entity\Location::class)->find($data['location']->getId());
+            $managedBatch = $data['batch'] ? $this->entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($data['batch']->getId()) : null;
+            $managedUnit = $data['unit'] ? $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->find($data['unit']->getId()) : null;
+
+            if (!$managedMaterial || !$managedLocation) continue;
+
+            $reason = sprintf('Entrada: Registro Inicial / %s (Carga Masiva)', $managedLocation->getName());
+
+            $this->materialManager->recordMovement(
+                $managedMaterial,
+                $data['qty'],
+                $reason,
+                null,
+                $managedLocation,
+                null,
+                $data['size'],
+                $managedBatch,
+                new \DateTimeImmutable(),
+                false,
+                $managedUnit
+            );
+        }
+        $this->entityManager->flush();
         
         return $result;
     }
