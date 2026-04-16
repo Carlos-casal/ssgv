@@ -350,20 +350,22 @@ class MaterialManager
             $reason = sprintf('Traspaso: %s -> %s', $origin->getName(), $destination->getName());
         }
 
-        // IDEMPOTENCY CHECK (Tarea 2)
+        // IDEMPOTENCY & CONSOLIDATION CHECK (Tarea 2)
         // 1. Check Request Cache (for records not yet flushed)
         $cacheKey = sprintf(
-            '%s_%d_%s_%s_%s_%s_%s',
+            '%s_%s_%s_%s_%s_%s_%s',
             $material->getId() ?? spl_object_hash($material),
-            $netQuantity,
             md5($reason),
             $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null',
             $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null',
             $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null',
+            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null',
             $timestamp->format('Y-m-d_H:i')
         );
 
         if (isset($this->recordedMovementsCache[$cacheKey])) {
+            $movement = $this->recordedMovementsCache[$cacheKey];
+            $movement->setQuantity($movement->getQuantity() + $netQuantity);
             return;
         }
 
@@ -372,12 +374,10 @@ class MaterialManager
 
         $qb = $this->movementRepository->createQueryBuilder('m')
             ->where('m.material = :material')
-            ->andWhere('m.quantity = :quantity')
             ->andWhere('m.reason = :reason')
             ->andWhere('m.createdAt >= :minuteStart')
             ->andWhere('m.createdAt <= :timestamp')
             ->setParameter('material', $material)
-            ->setParameter('quantity', $netQuantity)
             ->setParameter('reason', $reason)
             ->setParameter('minuteStart', $minuteStart)
             ->setParameter('timestamp', $timestamp);
@@ -400,19 +400,27 @@ class MaterialManager
             $qb->andWhere('m.materialUnit IS NULL');
         }
 
-        if ($batch) {
+        if ($batch && $batch->getId()) {
             $qb->andWhere('m.batch = :batch')->setParameter('batch', $batch);
+        } elseif (!$batch) {
+            $qb->andWhere('m.batch IS NULL');
+        } else {
+            // New batch without ID, don't look up existing movements
+            $existing = [];
+            goto process_new;
         }
 
         $existing = $qb->getQuery()->getResult();
+        process_new:
         if (count($existing) > 0) {
-            $this->recordedMovementsCache[$cacheKey] = true;
+            $movement = $existing[0];
+            $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            $this->recordedMovementsCache[$cacheKey] = $movement;
             return;
         }
 
-        $this->recordedMovementsCache[$cacheKey] = true;
-
         $movement = new MaterialMovement();
+        $this->recordedMovementsCache[$cacheKey] = $movement;
         $movement->setMaterial($material);
         $movement->setQuantity($netQuantity);
         $movement->setReason($reason);
