@@ -180,7 +180,7 @@ class MaterialController extends AbstractController
                     // Initialize stock for this batch in Central Warehouse
                     $addedStock = $unitsPerPackage * $numPackagesInRow;
                     if ($addedStock > 0) {
-                        $materialManager->adjustStock($material, $addedStock, 'Entrada: Registro Inicial', null, $materialManager->getCentralWarehouse(), null, $batch);
+                        $materialManager->adjustStock($material, $addedStock, 'Entrada: Registro Inicial', $materialManager->getCentralWarehouse(), null, $batch);
                     }
                 }
             }
@@ -590,7 +590,7 @@ class MaterialController extends AbstractController
                     // If stock changed, adjust it in Central Warehouse
                     if ($newTotalStock !== $oldTotalStock) {
                         $diff = $newTotalStock - $oldTotalStock;
-                        $materialManager->adjustStock($material, $diff, 'Ajuste manual de stock', null, $materialManager->getCentralWarehouse(), null, $batch);
+                        $materialManager->adjustStock($material, $diff, 'Ajuste manual de stock', $materialManager->getCentralWarehouse(), null, $batch);
                     }
                 }
             }
