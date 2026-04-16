@@ -432,7 +432,6 @@ class KitController extends AbstractController
                         $material,
                         -(int)$quantity,
                         'Consumo manual de botiquín ' . $unit->getAlias(),
-                        null,
                         $location
                     );
                 }

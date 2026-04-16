@@ -126,7 +126,7 @@ class MaterialManager
     /**
      * Adjusts stock for a material and records a movement.
      */
-    public function adjustStock(Material $material, int $quantity, string $reason, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null): void
+    public function adjustStock(Material $material, int $quantity, string $reason, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null, ?MaterialUnit $unit = null): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
@@ -162,7 +162,8 @@ class MaterialManager
             $responsible,
             $batch,
             new \DateTimeImmutable(),
-            $quantity < 0
+            $quantity < 0,
+            $unit
         );
 
         $this->updateStockWithBatch($material, $location, $quantity, $batch);

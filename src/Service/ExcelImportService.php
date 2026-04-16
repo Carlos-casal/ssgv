@@ -392,7 +392,8 @@ class ExcelImportService
                                 'Entrada: Registro Inicial / Carga Masiva',
                                 $this->materialManager->getDefaultLocation($material),
                                 null,
-                                null
+                                null,
+                                $newUnit
                             );
 
                             $result['units_created']++;
