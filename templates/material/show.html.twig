@@ -287,8 +287,8 @@
                         <tr>
                             <th>Fecha</th>
                             <th>Usuario</th>
-                            <th>Lote</th>
-                            <th>Cantidad</th>
+                            <th>{{ material.nature == 'EQUIPO_TECNICO' ? 'Nº Serie' : 'Lote' }}</th>
+                            <th class="text-center">Cantidad</th>
                             <th>Motivo</th>
                         </tr>
                     </thead>
@@ -298,14 +298,22 @@
                                 <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
                                 <td>{{ movement.user ? (movement.user.name ?: movement.user.email) : 'Sistema' }}</td>
                                 <td>
-                                    {% if movement.batch %}
-                                        <span class="badge bg-light text-primary border">{{ movement.batch.batchNumber }}</span>
+                                    {% if material.nature == 'EQUIPO_TECNICO' %}
+                                        {% if movement.materialUnit %}
+                                            <span class="badge bg-light text-dark border">{{ movement.materialUnit.serialNumber ?: movement.materialUnit.alias }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
                                     {% else %}
-                                        <span class="text-muted small">-</span>
+                                        {% if movement.batch %}
+                                            <span class="badge bg-light text-primary border">{{ movement.batch.batchNumber }}</span>
+                                        {% else %}
+                                            <span class="text-muted small">-</span>
+                                        {% endif %}
                                     {% endif %}
                                 </td>
-                                <td>
-                                    <span class="badge {{ movement.quantity > 0 ? 'badge-success' : 'badge-danger' }}">
+                                <td class="text-center">
+                                    <span class="font-weight-bold text-dark">
                                         {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
                                     </span>
                                 </td>
