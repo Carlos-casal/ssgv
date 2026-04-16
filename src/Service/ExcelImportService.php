@@ -62,6 +62,7 @@ class ExcelImportService
             'iva' => ['iva', 'tax'],
             'brandModel' => ['marca', 'modelo', 'brand', 'model'],
             'alias' => ['alias'],
+            'size' => ['talla', 'medida', 'tamaño', 'size'],
             'serialNumber' => ['serie', 's/n', 'serial'],
             'networkId' => ['id de red', 'red', 'issi', 'imei', 'network'],
             'phoneNumber' => ['teléfono', 'móvil', 'phone'],
@@ -126,9 +127,15 @@ class ExcelImportService
 
             $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
             $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
-            $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+            $nature = isset($map['nature']) ? mb_strtoupper((string)$this->getCellValue($worksheet, $map['nature'], $row)) : null;
+
+            // Logic: Lote as Serial Number for Technical Equipment
             $sn = isset($map['serialNumber']) ? trim((string)$this->getCellValue($worksheet, $map['serialNumber'], $row)) : null;
+            if (($sn === '' || $sn === 'S/N' || $sn === null) && $nature === Material::NATURE_TECHNICAL) {
+                $sn = isset($map['batchNumber']) ? trim((string)$this->getCellValue($worksheet, $map['batchNumber'], $row)) : null;
+            }
             if ($sn === '' || $sn === 'S/N') $sn = null;
+
             $nid = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
 
             $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
@@ -276,15 +283,13 @@ class ExcelImportService
         for ($row = 2; $row <= $highestRow; $row++) {
             try {
                 $this->ensureEntityManagerIsOpen();
-                // Clear idempotency cache for each row to allow multiple identical rows in same import (Tarea 3)
-                $this->materialManager->clearCache();
 
                 $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
                 if (empty($name)) continue;
 
                 $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
                 $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
-                $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+                $nature = isset($map['nature']) ? mb_strtoupper((string)$this->getCellValue($worksheet, $map['nature'], $row)) : null;
                 $subFamily = isset($map['subFamily']) ? $this->getCellValue($worksheet, $map['subFamily'], $row) : null;
 
                 $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
@@ -304,6 +309,18 @@ class ExcelImportService
                 $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
                 $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
                 $serialNumber = isset($map['serialNumber']) ? $this->getCellValue($worksheet, $map['serialNumber'], $row) : null;
+
+                // Logic: Lote as Serial Number for Technical Equipment
+                if (($serialNumber === '' || $serialNumber === 'S/N' || $serialNumber === null) && $nature === Material::NATURE_TECHNICAL) {
+                    $serialNumber = $batchNumber;
+                }
+
+                $size = isset($map['size']) ? $this->getCellValue($worksheet, $map['size'], $row) : null;
+                // Logic: Ignore Size if not UNIFORMES
+                if ($nature !== 'UNIFORMES' && $category !== 'Uniformidad') {
+                    $size = null;
+                }
+
                 $networkId = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
                 $phoneNumber = isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null;
                 $purchaseDate = isset($map['purchaseDate']) ? $this->getDateValue($worksheet, $map['purchaseDate'], $row) : null;
@@ -410,7 +427,7 @@ class ExcelImportService
                         }
                     } else {
                         // Technical bulk stock
-                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', null, $this->materialManager->getDefaultLocation($material));
+                        $this->materialManager->adjustStock($material, $unitsPerPackage * $numPackages, 'Entrada: Registro Inicial / Carga Masiva', $size, $this->materialManager->getDefaultLocation($material));
                     }
                 } else {
                     // Consumable - Create or Update Batch
@@ -458,7 +475,7 @@ class ExcelImportService
                             $material,
                             $unitsPerPackage * $numPackages,
                             'Entrada: Registro Inicial / Carga Masiva',
-                            null,
+                            $size,
                             $this->materialManager->getDefaultLocation($material),
                             null,
                             $batch
