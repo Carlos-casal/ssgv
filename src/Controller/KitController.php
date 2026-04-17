@@ -473,6 +473,12 @@ class KitController extends AbstractController
         // 1. Map existing stock in the kit (to avoid "disappearance" on reload/back)
         foreach ($kitLocation->getStocks() as $stock) {
             if ($stock->getQuantity() <= 0) continue;
+
+            // Skip technical equipment in the stock loop as they are handled in the units loop below
+            if ($stock->getMaterial()->getNature() === Material::NATURE_TECHNICAL) {
+                continue;
+            }
+
             $currentContents[] = [
                 'material' => $stock->getMaterial(),
                 'quantity' => $stock->getQuantity(),

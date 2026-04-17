@@ -62,7 +62,7 @@
                                                 {% if item.material.nature == 'CONSUMIBLE' %}
                                                     {{ item.batch ? 'Lote: ' ~ item.batch.batchNumber : 'Sin Lote' }}
                                                 {% else %}
-                                                    {{ item.unit.serialNumber ?: 'S/N' }}
+                                                    {{ (item.unit and item.unit.serialNumber) ? item.unit.serialNumber : 'S/N' }}
                                                 {% endif %}
                                             </span>
                                         </td>
@@ -80,7 +80,7 @@
                                         style="{{ p.placeholder|default(false) ? 'border-left: 3px solid #f87171;' : '' }}">
                                         <td class="ps-4">
                                             <div class="font-bold text-slate-800 dark:text-slate-200">
-                                                {% if p.unit and p.unit.alias %}
+                                                {% if p.unit is defined and p.unit and p.unit.alias %}
                                                     {{ p.unit.alias }} <span class="text-slate-400 text-xxs font-normal">({{ p.material.name }})</span>
                                                 {% else %}
                                                     {{ p.material.name }}
