@@ -252,13 +252,13 @@ class MaterialController extends AbstractController
                 $reason = 'Inicialización de stock';
                 foreach ($adjustments as $quantity) {
                     if ($quantity > 0) {
-                        $materialManager->adjustStock($material, (int)$quantity, $reason);
+                        $materialManager->adjustStock($material, (int)$quantity, $reason, null);
                     }
                 }
                 // Handle custom
                 $customQty = (int)$request->request->get('custom_qty');
                 if ($customQty > 0) {
-                    $materialManager->adjustStock($material, $customQty, $reason);
+                    $materialManager->adjustStock($material, $customQty, $reason, null);
                 }
             }
 
@@ -699,13 +699,13 @@ class MaterialController extends AbstractController
                 $reason = 'Ajuste desde edición';
                 foreach ($adjustments as $quantity) {
                     if ($quantity > 0) {
-                        $materialManager->adjustStock($material, (int)$quantity, $reason);
+                        $materialManager->adjustStock($material, (int)$quantity, $reason, null);
                     }
                 }
                 // Handle custom
                 $customQty = (int)$request->request->get('custom_qty');
                 if ($customQty > 0) {
-                    $materialManager->adjustStock($material, $customQty, $reason);
+                    $materialManager->adjustStock($material, $customQty, $reason, null);
                 }
             }
 
@@ -868,13 +868,13 @@ class MaterialController extends AbstractController
         // 2. Manual entry from custom column
         $customQty = (int)$request->request->get('custom_qty');
         if ($customQty !== 0) {
-            $materialManager->adjustStock($material, $customQty, $reason);
+            $materialManager->adjustStock($material, $customQty, $reason, null);
         }
 
         // 3. Individual adjustments (from old logic or API-like single calls)
         $quantity = (int)$request->request->get('quantity');
         if ($quantity !== 0 && empty($adjustments)) {
-            $materialManager->adjustStock($material, $quantity, $reason);
+            $materialManager->adjustStock($material, $quantity, $reason, null);
         }
 
         $entityManager->flush();
