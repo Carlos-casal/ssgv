@@ -105,6 +105,7 @@
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"
+                                                            data-location-id="{{ opt.locationId|default('') }}"
                                                             class="{{ opt.busy|default(false) ? 'text-red-600 font-bold' : '' }}"
                                                             style="{{ opt.busy|default(false) ? 'color: #dc2626 !important; font-weight: bold;' : '' }}"
                                                             {{ opt.selected|default(false) ? 'selected' : '' }}>

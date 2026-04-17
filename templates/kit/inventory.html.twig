@@ -94,17 +94,17 @@
                                 {% if unit.kitLocation %}
                                     {# Aggregate consumable stock #}
                                     {% for stock in unit.kitLocation.stocks %}
-                                        {% set materialId = stock.material.id %}
-                                        {% set currentCount = locationQuantities[materialId] ?? 0 %}
-                                        {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + stock.quantity}) %}
+                                        {% set matId = stock.material.id ~ "" %}
+                                        {% set currentCount = locationQuantities[matId] ?? 0 %}
+                                        {% set locationQuantities = locationQuantities|merge({(matId): currentCount + stock.quantity}) %}
                                     {% endfor %}
 
                                     {# Add technical unit counts #}
                                     {% for techUnit in unit.kitLocation.units %}
-                                        {% if techUnit != unit %} {# Don't count the kit itself #}
-                                            {% set materialId = techUnit.material.id %}
-                                            {% set currentCount = locationQuantities[materialId] ?? 0 %}
-                                            {% set locationQuantities = locationQuantities|merge({(materialId): currentCount + 1}) %}
+                                        {% if techUnit.id != unit.id %} {# Don't count the kit itself #}
+                                            {% set matId = techUnit.material.id ~ "" %}
+                                            {% set currentCount = locationQuantities[matId] ?? 0 %}
+                                            {% set locationQuantities = locationQuantities|merge({(matId): currentCount + 1}) %}
                                         {% endif %}
                                     {% endfor %}
                                 {% endif %}
@@ -113,8 +113,9 @@
 
                                 {# First, items in the template #}
                                 {% for item in unit.template.items %}
-                                    {% set displayedMaterialIds = displayedMaterialIds|merge([item.material.id]) %}
-                                    {% set currentQty = locationQuantities[item.material.id] ?? 0 %}
+                                    {% set mId = item.material.id ~ "" %}
+                                    {% set displayedMaterialIds = displayedMaterialIds|merge([mId]) %}
+                                    {% set currentQty = locationQuantities[mId] ?? 0 %}
                                     <tr>
                                         <td class="ps-4">
                                             <div class="d-flex align-items-center">
@@ -150,11 +151,11 @@
                                         {# Find a material object to get name and image #}
                                         {% set extraMaterial = null %}
                                         {% for stock in unit.kitLocation.stocks %}
-                                            {% if stock.material.id == materialId %}{% set extraMaterial = stock.material %}{% endif %}
+                                            {% if stock.material.id ~ "" == materialId %}{% set extraMaterial = stock.material %}{% endif %}
                                         {% endfor %}
                                         {% if not extraMaterial %}
                                             {% for techUnit in unit.kitLocation.units %}
-                                                {% if techUnit.material.id == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
+                                                {% if techUnit.material.id ~ "" == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
                                             {% endfor %}
                                         {% endif %}
 
