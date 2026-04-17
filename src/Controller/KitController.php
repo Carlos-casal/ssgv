@@ -625,7 +625,8 @@ class KitController extends AbstractController
                     'available' => $stock->getQuantity(),
                     'busy' => $isBusy,
                     'selected' => $shouldSelect,
-                    'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar'
+                    'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar',
+                    'locationId' => $stock->getLocation() ? $stock->getLocation()->getId() : null
                 ];
 
                 if (!$isBusy) {
@@ -702,7 +703,8 @@ class KitController extends AbstractController
                     'available' => 1,
                     'busy' => $isBusy,
                     'selected' => $shouldSelect,
-                    'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar'
+                    'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar',
+                    'locationId' => $u->getLocation() ? $u->getLocation()->getId() : null
                 ];
 
                 if (!$isBusy) {

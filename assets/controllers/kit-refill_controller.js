@@ -71,9 +71,10 @@ export default class extends Controller {
                 const style = opt.busy ? 'style="color: #dc2626 !important; font-weight: bold;"' : '';
                 const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
                 const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
+                const locIdAttr = opt.locationId ? `data-location-id="${opt.locationId}"` : '';
                 const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ` (OCUPADO: ${opt.locationName})` : '');
 
-                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
+                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${locIdAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
             });
         }
         html += `</select>`;
@@ -216,7 +217,7 @@ export default class extends Controller {
 
             const proposal = {
                 material_id: materialId,
-                origin_id: this.originIdValue,
+                origin_id: identifierSelect.options[identifierSelect.selectedIndex].dataset.locationId || this.originIdValue,
                 quantity: quantity,
                 batch_id: nature === 'CONSUMIBLE' ? (identifierSelect.value === 'NO_BATCH' ? null : identifierSelect.value) : null,
                 unit_id: nature === 'EQUIPO_TECNICO' ? identifierSelect.value : null
