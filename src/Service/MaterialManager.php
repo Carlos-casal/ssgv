@@ -365,7 +365,11 @@ class MaterialManager
 
         if (isset($this->recordedMovementsCache[$cacheKey])) {
             $movement = $this->recordedMovementsCache[$cacheKey];
-            $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            // Only sum for non-serialized items.
+            // Items with a MaterialUnit should be deduplicated (return) but not summed.
+            if ($unit === null) {
+                $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            }
             return;
         }
 
@@ -394,10 +398,14 @@ class MaterialManager
             $qb->andWhere('m.destination IS NULL');
         }
 
-        if ($unit) {
+        if ($unit && $unit->getId()) {
             $qb->andWhere('m.materialUnit = :unit')->setParameter('unit', $unit);
-        } else {
+        } elseif (!$unit) {
             $qb->andWhere('m.materialUnit IS NULL');
+        } else {
+            // New unit without ID, skip database lookup
+            $existing = [];
+            goto process_new;
         }
 
         if ($batch && $batch->getId()) {
@@ -414,7 +422,10 @@ class MaterialManager
         process_new:
         if (count($existing) > 0) {
             $movement = $existing[0];
-            $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            // Only sum for non-serialized items.
+            if ($unit === null) {
+                $movement->setQuantity($movement->getQuantity() + $netQuantity);
+            }
             $this->recordedMovementsCache[$cacheKey] = $movement;
             return;
         }

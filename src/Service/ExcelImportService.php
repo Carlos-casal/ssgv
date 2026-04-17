@@ -385,17 +385,6 @@ class ExcelImportService
                                 'batteryStatus' => '100%',
                             ]);
 
-                            // RECORD INITIAL ENTRY (Tarea 2)
-                            $this->materialManager->adjustStock(
-                                $material,
-                                1,
-                                'Entrada: Registro Inicial / Carga Masiva',
-                                $this->materialManager->getDefaultLocation($material),
-                                null,
-                                null,
-                                $newUnit
-                            );
-
                             $result['units_created']++;
                             $processedSns[] = $cleanSn;
                         } else {
