@@ -94,9 +94,11 @@
                                 {% if unit.kitLocation %}
                                     {# Aggregate consumable stock #}
                                     {% for stock in unit.kitLocation.stocks %}
-                                        {% set matId = stock.material.id ~ "" %}
-                                        {% set currentCount = locationQuantities[matId] ?? 0 %}
-                                        {% set locationQuantities = locationQuantities|merge({(matId): currentCount + stock.quantity}) %}
+                                        {% if stock.material.nature == 'CONSUMIBLE' %}
+                                            {% set matId = stock.material.id ~ "" %}
+                                            {% set currentCount = locationQuantities[matId] ?? 0 %}
+                                            {% set locationQuantities = locationQuantities|merge({(matId): currentCount + stock.quantity}) %}
+                                        {% endif %}
                                     {% endfor %}
 
                                     {# Add technical unit counts #}

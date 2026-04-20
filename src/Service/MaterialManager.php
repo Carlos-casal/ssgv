@@ -249,11 +249,17 @@ class MaterialManager
 
             if ($currentLocation) {
                 // Withdrawal from origin
+                if ($currentLocation instanceof Location) {
+                    $currentLocation->removeUnit($unit);
+                }
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null);
 
                 if ($destination) {
                     // Entry to destination
                     $unit->setLocation($destination);
+                    if ($destination instanceof Location) {
+                        $destination->addUnit($unit);
+                    }
                     $this->updateStockWithBatch($material, $destination, $quantity, null);
                 } else {
                     $unit->setLocation(null);
@@ -265,6 +271,9 @@ class MaterialManager
                 // It's a new entry (Registration)
                 if ($destination) {
                     $unit->setLocation($destination);
+                    if ($destination instanceof Location) {
+                        $destination->addUnit($unit);
+                    }
                     $this->updateStockWithBatch($material, $destination, $quantity, null);
                     $this->recordMovement($material, $quantity, $entryReason, null, $destination, $responsible, $batch, $now, false, $unit);
                 }
@@ -463,6 +472,13 @@ class MaterialManager
             $stock->setLocation($location);
             $stock->setBatch($batch);
             $stock->setQuantity(0);
+
+            // Maintain bidirectional relationship for in-memory consistency
+            $location->addStock($stock);
+            if ($batch) {
+                $batch->addStock($stock);
+            }
+
             $this->getEntityManager()->persist($stock);
         }
 
