@@ -266,11 +266,7 @@ class MaterialManager
                 }
 
                 // Single record for transfer or exit
-                if ($currentLocation && $destination) {
-                    $this->recordAtomicTransfer($material, $quantity, $currentLocation, $destination, $responsible, $batch, $now, $unit);
-                } else {
-                    $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $batch, $now, $destination === null, $unit);
-                }
+                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $batch, $now, $destination === null, $unit);
             } else {
                 // It's a new entry (Registration)
                 if ($destination) {
@@ -306,11 +302,7 @@ class MaterialManager
                     }
 
                     // Single record for the specific batch transfer/exit
-                    if ($origin && $destination) {
-                        $this->recordAtomicTransfer($material, $toSubtract, $origin, $destination, $responsible, $b, $now, null);
-                    } else {
-                        $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $b, $now, $destination === null);
-                    }
+                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $b, $now, $destination === null);
 
                     $remainingToSubtract -= $toSubtract;
                     if ($remainingToSubtract <= 0) break;
@@ -323,11 +315,7 @@ class MaterialManager
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null);
                 }
                 // Single record for the remaining (no batch) transfer/exit
-                if ($origin && $destination) {
-                    $this->recordAtomicTransfer($material, $remainingToSubtract, $origin, $destination, $responsible, null, $now, null);
-                } else {
-                    $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, null, $now, $destination === null);
-                }
+                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, null, $now, $destination === null);
             }
         } else {
             // Explicit batch or entry from null origin (Registration/Initial Entry)
@@ -340,33 +328,12 @@ class MaterialManager
             }
 
             $finalReason = $origin ? $transferReason : $entryReason;
-            if ($origin && $destination) {
-                $this->recordAtomicTransfer($material, $quantity, $origin, $destination, $responsible, $batch, $now, null);
-            } else {
-                $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
-            }
+            $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
         }
 
     }
 
-    
-    private function recordAtomicTransfer(
-        Material $material,
-        int $quantity,
-        Location $origin,
-        Location $destination,
-        ?Volunteer $responsible,
-        ?MaterialBatch $batch,
-        \DateTimeImmutable $now,
-        ?MaterialUnit $unit
-    ): void {
-        // Generar salida y entrada explícitas para rastreo 100% exacto
-        $this->recordMovement($material, $quantity, sprintf("Salida por Traspaso a %s", $destination->getName()), $origin, null, $responsible, $batch, $now, true, $unit);
-        $this->recordMovement($material, $quantity, sprintf("Entrada por Traspaso desde %s", $origin->getName()), null, $destination, $responsible, $batch, $now, false, $unit);
-    }
-
     private function recordMovement(
-
         Material $material,
         int $quantity,
         string $reason,
@@ -515,14 +482,7 @@ class MaterialManager
             $this->getEntityManager()->persist($stock);
         }
 
-        $newQuantity = $stock->getQuantity() + $delta;
-        if ($newQuantity <= 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {
-            // Eliminar stock si queda a 0 o negativo en ubicaciones no-almacén (como botiquines)
-            $this->getEntityManager()->remove($stock);
-            $stock->setQuantity(0);
-        } else {
-            $stock->setQuantity($newQuantity);
-        }
+        $stock->setQuantity($stock->getQuantity() + $delta);
 
         // Robust global stock sync (applies to both Consumables and Technical bulk stock)
         $material->setStock($material->getStock() + $delta);
