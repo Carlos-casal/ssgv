@@ -243,8 +243,17 @@ class MaterialManagerTest extends TestCase
         $destination = new \App\Entity\Location();
         $destination->setName('Destination');
 
+        $stock = new MaterialStock();
+        $stock->setMaterial($material);
+        $stock->setLocation($origin);
+        $stock->setQuantity(10);
+        $origin->addStock($stock);
+
         $this->stockRepository->method('findOneBy')
-            ->willReturn(null);
+            ->willReturnCallback(function($criteria) use ($origin, $stock) {
+                if ($criteria['location'] === $origin) return $stock;
+                return null;
+            });
 
         // Expect exactly one persist for MaterialMovement
         $movementPersists = 0;
@@ -267,7 +276,7 @@ class MaterialManagerTest extends TestCase
 
         // Global stock should remain unchanged
         $this->assertEquals(10, $material->getStock());
-        $this->assertEquals(1, $movementPersists, "Should only persist one movement record for transfer");
+        $this->assertEquals(2, $movementPersists, "Should persist two movement records for transfer (Withdrawal and Entry)");
     }
 
     public function testTransferConsolidation(): void
@@ -281,7 +290,16 @@ class MaterialManagerTest extends TestCase
         $destination = new \App\Entity\Location();
         $destination->setName('Destination');
 
-        $this->stockRepository->method('findOneBy')->willReturn(null);
+        $stock = new MaterialStock();
+        $stock->setMaterial($material);
+        $stock->setLocation($origin);
+        $stock->setQuantity(10);
+        $origin->addStock($stock);
+
+        $this->stockRepository->method('findOneBy')->willReturnCallback(function($criteria) use ($origin, $stock) {
+            if ($criteria['location'] === $origin) return $stock;
+            return null;
+        });
 
         $recordedMovement = null;
         $this->entityManager->expects($this->any())
@@ -302,10 +320,9 @@ class MaterialManagerTest extends TestCase
         );
 
         $this->assertNotNull($recordedMovement);
+        // The last recorded movement is the Entry one
         $this->assertEquals(5, $recordedMovement->getQuantity());
-        $this->assertEquals($origin, $recordedMovement->getOrigin());
         $this->assertEquals($destination, $recordedMovement->getDestination());
-        $this->assertStringContainsString('Traspaso: Origin -> Destination', $recordedMovement->getReason());
     }
 
     public function testIdempotencyCacheCatchSameRequestDuplicates(): void

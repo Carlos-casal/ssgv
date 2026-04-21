@@ -63,8 +63,6 @@ class MaterialManager
             return false;
         }
 
-        // Check for overlapping services that have this unit assigned
-        // We only consider services that have valid start and end dates
         $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
             ->join('sm.service', 's')
             ->where('sm.materialUnit = :unit')
@@ -83,7 +81,6 @@ class MaterialManager
 
         $conflicts = $qb->getQuery()->getResult();
 
-        // A unit is available if there are NO overlapping assignments
         return count($conflicts) === 0;
     }
 
@@ -135,13 +132,9 @@ class MaterialManager
      */
     public function adjustStock(Material $material, int $quantity, string $reason, ?Location $location = null, ?Volunteer $responsible = null, ?MaterialBatch $batch = null, ?MaterialUnit $unit = null): void
     {
-        /** @var User|null $currentUser */
-        $currentUser = $this->security->getUser();
-
         if (!$location) {
             $location = $this->getDefaultLocation($material);
         } else {
-            // If the user explicitly selects Central Warehouse, but it belongs to a specialized one:
             $central = $this->getCentralWarehouse();
             $default = $this->getDefaultLocation($material);
             if ($location->getId() === $central->getId() && $default->getId() !== $central->getId()) {
@@ -150,12 +143,10 @@ class MaterialManager
         }
 
         if ($quantity < 0 && !$batch && $material->getNature() === Material::NATURE_CONSUMABLE) {
-            // Use FIFO for negative adjustments if batch is not specified
             $this->transfer($material, $location, null, abs($quantity), $reason, $responsible, null, null);
             return;
         }
 
-        // Standardize Entry reasons (Tarea 3)
         if ($quantity > 0 && (str_contains($reason, 'Inicialización') || str_contains($reason, 'proveedor') || str_contains($reason, 'Entrada'))) {
             $reason = sprintf('Entrada: Registro Inicial / %s', $location->getName());
         }
@@ -201,29 +192,19 @@ class MaterialManager
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
 
         $this->getEntityManager()->persist($unit);
-        $this->getEntityManager()->flush(); // Garantiza que la unidad tenga ID antes de recordMovement
+        $this->getEntityManager()->flush();
 
-        // Synchronize stock for this unit in the location
         $this->updateStockWithBatch($material, $finalLocation, 1, null);
-
-        // Log initial entry
         $this->recordMovement($material, 1, $reason, null, $finalLocation, null, null, new \DateTimeImmutable(), false, $unit);
 
         return $unit;
     }
 
-    /**
-     * Entry from supplier to a location
-     */
     public function entry(Material $material, Location $destination, int $quantity, ?Volunteer $responsible): void
     {
         $this->adjustStock($material, $quantity, 'Entrada de proveedor', $destination, $responsible);
     }
 
-    /**
-     * Transfer between two locations or handle Entry/Exit
-     * Implements FIFO for consumables if batch is not specified.
-     */
     public function transfer(
         Material $material,
         ?Location $origin,
@@ -234,28 +215,20 @@ class MaterialManager
         ?MaterialUnit $unit = null,
         ?MaterialBatch $batch = null
     ): void {
-        // Disabled auto-routing for transfers to ensure the explicitly selected origin/destination
-        // is always respected, especially when moving between kits and warehouses.
-
         $now = new \DateTimeImmutable();
-
-        // Define clean standardized reasons
         $entryReason = $destination ? sprintf('Entrada: Registro Inicial / %s', $destination->getName()) : 'Entrada: Registro Inicial';
         $transferReason = ($origin && $destination) ? sprintf('Traspaso: %s -> %s', $origin->getName(), $destination->getName()) : $reason;
 
         if ($material->getNature() === Material::NATURE_TECHNICAL && $unit) {
-            // Technical Unit Transfer (Strict Logic)
             $currentLocation = $unit->getLocation();
 
             if ($currentLocation) {
-                // Withdrawal from origin
                 if ($currentLocation instanceof Location) {
                     $currentLocation->removeUnit($unit);
                 }
                 $this->updateStockWithBatch($material, $currentLocation, -$quantity, null);
 
                 if ($destination) {
-                    // Entry to destination
                     $unit->setLocation($destination);
                     if ($destination instanceof Location) {
                         $destination->addUnit($unit);
@@ -265,14 +238,12 @@ class MaterialManager
                     $unit->setLocation(null);
                 }
 
-                // Single record for transfer or exit
                 if ($currentLocation && $destination) {
                     $this->recordAtomicTransfer($material, $quantity, $currentLocation, $destination, $responsible, $batch, $now, $unit);
                 } else {
                     $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $batch, $now, $destination === null, $unit);
                 }
             } else {
-                // It's a new entry (Registration)
                 if ($destination) {
                     $unit->setLocation($destination);
                     if ($destination instanceof Location) {
@@ -283,11 +254,9 @@ class MaterialManager
                 }
             }
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && $origin) {
-            // Consumable transfer with optional FIFO
             $remainingToSubtract = $quantity;
 
             if ($batch) {
-                // Explicit batch transfer
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $quantity, $batch);
@@ -301,7 +270,6 @@ class MaterialManager
                 return;
             }
 
-            // FIFO logic for subtraction (No specific batch provided)
             $batches = $this->getEntityManager()->getRepository(MaterialBatch::class)->findBy(
                 ['material' => $material],
                 ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
@@ -322,7 +290,6 @@ class MaterialManager
                         $this->updateStockWithBatch($material, $destination, $toSubtract, $b);
                     }
 
-                    // Single record for the specific batch transfer/exit
                     if ($origin && $destination) {
                         $this->recordAtomicTransfer($material, $toSubtract, $origin, $destination, $responsible, $b, $now, null);
                     } else {
@@ -339,7 +306,6 @@ class MaterialManager
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null);
                 }
-                // Single record for the remaining (no batch) transfer/exit
                 if ($origin && $destination) {
                     $this->recordAtomicTransfer($material, $remainingToSubtract, $origin, $destination, $responsible, null, $now, null);
                 } else {
@@ -347,11 +313,9 @@ class MaterialManager
                 }
             }
         } else {
-            // Explicit batch or entry from null origin (Registration/Initial Entry)
             if ($origin) {
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
             }
-
             if ($destination) {
                 $this->updateStockWithBatch($material, $destination, $quantity, $batch);
             }
@@ -363,76 +327,33 @@ class MaterialManager
                 $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
             }
         }
-
     }
 
-    
-    private function recordAtomicTransfer(
-        Material $material,
-        int $quantity,
-        Location $origin,
-        Location $destination,
-        ?Volunteer $responsible,
-        ?MaterialBatch $batch,
-        \DateTimeImmutable $now,
-        ?MaterialUnit $unit
-    ): void {
-        // Generar salida y entrada explícitas para rastreo 100% exacto
+    private function recordAtomicTransfer(Material $material, int $quantity, Location $origin, Location $destination, ?Volunteer $responsible, ?MaterialBatch $batch, \DateTimeImmutable $now, ?MaterialUnit $unit): void {
         $this->recordMovement($material, $quantity, sprintf("Salida por Traspaso a %s", $destination->getName()), $origin, null, $responsible, $batch, $now, true, $unit);
         $this->recordMovement($material, $quantity, sprintf("Entrada por Traspaso desde %s", $origin->getName()), null, $destination, $responsible, $batch, $now, false, $unit);
     }
 
-    private function recordMovement(
-
-        Material $material,
-        int $quantity,
-        string $reason,
-        ?Location $origin,
-        ?Location $destination,
-        ?Volunteer $responsible,
-        ?MaterialBatch $batch = null,
-        ?\DateTimeImmutable $createdAt = null,
-        bool $isWithdrawal = false,
-        ?MaterialUnit $unit = null
-    ): void {
+    private function recordMovement(Material $material, int $quantity, string $reason, ?Location $origin, ?Location $destination, ?Volunteer $responsible, ?MaterialBatch $batch = null, ?\DateTimeImmutable $createdAt = null, bool $isWithdrawal = false, ?MaterialUnit $unit = null): void {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
         $timestamp = $createdAt ?: new \DateTimeImmutable();
         $netQuantity = $isWithdrawal ? -abs($quantity) : abs($quantity);
 
-        // If it's a transfer between two locations, both records should mention origin and destination
-        // but only the quantity changes sign.
-
-        // Standardize History Format (Tarea 3)
-        // Ensure transfers use strictly "Traspaso: [Origen] -> [Destino]"
         if ($origin && $destination && !str_starts_with($reason, 'Entrada') && !str_starts_with($reason, 'Consumo')) {
             $reason = sprintf('Traspaso: %s -> %s', $origin->getName(), $destination->getName());
         }
 
-        // IDEMPOTENCY & CONSOLIDATION CHECK (Tarea 2)
-        // 1. Check Request Cache (for records not yet flushed)
-        $cacheKey = sprintf(
-            '%s_%s_%s_%s_%s_%s_%s',
-            $material->getId() ?? spl_object_hash($material),
-            md5($reason),
-            $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null',
-            $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null',
-            $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null',
-            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null',
-            $timestamp->format('Y-m-d_H:i')
-        );
+        $cacheKey = sprintf('%s_%s_%s_%s_%s_%s_%s', $material->getId() ?? spl_object_hash($material), md5($reason), $origin ? ($origin->getId() ?? spl_object_hash($origin)) : 'null', $destination ? ($destination->getId() ?? spl_object_hash($destination)) : 'null', $unit ? ($unit->getId() ?? spl_object_hash($unit)) : 'null', $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null', $timestamp->format('Y-m-d_H:i'));
 
         if (isset($this->recordedMovementsCache[$cacheKey])) {
             $movement = $this->recordedMovementsCache[$cacheKey];
-            // Only sum for non-serialized items.
-            // Items with a MaterialUnit should be deduplicated (return) but not summed.
             if ($unit === null) {
                 $movement->setQuantity($movement->getQuantity() + $netQuantity);
             }
             return;
         }
 
-        // 2. Check Database (for records already persisted in the same minute)
         $minuteStart = $timestamp->modify('midnight')->add(new \DateInterval('PT' . ($timestamp->format('H') * 3600 + $timestamp->format('i') * 60) . 'S'));
 
         $qb = $this->movementRepository->createQueryBuilder('m')
@@ -445,43 +366,21 @@ class MaterialManager
             ->setParameter('minuteStart', $minuteStart)
             ->setParameter('timestamp', $timestamp);
 
-        if ($origin) {
-            $qb->andWhere('m.origin = :origin')->setParameter('origin', $origin);
-        } else {
-            $qb->andWhere('m.origin IS NULL');
-        }
+        if ($origin) { $qb->andWhere('m.origin = :origin')->setParameter('origin', $origin); } else { $qb->andWhere('m.origin IS NULL'); }
+        if ($destination) { $qb->andWhere('m.destination = :destination')->setParameter('destination', $destination); } else { $qb->andWhere('m.destination IS NULL'); }
 
-        if ($destination) {
-            $qb->andWhere('m.destination = :destination')->setParameter('destination', $destination);
-        } else {
-            $qb->andWhere('m.destination IS NULL');
-        }
+        if ($unit && $unit->getId()) { $qb->andWhere('m.materialUnit = :unit')->setParameter('unit', $unit); }
+        elseif (!$unit) { $qb->andWhere('m.materialUnit IS NULL'); }
+        else { $existing = []; goto process_new; }
 
-        if ($unit && $unit->getId()) {
-            $qb->andWhere('m.materialUnit = :unit')->setParameter('unit', $unit);
-        } elseif (!$unit) {
-            $qb->andWhere('m.materialUnit IS NULL');
-        } else {
-            // New unit without ID, skip database lookup
-            $existing = [];
-            goto process_new;
-        }
-
-        if ($batch && $batch->getId()) {
-            $qb->andWhere('m.batch = :batch')->setParameter('batch', $batch);
-        } elseif (!$batch) {
-            $qb->andWhere('m.batch IS NULL');
-        } else {
-            // New batch without ID, don't look up existing movements
-            $existing = [];
-            goto process_new;
-        }
+        if ($batch && $batch->getId()) { $qb->andWhere('m.batch = :batch')->setParameter('batch', $batch); }
+        elseif (!$batch) { $qb->andWhere('m.batch IS NULL'); }
+        else { $existing = []; goto process_new; }
 
         $existing = $qb->getQuery()->getResult();
         process_new:
         if (count($existing) > 0) {
             $movement = $existing[0];
-            // Only sum for non-serialized items.
             if ($unit === null) {
                 $movement->setQuantity($movement->getQuantity() + $netQuantity);
             }
@@ -505,24 +404,15 @@ class MaterialManager
         $this->getEntityManager()->persist($movement);
     }
 
-
     public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null): void
     {
-        // Delta 0 doesn't change anything
         if ($delta === 0) return;
-
         $stock = null;
-        $cacheKey = sprintf(
-            'stock_%s_%s_%s',
-            $material->getId() ?? spl_object_hash($material),
-            $location->getId() ?? spl_object_hash($location),
-            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null'
-        );
+        $cacheKey = sprintf('stock_%s_%s_%s', $material->getId() ?? spl_object_hash($material), $location->getId() ?? spl_object_hash($location), $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null');
 
         if (isset($this->stocksCache[$cacheKey])) {
             $stock = $this->stocksCache[$cacheKey];
         } else {
-            // First look in the location's memory collection to avoid duplication in same request
             foreach ($location->getStocks() as $s) {
                 if ($s->getMaterial() === $material && $s->getBatch() === $batch) {
                     $stock = $s;
@@ -530,92 +420,50 @@ class MaterialManager
                     break;
                 }
             }
-
             if (!$stock) {
-                $criteria = [
-                    'material' => $material,
-                    'location' => $location,
-                    'batch' => $batch
-                ];
+                $criteria = ['material' => $material, 'location' => $location, 'batch' => $batch];
                 $stock = $this->stockRepository->findOneBy($criteria);
-                if ($stock) {
-                    $this->stocksCache[$cacheKey] = $stock;
-                }
+                if ($stock) { $this->stocksCache[$cacheKey] = $stock; }
             }
         }
 
         if (!$stock) {
-            // If delta is negative and stock doesn't exist, it's an error (negative stock prevention)
             if ($delta < 0) {
-                 throw new \RuntimeException(sprintf(
-                     "No existe registro de stock para el material '%s' (Lote: %s) en la ubicación '%s' para realizar la resta de %d unidades.",
-                     $material->getName(),
-                     $batch ? $batch->getBatchNumber() : 'N/A',
-                     $location->getName(),
-                     abs($delta)
-                 ));
+                 throw new \RuntimeException(sprintf("No existe registro de stock para el material '%s' (Lote: %s) en la ubicación '%s' para realizar la resta de %d unidades.", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), abs($delta)));
             }
-
             $stock = new MaterialStock();
             $stock->setMaterial($material);
             $stock->setLocation($location);
             $stock->setBatch($batch);
             $stock->setQuantity(0);
-
-            // Maintain bidirectional relationship for in-memory consistency
             $location->addStock($stock);
-            if ($batch) {
-                $batch->addStock($stock);
-            }
+            if ($batch) { $batch->addStock($stock); }
             $material->addStock($stock);
-
             $this->getEntityManager()->persist($stock);
             $this->stocksCache[$cacheKey] = $stock;
         }
 
         $newQuantity = $stock->getQuantity() + $delta;
-
         if ($newQuantity < 0) {
-            throw new \RuntimeException(sprintf(
-                "Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s'. Disponible: %d, Solicitado: %d",
-                $material->getName(),
-                $batch ? $batch->getBatchNumber() : 'N/A',
-                $location->getName(),
-                $stock->getQuantity(),
-                abs($delta)
-            ));
+            throw new \RuntimeException(sprintf("Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s'. Disponible: %d, Solicitado: %d", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), $stock->getQuantity(), abs($delta)));
         }
 
         if ($newQuantity == 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {
-            // Eliminar stock si queda a 0 en ubicaciones no-almacén (como botiquines)
             $this->getEntityManager()->remove($stock);
             $stock->setQuantity(0);
-
-            // Clean up collections for in-memory consistency and to avoid duplicates in same request
             $location->removeStock($stock);
-            if ($batch) {
-                $batch->removeStock($stock);
-            }
+            if ($batch) { $batch->removeStock($stock); }
             $material->removeStock($stock);
             unset($this->stocksCache[$cacheKey]);
         } else {
             $stock->setQuantity($newQuantity);
         }
-
-        // Robust global stock sync
-        // Instead of incremental update, we could recalculate, but delta is faster if handled correctly
         $material->setStock($material->getStock() + $delta);
     }
 
-    /**
-     * Returns total stock available for a consumable, excluding items in KITS.
-     */
     public function getAvailableStock(Material $material): int
     {
-        if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
-            return 0;
-        }
-
+        if ($material->getNature() !== Material::NATURE_CONSUMABLE) return 0;
         $qb = $this->stockRepository->createQueryBuilder('ms')
             ->select('SUM(ms.quantity)')
             ->join('ms.location', 'l')
@@ -623,76 +471,56 @@ class MaterialManager
             ->andWhere('l.type != :kitType')
             ->setParameter('material', $material)
             ->setParameter('kitType', Location::TYPE_KIT);
-
         return (int) $qb->getQuery()->getSingleScalarResult();
     }
 
-    /**
-     * Checks if a consumable has enough stock.
-     */
     public function hasEnoughStock(Material $material, int $requestedQuantity, ?Location $location = null): bool
     {
-        if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
-            return true;
-        }
-
+        if ($material->getNature() !== Material::NATURE_CONSUMABLE) return true;
         if ($location) {
             $stock = $this->stockRepository->findOneBy(['material' => $material, 'location' => $location]);
             return $stock && $stock->getQuantity() >= $requestedQuantity;
         }
-
         return $material->getStock() >= $requestedQuantity;
     }
 
-    /**
-     * Gets materials that need replenishment.
-     */
     public function getMaterialsNeedingReplenishment(): array
     {
         return $this->materialRepository->createQueryBuilder('m')
             ->where('m.nature = :nature')
             ->andWhere('m.stock <= (m.safetyStock * COALESCE(m.unitsPerPackage, 1))')
             ->setParameter('nature', Material::NATURE_CONSUMABLE)
-            ->getQuery()
-            ->getResult();
+            ->getQuery()->getResult();
     }
 
-    /**
-     * Returns the Default Location for a material based on its category.
-     */
     public function getDefaultLocation(Material $material): Location
     {
-        if ($material->getCategory() === 'Sanitario') {
-            return $this->getPharmacyWarehouse();
-        }
-
-        if ($material->getCategory() === 'Comunicaciones') {
-            return $this->getCecomWarehouse();
-        }
-
+        if ($material->getCategory() === 'Sanitario') return $this->getPharmacyWarehouse();
+        if ($material->getCategory() === 'Comunicaciones') return $this->getCecomWarehouse();
         return $this->getCentralWarehouse();
     }
 
-    /**
-     * Returns the Central Warehouse location.
-     */
+    public function getPharmacyWarehouse(): Location
+    {
+        $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
+        if (!$warehouse) {
+            $warehouse = new Location();
+            $warehouse->setName('Almacén Farmacia');
+            $warehouse->setType(Location::TYPE_WAREHOUSE);
+            $this->getEntityManager()->persist($warehouse);
+            $this->getEntityManager()->flush();
+        }
+        return $warehouse;
+    }
+
     public function getCentralWarehouse(): Location
     {
-        if (!$this->getEntityManager()->isOpen()) {
-            throw new \RuntimeException("EntityManager is closed. Cannot retrieve Central Warehouse.");
-        }
-
         $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
-
         if (!$warehouse) {
-            // Priority 1: Check for Pharmacy as a better default for this system
             $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
-
             if (!$warehouse) {
-                // Priority 2: Any warehouse
                 $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
             }
-
             if (!$warehouse) {
                 $warehouse = new Location();
                 $warehouse->setName('Almacén Central');
@@ -701,20 +529,12 @@ class MaterialManager
                 $this->getEntityManager()->flush();
             }
         }
-
         return $warehouse;
     }
-    /**
-     * Returns the CECOM Warehouse location (Almacén CECOM).
-     */
+
     public function getCecomWarehouse(): Location
     {
-        if (!$this->getEntityManager()->isOpen()) {
-            throw new \RuntimeException("EntityManager is closed. Cannot retrieve CECOM Warehouse.");
-        }
-
         $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén CECOM']);
-
         if (!$warehouse) {
             $warehouse = new Location();
             $warehouse->setName('Almacén CECOM');
@@ -722,29 +542,20 @@ class MaterialManager
             $this->getEntityManager()->persist($warehouse);
             $this->getEntityManager()->flush();
         }
-
         return $warehouse;
     }
 
-    /**
-     * Changes the operational status of a unit and logs it to history
-     */
     public function changeUnitStatus(MaterialUnit $unit, string $status, ?string $reason): void
     {
         /** @var User|null $currentUser */
         $currentUser = $this->security->getUser();
-
         $history = new MaterialUnitHistory();
         $history->setMaterialUnit($unit);
         $history->setStatus($status);
         $history->setReason($reason);
         $history->setUser($currentUser);
-
         $this->getEntityManager()->persist($history);
-
         $unit->setOperationalStatus($status);
-
-        // Depending on status, we might want to automatically set isInMaintenance to true
         if (in_array($status, ['EN REPARACION', 'AVERIADO'])) {
             $unit->setIsInMaintenance(true);
         } else if ($status === 'OPERATIVO') {
