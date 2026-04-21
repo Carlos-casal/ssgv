@@ -500,6 +500,9 @@ class MaterialManager
 
     public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null): void
     {
+        // Delta 0 doesn't change anything
+        if ($delta === 0) return;
+
         $cacheKey = sprintf(
             'stock_%s_%s_%s',
             $material->getId() ?? spl_object_hash($material),
@@ -522,6 +525,13 @@ class MaterialManager
         }
 
         if (!$stock) {
+            // If delta is negative and stock doesn't exist, we don't create it (nothing to subtract)
+            if ($delta < 0) {
+                 // But we still update the global counter if we assume it was somewhere
+                 $material->setStock($material->getStock() + $delta);
+                 return;
+            }
+
             $stock = new MaterialStock();
             $stock->setMaterial($material);
             $stock->setLocation($location);
@@ -556,7 +566,8 @@ class MaterialManager
             $stock->setQuantity($newQuantity);
         }
 
-        // Robust global stock sync (applies to both Consumables and Technical bulk stock)
+        // Robust global stock sync
+        // Instead of incremental update, we could recalculate, but delta is faster if handled correctly
         $material->setStock($material->getStock() + $delta);
     }
 
