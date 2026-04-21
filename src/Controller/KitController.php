@@ -563,8 +563,15 @@ class KitController extends AbstractController
             // But we must NOT exclude it if it's a valid template item that just happens to be the same material (rare, but possible).
             // Actually, the main risk is excluding something like "Botiquín" when it's just a general name.
             // We only skip if the material ID is the exact same one that represents the kit itself.
-        if ($unit->getMaterial() && $material->getId() === $unit->getMaterial()->getId() && $material->getName() === 'Botiquín') {
-            return;
+        // EXCLUSION LOGIC:
+        // We strictly exclude the MaterialUnit that represents the kit container itself.
+        // We also exclude any other MaterialUnit that is already assigned to a Location of type KIT (busy).
+        // Except if we are doing manualOnly, in which case we show everything but mark busy.
+
+        // Skip the kit container itself by ID (important if it's the same material type)
+        if ($unit->getId() && $material->getId() === $unit->getMaterial()->getId()) {
+            // Further check to see if we are trying to propose the container unit itself
+            // This is handled in the unit loop below, but we can skip the whole material if it's ONLY for the container
         }
 
         // Calculate current stock in the kit correctly
@@ -685,6 +692,9 @@ class KitController extends AbstractController
             $foundAutoSelect = false;
 
             foreach ($allUnits as $u) {
+                // Skip the kit container itself
+                if ($unit->getId() && $u->getId() === $unit->getId()) continue;
+
                 // Skip if it is ALREADY in the current kit
                 if ($u->getLocation() === $kitLocation) continue;
 

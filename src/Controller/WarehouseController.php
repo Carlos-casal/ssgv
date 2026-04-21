@@ -24,9 +24,7 @@ class WarehouseController extends AbstractController
         // Filter out Almacén Central and orphaned/deleted KIT locations
         $locations = $locationRepository->createQueryBuilder('l')
             ->leftJoin('l.materialUnit', 'mu')
-            ->where('l.name != :almacenCentral')
-            ->andWhere('l.type != :kitType OR mu.id IS NOT NULL')
-            ->setParameter('almacenCentral', 'Almacén Central')
+            ->where('l.type != :kitType OR mu.id IS NOT NULL')
             ->setParameter('kitType', \App\Entity\Location::TYPE_KIT)
             ->getQuery()
             ->getResult();
