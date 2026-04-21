@@ -239,6 +239,8 @@ class ExcelImportService
     {
         if (!$this->entityManager->isOpen()) {
             $this->entityManager = $this->managerRegistry->resetManager();
+            // Refresh repository to use the new manager
+            $this->materialRepository = $this->entityManager->getRepository(Material::class);
             // Clear internal caches as they might hold detached entities
             $this->materialCache = [];
             $this->batchCache = [];
@@ -281,7 +283,32 @@ class ExcelImportService
 
                 $barcode = isset($map['barcode']) ? $this->getCellValue($worksheet, $map['barcode'], $row) : null;
                 $category = isset($map['category']) ? $this->getCellValue($worksheet, $map['category'], $row) : null;
-                $nature = isset($map['nature']) ? $this->getCellValue($worksheet, $map['nature'], $row) : null;
+                $rawNature = isset($map['nature']) ? mb_strtoupper(trim((string)$this->getCellValue($worksheet, $map['nature'], $row))) : null;
+
+                // Standardize nature
+                $nature = null;
+                if ($rawNature) {
+                    if (in_array($rawNature, ['CONSUMIBLE', 'FUNGIBLE', 'CONSUMO', 'BULK'])) {
+                        $nature = Material::NATURE_CONSUMABLE;
+                    } elseif (in_array($rawNature, ['EQUIPO_TECNICO', 'EQUIPO', 'TECNICO', 'UNITARIO', 'MOCHILA', 'BOTIQUIN'])) {
+                        $nature = Material::NATURE_TECHNICAL;
+                    } else {
+                        $nature = $rawNature;
+                    }
+                }
+
+                // If nature is still missing, auto-detect from name or category
+                if (!$nature) {
+                    $lowerName = mb_strtolower($name);
+                    $technicalKeywords = ['mochila', 'botiquín', 'botiquin', 'maletín', 'maletin', 'radio', 'walkie', 'equipo'];
+                    foreach ($technicalKeywords as $kw) {
+                        if (mb_strpos($lowerName, $kw) !== false) {
+                            $nature = Material::NATURE_TECHNICAL;
+                            break;
+                        }
+                    }
+                }
+
                 $subFamily = isset($map['subFamily']) ? $this->getCellValue($worksheet, $map['subFamily'], $row) : null;
 
                 $unitsPerPackage = isset($map['unitsPerPackage']) ? (int)$this->getCellValue($worksheet, $map['unitsPerPackage'], $row) : 1;
@@ -454,6 +481,8 @@ class ExcelImportService
                 // Optionally clear the EM to discard half-applied changes from this row
                 if ($this->entityManager->isOpen()) {
                     $this->entityManager->clear();
+                    // Refresh repository to use the current manager
+                    $this->materialRepository = $this->entityManager->getRepository(Material::class);
                     // Clear internal caches as they might hold detached entities after clear()
                     $this->materialCache = [];
                     $this->batchCache = [];
