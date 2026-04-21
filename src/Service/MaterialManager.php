@@ -282,9 +282,26 @@ class MaterialManager
                     $this->recordMovement($material, $quantity, $entryReason, null, $destination, $responsible, $batch, $now, false, $unit);
                 }
             }
-        } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && !$batch && $origin) {
-            // FIFO logic for subtraction (Always a transfer because origin exists)
+        } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && $origin) {
+            // Consumable transfer with optional FIFO
             $remainingToSubtract = $quantity;
+
+            if ($batch) {
+                // Explicit batch transfer
+                $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
+                if ($destination) {
+                    $this->updateStockWithBatch($material, $destination, $quantity, $batch);
+                }
+
+                if ($destination) {
+                    $this->recordAtomicTransfer($material, $quantity, $origin, $destination, $responsible, $batch, $now, null);
+                } else {
+                    $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $batch, $now, true);
+                }
+                return;
+            }
+
+            // FIFO logic for subtraction (No specific batch provided)
             $batches = $this->getEntityManager()->getRepository(MaterialBatch::class)->findBy(
                 ['material' => $material],
                 ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
@@ -528,11 +545,15 @@ class MaterialManager
         }
 
         if (!$stock) {
-            // If delta is negative and stock doesn't exist, we don't create it (nothing to subtract)
+            // If delta is negative and stock doesn't exist, it's an error (negative stock prevention)
             if ($delta < 0) {
-                 // But we still update the global counter if we assume it was somewhere
-                 $material->setStock($material->getStock() + $delta);
-                 return;
+                 throw new \RuntimeException(sprintf(
+                     "No existe registro de stock para el material '%s' (Lote: %s) en la ubicación '%s' para realizar la resta de %d unidades.",
+                     $material->getName(),
+                     $batch ? $batch->getBatchNumber() : 'N/A',
+                     $location->getName(),
+                     abs($delta)
+                 ));
             }
 
             $stock = new MaterialStock();
@@ -553,8 +574,20 @@ class MaterialManager
         }
 
         $newQuantity = $stock->getQuantity() + $delta;
-        if ($newQuantity <= 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {
-            // Eliminar stock si queda a 0 o negativo en ubicaciones no-almacén (como botiquines)
+
+        if ($newQuantity < 0) {
+            throw new \RuntimeException(sprintf(
+                "Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s'. Disponible: %d, Solicitado: %d",
+                $material->getName(),
+                $batch ? $batch->getBatchNumber() : 'N/A',
+                $location->getName(),
+                $stock->getQuantity(),
+                abs($delta)
+            ));
+        }
+
+        if ($newQuantity == 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {
+            // Eliminar stock si queda a 0 en ubicaciones no-almacén (como botiquines)
             $this->getEntityManager()->remove($stock);
             $stock->setQuantity(0);
 
