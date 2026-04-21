@@ -218,6 +218,7 @@ export default class extends Controller {
             const proposal = {
                 material_id: materialId,
                 origin_id: identifierSelect.options[identifierSelect.selectedIndex].dataset.locationId || this.originIdValue,
+                stock_id: nature === 'CONSUMIBLE' ? (identifierSelect.options[identifierSelect.selectedIndex].dataset.stockId || null) : null,
                 quantity: quantity,
                 batch_id: nature === 'CONSUMIBLE' ? (identifierSelect.value === 'NO_BATCH' ? null : identifierSelect.value) : null,
                 unit_id: nature === 'EQUIPO_TECNICO' ? identifierSelect.value : null
