@@ -215,6 +215,17 @@ export default class extends Controller {
 
             if (!materialId || !identifierSelect || !identifierSelect.value) return;
 
+            const selectedOption = identifierSelect.options[identifierSelect.selectedIndex];
+            const isBusy = selectedOption.dataset.busy === 'true';
+
+            if (isBusy) {
+                hasBusy = true;
+                busyDetails.push({
+                    label: selectedOption.text,
+                    location: selectedOption.dataset.locationName
+                });
+            }
+
             const proposal = {
                 material_id: materialId,
                 origin_id: identifierSelect.options[identifierSelect.selectedIndex].dataset.locationId || this.originIdValue,
