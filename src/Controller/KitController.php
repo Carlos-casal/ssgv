@@ -558,17 +558,6 @@ class KitController extends AbstractController
         int $idealQty = 0,
         bool $manualOnly = false
     ): void {
-            // EXCLUSION LOGIC:
-            // We only exclude the material assigned to the kit unit IF it is the kit container.
-            // But we must NOT exclude it if it's a valid template item that just happens to be the same material (rare, but possible).
-            // Actually, the main risk is excluding something like "Botiquín" when it's just a general name.
-            // We only skip if the material ID is the exact same one that represents the kit itself.
-        // EXCLUSION LOGIC:
-        // We strictly exclude the MaterialUnit that represents the kit container itself.
-        // We also exclude any other MaterialUnit that is already assigned to a Location of type KIT (busy).
-        // Except if we are doing manualOnly, in which case we show everything but mark busy.
-
-
         // Calculate current stock in the kit correctly
         $currentQty = 0;
         if ($kitLocation->getId()) {
@@ -580,10 +569,19 @@ class KitController extends AbstractController
                 foreach ($stocks as $s) $currentQty += $s->getQuantity();
             } else {
                 // For Technical, count physical units assigned to this location
-                $currentQty = $entityManager->getRepository(MaterialUnit::class)->count([
-                    'material' => $material,
-                    'location' => $kitLocation
-                ]);
+                // EXCLUDE the container unit itself from the count of its own contents
+                $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
+                    ->select('COUNT(u.id)')
+                    ->where('u.material = :material')
+                    ->andWhere('u.location = :location')
+                    ->setParameter('material', $material)
+                    ->setParameter('location', $kitLocation);
+
+                if ($unit->getId()) {
+                    $qb->andWhere('u.id != :containerId')
+                       ->setParameter('containerId', $unit->getId());
+                }
+                $currentQty = (int)$qb->getQuery()->getSingleScalarResult();
             }
         }
 

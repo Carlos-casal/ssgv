@@ -29,8 +29,8 @@ class Location
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     private ?Vehicle $vehicle = null;
 
-    #[ORM\OneToOne(mappedBy: 'kitLocation', targetEntity: MaterialUnit::class)]
-    private ?MaterialUnit $materialUnit = null;
+    #[ORM\OneToMany(mappedBy: 'kitLocation', targetEntity: MaterialUnit::class)]
+    private Collection $materialUnits;
 
     #[ORM\OneToMany(mappedBy: 'location', targetEntity: MaterialStock::class, orphanRemoval: true, cascade: ['persist'])]
     private Collection $stocks;
@@ -43,6 +43,7 @@ class Location
 
     public function __construct()
     {
+        $this->materialUnits = new ArrayCollection();
         $this->stocks = new ArrayCollection();
         $this->units = new ArrayCollection();
         $this->reviews = new ArrayCollection();
@@ -89,24 +90,32 @@ class Location
         return $this;
     }
 
-    public function getMaterialUnit(): ?MaterialUnit
+    /**
+     * @return Collection<int, MaterialUnit>
+     */
+    public function getMaterialUnits(): Collection
     {
-        return $this->materialUnit;
+        return $this->materialUnits;
     }
 
-    public function setMaterialUnit(?MaterialUnit $materialUnit): static
+    public function addMaterialUnit(MaterialUnit $materialUnit): static
     {
-        // unset the owning side of the relation if necessary
-        if ($materialUnit === null && $this->materialUnit !== null) {
-            $this->materialUnit->setKitLocation(null);
-        }
-
-        // set the owning side of the relation if necessary
-        if ($materialUnit !== null && $materialUnit->getKitLocation() !== $this) {
+        if (!$this->materialUnits->contains($materialUnit)) {
+            $this->materialUnits->add($materialUnit);
             $materialUnit->setKitLocation($this);
         }
 
-        $this->materialUnit = $materialUnit;
+        return $this;
+    }
+
+    public function removeMaterialUnit(MaterialUnit $materialUnit): static
+    {
+        if ($this->materialUnits->removeElement($materialUnit)) {
+            // set the owning side to null (unless already changed)
+            if ($materialUnit->getKitLocation() === $this) {
+                $materialUnit->setKitLocation(null);
+            }
+        }
 
         return $this;
     }

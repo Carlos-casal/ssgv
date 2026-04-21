@@ -300,8 +300,8 @@
                                                 </div>
                                                 <div>
                                                     <span class="fw-bold d-block">{{ loc.name }}</span>
-                                                    {% if loc.type == 'KIT' and loc.materialUnit %}
-                                                        <small class="text-muted">ID: {{ loc.materialUnit.alias ?: loc.materialUnit.serialNumber }}</small>
+                                                    {% if loc.type == 'KIT' and loc.materialUnits|length > 0 %}
+                                                        <small class="text-muted">ID: {{ loc.materialUnits.first.alias ?: loc.materialUnits.first.serialNumber }}</small>
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -327,8 +327,8 @@
                                                 </span>
                                             </td>
                                         <td class="text-end pe-4">
-                                            {% if loc.type == 'KIT' and loc.materialUnit %}
-                                                <a href="{{ path('app_kit_inventory', {id: loc.materialUnit.id}) }}" class="btn btn-xs btn-outline-primary">
+                                            {% if loc.type == 'KIT' and loc.materialUnits|length > 0 %}
+                                                <a href="{{ path('app_kit_inventory', {id: loc.materialUnits.first.id}) }}" class="btn btn-xs btn-outline-primary">
                                                     Ver Inventario
                                                 </a>
                                             {% elseif loc.type == 'VEHICULO' and loc.vehicle %}
