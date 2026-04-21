@@ -509,6 +509,7 @@ class MaterialManager
         // Delta 0 doesn't change anything
         if ($delta === 0) return;
 
+        $stock = null;
         $cacheKey = sprintf(
             'stock_%s_%s_%s',
             $material->getId() ?? spl_object_hash($material),

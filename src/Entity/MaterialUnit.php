@@ -78,7 +78,7 @@ class MaterialUnit
     #[ORM\ManyToOne]
     private ?KitTemplate $template = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(targetEntity: Location::class, inversedBy: 'materialUnits')]
     private ?Location $kitLocation = null;
 
     #[ORM\OneToMany(mappedBy: 'materialUnit', targetEntity: MaterialUnitHistory::class, orphanRemoval: true)]
