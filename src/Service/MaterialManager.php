@@ -234,23 +234,8 @@ class MaterialManager
         ?MaterialUnit $unit = null,
         ?MaterialBatch $batch = null
     ): void {
-        // Auto-route specialized materials if origin or destination is Central Warehouse
-        // But ONLY if the other side is NOT a specialized warehouse, to allow transfers between them.
-        $central = $this->getCentralWarehouse();
-        $default = $this->getDefaultLocation($material);
-
-        if ($destination && $destination->getId() === $central->getId() && $default->getId() !== $central->getId()) {
-            // Only auto-route if origin is not already another warehouse
-            if (!$origin || $origin->getType() !== Location::TYPE_WAREHOUSE) {
-                $destination = $default;
-            }
-        }
-        if ($origin && $origin->getId() === $central->getId() && $default->getId() !== $central->getId()) {
-            // Only auto-route if destination is not already another warehouse
-            if (!$destination || $destination->getType() !== Location::TYPE_WAREHOUSE) {
-                $origin = $default;
-            }
-        }
+        // Disabled auto-routing for transfers to ensure the explicitly selected origin/destination
+        // is always respected, especially when moving between kits and warehouses.
 
         $now = new \DateTimeImmutable();
 
