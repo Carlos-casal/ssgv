@@ -44,6 +44,12 @@ class MaterialManager
     {
         if (!$this->entityManager->isOpen()) {
             $this->entityManager = $this->managerRegistry->resetManager();
+            // Refresh repositories to use the new manager
+            $this->materialRepository = $this->entityManager->getRepository(Material::class);
+            $this->unitRepository = $this->entityManager->getRepository(MaterialUnit::class);
+            $this->stockRepository = $this->entityManager->getRepository(MaterialStock::class);
+            $this->movementRepository = $this->entityManager->getRepository(MaterialMovement::class);
+            $this->serviceMaterialRepository = $this->entityManager->getRepository(\App\Entity\ServiceMaterial::class);
         }
         return $this->entityManager;
     }
@@ -513,14 +519,25 @@ class MaterialManager
         if (isset($this->stocksCache[$cacheKey])) {
             $stock = $this->stocksCache[$cacheKey];
         } else {
-            $criteria = [
-                'material' => $material,
-                'location' => $location,
-                'batch' => $batch
-            ];
-            $stock = $this->stockRepository->findOneBy($criteria);
-            if ($stock) {
-                $this->stocksCache[$cacheKey] = $stock;
+            // First look in the location's memory collection to avoid duplication in same request
+            foreach ($location->getStocks() as $s) {
+                if ($s->getMaterial() === $material && $s->getBatch() === $batch) {
+                    $stock = $s;
+                    $this->stocksCache[$cacheKey] = $stock;
+                    break;
+                }
+            }
+
+            if (!$stock) {
+                $criteria = [
+                    'material' => $material,
+                    'location' => $location,
+                    'batch' => $batch
+                ];
+                $stock = $this->stockRepository->findOneBy($criteria);
+                if ($stock) {
+                    $this->stocksCache[$cacheKey] = $stock;
+                }
             }
         }
 
