@@ -824,7 +824,10 @@ class MaterialController extends AbstractController
     #[Route('/{id}/transfer', name: 'app_material_transfer', methods: ['GET', 'POST'])]
     public function transfer(Request $request, Material $material, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(MaterialTransferType::class, null, ['material' => $material]);
+        $originId = $request->query->get('origin_id');
+        $defaultOrigin = $originId ? $entityManager->getRepository(\App\Entity\Location::class)->find($originId) : null;
+
+        $form = $this->createForm(MaterialTransferType::class, ['origin' => $defaultOrigin], ['material' => $material]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -837,7 +840,8 @@ class MaterialController extends AbstractController
                 $data['quantity'],
                 $data['reason'],
                 $data['responsible'],
-                $data['materialUnit'] ?? null
+                $data['materialUnit'] ?? null,
+                $data['batch'] ?? null
             );
 
             $entityManager->flush();
