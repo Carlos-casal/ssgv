@@ -19,13 +19,35 @@ final class Version20260420000000 extends AbstractMigration
 
     public function up(Schema $schema): void
     {
-        // First, consolidate any existing duplicates if they exist
-        // Note: This is a complex operation in SQL that varies by DB.
-        // For simplicity in this migration, we'll try to add the index and it might fail if there are duplicates.
-        // But since the user reported the issue, they likely have duplicates.
+        // Consolidate any existing duplicates before adding the index
+        // We sum quantities of duplicates into one record and delete the others.
+        $this->addSql("
+            CREATE TEMPORARY TABLE stock_duplicates AS
+            SELECT MIN(id) as keep_id, material_id, location_id, batch_id, SUM(quantity) as total_quantity
+            FROM material_stock
+            GROUP BY material_id, location_id, batch_id
+            HAVING COUNT(*) > 1
+        ");
 
-        // Manual consolidation if possible:
-        // (This might be better done in a separate script or just let the index fail if duplicates exist)
+        $this->addSql("
+            UPDATE material_stock ms
+            JOIN stock_duplicates sd ON ms.id = sd.keep_id
+            SET ms.quantity = sd.total_quantity
+        ");
+
+        $this->addSql("
+            DELETE ms FROM material_stock ms
+            JOIN (
+                SELECT ms2.id
+                FROM material_stock ms2
+                JOIN stock_duplicates sd ON ms2.material_id = sd.material_id
+                    AND ms2.location_id <=> sd.location_id
+                    AND ms2.batch_id <=> sd.batch_id
+                WHERE ms2.id != sd.keep_id
+            ) to_delete ON ms.id = to_delete.id
+        ");
+
+        $this->addSql("DROP TEMPORARY TABLE stock_duplicates");
 
         $this->addSql('CREATE UNIQUE INDEX UNIQ_MATERIAL_STOCK_ML_BATCH ON material_stock (material_id, location_id, batch_id)');
     }

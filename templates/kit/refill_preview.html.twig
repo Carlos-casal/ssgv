@@ -102,6 +102,7 @@
 
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     <option value="{{ opt.id }}"
+                                                            data-stock-id="{{ opt.stock_id|default('') }}"
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"

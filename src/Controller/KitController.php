@@ -568,11 +568,6 @@ class KitController extends AbstractController
         // We also exclude any other MaterialUnit that is already assigned to a Location of type KIT (busy).
         // Except if we are doing manualOnly, in which case we show everything but mark busy.
 
-        // Skip the kit container itself by ID (important if it's the same material type)
-        if ($unit->getId() && $material->getId() === $unit->getMaterial()->getId()) {
-            // Further check to see if we are trying to propose the container unit itself
-            // This is handled in the unit loop below, but we can skip the whole material if it's ONLY for the container
-        }
 
         // Calculate current stock in the kit correctly
         $currentQty = 0;
@@ -628,6 +623,7 @@ class KitController extends AbstractController
 
                 $options[] = [
                     'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
+                    'stock_id' => $stock->getId(),
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
                     'busy' => $isBusy,
@@ -910,12 +906,18 @@ class KitController extends AbstractController
                     $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
                     $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
                     $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
+                    $stockToMove = !empty($p['stock_id']) ? $entityManager->getRepository(MaterialStock::class)->find($p['stock_id']) : null;
 
                     $originId = $p['origin_id'] ?? null;
                     $origin = $originId ? $entityManager->getRepository(Location::class)->find($originId) : null;
 
                     if ($unitToMove && $unitToMove->getLocation()) {
                         $origin = $unitToMove->getLocation();
+                    }
+
+                    if ($stockToMove && $stockToMove->getLocation()) {
+                        $origin = $stockToMove->getLocation();
+                        $batch = $stockToMove->getBatch(); // Ensure correct batch from stock
                     }
 
                     if (!$origin) {
