@@ -319,7 +319,7 @@ class KitController extends AbstractController
     #[Route('/new/preview', name: 'app_kit_new_preview', methods: ['GET'])]
     public function newPreview(Request $request, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
-        $centralWarehouse = $materialManager->getCentralWarehouse();
+        $centralWarehouse = $materialManager->getPharmacyWarehouse(); // Force Pharmacy as primary source for kits
         $session = $request->getSession();
         $draft = $session->get('draft_kit');
 
@@ -457,7 +457,7 @@ class KitController extends AbstractController
     #[Route('/{id}/refill/preview', name: 'app_kit_refill_preview', methods: ['GET'])]
     public function refillPreview(MaterialUnit $unit, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
-        $centralWarehouse = $materialManager->getCentralWarehouse();
+        $centralWarehouse = $materialManager->getPharmacyWarehouse(); // Force Pharmacy as primary source for kits
         $template = $unit->getTemplate();
         if (!$template) {
             throw $this->createNotFoundException('Este botiquín no tiene una plantilla asignada.');
@@ -919,7 +919,7 @@ class KitController extends AbstractController
                     }
 
                     if (!$origin) {
-                        $origin = $materialManager->getCentralWarehouse();
+                        $origin = $materialManager->getPharmacyWarehouse();
                     }
 
                     $materialManager->transfer(

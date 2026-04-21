@@ -825,7 +825,16 @@ class MaterialController extends AbstractController
     public function transfer(Request $request, Material $material, MaterialManager $materialManager, EntityManagerInterface $entityManager): Response
     {
         $originId = $request->query->get('origin_id');
-        $defaultOrigin = $originId ? $entityManager->getRepository(\App\Entity\Location::class)->find($originId) : null;
+        $defaultOrigin = null;
+
+        if ($originId) {
+            $defaultOrigin = $entityManager->getRepository(\App\Entity\Location::class)->find($originId);
+        }
+
+        // Fallback to material's default warehouse if no specific origin was requested
+        if (!$defaultOrigin) {
+            $defaultOrigin = $materialManager->getDefaultLocation($material);
+        }
 
         $form = $this->createForm(MaterialTransferType::class, ['origin' => $defaultOrigin], ['material' => $material]);
         $form->handleRequest($request);

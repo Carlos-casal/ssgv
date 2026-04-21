@@ -674,28 +674,6 @@ class MaterialManager
     }
 
     /**
-     * Returns the Pharmacy Warehouse location (Almacén Farmacia).
-     */
-    public function getPharmacyWarehouse(): Location
-    {
-        if (!$this->getEntityManager()->isOpen()) {
-            throw new \RuntimeException("EntityManager is closed. Cannot retrieve Pharmacy Warehouse.");
-        }
-
-        $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
-
-        if (!$warehouse) {
-            $warehouse = new Location();
-            $warehouse->setName('Almacén Farmacia');
-            $warehouse->setType(Location::TYPE_WAREHOUSE);
-            $this->getEntityManager()->persist($warehouse);
-            $this->getEntityManager()->flush();
-        }
-
-        return $warehouse;
-    }
-
-    /**
      * Returns the Central Warehouse location.
      */
     public function getCentralWarehouse(): Location
@@ -707,11 +685,11 @@ class MaterialManager
         $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
 
         if (!$warehouse) {
-            // Priority 1: Check by name if findOneBy type returned wrong one
-            $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
-            
+            // Priority 1: Check for Pharmacy as a better default for this system
+            $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
+
             if (!$warehouse) {
-                // Priority 2: Check by type alone as fallback
+                // Priority 2: Any warehouse
                 $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
             }
 
