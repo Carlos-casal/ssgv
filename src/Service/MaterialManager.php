@@ -25,6 +25,7 @@ class MaterialManager
 {
     private EntityManagerInterface $entityManager;
     private array $recordedMovementsCache = [];
+    private array $stocksCache = [];
 
     public function __construct(
         private MaterialRepository $materialRepository,
@@ -228,13 +229,21 @@ class MaterialManager
         ?MaterialBatch $batch = null
     ): void {
         // Auto-route specialized materials if origin or destination is Central Warehouse
+        // But ONLY if the other side is NOT a specialized warehouse, to allow transfers between them.
         $central = $this->getCentralWarehouse();
         $default = $this->getDefaultLocation($material);
+
         if ($destination && $destination->getId() === $central->getId() && $default->getId() !== $central->getId()) {
-            $destination = $default;
+            // Only auto-route if origin is not already another warehouse
+            if (!$origin || $origin->getType() !== Location::TYPE_WAREHOUSE) {
+                $destination = $default;
+            }
         }
         if ($origin && $origin->getId() === $central->getId() && $default->getId() !== $central->getId()) {
-            $origin = $default;
+            // Only auto-route if destination is not already another warehouse
+            if (!$destination || $destination->getType() !== Location::TYPE_WAREHOUSE) {
+                $origin = $default;
+            }
         }
 
         $now = new \DateTimeImmutable();
@@ -491,13 +500,26 @@ class MaterialManager
 
     public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null): void
     {
-        $criteria = [
-            'material' => $material,
-            'location' => $location,
-            'batch' => $batch
-        ];
+        $cacheKey = sprintf(
+            'stock_%s_%s_%s',
+            $material->getId() ?? spl_object_hash($material),
+            $location->getId() ?? spl_object_hash($location),
+            $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null'
+        );
 
-        $stock = $this->stockRepository->findOneBy($criteria);
+        if (isset($this->stocksCache[$cacheKey])) {
+            $stock = $this->stocksCache[$cacheKey];
+        } else {
+            $criteria = [
+                'material' => $material,
+                'location' => $location,
+                'batch' => $batch
+            ];
+            $stock = $this->stockRepository->findOneBy($criteria);
+            if ($stock) {
+                $this->stocksCache[$cacheKey] = $stock;
+            }
+        }
 
         if (!$stock) {
             $stock = new MaterialStock();
@@ -511,8 +533,10 @@ class MaterialManager
             if ($batch) {
                 $batch->addStock($stock);
             }
+            $material->addStock($stock);
 
             $this->getEntityManager()->persist($stock);
+            $this->stocksCache[$cacheKey] = $stock;
         }
 
         $newQuantity = $stock->getQuantity() + $delta;
@@ -520,6 +544,14 @@ class MaterialManager
             // Eliminar stock si queda a 0 o negativo en ubicaciones no-almacén (como botiquines)
             $this->getEntityManager()->remove($stock);
             $stock->setQuantity(0);
+
+            // Clean up collections for in-memory consistency and to avoid duplicates in same request
+            $location->removeStock($stock);
+            if ($batch) {
+                $batch->removeStock($stock);
+            }
+            $material->removeStock($stock);
+            unset($this->stocksCache[$cacheKey]);
         } else {
             $stock->setQuantity($newQuantity);
         }
