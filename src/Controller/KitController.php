@@ -993,7 +993,7 @@ class KitController extends AbstractController
         if (!$location) {
             $location = new Location();
             $location->setType(Location::TYPE_KIT);
-            $location->setMaterialUnit($unit);
+            $location->addMaterialUnit($unit);
             $unit->setKitLocation($location);
             $entityManager->persist($location);
         }
