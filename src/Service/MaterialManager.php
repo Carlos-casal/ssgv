@@ -134,12 +134,6 @@ class MaterialManager
     {
         if (!$location) {
             $location = $this->getDefaultLocation($material);
-        } else {
-            $central = $this->getCentralWarehouse();
-            $default = $this->getDefaultLocation($material);
-            if ($location->getId() === $central->getId() && $default->getId() !== $central->getId()) {
-                $location = $default;
-            }
         }
 
         if ($quantity < 0 && !$batch && $material->getNature() === Material::NATURE_CONSUMABLE) {
@@ -517,10 +511,8 @@ class MaterialManager
     {
         $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Central']);
         if (!$warehouse) {
-            $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['name' => 'Almacén Farmacia']);
-            if (!$warehouse) {
-                $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
-            }
+            $warehouse = $this->getEntityManager()->getRepository(Location::class)->findOneBy(['type' => Location::TYPE_WAREHOUSE]);
+
             if (!$warehouse) {
                 $warehouse = new Location();
                 $warehouse->setName('Almacén Central');

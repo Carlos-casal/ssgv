@@ -72,9 +72,10 @@ export default class extends Controller {
                 const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
                 const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
                 const locIdAttr = opt.locationId ? `data-location-id="${opt.locationId}"` : '';
+                const stockIdAttr = opt.stock_id ? `data-stock-id="${opt.stock_id}"` : '';
                 const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ` (OCUPADO: ${opt.locationName})` : '');
 
-                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${locIdAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
+                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${locIdAttr} ${stockIdAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
             });
         }
         html += `</select>`;

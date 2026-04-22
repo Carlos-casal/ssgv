@@ -919,7 +919,7 @@ class KitController extends AbstractController
                     }
 
                     if (!$origin) {
-                        $origin = $materialManager->getPharmacyWarehouse();
+                        $origin = $materialManager->getDefaultLocation($material);
                     }
 
                     $materialManager->transfer(
