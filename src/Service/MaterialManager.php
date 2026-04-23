@@ -415,7 +415,7 @@ class MaterialManager
 
         $newQuantity = $stock->getQuantity() + $delta;
         if ($newQuantity < 0) {
-            throw new \RuntimeException(sprintf("Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s'. Disponible: %d, Solicitado: %d", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), $stock->getQuantity(), abs($delta)));
+            throw new \RuntimeException(sprintf("Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s' (ID: %s). Disponible: %d, Solicitado: %d", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), $location->getId() ?: 'N/A', $stock->getQuantity(), abs($delta)));
         }
 
         if ($newQuantity == 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {

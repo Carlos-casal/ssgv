@@ -101,15 +101,30 @@
 
 
                                                 {% for opt in warehouseOptions[p.material.id] %}
+                                                    {% set isSelected = false %}
+                                                    {% if p.material.nature == 'CONSUMIBLE' %}
+                                                        {% if p.stock_id is defined and opt.stock_id|default(null) == p.stock_id %}
+                                                            {% set isSelected = true %}
+                                                        {% elseif p.stock_id is not defined and opt.selected|default(false) %}
+                                                            {% set isSelected = true %}
+                                                        {% endif %}
+                                                    {% else %}
+                                                        {% if p.unit_id is defined and opt.id == p.unit_id %}
+                                                            {% set isSelected = true %}
+                                                        {% elseif p.unit_id is not defined and opt.selected|default(false) %}
+                                                            {% set isSelected = true %}
+                                                        {% endif %}
+                                                    {% endif %}
+
                                                     <option value="{{ opt.id }}"
-                                                            data-stock-id="{{ opt.stock_id|default('') }}"
+                                                            data-batch-id="{{ opt.batch_id|default('') }}"
                                                             data-available="{{ opt.available }}"
                                                             data-busy="{{ opt.busy|default(false) ? 'true' : 'false' }}"
                                                             data-location-name="{{ opt.locationName|default('') }}"
                                                             data-location-id="{{ opt.locationId|default('') }}"
                                                             class="{{ opt.busy|default(false) ? 'text-red-600 font-bold' : '' }}"
                                                             style="{{ opt.busy|default(false) ? 'color: #dc2626 !important; font-weight: bold;' : '' }}"
-                                                            {{ opt.selected|default(false) ? 'selected' : '' }}>
+                                                            {{ isSelected ? 'selected' : '' }}>
                                                         {{ opt.label }} 
                                                         {% if p.material.nature == 'CONSUMIBLE' %}(Disp: {{ opt.available }}){% endif %}
                                                         {% if opt.busy|default(false) %} (OCUPADO: {{ opt.locationName }}){% endif %}

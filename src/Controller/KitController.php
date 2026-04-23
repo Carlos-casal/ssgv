@@ -620,8 +620,8 @@ class KitController extends AbstractController
                 }
 
                 $options[] = [
-                    'id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
-                    'stock_id' => $stock->getId(),
+                    'id' => $stock->getId(),
+                    'batch_id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
                     'busy' => $isBusy,
@@ -646,6 +646,7 @@ class KitController extends AbstractController
                         'quantity' => $take,
                         'origin' => $stock->getLocation(),
                         'batch' => $stock->getBatch(),
+                        'stock_id' => $stock->getId(),
                         'unit' => null
                     ];
                     $remainingNeeded -= $take;
@@ -725,7 +726,8 @@ class KitController extends AbstractController
                         'quantity' => 1,
                         'origin' => $warehouseUnits[$i]->getLocation() ?: $centralWarehouse,
                         'batch' => null,
-                        'unit' => $warehouseUnits[$i]
+                        'unit' => $warehouseUnits[$i],
+                        'unit_id' => $warehouseUnits[$i]->getId()
                     ];
                 }
 
