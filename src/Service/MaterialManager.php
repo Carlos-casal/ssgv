@@ -414,7 +414,15 @@ class MaterialManager
 
         if (!$stock) {
             if ($delta < 0) {
-                 throw new \RuntimeException(sprintf("No existe registro de stock para el material '%s' (Lote: %s) en la ubicación '%s' para realizar la resta de %d unidades.", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), abs($delta)));
+                 throw new \RuntimeException(sprintf("No existe registro de stock para el material '%s' (Lote: %s) en la ubicación '%s' (ID: %s) para realizar la resta de %d unidades. Heuristic search failed. (MaterialID: %d, BatchID: %s)",
+                    $material->getName(),
+                    $batch ? $batch->getBatchNumber() : 'N/A',
+                    $location->getName(),
+                    $location->getId() ?: 'N/A',
+                    abs($delta),
+                    $material->getId(),
+                    $batch ? $batch->getId() : 'NULL'
+                ));
             }
             $stock = new MaterialStock();
             $stock->setMaterial($material);
