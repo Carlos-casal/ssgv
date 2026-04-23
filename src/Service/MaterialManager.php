@@ -246,11 +246,17 @@ class MaterialManager
                 }
             }
         } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && ($origin || $stock)) {
-            $remainingToSubtract = $quantity;
-
             if ($stock) {
                 $origin = $stock->getLocation();
                 $batch = $stock->getBatch();
+
+                $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
+                if ($destination) {
+                    $this->updateStockWithBatch($material, $destination, $quantity, $batch);
+                }
+
+                $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $batch, $now, $destination === null);
+                return;
             }
 
             if ($batch) {
@@ -263,6 +269,7 @@ class MaterialManager
                 return;
             }
 
+            $remainingToSubtract = $quantity;
             $batches = $this->getEntityManager()->getRepository(MaterialBatch::class)->findBy(
                 ['material' => $material],
                 ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
@@ -380,26 +387,28 @@ class MaterialManager
         $this->getEntityManager()->persist($movement);
     }
 
-    public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null): void
+    public function updateStockWithBatch(Material $material, Location $location, int $delta, ?\App\Entity\MaterialBatch $batch = null, ?MaterialStock $stock = null): void
     {
         if ($delta === 0) return;
-        $stock = null;
+
         $cacheKey = sprintf('stock_%s_%s_%s', $material->getId() ?? spl_object_hash($material), $location->getId() ?? spl_object_hash($location), $batch ? ($batch->getId() ?? spl_object_hash($batch)) : 'null');
 
-        if (isset($this->stocksCache[$cacheKey])) {
-            $stock = $this->stocksCache[$cacheKey];
-        } else {
-            foreach ($location->getStocks() as $s) {
-                if ($s->getMaterial() === $material && $s->getBatch() === $batch) {
-                    $stock = $s;
-                    $this->stocksCache[$cacheKey] = $stock;
-                    break;
+        if (!$stock) {
+            if (isset($this->stocksCache[$cacheKey])) {
+                $stock = $this->stocksCache[$cacheKey];
+            } else {
+                foreach ($location->getStocks() as $s) {
+                    if ($s->getMaterial() === $material && $s->getBatch() === $batch) {
+                        $stock = $s;
+                        $this->stocksCache[$cacheKey] = $stock;
+                        break;
+                    }
                 }
-            }
-            if (!$stock) {
-                $criteria = ['material' => $material, 'location' => $location, 'batch' => $batch];
-                $stock = $this->stockRepository->findOneBy($criteria);
-                if ($stock) { $this->stocksCache[$cacheKey] = $stock; }
+                if (!$stock) {
+                    $criteria = ['material' => $material, 'location' => $location, 'batch' => $batch];
+                    $stock = $this->stockRepository->findOneBy($criteria);
+                    if ($stock) { $this->stocksCache[$cacheKey] = $stock; }
+                }
             }
         }
 
