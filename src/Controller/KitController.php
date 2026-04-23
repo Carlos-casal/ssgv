@@ -902,22 +902,29 @@ class KitController extends AbstractController
             $entityManager->wrapInTransaction(function() use ($proposals, $entityManager, $materialManager, $kitLocation, $unit) {
                 foreach ($proposals as $p) {
                     $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
+                    if (!$material) continue;
+
                     $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
                     $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
                     $stockToMove = !empty($p['stock_id']) ? $entityManager->getRepository(MaterialStock::class)->find($p['stock_id']) : null;
 
-                    $originId = $p['origin_id'] ?? null;
-                    $origin = $originId ? $entityManager->getRepository(Location::class)->find($originId) : null;
-
+                    // 1. Prioritize location from the specific unit/stock being moved
+                    $origin = null;
                     if ($unitToMove && $unitToMove->getLocation()) {
                         $origin = $unitToMove->getLocation();
-                    }
-
-                    if ($stockToMove && $stockToMove->getLocation()) {
+                    } elseif ($stockToMove && $stockToMove->getLocation()) {
                         $origin = $stockToMove->getLocation();
-                        $batch = $stockToMove->getBatch(); // Ensure correct batch from stock
+                        if ($stockToMove->getBatch()) {
+                            $batch = $stockToMove->getBatch();
+                        }
                     }
 
+                    // 2. Fallback to explicitly provided origin_id from frontend
+                    if (!$origin && !empty($p['origin_id'])) {
+                        $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
+                    }
+
+                    // 3. Last resort: Default warehouse for the material category
                     if (!$origin) {
                         $origin = $materialManager->getDefaultLocation($material);
                     }
