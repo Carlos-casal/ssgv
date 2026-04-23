@@ -214,9 +214,10 @@ export default class extends Controller {
             const identifierSelect = row.querySelector('.identifier-select');
             const quantity = parseInt(row.querySelector('.quantity-input').value);
 
-            if (!materialId || !identifierSelect || !identifierSelect.value) return;
+            if (!materialId || !identifierSelect || !identifierSelect.value || identifierSelect.value === 'NONE') return;
 
             const selectedOption = identifierSelect.options[identifierSelect.selectedIndex];
+            if (!selectedOption || !selectedOption.value) return;
             const isBusy = selectedOption.dataset.busy === 'true';
 
             if (isBusy) {

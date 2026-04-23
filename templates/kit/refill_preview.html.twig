@@ -103,7 +103,7 @@
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     {% set isSelected = false %}
                                                     {% if p.material.nature == 'CONSUMIBLE' %}
-                                                        {% if p.stock_id is defined and opt.stock_id|default(null) == p.stock_id %}
+                                                        {% if p.stock_id is defined and opt.id == p.stock_id %}
                                                             {% set isSelected = true %}
                                                         {% elseif p.stock_id is not defined and opt.selected|default(false) %}
                                                             {% set isSelected = true %}
