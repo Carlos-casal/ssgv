@@ -276,7 +276,7 @@ class MaterialManagerTest extends TestCase
 
         // Global stock should remain unchanged
         $this->assertEquals(10, $material->getStock());
-        $this->assertEquals(2, $movementPersists, "Should persist two movement records for transfer (Withdrawal and Entry)");
+        $this->assertEquals(1, $movementPersists, "Should persist exactly one atomic movement record for transfer");
     }
 
     public function testTransferConsolidation(): void

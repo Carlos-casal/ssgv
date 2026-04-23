@@ -72,10 +72,10 @@ export default class extends Controller {
                 const busyAttr = opt.busy ? 'data-busy="true"' : 'data-busy="false"';
                 const locAttr = opt.locationName ? `data-location-name="${opt.locationName}"` : '';
                 const locIdAttr = opt.locationId ? `data-location-id="${opt.locationId}"` : '';
-                const stockIdAttr = opt.stock_id ? `data-stock-id="${opt.stock_id}"` : '';
+                const batchIdAttr = opt.batch_id ? `data-batch-id="${opt.batch_id}"` : '';
                 const labelSuffix = nature === 'CONSUMIBLE' ? `(Disp: ${opt.available})` : (opt.busy ? ` (OCUPADO: ${opt.locationName})` : '');
 
-                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${locIdAttr} ${stockIdAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
+                html += `<option value="${opt.id}" data-available="${opt.available}" ${busyAttr} ${locAttr} ${locIdAttr} ${batchIdAttr} ${style}>${opt.label} ${labelSuffix}</option>`;
             });
         }
         html += `</select>`;
@@ -227,13 +227,14 @@ export default class extends Controller {
                 });
             }
 
+            const selectedOption = identifierSelect.options[identifierSelect.selectedIndex];
             const proposal = {
                 material_id: materialId,
-                origin_id: identifierSelect.options[identifierSelect.selectedIndex].dataset.locationId || this.originIdValue,
-                stock_id: nature === 'CONSUMIBLE' ? (identifierSelect.options[identifierSelect.selectedIndex].dataset.stockId || null) : null,
+                origin_id: selectedOption.dataset.locationId || this.originIdValue,
+                stock_id: nature === 'CONSUMIBLE' ? selectedOption.value : null,
                 quantity: quantity,
-                batch_id: nature === 'CONSUMIBLE' ? (identifierSelect.value === 'NO_BATCH' ? null : identifierSelect.value) : null,
-                unit_id: nature === 'EQUIPO_TECNICO' ? identifierSelect.value : null
+                batch_id: nature === 'CONSUMIBLE' ? (selectedOption.dataset.batchId === 'NO_BATCH' ? null : selectedOption.dataset.batchId) : null,
+                unit_id: nature === 'EQUIPO_TECNICO' ? selectedOption.value : null
             };
             proposals.push(proposal);
         });
