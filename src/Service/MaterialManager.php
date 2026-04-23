@@ -397,8 +397,15 @@ class MaterialManager
             if (isset($this->stocksCache[$cacheKey])) {
                 $stock = $this->stocksCache[$cacheKey];
             } else {
+                // Robust comparison using IDs to handle Doctrine Proxies and different object identities
+                $targetMatId = $material->getId();
+                $targetBatchId = $batch ? $batch->getId() : null;
+
                 foreach ($location->getStocks() as $s) {
-                    if ($s->getMaterial() === $material && $s->getBatch() === $batch) {
+                    $sMatId = $s->getMaterial() ? $s->getMaterial()->getId() : null;
+                    $sBatchId = $s->getBatch() ? $s->getBatch()->getId() : null;
+
+                    if ($sMatId === $targetMatId && $sBatchId === $targetBatchId) {
                         $stock = $s;
                         $this->stocksCache[$cacheKey] = $stock;
                         break;
@@ -438,7 +445,17 @@ class MaterialManager
 
         $newQuantity = $stock->getQuantity() + $delta;
         if ($newQuantity < 0) {
-            throw new \RuntimeException(sprintf("Stock insuficiente para el material '%s' (Lote: %s) en la ubicación '%s' (ID: %s). Disponible: %d, Solicitado: %d", $material->getName(), $batch ? $batch->getBatchNumber() : 'N/A', $location->getName(), $location->getId() ?: 'N/A', $stock->getQuantity(), abs($delta)));
+            throw new \RuntimeException(sprintf(
+                "Stock insuficiente para el material '%s' (ID:%d) (LoteID:%s) en la ubicación '%s' (ID:%s). Disponible:%d, Solicitado:%d. (StockObject: %s)",
+                $material->getName(),
+                $material->getId(),
+                $batch ? $batch->getId() : 'NULL',
+                $location->getName(),
+                $location->getId() ?: 'N/A',
+                $stock->getQuantity(),
+                abs($delta),
+                $stock ? 'YES' : 'NO'
+            ));
         }
 
         if ($newQuantity == 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {

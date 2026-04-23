@@ -218,8 +218,8 @@ export default class extends Controller {
 
             const selectedOption = identifierSelect.options[identifierSelect.selectedIndex];
             if (!selectedOption || !selectedOption.value) return;
-            const isBusy = selectedOption.dataset.busy === 'true';
 
+            const isBusy = selectedOption.dataset.busy === 'true';
             if (isBusy) {
                 hasBusy = true;
                 busyDetails.push({
@@ -228,13 +228,12 @@ export default class extends Controller {
                 });
             }
 
-            const selectedOption = identifierSelect.options[identifierSelect.selectedIndex];
             const proposal = {
                 material_id: materialId,
                 origin_id: selectedOption.dataset.locationId || this.originIdValue,
                 stock_id: nature === 'CONSUMIBLE' ? selectedOption.value : null,
                 quantity: quantity,
-                batch_id: nature === 'CONSUMIBLE' ? (selectedOption.dataset.batchId === 'NO_BATCH' ? null : selectedOption.dataset.batchId) : null,
+                batch_id: selectedOption.dataset.batchId && selectedOption.dataset.batchId !== 'NO_BATCH' ? selectedOption.dataset.batchId : null,
                 unit_id: nature === 'EQUIPO_TECNICO' ? selectedOption.value : null
             };
             proposals.push(proposal);

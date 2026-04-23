@@ -890,30 +890,41 @@ class KitController extends AbstractController
         }
 
         try {
-            $entityManager->wrapInTransaction(function() use ($proposals, $entityManager, $materialManager, $kitLocation, $unit) {
+            $entityManager->wrapInTransaction(function() use ($proposals, $entityManager, $materialManager, $kitLocation, $unit, $proposalsData) {
                 foreach ($proposals as $p) {
-                    $material = $entityManager->getRepository(Material::class)->find($p['material_id']);
+                    $materialId = (int)($p['material_id'] ?? 0);
+                    if (!$materialId) continue;
+
+                    $material = $entityManager->getRepository(Material::class)->find($materialId);
                     if (!$material) continue;
 
-                    $batch = !empty($p['batch_id']) ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($p['batch_id']) : null;
-                    $unitToMove = !empty($p['unit_id']) ? $entityManager->getRepository(MaterialUnit::class)->find($p['unit_id']) : null;
-                    $stockToMove = !empty($p['stock_id']) ? $entityManager->getRepository(MaterialStock::class)->find($p['stock_id']) : null;
+                    // Use integer casting for IDs to ensure exact matching in repository
+                    $batchId = !empty($p['batch_id']) && is_numeric($p['batch_id']) ? (int)$p['batch_id'] : null;
+                    $unitId = !empty($p['unit_id']) && is_numeric($p['unit_id']) ? (int)$p['unit_id'] : null;
+                    $stockId = !empty($p['stock_id']) && is_numeric($p['stock_id']) ? (int)$p['stock_id'] : null;
 
-                    // 1. Prioritize location from the specific unit/stock being moved
+                    $batch = $batchId ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($batchId) : null;
+                    $unitToMove = $unitId ? $entityManager->getRepository(MaterialUnit::class)->find($unitId) : null;
+                    $stockToMove = $stockId ? $entityManager->getRepository(MaterialStock::class)->find($stockId) : null;
+
+                    // 1. Resolve Origin and Batch with Absolute Priority
                     $origin = null;
-                    if ($unitToMove && $unitToMove->getLocation()) {
-                        $origin = $unitToMove->getLocation();
-                    } elseif ($stockToMove && $stockToMove->getLocation()) {
+
+                    if ($stockToMove) {
+                        // Consumable from specific record
                         $origin = $stockToMove->getLocation();
-                        $batch = $stockToMove->getBatch(); // Ensure correct batch from stock
+                        $batch = $stockToMove->getBatch();
+                    } elseif ($unitToMove) {
+                        // Technical equipment from specific unit
+                        $origin = $unitToMove->getLocation();
                     }
 
-                    // 2. Fallback to explicitly provided origin_id from frontend ONLY if no stock/unit resolved
-                    if (!$origin && !empty($p['origin_id'])) {
-                        $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
+                    // 2. Resolve Fallback Origin ONLY if no specific record found
+                    if (!$origin && !empty($p['origin_id']) && is_numeric($p['origin_id'])) {
+                        $origin = $entityManager->getRepository(Location::class)->find((int)$p['origin_id']);
                     }
 
-                    // 3. Last resort: Default warehouse
+                    // 3. Absolute Last resort: Default warehouse
                     if (!$origin) {
                         $origin = $materialManager->getDefaultLocation($material);
                     }
@@ -934,6 +945,10 @@ class KitController extends AbstractController
             });
         } catch (\Exception $e) {
             $this->addFlash('error', 'Error al procesar el traslado: ' . $e->getMessage());
+            // Log the payload for debugging if it's a critical logic error
+            if (str_contains($e->getMessage(), 'Heuristic') || str_contains($e->getMessage(), 'insuficiente') || str_contains($e->getMessage(), 'registro de stock')) {
+                $this->addFlash('info', 'DEBUG DATA (Proposals Payload): ' . $proposalsData);
+            }
             return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
         }
 
