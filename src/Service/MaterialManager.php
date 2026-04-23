@@ -63,6 +63,7 @@ class MaterialManager
             return false;
         }
 
+        // Check for overlapping services that have this unit assigned
         $qb = $this->serviceMaterialRepository->createQueryBuilder('sm')
             ->join('sm.service', 's')
             ->where('sm.materialUnit = :unit')
@@ -232,11 +233,7 @@ class MaterialManager
                     $unit->setLocation(null);
                 }
 
-                if ($currentLocation && $destination) {
-                    $this->recordAtomicTransfer($material, $quantity, $currentLocation, $destination, $responsible, $batch, $now, $unit);
-                } else {
-                    $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $batch, $now, $destination === null, $unit);
-                }
+                $this->recordMovement($material, $quantity, $transferReason, $currentLocation, $destination, $responsible, $batch, $now, $destination === null, $unit);
             } else {
                 if ($destination) {
                     $unit->setLocation($destination);
@@ -256,11 +253,7 @@ class MaterialManager
                     $this->updateStockWithBatch($material, $destination, $quantity, $batch);
                 }
 
-                if ($destination) {
-                    $this->recordAtomicTransfer($material, $quantity, $origin, $destination, $responsible, $batch, $now, null);
-                } else {
-                    $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $batch, $now, true);
-                }
+                $this->recordMovement($material, $quantity, $transferReason, $origin, $destination, $responsible, $batch, $now, $destination === null);
                 return;
             }
 
@@ -284,11 +277,7 @@ class MaterialManager
                         $this->updateStockWithBatch($material, $destination, $toSubtract, $b);
                     }
 
-                    if ($origin && $destination) {
-                        $this->recordAtomicTransfer($material, $toSubtract, $origin, $destination, $responsible, $b, $now, null);
-                    } else {
-                        $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $b, $now, $destination === null);
-                    }
+                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $b, $now, $destination === null);
 
                     $remainingToSubtract -= $toSubtract;
                     if ($remainingToSubtract <= 0) break;
@@ -300,11 +289,7 @@ class MaterialManager
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null);
                 }
-                if ($origin && $destination) {
-                    $this->recordAtomicTransfer($material, $remainingToSubtract, $origin, $destination, $responsible, null, $now, null);
-                } else {
-                    $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, null, $now, $destination === null);
-                }
+                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, null, $now, $destination === null);
             }
         } else {
             if ($origin) {
@@ -315,17 +300,8 @@ class MaterialManager
             }
 
             $finalReason = $origin ? $transferReason : $entryReason;
-            if ($origin && $destination) {
-                $this->recordAtomicTransfer($material, $quantity, $origin, $destination, $responsible, $batch, $now, null);
-            } else {
-                $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
-            }
+            $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
         }
-    }
-
-    private function recordAtomicTransfer(Material $material, int $quantity, Location $origin, Location $destination, ?Volunteer $responsible, ?MaterialBatch $batch, \DateTimeImmutable $now, ?MaterialUnit $unit): void {
-        $this->recordMovement($material, $quantity, sprintf("Salida por Traspaso a %s", $destination->getName()), $origin, null, $responsible, $batch, $now, true, $unit);
-        $this->recordMovement($material, $quantity, sprintf("Entrada por Traspaso desde %s", $origin->getName()), null, $destination, $responsible, $batch, $now, false, $unit);
     }
 
     private function recordMovement(Material $material, int $quantity, string $reason, ?Location $origin, ?Location $destination, ?Volunteer $responsible, ?MaterialBatch $batch = null, ?\DateTimeImmutable $createdAt = null, bool $isWithdrawal = false, ?MaterialUnit $unit = null): void {
