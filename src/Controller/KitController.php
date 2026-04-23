@@ -613,19 +613,14 @@ class KitController extends AbstractController
                 // Skip if it is ALREADY in the current kit (avoid duplicates)
                 if ($stock->getLocation() === $kitLocation) continue;
 
-                $shouldSelect = false;
-                if (!$isBusy && !$foundAutoSelect && $stock->getQuantity() > 0) {
-                    $shouldSelect = true;
-                    $foundAutoSelect = true;
-                }
-
+                // For consumables, the option ID MUST be the MaterialStock ID to ensure uniqueness across locations
                 $options[] = [
                     'id' => $stock->getId(),
                     'batch_id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
                     'available' => $stock->getQuantity(),
                     'busy' => $isBusy,
-                    'selected' => $shouldSelect,
+                    'selected' => false, // Will be overridden by proposal matching in Twig
                     'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar',
                     'locationId' => $stock->getLocation() ? $stock->getLocation()->getId() : null
                 ];
@@ -696,18 +691,12 @@ class KitController extends AbstractController
                 $isBusy = ($u->getLocation() === null || $u->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
                 $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
 
-                $shouldSelect = false;
-                if (!$isBusy && !$foundAutoSelect) {
-                    $shouldSelect = true;
-                    $foundAutoSelect = true;
-                }
-
                 $options[] = [
                     'id' => $u->getId(),
                     'label' => $label,
                     'available' => 1,
                     'busy' => $isBusy,
-                    'selected' => $shouldSelect,
+                    'selected' => false, // Will be overridden by proposal matching in Twig
                     'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar',
                     'locationId' => $u->getLocation() ? $u->getLocation()->getId() : null
                 ];
@@ -916,17 +905,15 @@ class KitController extends AbstractController
                         $origin = $unitToMove->getLocation();
                     } elseif ($stockToMove && $stockToMove->getLocation()) {
                         $origin = $stockToMove->getLocation();
-                        if ($stockToMove->getBatch()) {
-                            $batch = $stockToMove->getBatch();
-                        }
+                        $batch = $stockToMove->getBatch(); // Ensure correct batch from stock
                     }
 
-                    // 2. Fallback to explicitly provided origin_id from frontend
+                    // 2. Fallback to explicitly provided origin_id from frontend ONLY if no stock/unit resolved
                     if (!$origin && !empty($p['origin_id'])) {
                         $origin = $entityManager->getRepository(Location::class)->find($p['origin_id']);
                     }
 
-                    // 3. Last resort: Default warehouse for the material category
+                    // 3. Last resort: Default warehouse
                     if (!$origin) {
                         $origin = $materialManager->getDefaultLocation($material);
                     }

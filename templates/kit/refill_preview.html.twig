@@ -103,15 +103,23 @@
                                                 {% for opt in warehouseOptions[p.material.id] %}
                                                     {% set isSelected = false %}
                                                     {% if p.material.nature == 'CONSUMIBLE' %}
-                                                        {% if p.stock_id is defined and opt.id == p.stock_id %}
+                                                        {# Priority 1: Direct stock ID match from proposal #}
+                                                        {% if p.stock_id is defined and p.stock_id and opt.id == p.stock_id %}
                                                             {% set isSelected = true %}
-                                                        {% elseif p.stock_id is not defined and opt.selected|default(false) %}
-                                                            {% set isSelected = true %}
+                                                        {# Priority 2: Origin match if stock ID missing (for manual additions or legacy) #}
+                                                        {% elseif isSelected == false and p.origin is defined and p.origin and opt.locationId == p.origin.id %}
+                                                            {% if p.batch is defined and p.batch and opt.batch_id == p.batch.id %}
+                                                                {% set isSelected = true %}
+                                                            {% elseif (p.batch is not defined or not p.batch) and opt.batch_id == 'NO_BATCH' %}
+                                                                {% set isSelected = true %}
+                                                            {% endif %}
                                                         {% endif %}
                                                     {% else %}
-                                                        {% if p.unit_id is defined and opt.id == p.unit_id %}
+                                                        {# Priority 1: Direct unit ID match #}
+                                                        {% if p.unit_id is defined and p.unit_id and opt.id == p.unit_id %}
                                                             {% set isSelected = true %}
-                                                        {% elseif p.unit_id is not defined and opt.selected|default(false) %}
+                                                        {# Priority 2: Origin match for technical #}
+                                                        {% elseif isSelected == false and p.origin is defined and p.origin and opt.locationId == p.origin.id %}
                                                             {% set isSelected = true %}
                                                         {% endif %}
                                                     {% endif %}
