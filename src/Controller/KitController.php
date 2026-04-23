@@ -939,7 +939,8 @@ class KitController extends AbstractController
                         'Reposición de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                         null,
                         $unitToMove,
-                        $batch
+                        $batch,
+                        $stockToMove
                     );
                 }
                 $entityManager->flush();

@@ -141,6 +141,59 @@ class KitTransferTest extends TestCase
         $this->assertStringContainsString('Traspaso', $movements[0]->getReason());
     }
 
+    public function testTransferWithExplicitStock(): void
+    {
+        // 1. Setup
+        $material = new Material();
+        $material->setName('M1');
+        $material->setNature(Material::NATURE_CONSUMABLE);
+
+        $locA = new Location();
+        $locA->setName('Loc A');
+
+        $stock = new MaterialStock();
+        $stock->setMaterial($material);
+        $stock->setLocation($locA);
+        $stock->setQuantity(10);
+        $locA->addStock($stock);
+
+        $locB = new Location();
+        $locB->setName('Loc B');
+
+        // 2. Mocks
+        $this->stockRepository->method('findOneBy')->willReturnCallback(function($criteria) use ($locA, $stock, $locB) {
+            if ($criteria['location'] === $locA) return $stock;
+            return null;
+        });
+
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)->disableOriginalConstructor()->getMock();
+        $query->method('getResult')->willReturn([]);
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('where')->willReturnSelf(); $qb->method('andWhere')->willReturnSelf(); $qb->method('setParameter')->willReturnSelf(); $qb->method('getQuery')->willReturn($query);
+        $this->movementRepository->method('createQueryBuilder')->willReturn($qb);
+
+        // 3. Action: Transfer using EXPLICIT stock object
+        // We pass NULL for origin to prove it resolves from $stock
+        $this->materialManager->transfer(
+            $material,
+            null,
+            $locB,
+            4,
+            'Reason',
+            null,
+            null,
+            null,
+            $stock
+        );
+
+        // 4. Assertions
+        $this->assertEquals(6, $stock->getQuantity());
+        $stockB = null;
+        foreach ($locB->getStocks() as $s) { $stockB = $s; break; }
+        $this->assertNotNull($stockB);
+        $this->assertEquals(4, $stockB->getQuantity());
+    }
+
     public function testTransferBetweenKitsTechnical(): void
     {
         // 1. Setup Material

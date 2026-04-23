@@ -208,7 +208,8 @@ class MaterialManager
         string $reason,
         ?Volunteer $responsible,
         ?MaterialUnit $unit = null,
-        ?MaterialBatch $batch = null
+        ?MaterialBatch $batch = null,
+        ?MaterialStock $stock = null
     ): void {
         $now = new \DateTimeImmutable();
         $entryReason = $destination ? sprintf('Entrada: Registro Inicial / %s', $destination->getName()) : 'Entrada: Registro Inicial';
@@ -244,8 +245,13 @@ class MaterialManager
                     $this->recordMovement($material, $quantity, $entryReason, null, $destination, $responsible, $batch, $now, false, $unit);
                 }
             }
-        } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && $origin) {
+        } elseif ($material->getNature() === Material::NATURE_CONSUMABLE && ($origin || $stock)) {
             $remainingToSubtract = $quantity;
+
+            if ($stock) {
+                $origin = $stock->getLocation();
+                $batch = $stock->getBatch();
+            }
 
             if ($batch) {
                 $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
