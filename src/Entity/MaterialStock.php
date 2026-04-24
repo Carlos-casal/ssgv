@@ -6,6 +6,7 @@ use App\Repository\MaterialStockRepository;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: MaterialStockRepository::class)]
+#[ORM\UniqueConstraint(name: 'unique_stock', columns: ['material_id', 'location_id', 'batch_id'])]
 class MaterialStock
 {
     #[ORM\Id]

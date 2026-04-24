@@ -773,7 +773,8 @@ class KitController extends AbstractController
                         'Devolución por eliminación de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                         null,
                         null,
-                        $stock->getBatch()
+                        $stock->getBatch(),
+                        $stock
                     );
                 }
             }
@@ -895,45 +896,57 @@ class KitController extends AbstractController
                     $materialId = (int)($p['material_id'] ?? 0);
                     if (!$materialId) continue;
 
+                    $quantity = (int)($p['quantity'] ?? 0);
+                    if ($quantity <= 0) {
+                        throw new \InvalidArgumentException('La cantidad a trasladar debe ser mayor que cero.');
+                    }
+
                     $material = $entityManager->getRepository(Material::class)->find($materialId);
                     if (!$material) continue;
 
-                    // Use integer casting for IDs to ensure exact matching in repository
-                    $batchId = !empty($p['batch_id']) && is_numeric($p['batch_id']) ? (int)$p['batch_id'] : null;
                     $unitId = !empty($p['unit_id']) && is_numeric($p['unit_id']) ? (int)$p['unit_id'] : null;
                     $stockId = !empty($p['stock_id']) && is_numeric($p['stock_id']) ? (int)$p['stock_id'] : null;
 
-                    $batch = $batchId ? $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($batchId) : null;
-                    $unitToMove = $unitId ? $entityManager->getRepository(MaterialUnit::class)->find($unitId) : null;
-                    $stockToMove = $stockId ? $entityManager->getRepository(MaterialStock::class)->find($stockId) : null;
-
-                    // 1. Resolve Origin and Batch with Absolute Priority
+                    $unitToMove = null;
+                    $stockToMove = null;
                     $origin = null;
+                    $batch = null;
 
-                    if ($stockToMove) {
-                        // Consumable from specific record
+                    if ($material->getNature() === Material::NATURE_CONSUMABLE) {
+                        if (!$stockId) {
+                            throw new \RuntimeException(sprintf("Es obligatorio proporcionar un ID de stock origen para el material '%s'. Datos recibidos: %s", $material->getName(), json_encode($p)));
+                        }
+                        $stockToMove = $entityManager->getRepository(MaterialStock::class)->find($stockId);
+                        if (!$stockToMove) {
+                            throw new \RuntimeException(sprintf("No se ha encontrado el registro de stock ID %d para el material '%s'.", $stockId, $material->getName()));
+                        }
                         $origin = $stockToMove->getLocation();
                         $batch = $stockToMove->getBatch();
-                    } elseif ($unitToMove) {
-                        // Technical equipment from specific unit
+                    } else {
+                        if (!$unitId) {
+                            throw new \RuntimeException(sprintf("Es obligatorio proporcionar un ID de unidad origen para el material '%s'.", $material->getName()));
+                        }
+                        $unitToMove = $entityManager->getRepository(MaterialUnit::class)->find($unitId);
+                        if (!$unitToMove) {
+                            throw new \RuntimeException(sprintf("No se ha encontrado la unidad ID %d para el material '%s'.", $unitId, $material->getName()));
+                        }
                         $origin = $unitToMove->getLocation();
                     }
 
-                    // 2. Resolve Fallback Origin ONLY if no specific record found
-                    if (!$origin && !empty($p['origin_id']) && is_numeric($p['origin_id'])) {
-                        $origin = $entityManager->getRepository(Location::class)->find((int)$p['origin_id']);
+                    if (!$origin) {
+                        throw new \RuntimeException(sprintf("El registro de stock/unidad origen para '%s' no tiene una ubicación asignada.", $material->getName()));
                     }
 
-                    // 3. Absolute Last resort: Default warehouse
-                    if (!$origin) {
-                        $origin = $materialManager->getDefaultLocation($material);
+                    // Prevenir que el botiquín se proponga a sí mismo (Filtro de Contenedor adicional)
+                    if ($origin->getId() === $kitLocation->getId()) {
+                        throw new \RuntimeException(sprintf("No se puede trasladar '%s' desde la misma ubicación de destino.", $material->getName()));
                     }
 
                     $materialManager->transfer(
                         $material,
                         $origin,
                         $kitLocation,
-                        (int)$p['quantity'],
+                        $quantity,
                         'Reposición de botiquín ' . ($unit->getAlias() ?: $unit->getSerialNumber()),
                         null,
                         $unitToMove,

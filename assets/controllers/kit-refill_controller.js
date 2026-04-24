@@ -199,7 +199,8 @@ export default class extends Controller {
     }
 
     submit(event) {
-        if (event.currentTarget.dataset.confirmed === 'true') {
+        const form = event.currentTarget;
+        if (form.dataset.confirmed === 'true') {
             return;
         }
 
@@ -210,9 +211,12 @@ export default class extends Controller {
 
         this.containerTarget.querySelectorAll('.refill-row').forEach(row => {
             const materialId = row.dataset.materialId || row.querySelector('.material-id')?.value;
-            const nature = row.dataset.nature;
+            const rawNature = row.dataset.nature || '';
+            const nature = rawNature.trim().toUpperCase();
             const identifierSelect = row.querySelector('.identifier-select');
-            const quantity = parseInt(row.querySelector('.quantity-input').value);
+            
+            const quantityInput = row.querySelector('.quantity-input');
+            const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
 
             if (!materialId || !identifierSelect || !identifierSelect.value || identifierSelect.value === 'NONE') return;
 
@@ -228,13 +232,14 @@ export default class extends Controller {
                 });
             }
 
+            const isConsumable = (nature === 'CONSUMIBLE');
             const proposal = {
                 material_id: materialId,
                 origin_id: selectedOption.dataset.locationId || this.originIdValue,
-                stock_id: nature === 'CONSUMIBLE' ? selectedOption.value : null,
+                stock_id: isConsumable ? selectedOption.value : null,
                 quantity: quantity,
                 batch_id: selectedOption.dataset.batchId && selectedOption.dataset.batchId !== 'NO_BATCH' ? selectedOption.dataset.batchId : null,
-                unit_id: nature === 'EQUIPO_TECNICO' ? selectedOption.value : null
+                unit_id: !isConsumable ? selectedOption.value : null
             };
             proposals.push(proposal);
         });
@@ -271,13 +276,13 @@ export default class extends Controller {
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
-                    event.currentTarget.dataset.confirmed = 'true';
-                    event.currentTarget.submit();
+                    form.dataset.confirmed = 'true';
+                    form.submit();
                 }
             });
         } else {
-            event.currentTarget.dataset.confirmed = 'true';
-            event.currentTarget.submit();
+            form.dataset.confirmed = 'true';
+            form.submit();
         }
     }
 

@@ -250,7 +250,7 @@ class MaterialManager
                 $origin = $stock->getLocation();
                 $batch = $stock->getBatch();
 
-                $this->updateStockWithBatch($material, $origin, -$quantity, $batch);
+                $this->updateStockWithBatch($material, $origin, -$quantity, $batch, $stock);
                 if ($destination) {
                     $this->updateStockWithBatch($material, $destination, $quantity, $batch);
                 }
@@ -269,40 +269,38 @@ class MaterialManager
                 return;
             }
 
+            // Consumo FIFO estricto sobre la ubicación origen (sin buscar en otros lados)
             $remainingToSubtract = $quantity;
-            $batches = $this->getEntityManager()->getRepository(MaterialBatch::class)->findBy(
-                ['material' => $material],
-                ['expirationDate' => 'ASC', 'createdAt' => 'ASC']
-            );
+            $qb = $this->stockRepository->createQueryBuilder('ms')
+                ->leftJoin('ms.batch', 'b')
+                ->where('ms.material = :material')
+                ->andWhere('ms.location = :origin')
+                ->andWhere('ms.quantity > 0')
+                ->setParameter('material', $material)
+                ->setParameter('origin', $origin)
+                ->orderBy('b.expirationDate', 'ASC')
+                ->addOrderBy('b.createdAt', 'ASC');
 
-            foreach ($batches as $b) {
-                $stock = $this->stockRepository->findOneBy([
-                    'material' => $material,
-                    'location' => $origin,
-                    'batch' => $b
-                ]);
+            $stocks = $qb->getQuery()->getResult();
 
-                if ($stock && $stock->getQuantity() > 0) {
-                    $toSubtract = min($remainingToSubtract, $stock->getQuantity());
-                    $this->updateStockWithBatch($material, $origin, -$toSubtract, $b);
+            foreach ($stocks as $s) {
+                $toSubtract = min($remainingToSubtract, $s->getQuantity());
+                
+                // Pasamos el $s explícitamente para evitar heurísticas
+                $this->updateStockWithBatch($material, $origin, -$toSubtract, $s->getBatch(), $s);
 
-                    if ($destination) {
-                        $this->updateStockWithBatch($material, $destination, $toSubtract, $b);
-                    }
-
-                    $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $b, $now, $destination === null);
-
-                    $remainingToSubtract -= $toSubtract;
-                    if ($remainingToSubtract <= 0) break;
+                if ($destination) {
+                    $this->updateStockWithBatch($material, $destination, $toSubtract, $s->getBatch());
                 }
+
+                $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $s->getBatch(), $now, $destination === null);
+
+                $remainingToSubtract -= $toSubtract;
+                if ($remainingToSubtract <= 0) break;
             }
 
             if ($remainingToSubtract > 0) {
-                $this->updateStockWithBatch($material, $origin, -$remainingToSubtract, null);
-                if ($destination) {
-                    $this->updateStockWithBatch($material, $destination, $remainingToSubtract, null);
-                }
-                $this->recordMovement($material, $remainingToSubtract, $transferReason, $origin, $destination, $responsible, null, $now, $destination === null);
+                throw new \RuntimeException(sprintf("Stock insuficiente en origen '%s' para el material '%s'. Solicitado: %d, Faltan: %d.", $origin->getName(), $material->getName(), $quantity, $remainingToSubtract));
             }
         } else {
             if ($origin) {
@@ -445,17 +443,22 @@ class MaterialManager
 
         $newQuantity = $stock->getQuantity() + $delta;
         if ($newQuantity < 0) {
-            throw new \RuntimeException(sprintf(
-                "Stock insuficiente para el material '%s' (ID:%d) (LoteID:%s) en la ubicación '%s' (ID:%s). Disponible:%d, Solicitado:%d. (StockObject: %s)",
-                $material->getName(),
-                $material->getId(),
-                $batch ? $batch->getId() : 'NULL',
-                $location->getName(),
-                $location->getId() ?: 'N/A',
-                $stock->getQuantity(),
-                abs($delta),
-                $stock ? 'YES' : 'NO'
-            ));
+            if ($material->getNature() === Material::NATURE_TECHNICAL) {
+                // Auto-reparación para equipos técnicos: si el contador estaba desincronizado, lo dejamos a 0
+                $newQuantity = 0;
+            } else {
+                throw new \RuntimeException(sprintf(
+                    "Stock insuficiente para el material '%s' (ID:%d) (LoteID:%s) en la ubicación '%s' (ID:%s). Disponible:%d, Solicitado:%d. (StockObject: %s)",
+                    $material->getName(),
+                    $material->getId(),
+                    $batch ? $batch->getId() : 'NULL',
+                    $location->getName(),
+                    $location->getId() ?: 'N/A',
+                    $stock->getQuantity(),
+                    abs($delta),
+                    $stock ? 'YES' : 'NO'
+                ));
+            }
         }
 
         if ($newQuantity == 0 && $location->getType() !== Location::TYPE_WAREHOUSE) {
