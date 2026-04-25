@@ -7,9 +7,12 @@
     
     <!-- Main content -->
     <div class="main-content flex-1 h-full overflow-y-auto bg-gray-50" data-sidebar-target="content">
+        {% set pageTitle = block('page_title') %}
+        {% if pageTitle|trim is not empty %}
         <header class="p-6">
-            <h1 class="text-2xl font-bold text-gray-900">{% block page_title %}{% endblock %}</h1>
+            <h1 class="text-2xl font-bold text-gray-900">{{ pageTitle|raw }}</h1>
         </header>
+        {% endif %}
         <!-- Main content area -->
         <main class="flex-1 pb-6">
             {% for message in app.flashes('success') %}

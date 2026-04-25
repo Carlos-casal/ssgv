@@ -2,345 +2,363 @@
 
 {% block title %}Detalle de Material{% endblock %}
 
-{% block page_title %}{{ material.name }}{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4">
-    <div class="row">
-        {% if material.imagePath %}
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card shadow h-100">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Imagen del Material</h6>
-                </div>
-                <div class="card-body text-center">
-                    <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" 
-                         alt="{{ material.name }}" 
-                         class="img-fluid rounded">
-                </div>
+<div class="px-6 py-2">
+    {# Custom Header #}
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 leading-tight">{{ material.name }}</h1>
+            <div class="flex flex-wrap gap-2 mt-2">
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 border border-blue-200">
+                    {{ material.category }}
+                </span>
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ material.nature == 'CONSUMIBLE' ? 'bg-indigo-100 text-indigo-800 border border-indigo-200' : 'bg-slate-100 text-slate-800 border border-slate-200' }}">
+                    {{ material.nature }}
+                </span>
             </div>
         </div>
-        {% endif %}
+        <div class="flex flex-wrap gap-3">
+            <a href="{{ path('app_material_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+                <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver al Listado
+            </a>
+            <a href="{{ path('app_material_transfer', {id: material.id}) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition-colors">
+                <i data-lucide="arrow-left-right" class="w-4 h-4 mr-2"></i> Registrar Movimiento
+            </a>
+        </div>
+    </div>
 
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Información General</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ material.category }}</div>
-                            <div class="mt-2">
-                                <span class="badge {{ material.nature == 'CONSUMIBLE' ? 'badge-info' : 'badge-dark' }}">
-                                    {{ material.nature }}
-                                </span>
-                            </div>
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        {# Sidebar (col-lg-3 equivalent) #}
+        <aside class="lg:col-span-3 space-y-6">
+            {% if material.imagePath %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
+                <div class="aspect-square relative flex items-center justify-center p-4 bg-gray-50/50">
+                    <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}"
+                         alt="{{ material.name }}"
+                         class="max-h-full max-w-full object-contain transition-transform duration-500 hover:scale-105">
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-6 hover:shadow-md transition-shadow duration-300">
+                {# Description Section #}
+                {% if material.description %}
+                <section>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                        <i data-lucide="align-left" class="w-3.5 h-3.5 mr-1.5"></i> Descripción
+                    </h3>
+                    <p class="text-sm text-gray-700 leading-relaxed">{{ material.description|nl2br }}</p>
+                </section>
+                {% endif %}
+
+                {# Barcode Section #}
+                {% if material.barcode %}
+                <section>
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
+                        <i data-lucide="barcode" class="w-3.5 h-3.5 mr-1.5"></i> Código de Barras
+                    </h3>
+                    <p class="text-sm font-mono font-bold text-gray-900 bg-gray-50 p-2 rounded border border-dashed border-gray-300 text-center tracking-widest">
+                        {{ material.barcode }}
+                    </p>
+                </section>
+                {% endif %}
+
+                {# Technical Info Section (for technical units) #}
+                {% if material.nature == 'EQUIPO_TECNICO' or material.category == 'Comunicaciones' %}
+                <section class="pt-4 border-t border-gray-100">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
+                        <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i> Identificación Técnica
+                    </h3>
+                    <div class="space-y-2.5">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">S/N:</span>
+                            <span class="font-medium text-gray-900">{{ material.serialNumber|default('N/A') }}</span>
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-info-circle fa-2x text-gray-300"></i>
+                        {% if material.networkId %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">ID Red:</span>
+                            <span class="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-bold">{{ material.networkId }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.phoneNumber %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">Teléfono:</span>
+                            <span class="font-medium text-gray-900">{{ material.phoneNumber }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.brandModel %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">Marca/Mod:</span>
+                            <span class="font-medium text-gray-900 text-right">{{ material.brandModel }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.frequencyBand %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">Banda:</span>
+                            <span class="font-medium text-gray-900">{{ material.frequencyBand }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.deviceType %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">Tipo:</span>
+                            <span class="font-medium text-gray-900">{{ material.deviceType }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.purchaseDate %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">F. Compra:</span>
+                            <span class="font-medium text-gray-900">{{ material.purchaseDate|date('d/m/Y') }}</span>
+                        </div>
+                        {% endif %}
+                        {% if material.warrantyEndDate %}
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">Garantía:</span>
+                            <span class="font-medium {{ material.warrantyEndDate < date() ? 'text-red-600' : 'text-gray-900' }}">
+                                {{ material.warrantyEndDate|date('d/m/Y') }}
+                            </span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </section>
+
+                <section class="pt-4 border-t border-gray-100">
+                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
+                        <i data-lucide="layers" class="w-3.5 h-3.5 mr-1.5"></i> Accesorios
+                    </h3>
+                    <div class="grid grid-cols-1 gap-2">
+                        <div class="flex items-center text-sm">
+                            <i data-lucide="{{ material.hasCharger ? 'check-circle' : 'circle-off' }}" class="w-4 h-4 mr-2 {{ material.hasCharger ? 'text-green-500' : 'text-gray-300' }}"></i>
+                            <span class="{{ material.hasCharger ? 'text-gray-900' : 'text-gray-400' }}">Cargador</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i data-lucide="{{ material.hasClip ? 'check-circle' : 'circle-off' }}" class="w-4 h-4 mr-2 {{ material.hasClip ? 'text-green-500' : 'text-gray-300' }}"></i>
+                            <span class="{{ material.hasClip ? 'text-gray-900' : 'text-gray-400' }}">Pinza</span>
+                        </div>
+                        <div class="flex items-center text-sm">
+                            <i data-lucide="{{ material.hasMicrophone ? 'check-circle' : 'circle-off' }}" class="w-4 h-4 mr-2 {{ material.hasMicrophone ? 'text-green-500' : 'text-gray-300' }}"></i>
+                            <span class="{{ material.hasMicrophone ? 'text-gray-900' : 'text-gray-400' }}">Micro-altavoz</span>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </section>
 
-        {% if material.nature == 'CONSUMIBLE' %}
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card {{ material.isLowStock ? 'border-left-danger' : 'border-left-success' }} shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold {{ material.isLowStock ? 'text-danger' : 'text-success' }} text-uppercase mb-1">Stock Actual</div>
-                            {% set currentPacks = 0 %}
-                            {% if material.batches|length > 0 %}
-                                {% for batch in material.batches %}
-                                    {% set batchStock = 0 %}
-                                    {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
-                                    {% if batch.unitsPerPackage > 0 %}
-                                        {% set currentPacks = currentPacks + (batchStock / batch.unitsPerPackage) %}
-                                    {% else %}
-                                        {% set currentPacks = currentPacks + batchStock %}
-                                    {% endif %}
-                                {% endfor %}
+                {% if material.assignedVehicle %}
+                <section class="pt-4 border-t border-gray-100">
+                    <div class="bg-indigo-50 rounded-lg p-3">
+                        <h3 class="text-xxs font-bold text-indigo-600 uppercase tracking-wider mb-1 flex items-center">
+                            <i data-lucide="truck" class="w-3 h-3 mr-1"></i> Vehículo Asignado
+                        </h3>
+                        <p class="text-sm font-bold text-indigo-900">{{ material.assignedVehicle.alias }}</p>
+                    </div>
+                </section>
+                {% endif %}
+                {% endif %}
+            </div>
+        </aside>
+
+        {# Main Content (col-lg-9 equivalent) #}
+        <main class="lg:col-span-9 space-y-6">
+            {# KPI Ribbon #}
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {# KPI 1: Stock or Status #}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
+                    <div class="flex-shrink-0 p-3 rounded-lg {{ material.nature == 'CONSUMIBLE' ? (material.isLowStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600') : 'bg-blue-50 text-blue-600' }}">
+                        <i data-lucide="{{ material.nature == 'CONSUMIBLE' ? 'boxes' : 'activity' }}" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ material.nature == 'CONSUMIBLE' ? 'Stock Actual' : 'Estado Operativo' }}</p>
+                        <div class="flex items-baseline">
+                            {% if material.nature == 'CONSUMIBLE' %}
+                                <h4 class="text-xl font-bold text-gray-900">{{ material.getTotalPackages()|round(2) }}</h4>
+                                <span class="ml-1.5 text-xs text-gray-500">envases</span>
                             {% else %}
-                                {% set currentPacks = material.unitsPerPackage > 0 ? material.stock / material.unitsPerPackage : material.stock %}
+                                <h4 class="text-xl font-bold {{ material.operationalStatus == 'OPERATIVO' ? 'text-green-600' : 'text-amber-600' }}">{{ material.operationalStatus }}</h4>
                             {% endif %}
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ currentPacks|round(2) }} <span class="text-xs text-muted">nº envases</span></div>
-                            <div class="text-xs text-muted">Total Unidades: {{ material.stock }} | Mínimo: {{ material.safetyStock }} envases</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="fas fa-boxes fa-2x text-gray-300"></i>
                         </div>
                     </div>
-                    {% if material.isLowStock %}
-                        <div class="mt-2 text-danger font-weight-bold small">
-                            <i class="fas fa-exclamation-triangle"></i> Reposición Necesaria
-                        </div>
-                    {% endif %}
                 </div>
-            </div>
-        </div>
-        {% endif %}
 
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    {% if material.category == 'Comunicaciones' %}
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Identificación Técnica</div>
-                        <div class="mb-2">
-                            <span class="small text-muted">S/N:</span>
-                            <span class="font-weight-bold">{{ material.serialNumber|default('N/A') }}</span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">ID Red:</span>
-                            <span class="badge badge-info">{{ material.networkId|default('N/A') }}</span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Banda:</span>
-                            <span class="small">{{ material.frequencyBand|default('N/A') }}</span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Teléfono:</span>
-                            <span class="small">{{ material.phoneNumber|default('N/A') }}</span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Estado:</span>
-                            <span class="badge {{ material.operationalStatus == 'OPERATIVO' ? 'bg-success' : 'bg-warning' }}">
-                                {{ material.operationalStatus }}
-                            </span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Garantía:</span>
-                            <span class="small">{{ material.warrantyEndDate ? material.warrantyEndDate|date('d/m/Y') : 'N/A' }}</span>
-                        </div>
-                    {% elseif material.batches|length <= 1 %}
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Trazabilidad y Finanzas</div>
-                        {% set batch = material.batches|first %}
-                        <div class="mb-2">
-                            <span class="small text-muted">Lote:</span>
-                            <span class="font-weight-bold">{{ batch ? batch.batchNumber : material.batchNumber|default('N/A') }}</span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Caducidad:</span>
-                            {% set expDate = batch ? batch.expirationDate : material.expirationDate %}
-                            {% set status = material.expirationStatus %}
-                            <span class="badge badge-{{
-                                status == 'green' ? 'success' :
-                                (status == 'yellow' ? 'warning' :
-                                (status == 'red' ? 'danger' : 'secondary'))
-                            }}">
-                                <i class="fas fa-calendar-alt mr-1"></i>
-                                {{ expDate ? expDate|date('d/m/Y') : 'Sin fecha' }}
-                            </span>
-                        </div>
-                        <div class="mb-2">
-                            <span class="small text-muted">Proveedor:</span>
-                            <span class="small">{{ batch ? batch.supplier : material.supplier|default('Desconocido') }}</span>
-                        </div>
-                        <div>
-                            <span class="small text-muted">Valor Unitario:</span>
-                            <span class="font-weight-bold text-gray-800">{{ (batch ? batch.unitPrice : material.unitPrice)|number_format(2, ',', '.') }}€</span>
-                            <span class="text-xs text-muted">(IVA {{ batch ? batch.iva : material.iva }}%)</span>
-                        </div>
-                        <div class="mt-2 pt-2 border-top">
-                            <span class="small text-muted font-weight-bold text-primary">Valoración Total:</span>
-                            <span class="h5 mb-0 font-weight-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
-                        </div>
-                    {% else %}
-                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Información de Lotes</div>
-                        <div class="small text-muted mb-2">Este material dispone de {{ material.batches|length }} lotes registrados.</div>
-                        <div class="mt-2 pt-2 border-top">
-                            <span class="small text-muted font-weight-bold text-primary">Valoración Total:</span>
-                            <span class="h5 mb-0 font-weight-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
-                        </div>
-                        <div class="mt-2 p-2 bg-light rounded border">
-                            <div class="text-xs font-bold text-uppercase mb-1">Próxima Caducidad</div>
-                            {% set firstBatch = material.batches|first %}
-                            <div class="small fw-bold text-danger">
-                                <i class="fas fa-calendar-times mr-1"></i> {{ firstBatch.expirationDate ? firstBatch.expirationDate|date('d/m/Y') : 'N/A' }}
-                            </div>
-                        </div>
-                    {% endif %}
+                {# KPI 2: Total Valuation #}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
+                    <div class="flex-shrink-0 p-3 rounded-lg bg-indigo-50 text-indigo-600">
+                        <i data-lucide="banknote" class="w-6 h-6"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Valoración Total</p>
+                        <h4 class="text-xl font-bold text-gray-900">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</h4>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        {% if material.category == 'Comunicaciones' %}
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Accesorios y Otros</div>
-                    <div class="mb-2">
-                        <span class="small text-muted">Cargador:</span>
-                        <i class="fas {{ material.hasCharger ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' }}"></i>
+                {# KPI 3: Status Alert / Extra info #}
+                {% if material.nature == 'CONSUMIBLE' %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center {{ material.isLowStock ? 'border-red-200 bg-red-50/30' : 'hover:shadow-md transition-all duration-300' }}">
+                    <div class="flex-shrink-0 p-3 rounded-lg {{ material.isLowStock ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400' }}">
+                        <i data-lucide="{{ material.isLowStock ? 'alert-triangle' : 'info' }}" class="w-6 h-6"></i>
                     </div>
-                    <div class="mb-2">
-                        <span class="small text-muted">Pinza:</span>
-                        <i class="fas {{ material.hasClip ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' }}"></i>
+                    <div class="ml-4">
+                        {% if material.isLowStock %}
+                            <p class="text-xs font-bold text-red-600 uppercase tracking-wider">Alerta de Stock</p>
+                            <h4 class="text-sm font-semibold text-red-700">Reposición Necesaria</h4>
+                        {% else %}
+                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock Total</p>
+                            <h4 class="text-sm font-semibold text-gray-900">{{ material.stock }} <span class="text-xxs text-gray-400 font-normal uppercase">unidades</span></h4>
+                        {% endif %}
                     </div>
-                    <div class="mb-2">
-                        <span class="small text-muted">Micro-altavoz:</span>
-                        <i class="fas {{ material.hasMicrophone ? 'fa-check-circle text-success' : 'fa-times-circle text-danger' }}"></i>
-                    </div>
-                    {% if material.assignedVehicle %}
-                    <div class="mt-3 p-2 bg-light rounded border">
-                        <div class="text-xs font-bold text-uppercase mb-1">Vehículo Asignado</div>
-                        <div class="small fw-bold text-primary">
-                            <i class="fas fa-truck mr-1"></i> {{ material.assignedVehicle.alias }}
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
-            </div>
-        </div>
-        {% endif %}
-
-        {% if material.barcode or material.description %}
-        <div class="col-xl-4 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    {% if material.barcode %}
-                    <div class="mb-3">
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            <i class="fas fa-barcode mr-1"></i>Código de Barras
-                        </div>
-                        <div class="h6 mb-0 font-weight-bold text-gray-800">{{ material.barcode }}</div>
+                {% else %}
+                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
+                    <div class="flex-shrink-0 p-3 rounded-lg bg-amber-50 text-amber-600">
+                        <i data-lucide="shield-check" class="w-6 h-6"></i>
                     </div>
-                    {% endif %}
-                    {% if material.description %}
-                    <div>
-                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                            <i class="fas fa-align-left mr-1"></i>Descripción
-                        </div>
-                        <div class="small text-gray-700">{{ material.description|nl2br }}</div>
+                    <div class="ml-4">
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Garantía</p>
+                        <h4 class="text-sm font-semibold {{ material.warrantyEndDate and material.warrantyEndDate < date() ? 'text-red-600' : 'text-gray-900' }}">
+                            {{ material.warrantyEndDate ? material.warrantyEndDate|date('d/m/Y') : 'No registrada' }}
+                        </h4>
                     </div>
-                    {% endif %}
                 </div>
+                {% endif %}
             </div>
-        </div>
-        {% endif %}
-    </div>
 
-
-
-    {% if material.nature == 'CONSUMIBLE' and material.batches|length > 0 %}
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 bg-white">
-            <h6 class="m-0 font-weight-bold text-danger"><i class="fas fa-tags mr-2"></i>Trazabilidad de Lotes y Costes</h6>
-        </div>
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover mb-0 align-middle">
-                    <thead class="bg-gray-50">
-                        <tr class="text-xs text-uppercase text-muted">
-                            <th class="ps-4">Lote</th>
-                            <th>Caducidad</th>
-                            <th>Proveedor</th>
-                            <th class="text-center">Uds/Env</th>
-                            <th class="text-center">Nº Envases</th>
-                            <th class="text-center">Stock Unidades</th>
-                             <th class="text-end">P. Compra</th>
-                            <th class="text-end">IVA (%)</th>
-                            <th class="text-end">Margen (%)</th>
-                            <th class="text-end pe-4">Valoración/Ud</th>
-                        </tr>
-                    </thead>
-                    <tbody class="text-sm">
-                        {% for batch in material.batches %}
-                            {% set batchStock = 0 %}
-                            {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
-                            <tr class="{{ batchStock <= 0 ? 'opacity-50 grayscale bg-light' : '' }}">
-                                <td class="ps-4 font-weight-bold text-primary">{{ batch.batchNumber }}</td>
-                                <td>
-                                    <span class="badge {{ batch.expirationDate < date() ? 'bg-danger' : 'bg-success' }}">
-                                        {{ batch.expirationDate ? batch.expirationDate|date('d/m/Y') : '-' }}
-                                    </span>
-                                </td>
-                                <td>{{ batch.supplier }}</td>
-                                <td class="text-center">{{ batch.unitsPerPackage }}</td>
-                                <td class="text-center">{{ batch.numPackages }}</td>
-                                <td class="text-center">
-                                    <span class="font-weight-bold {{ batchStock <= 0 ? 'text-muted' : 'text-success' }}">
-                                        {{ batchStock }}
-                                    </span>
-                                </td>
-                                 <td class="text-end">{{ batch.totalPrice|number_format(2, ',', '.') }}€</td>
-                                <td class="text-end">{{ batch.iva }}%</td>
-                                <td class="text-end">{{ batch.marginPercentage|default('0') }}%</td>
-                                <td class="text-end pe-4 font-weight-bold text-primary">{{ batch.getValuationPerUnit()|number_format(2, ',', '.') }}€</td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-    {% endif %}
-
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Historial de Movimientos</h6>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover">
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Usuario</th>
-                            <th>{{ material.nature == 'EQUIPO_TECNICO' ? 'N/S' : 'Lote' }}</th>
-                            <th class="text-center">Cantidad</th>
-                            <th>Motivo</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for movement in pagination %}
+            {# Traceability Table (Consumables only) #}
+            {% if material.nature == 'CONSUMIBLE' and material.batches|length > 0 %}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-gray-900 flex items-center">
+                        <i data-lucide="tags" class="w-4 h-4 mr-2 text-indigo-600"></i> Trazabilidad de Lotes y Costes
+                    </h2>
+                </div>
+                <div class="overflow-x-auto overflow-y-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
                             <tr>
-                                <td>{{ movement.createdAt|date('d/m/Y H:i') }}</td>
-                                <td>{{ movement.user ? (movement.user.name ?: movement.user.email) : 'Sistema' }}</td>
-                                <td>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Lote</th>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Caducidad</th>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Proveedor</th>
+                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Uds/Env</th>
+                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Envases</th>
+                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Stock (Uds)</th>
+                                <th scope="col" class="px-5 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">P. Compra</th>
+                                <th scope="col" class="px-5 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">Valoración/Ud</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            {% for batch in material.batches %}
+                                {% set batchStock = 0 %}
+                                {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
+                                <tr class="{{ batchStock <= 0 ? 'opacity-40 bg-gray-50/50' : 'hover:bg-gray-50/80 transition-colors' }}">
+                                    <td class="px-5 py-3 whitespace-nowrap text-sm font-bold text-indigo-600">
+                                        {{ batch.batchNumber }}
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap">
+                                        {% set isExpired = batch.expirationDate and batch.expirationDate < date() %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
+                                            <i data-lucide="calendar" class="w-3 h-3 mr-1"></i>
+                                            {{ batch.expirationDate ? batch.expirationDate|date('d/m/Y') : '-' }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                        {{ batch.supplier|default('-') }}
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                                        {{ batch.unitsPerPackage }}
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-center text-sm text-gray-600">
+                                        {{ batch.numPackages }}
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-center">
+                                        <span class="text-sm font-bold {{ batchStock <= 0 ? 'text-gray-400' : 'text-gray-900' }}">
+                                            {{ batchStock }}
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-right text-sm text-gray-600">
+                                        {{ batch.totalPrice|number_format(2, ',', '.') }}€
+                                        <div class="text-xxs text-gray-400">IVA {{ batch.iva }}%</div>
+                                    </td>
+                                    <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                        {{ batch.getValuationPerUnit()|number_format(2, ',', '.') }}€
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+
+            {# History Table #}
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <h2 class="text-sm font-bold text-gray-900 flex items-center">
+                        <i data-lucide="history" class="w-4 h-4 mr-2 text-indigo-600"></i> Historial de Movimientos
+                    </h2>
+                </div>
+                <div class="overflow-x-auto overflow-y-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Usuario</th>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">{{ material.nature == 'EQUIPO_TECNICO' ? 'N/S' : 'Lote' }}</th>
+                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Cantidad</th>
+                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Motivo</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-100">
+                            {% for movement in pagination %}
+                            <tr class="hover:bg-gray-50/80 transition-colors">
+                                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                    {{ movement.createdAt|date('d/m/Y H:i') }}
+                                </td>
+                                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
+                                    {{ movement.user ? (movement.user.name ?: movement.user.email) : 'Sistema' }}
+                                </td>
+                                <td class="px-5 py-3 whitespace-nowrap">
                                     {% if material.nature == 'EQUIPO_TECNICO' %}
                                         {% if movement.materialUnit %}
-                                            <span class="badge bg-light text-dark border">{{ movement.materialUnit.serialNumber ?: movement.materialUnit.alias }}</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                                {{ movement.materialUnit.serialNumber ?: movement.materialUnit.alias }}
+                                            </span>
                                         {% else %}
-                                            <span class="text-muted small">-</span>
+                                            <span class="text-gray-400 text-xs italic">-</span>
                                         {% endif %}
                                     {% else %}
                                         {% if movement.batch %}
-                                            <span class="badge bg-light text-primary border">{{ movement.batch.batchNumber }}</span>
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                                {{ movement.batch.batchNumber }}
+                                            </span>
                                         {% else %}
-                                            <span class="text-muted small">-</span>
+                                            <span class="text-gray-400 text-xs italic">-</span>
                                         {% endif %}
                                     {% endif %}
                                 </td>
-                                <td class="text-center">
-                                    <span class="font-weight-bold" style="color: black !important;">
+                                <td class="px-5 py-3 whitespace-nowrap text-center">
+                                    <span class="text-sm font-bold {{ movement.quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
                                         {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
                                     </span>
                                 </td>
-                                <td>{{ movement.reason }}</td>
+                                <td class="px-5 py-3 text-sm text-gray-600 max-w-xs truncate">
+                                    {{ movement.reason }}
+                                </td>
                             </tr>
-                        {% else %}
+                            {% else %}
                             <tr>
-                                <td colspan="5" class="text-center text-muted">No hay movimientos registrados.</td>
+                                <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-500 italic">
+                                    No hay movimientos registrados.
+                                </td>
                             </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if pagination.getTotalItemCount > 5 %}
+                <div class="px-5 py-3 border-t border-gray-100 bg-gray-50/50 flex justify-center">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+                {% endif %}
             </div>
-
-            <div class="navigation d-flex justify-content-center mt-4">
-                {{ knp_pagination_render(pagination) }}
-            </div>
-        </div>
-    </div>
-
-    <div class="mt-4 d-flex gap-2">
-        <a href="{{ path('app_material_transfer', {id: material.id}) }}" class="btn btn-primary">
-            <i class="fas fa-exchange-alt mr-2"></i> Registrar Movimiento / Transferencia
-        </a>
-        <a href="{{ path('app_material_index') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left mr-2"></i> Volver al Listado
-        </a>
+        </main>
     </div>
 </div>
 {% endblock %}
