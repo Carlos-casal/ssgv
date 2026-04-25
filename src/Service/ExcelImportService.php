@@ -67,7 +67,10 @@ class ExcelImportService
             'phoneNumber' => ['teléfono', 'móvil', 'phone'],
             'purchaseDate' => ['compra', 'purchase'],
             'warrantyEndDate' => ['garantía', 'fin', 'warranty'],
-            'description' => ['descripción', 'notas', 'description']
+            'description' => ['descripción', 'notas', 'description'],
+            'hasCharger' => ['cargador', 'charger'],
+            'hasClip' => ['pinza', 'clip'],
+            'hasMicrophone' => ['micro', 'altavoz', 'mic']
         ];
 
         // Search in the first 3 rows for headers (in case there's some title or empty rows)
@@ -387,18 +390,25 @@ class ExcelImportService
                     if ($cleanSn === '' || $cleanSn === 'S/N') $cleanSn = null;
 
                     if ($cleanSn) {
-                        $resolution = $resolutions[$cleanSn] ?? 'update';
+                        // Search for existing unit with same S/N + Dates
+                        $unitRepo = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class);
 
-                        // If it's a duplicate within the same Excel and we already processed it
-                        if (in_array($cleanSn, $processedSns)) {
-                            if ($resolution === 'keep') {
-                                // Skip this row as we want to keep the one already processed
+                        // User requirement: Treat same S/N with different dates as separate entities
+                        $criteria = ['serialNumber' => $cleanSn];
+                        if ($purchaseDate) $criteria['purchaseDate'] = $purchaseDate;
+                        if ($warrantyEndDate) $criteria['warrantyEndDate'] = $warrantyEndDate;
+
+                        $unit = $unitRepo->findOneBy($criteria);
+
+                        // If not found by full criteria, but found by S/N only,
+                        // it might be a different "lot" or a duplicate SN that should be blocked if alias matches.
+                        if (!$unit && $alias) {
+                            $existingByAlias = $unitRepo->findOneBy(['alias' => $alias]);
+                            if ($existingByAlias) {
+                                $result['errors'][] = "Fila {$row}: El alias '{$alias}' ya está en uso.";
                                 continue;
                             }
-                            // If resolution is 'update', we'll update the unit with THIS row's data
                         }
-
-                        $unit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $cleanSn]);
 
                         if (!$unit) {
                             $newUnit = $this->materialManager->createUnit($material, [
@@ -410,22 +420,28 @@ class ExcelImportService
                                 'networkId' => $networkId,
                                 'phoneNumber' => $phoneNumber,
                                 'batteryStatus' => '100%',
+                                'purchaseDate' => $purchaseDate,
+                                'warrantyEndDate' => $warrantyEndDate,
+                                'hasCharger' => (bool)(isset($map['hasCharger']) ? $this->getCellValue($worksheet, $map['hasCharger'], $row) : false),
+                                'hasClip' => (bool)(isset($map['hasClip']) ? $this->getCellValue($worksheet, $map['hasClip'], $row) : false),
+                                'hasMicrophone' => (bool)(isset($map['hasMicrophone']) ? $this->getCellValue($worksheet, $map['hasMicrophone'], $row) : false),
                             ]);
 
                             $result['units_created']++;
-                            $processedSns[] = $cleanSn;
                         } else {
-                            // Conflict resolution
-                            if ($resolution === 'update') {
-                                if ($alias) $unit->setAlias($alias);
-                                if ($networkId && $networkId !== 'S/N') $unit->setNetworkId($networkId);
-                                if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
-                                if ($totalPrice) $unit->setPurchasePrice($totalPrice);
-                                if ($marginPct) $unit->setDiscountPct($marginPct);
-                                // Ensure unit is linked to current material if it changed
-                                $unit->setMaterial($material);
-                            }
-                            $processedSns[] = $cleanSn;
+                            // Update existing unit found by S/N + Dates
+                            if ($alias) $unit->setAlias($alias);
+                            if ($networkId && $networkId !== 'S/N') $unit->setNetworkId($networkId);
+                            if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
+                            if ($totalPrice) $unit->setPurchasePrice($totalPrice);
+                            if ($marginPct) $unit->setDiscountPct($marginPct);
+                            // Ensure unit is linked to current material if it changed
+                            $unit->setMaterial($material);
+
+                            // If numPackages > 0 and we found ONE unit, it might mean we are adding more identical units?
+                            // But technical units are usually 1 per row.
+                            // If the user put numPackages > 1 in a row with a serial number, it's ambiguous.
+                            // We'll assume 1 row = 1 unit for technical equipment with S/N.
                         }
                     } else {
                         // Technical bulk stock
