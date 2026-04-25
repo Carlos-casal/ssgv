@@ -453,9 +453,33 @@ class MaterialController extends AbstractController
             5
         );
 
+        // Group units for technical equipment
+        $groupedUnits = [];
+        if ($material->getNature() === Material::NATURE_TECHNICAL) {
+            foreach ($material->getUnits() as $unit) {
+                $pDate = $unit->getPurchaseDate() ? $unit->getPurchaseDate()->format('Y-m-d') : 'none';
+                $wDate = $unit->getWarrantyEndDate() ? $unit->getWarrantyEndDate()->format('Y-m-d') : 'none';
+                $key = ($unit->getSerialNumber() ?: 'no-sn') . '_' . $pDate . '_' . $wDate;
+
+                if (!isset($groupedUnits[$key])) {
+                    $groupedUnits[$key] = [
+                        'sn' => $unit->getSerialNumber(),
+                        'model' => $unit->getBrandModel() ?: $material->getBrandModel(),
+                        'purchaseDate' => $unit->getPurchaseDate(),
+                        'warrantyDate' => $unit->getWarrantyEndDate(),
+                        'count' => 0,
+                        'valuation' => 0.0
+                    ];
+                }
+                $groupedUnits[$key]['count']++;
+                $groupedUnits[$key]['valuation'] += $unit->getValuation();
+            }
+        }
+
         $response = $this->render('material/show.html.twig', [
             'material' => $material,
             'pagination' => $pagination,
+            'groupedUnits' => array_values($groupedUnits),
             'current_section' => 'recursos'
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');

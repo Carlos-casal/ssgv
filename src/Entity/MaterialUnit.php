@@ -10,7 +10,6 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: MaterialUnitRepository::class)]
-#[UniqueEntity(fields: ['serialNumber'], message: 'Este Número de Serie ya está registrado en otra unidad.', ignoreNull: true)]
 #[UniqueEntity(fields: ['alias'], message: 'Este Alias ya está en uso por otra unidad.', ignoreNull: true)]
 class MaterialUnit
 {
@@ -26,7 +25,7 @@ class MaterialUnit
     #[ORM\ManyToOne(inversedBy: 'units')]
     private ?Location $location = null;
 
-    #[ORM\Column(length: 255, unique: true, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $serialNumber = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -75,6 +74,24 @@ class MaterialUnit
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $marginPercentage = null;
 
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $purchaseDate = null;
+
+    #[ORM\Column(type: 'date_immutable', nullable: true)]
+    private ?\DateTimeImmutable $warrantyEndDate = null;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasCharger = false;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasClip = false;
+
+    #[ORM\Column(options: ["default" => false])]
+    private bool $hasMicrophone = false;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $brandModel = null;
+
     #[ORM\ManyToOne]
     private ?KitTemplate $template = null;
 
@@ -102,6 +119,78 @@ class MaterialUnit
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
+
+        return $this;
+    }
+
+    public function getPurchaseDate(): ?\DateTimeImmutable
+    {
+        return $this->purchaseDate;
+    }
+
+    public function setPurchaseDate(?\DateTimeImmutable $purchaseDate): static
+    {
+        $this->purchaseDate = $purchaseDate;
+
+        return $this;
+    }
+
+    public function getWarrantyEndDate(): ?\DateTimeImmutable
+    {
+        return $this->warrantyEndDate;
+    }
+
+    public function setWarrantyEndDate(?\DateTimeImmutable $warrantyEndDate): static
+    {
+        $this->warrantyEndDate = $warrantyEndDate;
+
+        return $this;
+    }
+
+    public function hasCharger(): bool
+    {
+        return $this->hasCharger;
+    }
+
+    public function setHasCharger(bool $hasCharger): static
+    {
+        $this->hasCharger = $hasCharger;
+
+        return $this;
+    }
+
+    public function hasClip(): bool
+    {
+        return $this->hasClip;
+    }
+
+    public function setHasClip(bool $hasClip): static
+    {
+        $this->hasClip = $hasClip;
+
+        return $this;
+    }
+
+    public function hasMicrophone(): bool
+    {
+        return $this->hasMicrophone;
+    }
+
+    public function setHasMicrophone(bool $hasMicrophone): static
+    {
+        $this->hasMicrophone = $hasMicrophone;
+
+        return $this;
+    }
+
+    public function getBrandModel(): ?string
+    {
+        return $this->brandModel;
+    }
+
+    public function setBrandModel(?string $brandModel): static
+    {
+        $this->brandModel = $brandModel;
 
         return $this;
     }
