@@ -96,7 +96,7 @@
                                     {# Aggregate consumable stock #}
                                     {% for stock in unit.kitLocation.stocks %}
                                         {% if stock.material.nature == 'CONSUMIBLE' %}
-                                            {% set matId = stock.material.id ~ "" %}
+                                            {% set matId = 'mat_' ~ stock.material.id %}
                                             {% set currentCount = locationQuantities[matId] ?? 0 %}
                                             {% set locationQuantities = locationQuantities|merge({(matId): currentCount + stock.quantity}) %}
                                         {% endif %}
@@ -105,7 +105,7 @@
                                     {# Add technical unit counts #}
                                     {% for techUnit in unit.kitLocation.units %}
                                         {% if techUnit.id != unit.id %} {# Don't count the kit itself #}
-                                            {% set matId = techUnit.material.id ~ "" %}
+                                            {% set matId = 'mat_' ~ techUnit.material.id %}
                                             {% set currentCount = locationQuantities[matId] ?? 0 %}
                                             {% set locationQuantities = locationQuantities|merge({(matId): currentCount + 1}) %}
                                         {% endif %}
@@ -116,7 +116,7 @@
 
                                 {# First, items in the template #}
                                 {% for item in unit.template.items %}
-                                    {% set mId = item.material.id ~ "" %}
+                                    {% set mId = 'mat_' ~ item.material.id %}
                                     {% set displayedMaterialIds = displayedMaterialIds|merge([mId]) %}
                                     {% set currentQty = locationQuantities[mId] ?? 0 %}
                                     <tr>
@@ -159,11 +159,11 @@
                                         {# Find a material object to get name and image #}
                                         {% set extraMaterial = null %}
                                         {% for stock in unit.kitLocation.stocks %}
-                                            {% if stock.material.id ~ "" == materialId %}{% set extraMaterial = stock.material %}{% endif %}
+                                            {% if 'mat_' ~ stock.material.id == materialId %}{% set extraMaterial = stock.material %}{% endif %}
                                         {% endfor %}
                                         {% if not extraMaterial %}
                                             {% for techUnit in unit.kitLocation.units %}
-                                                {% if techUnit.material.id ~ "" == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
+                                                {% if 'mat_' ~ techUnit.material.id == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
                                             {% endfor %}
                                         {% endif %}
 
@@ -209,6 +209,64 @@
                                         <td colspan="4" class="text-center py-5 text-slate-400 italic">Este botiquín está vacío y no tiene plantilla asignada.</td>
                                     </tr>
                                 {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card border-0 shadow-sm rounded-3 mt-4">
+                <div class="card-header bg-white py-3 border-bottom border-slate-100">
+                    <h5 class="text-xs font-black uppercase tracking-widest text-slate-400 m-0">Historial de Movimientos</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0">
+                            <thead class="bg-slate-50">
+                                <tr>
+                                    <th class="ps-4 text-xxs font-black uppercase text-slate-400 border-0">Fecha</th>
+                                    <th class="text-xxs font-black uppercase text-slate-400 border-0">Material</th>
+                                    <th class="text-xxs font-black uppercase text-slate-400 border-0 text-center">Tipo</th>
+                                    <th class="text-xxs font-black uppercase text-slate-400 border-0 text-end">Cantidad</th>
+                                    <th class="text-xxs font-black uppercase text-slate-400 border-0 pe-4">Motivo / Usuario</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for movement in movements|default([]) %}
+                                    {% set isEntry = movement.destination and unit.kitLocation and movement.destination.id == unit.kitLocation.id %}
+                                    <tr>
+                                        <td class="ps-4">
+                                            <div class="font-bold text-slate-800">{{ movement.createdAt|date('d/m/Y', 'Europe/Madrid') }}</div>
+                                            <div class="text-xxs text-slate-400 font-bold uppercase">{{ movement.createdAt|date('H:i', 'Europe/Madrid') }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="font-bold text-slate-800">{{ movement.material.name }}</div>
+                                            {% if movement.batch %}
+                                                <div class="text-xxs text-slate-400 uppercase">Lote: {{ movement.batch.batchNumber }}</div>
+                                            {% elseif movement.materialUnit and movement.materialUnit.serialNumber %}
+                                                <div class="text-xxs text-slate-400 uppercase">SN: {{ movement.materialUnit.serialNumber }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-center">
+                                            {% if isEntry %}
+                                                <span class="badge bg-green-100 text-green-700 text-xxs uppercase"><i data-lucide="arrow-down-right" class="w-3 h-3 inline"></i> ENTRADA</span>
+                                            {% else %}
+                                                <span class="badge bg-red-100 text-red-700 text-xxs uppercase"><i data-lucide="arrow-up-right" class="w-3 h-3 inline"></i> SALIDA</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end font-monospace font-bold {% if isEntry %}text-green-600{% else %}text-red-600{% endif %}">
+                                            {{ isEntry ? '+' : '-' }}{{ movement.quantity|abs }}
+                                        </td>
+                                        <td class="pe-4">
+                                            <div class="text-sm text-slate-700">{{ movement.reason }}</div>
+                                            <div class="text-xxs text-slate-400"><i data-lucide="user" class="w-3 h-3 inline"></i> {{ movement.user ? movement.user.email : (movement.responsible ? movement.responsible.name : 'Sistema') }}</div>
+                                        </td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-5 text-slate-400 italic">No hay movimientos registrados para este botiquín.</td>
+                                    </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>

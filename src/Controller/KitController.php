@@ -400,14 +400,26 @@ class KitController extends AbstractController
     }
 
     #[Route('/{id}/inventory', name: 'app_kit_inventory', methods: ['GET'])]
-    public function inventory(MaterialUnit $unit): Response
+    public function inventory(MaterialUnit $unit, \App\Repository\MaterialMovementRepository $movementRepository): Response
     {
         if (!$unit->getTemplate()) {
             throw $this->createNotFoundException('Este material no es un botiquín.');
         }
 
+        $movements = [];
+        if ($unit->getKitLocation()) {
+            $movements = $movementRepository->createQueryBuilder('m')
+                ->where('m.origin = :location OR m.destination = :location')
+                ->setParameter('location', $unit->getKitLocation())
+                ->orderBy('m.createdAt', 'DESC')
+                ->setMaxResults(50)
+                ->getQuery()
+                ->getResult();
+        }
+
         $response = $this->render('kit/inventory.html.twig', [
             'unit' => $unit,
+            'movements' => $movements,
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
         return $response;
@@ -634,6 +646,10 @@ class KitController extends AbstractController
             if (!$manualOnly) {
                 $remainingNeeded = $needed;
                 foreach ($stocks as $stock) {
+                    $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
+                    // Skip stocks already assigned to any kit or the current kit
+                    if ($isBusy || $stock->getLocation() === $kitLocation) continue;
+
                     if ($remainingNeeded <= 0) break;
                     $take = min($remainingNeeded, $stock->getQuantity());
                     $proposals[] = [

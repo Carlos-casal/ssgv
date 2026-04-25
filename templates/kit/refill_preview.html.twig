@@ -193,12 +193,23 @@
                         <div class="font-bold text-slate-800 dark:text-slate-200 mb-1 manual-title" style="display:none;"></div>
                         <select class="form-select form-select-sm material-selector" data-action="change->kit-refill#onMaterialChange">
                             <option value="" disabled selected>Selecciona Material...</option>
+                            
+                            {% set used_material_ids = [] %}
+                            {% for p in proposals %}
+                                {% set used_material_ids = used_material_ids|merge([p.material.id]) %}
+                            {% endfor %}
+                            {% for c in currentContents %}
+                                {% set used_material_ids = used_material_ids|merge([c.material.id]) %}
+                            {% endfor %}
+
                             {% for m in allMaterials %}
                                 {# Exclude materials that HAVE NO AVAILABLE stock or units anywhere #}
                                 {% if warehouseOptions[m.id]|default([])|length > 0 %}
                                     {# Exclude kit container from manual addition #}
                                     {% if 'botiquín' not in m.name|lower and 'contenedor' not in m.name|lower and m.id != unit.material.id %}
-                                        <option value="{{ m.id }}" data-nature="{{ m.nature }}">{{ m.name }}</option>
+                                        {% if m.id not in used_material_ids %}
+                                            <option value="{{ m.id }}" data-nature="{{ m.nature }}">{{ m.name }}</option>
+                                        {% endif %}
                                     {% endif %}
                                 {% endif %}
                             {% endfor %}
