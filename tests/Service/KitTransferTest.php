@@ -88,6 +88,19 @@ class KitTransferTest extends TestCase
             return null;
         });
 
+        // Mock QueryBuilder for FIFO stock lookup in transfer()
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)->disableOriginalConstructor()->getMock();
+        $query->method('getResult')->willReturn([$stockA]);
+        $qbStock = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qbStock->method('leftJoin')->willReturnSelf();
+        $qbStock->method('where')->willReturnSelf();
+        $qbStock->method('andWhere')->willReturnSelf();
+        $qbStock->method('setParameter')->willReturnSelf();
+        $qbStock->method('orderBy')->willReturnSelf();
+        $qbStock->method('addOrderBy')->willReturnSelf();
+        $qbStock->method('getQuery')->willReturn($query);
+        $this->stockRepository->method('createQueryBuilder')->willReturn($qbStock);
+
         // Mock movement history check to return empty
         $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
             ->disableOriginalConstructor()
