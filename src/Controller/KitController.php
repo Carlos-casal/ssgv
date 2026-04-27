@@ -78,18 +78,83 @@ class KitController extends AbstractController
         }
 
         $defaults = [
-            ['name' => 'Mochila SVB Básica', 'type' => 'Mochila'],
-            ['name' => 'Maletín de Oxigenoterapia', 'type' => 'Bolsa'],
-            ['name' => 'Riñonera de Intervención Rápida', 'type' => 'Riñonera'],
+            [
+                'name' => 'Mochila SVB Básica',
+                'type' => 'Mochila',
+                'items' => [
+                    ['name' => 'Tensiómetro', 'qty' => 1, 'nature' => Material::NATURE_TECHNICAL],
+                    ['name' => 'Pulsioxímetro', 'qty' => 1, 'nature' => Material::NATURE_TECHNICAL],
+                    ['name' => 'Cánula Guedel #0', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Cánula Guedel #1', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Cánula Guedel #2', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Cánula Guedel #3', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Cánula Guedel #5', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Gasas estériles', 'qty' => 35, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Suero fisiológico 10 ml', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Suero fisiológico 30 ml', 'qty' => 3, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Suero fisiológico 100 ml', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Venda crepe 4x5', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Venda crepe 4x7', 'qty' => 3, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Venda crepe 4x10', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Venda crepe 10x10', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Esparadrapo hipoalergénico', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Omnifix', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Clorhexidina', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Agua oxigenada', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Alcohol 96', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Apósitos 7x5', 'qty' => 2, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Apósitos 10x8', 'qty' => 5, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Apósitos 20x10', 'qty' => 5, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'AMBU + mascarilla', 'qty' => 1, 'nature' => Material::NATURE_TECHNICAL],
+                    ['name' => 'Manta de Emergencia', 'qty' => 4, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Tijera corta ropa', 'qty' => 1, 'nature' => Material::NATURE_TECHNICAL],
+                    ['name' => 'Pinza', 'qty' => 1, 'nature' => Material::NATURE_TECHNICAL],
+                    ['name' => 'Spray de frío', 'qty' => 1, 'nature' => Material::NATURE_CONSUMABLE],
+                    ['name' => 'Guantes (diferentes tallas)', 'qty' => 6, 'nature' => Material::NATURE_CONSUMABLE],
+                ]
+            ],
+            ['name' => 'Maletín de Oxigenoterapia', 'type' => 'Bolsa', 'items' => []],
+            ['name' => 'Riñonera de Intervención Rápida', 'type' => 'Riñonera', 'items' => []],
         ];
 
         foreach ($defaults as $data) {
-            $existing = $entityManager->getRepository(KitTemplate::class)->findOneBy(['name' => $data['name']]);
-            if (!$existing) {
+            $template = $entityManager->getRepository(KitTemplate::class)->findOneBy(['name' => $data['name']]);
+            if (!$template) {
                 $template = new KitTemplate();
                 $template->setName($data['name']);
                 $template->setContainerType($data['type']);
                 $entityManager->persist($template);
+            }
+
+            // Sync items
+            if (!empty($data['items'])) {
+                foreach ($data['items'] as $itemData) {
+                    $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => $itemData['name']]);
+                    if (!$material) {
+                        $material = new Material();
+                        $material->setName($itemData['name']);
+                        $material->setCategory('Sanitario');
+                        $material->setNature($itemData['nature']);
+                        $entityManager->persist($material);
+                    }
+
+                    $exists = false;
+                    foreach ($template->getItems() as $existingItem) {
+                        if ($existingItem->getMaterial() === $material) {
+                            $existingItem->setQuantity($itemData['qty']);
+                            $exists = true;
+                            break;
+                        }
+                    }
+
+                    if (!$exists) {
+                        $item = new KitTemplateItem();
+                        $item->setMaterial($material);
+                        $item->setQuantity($itemData['qty']);
+                        $template->addItem($item);
+                        $entityManager->persist($item);
+                    }
+                }
             }
         }
 
