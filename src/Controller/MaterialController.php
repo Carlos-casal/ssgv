@@ -156,7 +156,7 @@ class MaterialController extends AbstractController
 
                     $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
-                        $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
+                        $batch->setExpirationDate(new \DateTime($bData['expirationDate']));
                     }
                     $batch->setSupplier($bData['supplier'] ?? null);
                     $batch->setUnitsPerPackage($unitsPerPackage);
@@ -224,10 +224,10 @@ class MaterialController extends AbstractController
                     $first = $unitsData[0];
                     if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
                     if (!empty($first['purchaseDate'])) {
-                        $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
+                        $material->setPurchaseDate(new \DateTime($first['purchaseDate']));
                     }
                     if (!empty($first['warrantyDate'])) {
-                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyDate']));
+                        $material->setWarrantyDate(new \DateTime($first['warrantyDate']));
                     }
                 }
 
@@ -458,7 +458,7 @@ class MaterialController extends AbstractController
         if ($material->getNature() === Material::NATURE_TECHNICAL) {
             foreach ($material->getUnits() as $unit) {
                 $pDate = $unit->getPurchaseDate() ? $unit->getPurchaseDate()->format('Y-m-d') : 'none';
-                $wDate = $unit->getWarrantyEndDate() ? $unit->getWarrantyEndDate()->format('Y-m-d') : 'none';
+                $wDate = $unit->getWarrantyDate() ? $unit->getWarrantyDate()->format('Y-m-d') : 'none';
                 $key = ($unit->getSerialNumber() ?: 'no-sn') . '_' . $pDate . '_' . $wDate;
 
                 if (!isset($groupedUnits[$key])) {
@@ -466,7 +466,7 @@ class MaterialController extends AbstractController
                         'sn' => $unit->getSerialNumber(),
                         'model' => $unit->getBrandModel() ?: $material->getBrandModel(),
                         'purchaseDate' => $unit->getPurchaseDate(),
-                        'warrantyDate' => $unit->getWarrantyEndDate(),
+                        'warrantyDate' => $unit->getWarrantyDate(),
                         'count' => 0,
                         'valuation' => 0.0
                     ];
@@ -584,7 +584,7 @@ class MaterialController extends AbstractController
 
                     $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
-                        $batch->setExpirationDate(new \DateTimeImmutable($bData['expirationDate']));
+                        $batch->setExpirationDate(new \DateTime($bData['expirationDate']));
                     }
                     $batch->setSupplier($bData['supplier'] ?? null);
 
@@ -688,10 +688,10 @@ class MaterialController extends AbstractController
                     $first = $unitsData[0];
                     if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
                     if (!empty($first['purchaseDate'])) {
-                        $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
+                        $material->setPurchaseDate(new \DateTime($first['purchaseDate']));
                     }
                     if (!empty($first['warrantyDate'])) {
-                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyDate']));
+                        $material->setWarrantyDate(new \DateTime($first['warrantyDate']));
                     }
                     if (isset($first['operationalStatus'])) {
                         $material->setOperationalStatus($first['operationalStatus']);
@@ -750,7 +750,7 @@ class MaterialController extends AbstractController
                     'serialNumber' => $unit->getSerialNumber(),
                     'brandModel' => $material->getBrandModel(),
                     'purchaseDate' => $material->getPurchaseDate() ? $material->getPurchaseDate()->format('Y-m-d') : null,
-                    'warrantyDate' => $material->getWarrantyEndDate() ? $material->getWarrantyEndDate()->format('Y-m-d') : null,
+                    'warrantyDate' => $material->getWarrantyDate() ? $material->getWarrantyDate()->format('Y-m-d') : null,
                     'operationalStatus' => $unit->getOperationalStatus(),
                     'batteryStatus' => $unit->getBatteryStatus(),
                     'networkId' => $unit->getNetworkId(),

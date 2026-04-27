@@ -391,7 +391,7 @@ class ExcelImportService
                 if ($networkId && $networkId !== 'S/N') $material->setNetworkId($networkId);
                 if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
                 if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
-                if ($warrantyDate) $material->setWarrantyEndDate($warrantyDate);
+                if ($warrantyDate) $material->setWarrantyDate($warrantyDate);
                 if ($description) $material->setDescription($description);
 
                 // Handle Image
