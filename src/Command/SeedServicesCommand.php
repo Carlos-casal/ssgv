@@ -203,13 +203,15 @@ class SeedServicesCommand extends Command
             ];
 
             foreach ($kitItems as $itemData) {
+                $item = new KitTemplateItem();
                 if (isset($materialMap[$itemData['name']])) {
-                    $item = new KitTemplateItem();
                     $item->setMaterial($materialMap[$itemData['name']]);
-                    $item->setQuantity($itemData['qty']);
-                    $item->setTemplate($template);
-                    $this->entityManager->persist($item);
+                } else {
+                    $item->setSuggestedName($itemData['name']);
                 }
+                $item->setQuantity($itemData['qty']);
+                $item->setTemplate($template);
+                $this->entityManager->persist($item);
             }
         }
 

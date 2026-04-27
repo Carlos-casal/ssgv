@@ -130,17 +130,14 @@ class KitController extends AbstractController
             if (!empty($data['items'])) {
                 foreach ($data['items'] as $itemData) {
                     $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => $itemData['name']]);
-                    if (!$material) {
-                        $material = new Material();
-                        $material->setName($itemData['name']);
-                        $material->setCategory('Sanitario');
-                        $material->setNature($itemData['nature']);
-                        $entityManager->persist($material);
-                    }
 
                     $exists = false;
                     foreach ($template->getItems() as $existingItem) {
-                        if ($existingItem->getMaterial() === $material) {
+                        if ($material && $existingItem->getMaterial() === $material) {
+                            $existingItem->setQuantity($itemData['qty']);
+                            $exists = true;
+                            break;
+                        } elseif (!$material && $existingItem->getSuggestedName() === $itemData['name']) {
                             $existingItem->setQuantity($itemData['qty']);
                             $exists = true;
                             break;
@@ -149,7 +146,11 @@ class KitController extends AbstractController
 
                     if (!$exists) {
                         $item = new KitTemplateItem();
-                        $item->setMaterial($material);
+                        if ($material) {
+                            $item->setMaterial($material);
+                        } else {
+                            $item->setSuggestedName($itemData['name']);
+                        }
                         $item->setQuantity($itemData['qty']);
                         $template->addItem($item);
                         $entityManager->persist($item);
@@ -182,13 +183,16 @@ class KitController extends AbstractController
             $template->setDescription($description);
 
             foreach ($items as $itemData) {
-                if (empty($itemData['material']) || empty($itemData['quantity'])) continue;
-
-                $material = $entityManager->getRepository(Material::class)->find($itemData['material']);
-                if (!$material) continue;
+                if ((empty($itemData['material']) && empty($itemData['suggested_name'])) || empty($itemData['quantity'])) continue;
 
                 $item = new KitTemplateItem();
-                $item->setMaterial($material);
+                if (!empty($itemData['material'])) {
+                    $material = $entityManager->getRepository(Material::class)->find($itemData['material']);
+                    if ($material) $item->setMaterial($material);
+                } else {
+                    $item->setSuggestedName($itemData['suggested_name']);
+                }
+
                 $item->setQuantity((int)$itemData['quantity']);
                 $template->addItem($item);
             }
@@ -260,10 +264,14 @@ class KitController extends AbstractController
             $template->getItems()->clear();
 
             foreach ($items as $itemData) {
-                if (empty($itemData['material']) || empty($itemData['quantity'])) continue;
+                if ((empty($itemData['material']) && empty($itemData['suggested_name'])) || empty($itemData['quantity'])) continue;
 
                 $item = new KitTemplateItem();
-                $item->setMaterial($entityManager->getReference(Material::class, $itemData['material']));
+                if (!empty($itemData['material'])) {
+                    $item->setMaterial($entityManager->getReference(Material::class, $itemData['material']));
+                } else {
+                    $item->setSuggestedName($itemData['suggested_name']);
+                }
                 $item->setQuantity((int)$itemData['quantity']);
                 $template->addItem($item);
             }
@@ -416,6 +424,7 @@ class KitController extends AbstractController
 
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
+            if (!$material) continue; // Skip items that are only suggestions for now in auto-refill logic
             $defaultWarehouse = $materialManager->getDefaultLocation($material);
             $this->addMaterialOptionsToRefill($material, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity());
         }
@@ -576,6 +585,7 @@ class KitController extends AbstractController
         // 2. Proposals for items IN THE TEMPLATE (FIFO)
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
+            if (!$material) continue; // Skip suggestions
             $defaultWarehouse = $materialManager->getDefaultLocation($material);
             $this->addMaterialOptionsToRefill($material, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity());
         }
