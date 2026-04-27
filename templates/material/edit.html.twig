@@ -89,6 +89,11 @@
 
                 <div id="units-container" data-material-dynamic-form-target="unitsContainer" aria-live="polite"></div>
 
+                {# We render brandModel here for Communications #}
+                <div class="d-none">
+                    {% if not form.brandModel.rendered %}{{ form_widget(form.brandModel) }}{% endif %}
+                </div>
+
                 <div class="card shadow-sm mb-4 border-0">
                     <div class="card-header bg-white py-3">
                         <h6 class="m-0 font-weight-bold text-secondary">
@@ -132,10 +137,7 @@
                             </div>
                         </div>
                         <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Marca / Modelo</label>
-                                {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
-                            </div>
+                            <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA / MODELO'}) }}</div>
                             <div class="col-md-6">{{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}</div>
                         </div>
                         <div class="row mt-2">
@@ -211,7 +213,7 @@
                                 }) }}
                             </div>
                             <div class="col-md-6">
-                                {% if material.category in ['Sanitario', 'Uniformidad', 'Logística'] %}
+                                {% if material.category in ["Sanitario", "Uniformidad", "Logística", "Comunicaciones", "Mar", "Vehículos"] %}
                                     <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
                                     <div class="input-group">
                                         {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
@@ -266,9 +268,13 @@
                 </div>
                 <div class="card-body">
                     <div class="row">
-                        <div class="col-md-6 mb-3 d-none">
+                        <div class="col-md-6 mb-3">
                             <label class="form-label">Marca y Modelo</label>
-                            <div class="d-none">{{ form_row(form.brandModel) }}</div>
+                            {% if not form.brandModel.rendered %}
+                                {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
+                            {% else %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.brandModel }}" readonly disabled>
+                            {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Número de Serie (S/N)</label>
@@ -491,7 +497,7 @@
     </div>
     <div class="d-none">
         {% if form.serialNumber is defined and not form.serialNumber.rendered %}{{ form_row(form.serialNumber) }}{% endif %}
-        {% if form.brandModel is defined and not form.brandModel.rendered %}{{ form_row(form.brandModel) }}{% endif %}
+        {% if form.brandModel is defined and not form.brandModel.rendered %}{{ form_widget(form.brandModel) }}{% endif %}
         {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}{{ form_row(form.purchaseDate) }}{% endif %}
         {% if form.warrantyDate is defined and not form.warrantyDate.rendered %}{{ form_row(form.warrantyDate) }}{% endif %}
         {% if form.operationalStatus is defined and not form.operationalStatus.rendered %}{{ form_row(form.operationalStatus) }}{% endif %}
