@@ -63,8 +63,8 @@ class Material
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $subFamily = null;
 
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $expirationDate = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $expirationDate = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $supplier = null;
@@ -102,11 +102,11 @@ class Material
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $deviceType = null;
 
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $purchaseDate = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $purchaseDate = null;
 
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $warrantyEndDate = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $warrantyDate = null;
 
     #[ORM\Column(options: ["default" => false])]
     private bool $hasCharger = false;
@@ -489,12 +489,12 @@ class Material
         return $this;
     }
 
-    public function getExpirationDate(): ?\DateTimeImmutable
+    public function getExpirationDate(): ?\DateTime
     {
         return $this->expirationDate;
     }
 
-    public function setExpirationDate(?\DateTimeImmutable $expirationDate): static
+    public function setExpirationDate(?\DateTime $expirationDate): static
     {
         $this->expirationDate = $expirationDate;
 
@@ -609,26 +609,26 @@ class Material
         return $this;
     }
 
-    public function getPurchaseDate(): ?\DateTimeImmutable
+    public function getPurchaseDate(): ?\DateTime
     {
         return $this->purchaseDate;
     }
 
-    public function setPurchaseDate(?\DateTimeImmutable $purchaseDate): static
+    public function setPurchaseDate(?\DateTime $purchaseDate): static
     {
         $this->purchaseDate = $purchaseDate;
 
         return $this;
     }
 
-    public function getWarrantyEndDate(): ?\DateTimeImmutable
+    public function getWarrantyDate(): ?\DateTime
     {
-        return $this->warrantyEndDate;
+        return $this->warrantyDate;
     }
 
-    public function setWarrantyEndDate(?\DateTimeImmutable $warrantyEndDate): static
+    public function setWarrantyDate(?\DateTime $warrantyDate): static
     {
-        $this->warrantyEndDate = $warrantyEndDate;
+        $this->warrantyDate = $warrantyDate;
 
         return $this;
     }
@@ -727,9 +727,9 @@ class Material
             return 'gray';
         }
 
-        $now = new \DateTimeImmutable('today');
-        $oneMonth = $now->modify('+30 days');
-        $sixMonths = $now->modify('+6 months');
+        $now = new \DateTime('today');
+        $oneMonth = (clone $now)->modify('+30 days');
+        $sixMonths = (clone $now)->modify('+6 months');
 
         if ($expirationDate <= $now) {
             return 'red';

@@ -66,7 +66,7 @@ class ExcelImportService
             'networkId' => ['id de red', 'red', 'issi', 'imei', 'network'],
             'phoneNumber' => ['teléfono', 'móvil', 'phone'],
             'purchaseDate' => ['compra', 'purchase'],
-            'warrantyEndDate' => ['garantía', 'fin', 'warranty'],
+            'warrantyDate' => ['garantía', 'fin', 'warranty'],
             'description' => ['descripción', 'notas', 'description'],
             'hasCharger' => ['cargador', 'charger'],
             'hasClip' => ['pinza', 'clip'],
@@ -122,6 +122,7 @@ class ExcelImportService
 
         $highestRow = $worksheet->getHighestRow();
         $seenSns = [];
+        $seenAliases = [];
 
         for ($row = 2; $row <= $highestRow; $row++) {
             $name = isset($map['name']) ? $this->getCellValue($worksheet, $map['name'], $row) : null;
@@ -158,53 +159,68 @@ class ExcelImportService
                 ];
             }
 
-            // Check for Serial Number conflicts in EQUIPO_TECNICO
+            // Check for Serial Number and Alias conflicts in EQUIPO_TECNICO
             $resolvedNature = $material ? $material->getNature() : $nature;
-            if ($resolvedNature === Material::NATURE_TECHNICAL && $sn) {
-                $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
+            $alias = isset($map['alias']) ? $this->getCellValue($worksheet, $map['alias'], $row) : null;
+
+            if ($resolvedNature === Material::NATURE_TECHNICAL) {
                 $brandModel = isset($map['brandModel']) ? $this->getCellValue($worksheet, $map['brandModel'], $row) : null;
                 $totalPrice = isset($map['totalPrice']) ? $this->getCellValue($worksheet, $map['totalPrice'], $row) : null;
 
-                $conflictType = null;
-                $existingUnit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $sn]);
-
-                if ($existingUnit) {
-                    $conflictType = 'database';
-                } elseif (isset($seenSns[$sn])) {
-                    $conflictType = 'excel';
+                // 1. Alias Conflict Check
+                if ($alias) {
+                    $existingByAlias = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['alias' => $alias]);
+                    if ($existingByAlias) {
+                        $preview['errors'][] = "Fila {$row}: El alias '{$alias}' ya existe en la base de datos.";
+                    } elseif (isset($seenAliases[$alias])) {
+                        $preview['errors'][] = "Fila {$row}: El alias '{$alias}' está duplicado en el propio Excel.";
+                    }
+                    $seenAliases[$alias] = true;
                 }
 
-                if ($conflictType) {
-                    $preview['conflicts'][$sn] = [
-                        'type' => $conflictType,
-                        'serialNumber' => $sn,
-                        'existing' => $existingUnit ? [
-                            'alias' => $existingUnit->getAlias(),
-                            'brandModel' => $existingUnit->getMaterial()->getBrandModel(),
-                            'materialName' => $existingUnit->getMaterial()->getName(),
-                            'networkId' => $existingUnit->getNetworkId(),
-                            'phoneNumber' => $existingUnit->getPhoneNumber(),
-                            'price' => $existingUnit->getPurchasePrice(),
-                        ] : $seenSns[$sn],
-                        'new' => [
-                            'alias' => $alias,
-                            'brandModel' => $brandModel,
-                            'materialName' => $name,
-                            'networkId' => $nid,
-                            'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
-                            'price' => $totalPrice,
-                        ]
+                // 2. Serial Number Conflict Check
+                if ($sn) {
+                    $conflictType = null;
+                    $existingUnit = $this->entityManager->getRepository(\App\Entity\MaterialUnit::class)->findOneBy(['serialNumber' => $sn]);
+
+                    if ($existingUnit) {
+                        $conflictType = 'database';
+                    } elseif (isset($seenSns[$sn])) {
+                        $conflictType = 'excel';
+                    }
+
+                    if ($conflictType) {
+                        $preview['conflicts'][$sn] = [
+                            'type' => $conflictType,
+                            'serialNumber' => $sn,
+                            'existing' => $existingUnit ? [
+                                'alias' => $existingUnit->getAlias(),
+                                'brandModel' => $existingUnit->getMaterial()->getBrandModel(),
+                                'materialName' => $existingUnit->getMaterial()->getName(),
+                                'networkId' => $existingUnit->getNetworkId(),
+                                'phoneNumber' => $existingUnit->getPhoneNumber(),
+                                'price' => $existingUnit->getPurchasePrice(),
+                            ] : $seenSns[$sn],
+                            'new' => [
+                                'alias' => $alias,
+                                'brandModel' => $brandModel,
+                                'materialName' => $name,
+                                'networkId' => $nid,
+                                'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
+                                'price' => $totalPrice,
+                            ]
+                        ];
+                    }
+
+                    $seenSns[$sn] = [
+                        'alias' => $alias,
+                        'brandModel' => $brandModel,
+                        'materialName' => $name,
+                        'networkId' => $nid,
+                        'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
+                        'price' => $totalPrice,
                     ];
                 }
-
-                $seenSns[$sn] = [
-                    'alias' => $alias,
-                    'brandModel' => $brandModel,
-                    'materialName' => $name,
-                    'networkId' => $nid,
-                    'phoneNumber' => isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null,
-                    'price' => $totalPrice,
-                ];
             }
 
             $preview['materials'][$key]['stock_to_add'] += $stock;
@@ -334,7 +350,7 @@ class ExcelImportService
                 $networkId = isset($map['networkId']) ? $this->getCellValue($worksheet, $map['networkId'], $row) : null;
                 $phoneNumber = isset($map['phoneNumber']) ? $this->getCellValue($worksheet, $map['phoneNumber'], $row) : null;
                 $purchaseDate = isset($map['purchaseDate']) ? $this->getDateValue($worksheet, $map['purchaseDate'], $row) : null;
-                $warrantyEndDate = isset($map['warrantyEndDate']) ? $this->getDateValue($worksheet, $map['warrantyEndDate'], $row) : null;
+                $warrantyDate = isset($map['warrantyDate']) ? $this->getDateValue($worksheet, $map['warrantyDate'], $row) : null;
                 $description = isset($map['description']) ? $this->getCellValue($worksheet, $map['description'], $row) : null;
 
                 // Find or Create Material
@@ -375,7 +391,7 @@ class ExcelImportService
                 if ($networkId && $networkId !== 'S/N') $material->setNetworkId($networkId);
                 if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
                 if ($purchaseDate) $material->setPurchaseDate($purchaseDate);
-                if ($warrantyEndDate) $material->setWarrantyEndDate($warrantyEndDate);
+                if ($warrantyDate) $material->setWarrantyEndDate($warrantyDate);
                 if ($description) $material->setDescription($description);
 
                 // Handle Image
@@ -396,7 +412,7 @@ class ExcelImportService
                         // User requirement: Treat same S/N with different dates as separate entities
                         $criteria = ['serialNumber' => $cleanSn];
                         if ($purchaseDate) $criteria['purchaseDate'] = $purchaseDate;
-                        if ($warrantyEndDate) $criteria['warrantyEndDate'] = $warrantyEndDate;
+                        if ($warrantyDate) $criteria['warrantyDate'] = $warrantyDate;
 
                         $unit = $unitRepo->findOneBy($criteria);
 
@@ -421,7 +437,7 @@ class ExcelImportService
                                 'phoneNumber' => $phoneNumber,
                                 'batteryStatus' => '100%',
                                 'purchaseDate' => $purchaseDate,
-                                'warrantyEndDate' => $warrantyEndDate,
+                                'warrantyDate' => $warrantyDate,
                                 'hasCharger' => (bool)(isset($map['hasCharger']) ? $this->getCellValue($worksheet, $map['hasCharger'], $row) : false),
                                 'hasClip' => (bool)(isset($map['hasClip']) ? $this->getCellValue($worksheet, $map['hasClip'], $row) : false),
                                 'hasMicrophone' => (bool)(isset($map['hasMicrophone']) ? $this->getCellValue($worksheet, $map['hasMicrophone'], $row) : false),
@@ -745,7 +761,7 @@ class ExcelImportService
             'R1' => 'ID de Red (ISSI/IMEI)',
             'S1' => 'Teléfono',
             'T1' => 'Fecha de Compra (DD/MM/AA) *',
-            'U1' => 'Fin de Garantía (DD/MM/AA) *',
+            'U1' => 'Garantía (DD/MM/AA) *',
             'V1' => 'Descripción'
         ];
 

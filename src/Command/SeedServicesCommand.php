@@ -7,6 +7,8 @@ use App\Entity\ServiceCategory;
 use App\Entity\ServiceSubcategory;
 use App\Entity\Material;
 use App\Entity\MaterialUnit;
+use App\Entity\KitTemplate;
+use App\Entity\KitTemplateItem;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
@@ -97,13 +99,43 @@ class SeedServicesCommand extends Command
             ['name' => 'Walkies', 'category' => 'Comunicaciones', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'Vallas', 'category' => 'Logística', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 50, 'safety' => 10],
             ['name' => 'Carpas', 'category' => 'Logística', 'nature' => Material::NATURE_TECHNICAL],
-            ['name' => 'Gasas', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 10, 'safety' => 20], // Low stock!
+            ['name' => 'Gasas', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 100, 'safety' => 35],
             ['name' => 'Chaleco Salvavidas', 'category' => 'Mar', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 15, 'safety' => 5],
             ['name' => 'Zodiac', 'category' => 'Mar', 'nature' => Material::NATURE_TECHNICAL],
             ['name' => 'Pantalón Uniforme', 'category' => 'Uniformidad', 'nature' => Material::NATURE_CONSUMABLE, 'stock' => 30, 'safety' => 10],
             ['name' => 'Linterna', 'category' => 'Varios', 'nature' => Material::NATURE_TECHNICAL],
+            // New Official Kit Materials
+            ['name' => 'Tensiómetro', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Pulsioxímetro', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Cánula Guedel Talla 0', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Cánula Guedel Talla 1', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Cánula Guedel Talla 2', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Cánula Guedel Talla 3', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Cánula Guedel Talla 5', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Suero 10ml', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Suero 30ml', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Suero 100ml', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Venda Crepe 4x5', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Venda Crepe 4x7', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Venda Crepe 4x10', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Venda Crepe 10x10', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Esparadrapo', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Omnifix', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Clorhexidina', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Agua Oxigenada', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Alcohol', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Apósito 7x5', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Apósito 10x8', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Apósito 20x10', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'AMBU + mascarilla', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Manta de Emergencia', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Tijera corta ropa', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Pinza', 'category' => 'Sanitario', 'nature' => Material::NATURE_TECHNICAL],
+            ['name' => 'Spray de frío', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
+            ['name' => 'Guantes', 'category' => 'Sanitario', 'nature' => Material::NATURE_CONSUMABLE],
         ];
 
+        $materialMap = [];
         foreach ($materials as $m) {
             $mat = $this->entityManager->getRepository(Material::class)->findOneBy(['name' => $m['name']]);
             if (!$mat) {
@@ -123,6 +155,60 @@ class SeedServicesCommand extends Command
                         $unit->setSerialNumber($mat->getName() . '-0' . $i);
                         $this->entityManager->persist($unit);
                     }
+                }
+            }
+            $materialMap[$m['name']] = $mat;
+        }
+
+        // 4b. Seed Official Kit Template
+        $templateName = 'Mochila SVB Básica (Oficial)';
+        $template = $this->entityManager->getRepository(KitTemplate::class)->findOneBy(['name' => $templateName]);
+        if (!$template) {
+            $template = new KitTemplate();
+            $template->setName($templateName);
+            $template->setContainerType('Mochila');
+            $template->setDescription('Plantilla oficial para Mochilas de Soporte Vital Básico.');
+            $this->entityManager->persist($template);
+
+            $kitItems = [
+                ['name' => 'Tensiómetro', 'qty' => 1],
+                ['name' => 'Pulsioxímetro', 'qty' => 1],
+                ['name' => 'Cánula Guedel Talla 0', 'qty' => 1],
+                ['name' => 'Cánula Guedel Talla 1', 'qty' => 1],
+                ['name' => 'Cánula Guedel Talla 2', 'qty' => 1],
+                ['name' => 'Cánula Guedel Talla 3', 'qty' => 1],
+                ['name' => 'Cánula Guedel Talla 5', 'qty' => 1],
+                ['name' => 'Gasas', 'qty' => 35],
+                ['name' => 'Suero 10ml', 'qty' => 1],
+                ['name' => 'Suero 30ml', 'qty' => 3],
+                ['name' => 'Suero 100ml', 'qty' => 1],
+                ['name' => 'Venda Crepe 4x5', 'qty' => 1],
+                ['name' => 'Venda Crepe 4x7', 'qty' => 3],
+                ['name' => 'Venda Crepe 4x10', 'qty' => 1],
+                ['name' => 'Venda Crepe 10x10', 'qty' => 1],
+                ['name' => 'Esparadrapo', 'qty' => 1],
+                ['name' => 'Omnifix', 'qty' => 1],
+                ['name' => 'Clorhexidina', 'qty' => 1],
+                ['name' => 'Agua Oxigenada', 'qty' => 1],
+                ['name' => 'Alcohol', 'qty' => 1],
+                ['name' => 'Apósito 7x5', 'qty' => 2],
+                ['name' => 'Apósito 10x8', 'qty' => 5],
+                ['name' => 'Apósito 20x10', 'qty' => 5],
+                ['name' => 'AMBU + mascarilla', 'qty' => 1],
+                ['name' => 'Manta de Emergencia', 'qty' => 4],
+                ['name' => 'Tijera corta ropa', 'qty' => 1],
+                ['name' => 'Pinza', 'qty' => 1],
+                ['name' => 'Spray de frío', 'qty' => 1],
+                ['name' => 'Guantes', 'qty' => 6],
+            ];
+
+            foreach ($kitItems as $itemData) {
+                if (isset($materialMap[$itemData['name']])) {
+                    $item = new KitTemplateItem();
+                    $item->setMaterial($materialMap[$itemData['name']]);
+                    $item->setQuantity($itemData['qty']);
+                    $item->setTemplate($template);
+                    $this->entityManager->persist($item);
                 }
             }
         }

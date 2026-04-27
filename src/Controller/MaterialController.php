@@ -226,8 +226,8 @@ class MaterialController extends AbstractController
                     if (!empty($first['purchaseDate'])) {
                         $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
                     }
-                    if (!empty($first['warrantyEndDate'])) {
-                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyEndDate']));
+                    if (!empty($first['warrantyDate'])) {
+                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyDate']));
                     }
                 }
 
@@ -690,8 +690,8 @@ class MaterialController extends AbstractController
                     if (!empty($first['purchaseDate'])) {
                         $material->setPurchaseDate(new \DateTimeImmutable($first['purchaseDate']));
                     }
-                    if (!empty($first['warrantyEndDate'])) {
-                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyEndDate']));
+                    if (!empty($first['warrantyDate'])) {
+                        $material->setWarrantyEndDate(new \DateTimeImmutable($first['warrantyDate']));
                     }
                     if (isset($first['operationalStatus'])) {
                         $material->setOperationalStatus($first['operationalStatus']);
@@ -750,7 +750,7 @@ class MaterialController extends AbstractController
                     'serialNumber' => $unit->getSerialNumber(),
                     'brandModel' => $material->getBrandModel(),
                     'purchaseDate' => $material->getPurchaseDate() ? $material->getPurchaseDate()->format('Y-m-d') : null,
-                    'warrantyEndDate' => $material->getWarrantyEndDate() ? $material->getWarrantyEndDate()->format('Y-m-d') : null,
+                    'warrantyDate' => $material->getWarrantyEndDate() ? $material->getWarrantyEndDate()->format('Y-m-d') : null,
                     'operationalStatus' => $unit->getOperationalStatus(),
                     'batteryStatus' => $unit->getBatteryStatus(),
                     'networkId' => $unit->getNetworkId(),
