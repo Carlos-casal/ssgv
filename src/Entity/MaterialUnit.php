@@ -32,7 +32,7 @@ class MaterialUnit
     private ?string $collectiveNumber = null;
 
     #[ORM\Column(nullable: true)]
-    private ?\DateTimeImmutable $lastUsedAt = null;
+    private ?\DateTime $lastUsedAt = null;
 
     #[ORM\Column(options: ["default" => false])]
     private bool $isInMaintenance = false;
@@ -74,11 +74,11 @@ class MaterialUnit
     #[ORM\Column(type: 'decimal', precision: 5, scale: 2, nullable: true)]
     private ?string $marginPercentage = null;
 
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $purchaseDate = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $purchaseDate = null;
 
-    #[ORM\Column(type: 'date_immutable', nullable: true)]
-    private ?\DateTimeImmutable $warrantyEndDate = null;
+    #[ORM\Column(type: 'datetime', nullable: true)]
+    private ?\DateTime $warrantyDate = null;
 
     #[ORM\Column(options: ["default" => false])]
     private bool $hasCharger = false;
@@ -123,26 +123,26 @@ class MaterialUnit
         return $this;
     }
 
-    public function getPurchaseDate(): ?\DateTimeImmutable
+    public function getPurchaseDate(): ?\DateTime
     {
         return $this->purchaseDate;
     }
 
-    public function setPurchaseDate(?\DateTimeImmutable $purchaseDate): static
+    public function setPurchaseDate(?\DateTime $purchaseDate): static
     {
         $this->purchaseDate = $purchaseDate;
 
         return $this;
     }
 
-    public function getWarrantyEndDate(): ?\DateTimeImmutable
+    public function getWarrantyDate(): ?\DateTime
     {
-        return $this->warrantyEndDate;
+        return $this->warrantyDate;
     }
 
-    public function setWarrantyEndDate(?\DateTimeImmutable $warrantyEndDate): static
+    public function setWarrantyDate(?\DateTime $warrantyDate): static
     {
-        $this->warrantyEndDate = $warrantyEndDate;
+        $this->warrantyDate = $warrantyDate;
 
         return $this;
     }
@@ -219,12 +219,12 @@ class MaterialUnit
         return $this;
     }
 
-    public function getLastUsedAt(): ?\DateTimeImmutable
+    public function getLastUsedAt(): ?\DateTime
     {
         return $this->lastUsedAt;
     }
 
-    public function setLastUsedAt(?\DateTimeImmutable $lastUsedAt): static
+    public function setLastUsedAt(?\DateTime $lastUsedAt): static
     {
         $this->lastUsedAt = $lastUsedAt;
 

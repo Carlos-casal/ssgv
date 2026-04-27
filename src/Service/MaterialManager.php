@@ -182,7 +182,7 @@ class MaterialManager
         $unit->setBatteryStatus($data['battery_status'] ?? $data['batteryStatus'] ?? '100%');
 
         if (isset($data['purchaseDate'])) $unit->setPurchaseDate($data['purchaseDate']);
-        if (isset($data['warrantyEndDate'])) $unit->setWarrantyEndDate($data['warrantyEndDate']);
+        if (isset($data['warrantyDate'])) $unit->setWarrantyEndDate($data['warrantyDate']);
         if (isset($data['hasCharger'])) $unit->setHasCharger($data['hasCharger']);
         if (isset($data['hasClip'])) $unit->setHasClip($data['hasClip']);
         if (isset($data['hasMicrophone'])) $unit->setHasMicrophone($data['hasMicrophone']);

@@ -271,14 +271,14 @@ class MaterialType extends AbstractType
                 ],
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('purchaseDate', DateType::class, [
+            ->add('purchaseDate', \Symfony\Component\Form\Extension\Core\Type\DateTimeType::class, [
                 'label' => 'Fecha de Compra',
                 'widget' => 'single_text',
                 'required' => false,
                 'attr' => ['class' => 'form-control']
             ])
-            ->add('warrantyEndDate', DateType::class, [
-                'label' => 'Fin de Garantía',
+            ->add('warrantyDate', DateType::class, [
+                'label' => 'Garantía',
                 'widget' => 'single_text',
                 'required' => true,
                 'attr' => ['class' => 'form-control']
@@ -363,8 +363,8 @@ class MaterialType extends AbstractType
         ]);
         $builder->get('safetyStock')->addModelTransformer($spanishIntegerTransformer);
 
-        $builder->add('warrantyEndDate', DateType::class, [
-            'label' => 'Fin de Garantía',
+        $builder->add('warrantyDate', \Symfony\Component\Form\Extension\Core\Type\DateTimeType::class, [
+            'label' => 'Garantía',
             'widget' => 'single_text',
             'required' => false,
             'attr' => ['class' => 'form-control']

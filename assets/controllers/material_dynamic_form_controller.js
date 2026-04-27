@@ -623,7 +623,7 @@ export default class extends Controller {
             const warrantyDate = new Date(purchaseDate);
             warrantyDate.setFullYear(warrantyDate.getFullYear() + 3);
 
-            const warrantyInput = event.target.closest('.card-body').querySelector('input[name*="[warrantyEndDate]"]');
+            const warrantyInput = event.target.closest('.card-body').querySelector('input[name*="[warrantyDate]"]');
             if (warrantyInput) {
                 warrantyInput.value = warrantyDate.toISOString().split('T')[0];
             }
@@ -650,7 +650,7 @@ export default class extends Controller {
                 currentData[`units_data[${i}][serialNumber]`] = unit.serialNumber;
                 currentData[`units_data[${i}][brandModel]`] = unit.brandModel;
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
-                currentData[`units_data[${i}][warrantyEndDate]`] = unit.warrantyEndDate;
+                currentData[`units_data[${i}][warrantyDate]`] = unit.warrantyDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
                 currentData[`units_data[${i}][purchasePrice]`] = this.formatToUserLocale(unit.purchasePrice);
                 currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
@@ -668,7 +668,7 @@ export default class extends Controller {
             const snName = `units_data[${i}][serialNumber]`;
             const brandName = `units_data[${i}][brandModel]`;
             const purchaseName = `units_data[${i}][purchaseDate]`;
-            const warrantyName = `units_data[${i}][warrantyEndDate]`;
+            const warrantyName = `units_data[${i}][warrantyDate]`;
             const statusName = `units_data[${i}][operationalStatus]`;
             const priceName = `units_data[${i}][purchasePrice]`;
             const discountName = `units_data[${i}][discountPct]`;
@@ -706,7 +706,7 @@ export default class extends Controller {
                                     class="form-input" data-required="true">
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Fin de Garantía<span class="text-red-500">*</span></label>
+                                <label class="form-label">Garantía<span class="text-red-500">*</span></label>
                                 <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-input" data-required="true">
                             </div>
                         </div>
