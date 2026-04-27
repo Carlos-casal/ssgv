@@ -65,12 +65,27 @@
                                     {% for item in template.items %}
                                         <tr class="kit-item-row">
                                             <td class="ps-4">
-                                                <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm material-select" data-action="change->kit-template#filterOptions" required>
-                                                    <option value="" disabled>Selecciona material...</option>
-                                                    {% for material in materials %}
-                                                        <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }}</option>
-                                                    {% endfor %}
-                                                </select>
+                                                {% if item.material %}
+                                                    <select name="items[{{ loop.index0 }}][material]" class="form-select form-select-sm material-select" data-action="change->kit-template#filterOptions" required>
+                                                        <option value="" disabled>Selecciona material...</option>
+                                                        {% for material in materials %}
+                                                            <option value="{{ material.id }}" {{ item.material.id == material.id ? 'selected' : '' }}>{{ material.name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                {% else %}
+                                                    <div class="input-group input-group-sm">
+                                                        <span class="input-group-text bg-warning-soft text-warning" title="Material no registrado" data-bs-toggle="tooltip">
+                                                            <i data-lucide="help-circle" class="w-3 h-3"></i>
+                                                        </span>
+                                                        <input type="text" name="items[{{ loop.index0 }}][suggested_name]" class="form-control font-bold" value="{{ item.suggestedName }}" placeholder="Nombre sugerido">
+                                                        <select name="items[{{ loop.index0 }}][material]" class="form-select material-select" style="max-width: 40px;" data-action="change->kit-template#filterOptions">
+                                                            <option value="">Vincular...</option>
+                                                            {% for material in materials %}
+                                                                <option value="{{ material.id }}">{{ material.name }}</option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+                                                {% endif %}
                                             </td>
                                             <td class="pe-4">
                                                 <div class="input-group input-group-sm">

@@ -18,8 +18,11 @@ class KitTemplateItem
     private ?KitTemplate $template = null;
 
     #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?Material $material = null;
+
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $suggestedName = null;
 
     #[ORM\Column]
     private ?int $quantity = null;
@@ -48,6 +51,17 @@ class KitTemplateItem
     public function setMaterial(?Material $material): static
     {
         $this->material = $material;
+        return $this;
+    }
+
+    public function getSuggestedName(): ?string
+    {
+        return $this->suggestedName;
+    }
+
+    public function setSuggestedName(?string $suggestedName): static
+    {
+        $this->suggestedName = $suggestedName;
         return $this;
     }
 
