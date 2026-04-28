@@ -156,7 +156,7 @@ class MaterialController extends AbstractController
 
                     $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
-                        $batch->setExpirationDate(new \DateTime($bData['expirationDate']));
+                        $batch->setExpirationDate(\DateTimeImmutable::createFromMutable(new \DateTime($bData['expirationDate'])));
                     }
                     $batch->setSupplier($bData['supplier'] ?? null);
                     $batch->setUnitsPerPackage($unitsPerPackage);
@@ -584,7 +584,7 @@ class MaterialController extends AbstractController
 
                     $batch->setBatchNumber($batchNumber);
                     if (!empty($bData['expirationDate'])) {
-                        $batch->setExpirationDate(new \DateTime($bData['expirationDate']));
+                        $batch->setExpirationDate(\DateTimeImmutable::createFromMutable(new \DateTime($bData['expirationDate'])));
                     }
                     $batch->setSupplier($bData['supplier'] ?? null);
 
