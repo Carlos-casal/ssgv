@@ -19,7 +19,24 @@ class WarehouseController extends AbstractController
         LocationReviewRepository $reviewRepository,
         \App\Repository\LocationRepository $locationRepository
     ): Response {
-        $materials = $materialRepository->findBy([], ['id' => 'DESC']);
+        // Eager load everything to prevent N+1 and ensure consistency
+        $materials = $materialRepository->createQueryBuilder('m')
+            ->leftJoin('m.stocks', 's')
+            ->addSelect('s')
+            ->leftJoin('s.location', 'sl')
+            ->addSelect('sl')
+            ->leftJoin('m.units', 'u')
+            ->addSelect('u')
+            ->leftJoin('u.location', 'ul')
+            ->addSelect('ul')
+            ->leftJoin('u.template', 'ut')
+            ->addSelect('ut')
+            ->leftJoin('m.batches', 'b')
+            ->addSelect('b')
+            ->orderBy('m.name', 'ASC')
+            ->getQuery()
+            ->getResult();
+
         $vehicles = $vehicleRepository->findAll();
         // Filter out Almacén Central and orphaned/deleted KIT locations
         $locations = $locationRepository->createQueryBuilder('l')
