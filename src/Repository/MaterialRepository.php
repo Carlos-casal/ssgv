@@ -98,14 +98,19 @@ class MaterialRepository extends ServiceEntityRepository
     /**
      * Returns all unique subfamilies present in the material database.
      */
-    public function findAllExistingSubFamilies(): array
+    public function findAllExistingSubFamilies(?string $category = null): array
     {
-        $results = $this->createQueryBuilder('m')
+        $qb = $this->createQueryBuilder('m')
             ->select('DISTINCT m.subFamily')
             ->where('m.subFamily IS NOT NULL')
-            ->orderBy('m.subFamily', 'ASC')
-            ->getQuery()
-            ->getScalarResult();
+            ->orderBy('m.subFamily', 'ASC');
+
+        if ($category) {
+            $qb->andWhere('m.category = :category')
+               ->setParameter('category', $category);
+        }
+
+        $results = $qb->getQuery()->getScalarResult();
 
         return array_column($results, 'subFamily');
     }

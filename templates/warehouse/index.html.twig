@@ -104,7 +104,7 @@
                                         </tr>
                                     </thead>
                                     <tbody class="text-sm">
-                                        {% for material in materials|slice(0, 15) %}
+                                        {% for material in materials %}
                                         <tr>
                                             <td class="fw-bold">{{ material.name }}</td>
                                             <td>
@@ -118,15 +118,20 @@
                                             </td>
                                             <td>
                                                 {% set loc_totals = {} %}
+                                                {% set assigned_total = 0 %}
                                                 {% if material.nature == 'CONSUMIBLE' %}
                                                     {% for stock in material.stocks %}
-                                                        {% set loc_name = stock.location.name %}
+                                                        {% set loc_name = stock.location.name|default('Ubicación desconocida') %}
                                                         {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + stock.quantity }) %}
+                                                        {% set assigned_total = assigned_total + stock.quantity %}
                                                     {% endfor %}
                                                 {% else %}
                                                     {% for unit in material.units %}
                                                         {% set loc_name = unit.location.name|default('Sin ubicación') %}
                                                         {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + 1 }) %}
+                                                        {% if unit.location is not null %}
+                                                            {% set assigned_total = assigned_total + 1 %}
+                                                        {% endif %}
                                                     {% endfor %}
                                                 {% endif %}
 
@@ -138,9 +143,23 @@
                                                                 {{ loc }}: <span class="font-bold">{{ qty }}</span>
                                                             </span>
                                                         {% endif %}
-                                                    {% else %}
-                                                        <span class="text-muted small italic">Sin existencias en ubicaciones</span>
                                                     {% endfor %}
+
+                                                    {% if material.nature == 'CONSUMIBLE' and material.stock > assigned_total %}
+                                                        <span class="badge border font-normal bg-warning-subtle text-warning border-warning-subtle">
+                                                            <i data-lucide="alert-circle" class="w-2 h-2 inline me-0.5 opacity-50"></i>
+                                                            Pendiente Ubicación: <span class="font-bold">{{ material.stock - assigned_total }}</span>
+                                                        </span>
+                                                    {% elseif material.nature == 'EQUIPO_TECNICO' and material.units|length > assigned_total %}
+                                                        <span class="badge border font-normal bg-warning-subtle text-warning border-warning-subtle">
+                                                            <i data-lucide="alert-circle" class="w-2 h-2 inline me-0.5 opacity-50"></i>
+                                                            Sin Ubicación: <span class="font-bold">{{ material.units|length - assigned_total }}</span>
+                                                        </span>
+                                                    {% endif %}
+
+                                                    {% if loc_totals|length == 0 and assigned_total == 0 %}
+                                                        <span class="text-muted small italic">Sin existencias en ubicaciones</span>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                             <td>
