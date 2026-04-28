@@ -381,7 +381,9 @@ class ExcelImportService
                 if ($serialNumber && $serialNumber !== 'S/N') $material->setSerialNumber($serialNumber);
                 if ($safetyStock) $material->setSafetyStock($safetyStock);
                 if ($batchNumber) $material->setBatchNumber($batchNumber);
-                if ($expirationDate) $material->setExpirationDate(\DateTime::createFromImmutable($expirationDate));
+                if ($expirationDate) {
+                    $material->setExpirationDate(\DateTime::createFromImmutable($expirationDate));
+                }
                 if ($supplier) $material->setSupplier($supplier);
                 if ($unitsPerPackage) $material->setUnitsPerPackage($unitsPerPackage);
                 if ($totalPrice) $material->setTotalPrice($totalPrice);
@@ -390,8 +392,12 @@ class ExcelImportService
                 if ($brandModel) $material->setBrandModel($brandModel);
                 if ($networkId && $networkId !== 'S/N') $material->setNetworkId($networkId);
                 if ($phoneNumber) $material->setPhoneNumber($phoneNumber);
-                if ($purchaseDate) $material->setPurchaseDate(\DateTime::createFromImmutable($purchaseDate));
-                if ($warrantyDate) $material->setWarrantyDate(\DateTime::createFromImmutable($warrantyDate));
+                if ($purchaseDate) {
+                    $material->setPurchaseDate(\DateTime::createFromImmutable($purchaseDate));
+                }
+                if ($warrantyDate) {
+                    $material->setWarrantyDate(\DateTime::createFromImmutable($warrantyDate));
+                }
                 if ($description) $material->setDescription($description);
 
                 // Handle Image
@@ -451,8 +457,12 @@ class ExcelImportService
                             if ($phoneNumber) $unit->setPhoneNumber($phoneNumber);
                             if ($totalPrice) $unit->setPurchasePrice($totalPrice);
                             if ($marginPct) $unit->setDiscountPct($marginPct);
-                        if ($purchaseDate) $unit->setPurchaseDate(\DateTime::createFromImmutable($purchaseDate));
-                        if ($warrantyDate) $unit->setWarrantyDate(\DateTime::createFromImmutable($warrantyDate));
+                        if ($purchaseDate) {
+                            $unit->setPurchaseDate(\DateTime::createFromImmutable($purchaseDate));
+                        }
+                        if ($warrantyDate) {
+                            $unit->setWarrantyDate(\DateTime::createFromImmutable($warrantyDate));
+                        }
                             // Ensure unit is linked to current material if it changed
                             $unit->setMaterial($material);
 
