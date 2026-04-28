@@ -74,22 +74,33 @@
                                 {% endfor %}
 
                                 {% for p in proposals %}
-                                    <tr class="refill-row {{ p.placeholder|default(false) ? 'opacity-75' : '' }}"
-                                        data-material-id="{{ p.material.id }}"
-                                        data-nature="{{ p.material.nature }}"
-                                        style="{{ p.placeholder|default(false) ? 'border-left: 3px solid #f87171;' : '' }}">
-                                        <td class="ps-4">
-                                            <div class="font-bold text-slate-800 dark:text-slate-200">
-                                                {% if p.unit is defined and p.unit and p.unit.alias %}
-                                                    {{ p.unit.alias }} <span class="text-slate-400 text-xxs font-normal">({{ p.material.name }})</span>
-                                                {% else %}
-                                                    {{ p.material.name }}
-                                                {% endif %}
-                                            </div>
-                                            <div class="text-xxs text-slate-400 dark:text-slate-500 uppercase font-black">{{ p.material.category }}</div>
-                                            <div class="location-label text-xxs font-bold mt-1"></div>
-                                            <input type="hidden" class="material-id" value="{{ p.material.id }}">
-                                        </td>
+                                    {% if p.material %}
+                                        <tr class="refill-row {{ p.placeholder|default(false) ? 'opacity-75' : '' }}"
+                                            data-material-id="{{ p.material.id }}"
+                                            data-nature="{{ p.material.nature }}"
+                                            style="{{ p.placeholder|default(false) ? 'border-left: 3px solid #f87171;' : '' }}">
+                                            <td class="ps-4">
+                                                <div class="font-bold text-slate-800 dark:text-slate-200">
+                                                    {% if p.unit is defined and p.unit and p.unit.alias %}
+                                                        {{ p.unit.alias }} <span class="text-slate-400 text-xxs font-normal">({{ p.material.name }})</span>
+                                                    {% else %}
+                                                        {{ p.material.name }}
+                                                    {% endif %}
+                                                </div>
+                                                <div class="text-xxs text-slate-400 dark:text-slate-500 uppercase font-black">{{ p.material.category }}</div>
+                                                <div class="location-label text-xxs font-bold mt-1"></div>
+                                                <input type="hidden" class="material-id" value="{{ p.material.id }}">
+                                            </td>
+                                    {% else %}
+                                        {# Handle items that are only suggested names (shouldn't happen in auto proposals but good for safety) #}
+                                        <tr class="refill-row opacity-50 bg-slate-50">
+                                            <td class="ps-4">
+                                                <div class="font-bold text-slate-400">
+                                                    {{ p.suggestedName|default('Item no registrado') }}
+                                                </div>
+                                                <div class="text-xxs text-slate-400 uppercase font-black">Sin Material Vinculado</div>
+                                            </td>
+                                    {% endif %}
                                         <td>
                                             <select class="form-select form-select-sm identifier-select dark:bg-slate-900/50 dark:border-slate-700 dark:text-slate-300" data-action="change->kit-refill#updateAvailable">
                                                 {% set target_id = null %}
