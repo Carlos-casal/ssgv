@@ -474,10 +474,39 @@ class KitController extends AbstractController
     }
 
     #[Route('/{id}/inventory', name: 'app_kit_inventory', methods: ['GET'])]
-    public function inventory(MaterialUnit $unit, \App\Repository\MaterialMovementRepository $movementRepository): Response
+    public function inventory(int $id, MaterialUnitRepository $unitRepository, \App\Repository\MaterialMovementRepository $movementRepository, EntityManagerInterface $entityManager): Response
     {
-        if (!$unit->getTemplate()) {
+        // Eager load everything to ensure consistency
+        $unit = $unitRepository->createQueryBuilder('u')
+            ->leftJoin('u.template', 't')
+            ->addSelect('t')
+            ->leftJoin('t.items', 'ti')
+            ->addSelect('ti')
+            ->leftJoin('ti.material', 'tim')
+            ->addSelect('tim')
+            ->leftJoin('u.kitLocation', 'kl')
+            ->addSelect('kl')
+            ->leftJoin('kl.stocks', 'ks')
+            ->addSelect('ks')
+            ->leftJoin('ks.material', 'ksm')
+            ->addSelect('ksm')
+            ->leftJoin('kl.units', 'ku')
+            ->addSelect('ku')
+            ->leftJoin('ku.material', 'kum')
+            ->addSelect('kum')
+            ->where('u.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
+
+        if (!$unit || !$unit->getTemplate()) {
             throw $this->createNotFoundException('Este material no es un botiquín.');
+        }
+
+        // Force refresh to bypass any local object cache that might be stale after a back-navigation
+        $entityManager->refresh($unit);
+        if ($unit->getKitLocation()) {
+            $entityManager->refresh($unit->getKitLocation());
         }
 
         $movements = [];
@@ -496,6 +525,9 @@ class KitController extends AbstractController
             'movements' => $movements,
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
+        // Prevent browser caching to ensure latest inventory is shown when navigating back
+        $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+        $response->headers->set('Pragma', 'no-cache');
         return $response;
     }
 
