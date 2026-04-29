@@ -394,7 +394,7 @@ class Material
     {
         if ($this->batches->isEmpty()) {
             if ($this->unitsPerPackage > 0) {
-                return $this->stock / $this->unitsPerPackage;
+                return (float)($this->stock / $this->unitsPerPackage);
             }
             return (float)$this->stock;
         }
@@ -411,6 +411,15 @@ class Material
             } else {
                 $totalPacks += $batchStock;
             }
+        }
+
+        // Safety fallback: if total calculated from batches is 0 but global stock is not, 
+        // it might mean stock is not correctly linked to batches in the entity collections.
+        if ($totalPacks == 0 && $this->stock > 0) {
+            if ($this->unitsPerPackage > 0) {
+                return (float)($this->stock / $this->unitsPerPackage);
+            }
+            return (float)$this->stock;
         }
 
         return (float)$totalPacks;

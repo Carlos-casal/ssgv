@@ -67,7 +67,8 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA Y MODELO'}) }}</div>
-                            <div class="col-md-6 d-none">{{ form_row(form.category) }}</div>
+                            <div class="col-md-6">{{ form_row(form.subFamily, {'label': 'SUBFAMILIA'}) }}</div>
+                            <div class="col-md-6 d-none">{% if form.category is defined and not form.category.rendered %}{{ form_row(form.category) }}{% endif %}</div>
                         </div>
                     </div>
                 </div>
@@ -213,7 +214,7 @@
                                 }) }}
                             </div>
                             <div class="col-md-6">
-                                {% if material.category in ["Sanitario", "Uniformidad", "Logística", "Comunicaciones", "Mar", "Vehículos"] %}
+                                {% if material.category is not empty %}
                                     <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
                                     <div class="input-group">
                                         {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
@@ -270,25 +271,45 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Marca y Modelo</label>
-                            {% if not form.brandModel.rendered %}
+                            {% if form.brandModel is defined and not form.brandModel.rendered %}
                                 {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.brandModel is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.brandModel|default('Ya registrado') }}" readonly disabled>
                             {% else %}
-                                <input type="text" class="form-input bg-gray-50" value="{{ material.brandModel }}" readonly disabled>
+                                <input type="text" class="form-input" disabled placeholder="N/A">
                             {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Número de Serie (S/N)</label>
-                            {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.serialNumber is defined and not form.serialNumber.rendered %}
+                                {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.serialNumber is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.serialNumber|default('Ya registrado') }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Fecha de Compra</label>
-                            {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}
+                                {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.purchaseDate is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.purchaseDate ? material.purchaseDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Garantía</label>
-                            {{ form_widget(form.warrantyDate, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.warrantyDate is defined and not form.warrantyDate.rendered %}
+                                {{ form_widget(form.warrantyDate, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.warrantyDate is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.warrantyDate ? material.warrantyDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -316,7 +337,7 @@
                             {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
                         </div>
                     </div>
-                    <div class="d-none">{{ form_row(form.category) }}</div>
+                    <div class="d-none">{% if form.category is defined and not form.category.rendered %}{{ form_row(form.category) }}{% endif %}</div>
                 </div>
             </div>
 

@@ -307,12 +307,19 @@ class ExcelImportService
                 // Standardize nature
                 $nature = null;
                 if ($rawNature) {
-                    if (in_array($rawNature, ['CONSUMIBLE', 'FUNGIBLE', 'CONSUMO', 'BULK'])) {
+                    $upperNature = mb_strtoupper(trim((string)$rawNature));
+                    if (in_array($upperNature, ['CONSUMIBLE', 'FUNGIBLE', 'CONSUMO', 'BULK', 'SANITARIO', 'FARMACIA'])) {
                         $nature = Material::NATURE_CONSUMABLE;
-                    } elseif (in_array($rawNature, ['EQUIPO_TECNICO', 'EQUIPO', 'TECNICO', 'UNITARIO', 'MOCHILA', 'BOTIQUIN'])) {
+                    } elseif (in_array($upperNature, ['EQUIPO_TECNICO', 'EQUIPO', 'TECNICO', 'UNITARIO', 'MOCHILA', 'BOTIQUIN', 'COMUNICACIONES', 'VEHICULO', 'LOGISTICA'])) {
                         $nature = Material::NATURE_TECHNICAL;
                     } else {
-                        $nature = $rawNature;
+                        // Check if it matches any of the known categories to guess nature
+                        $technicalCategories = ['Comunicaciones', 'Vehículos', 'Mar', 'Logística'];
+                        if (in_array($rawNature, $technicalCategories)) {
+                            $nature = Material::NATURE_TECHNICAL;
+                        } else {
+                            $nature = Material::NATURE_CONSUMABLE; // Default to consumable for unknown types like "Sanitario"
+                        }
                     }
                 }
 
@@ -399,6 +406,11 @@ class ExcelImportService
                     $material->setWarrantyDate(\DateTime::createFromImmutable($warrantyDate));
                 }
                 if ($description) $material->setDescription($description);
+
+                // Calculate and set unitPrice as a fallback for valuation
+                if ($totalPrice && $unitsPerPackage > 0) {
+                    $material->setUnitPrice((string)((float)$totalPrice / $unitsPerPackage));
+                }
 
                 // Handle Image
                 if (isset($images[$row])) {

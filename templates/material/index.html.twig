@@ -120,7 +120,11 @@
                                 {% if material.nature == 'CONSUMIBLE' %}
                                     <span class="font-mono font-bold">{{ material.getTotalPackages()|round(2) }}</span> <span class="text-xs text-slate-400">nº envases</span>
                                 {% else %}
-                                    <span class="font-bold">{{ material.units|length }}</span> <span class="text-xs text-slate-400">unidades</span>
+                                    {% if material.units|length > 0 %}
+                                        <span class="font-bold">{{ material.units|length }}</span> <span class="text-xs text-slate-400">unidades</span>
+                                    {% else %}
+                                        <span class="font-bold">{{ material.stock }}</span> <span class="text-xs text-slate-400">unidades</span>
+                                    {% endif %}
                                 {% endif %}
                             </td>
                             <td>

@@ -39,8 +39,8 @@ export default class extends Controller {
     }
 
     filterOptions() {
-        // Find all selects with material-select class
-        const selects = document.querySelectorAll('.material-select');
+        // Find all selects with material-select class WITHIN this controller's element
+        const selects = this.element.querySelectorAll('.material-select');
         const selectedValues = Array.from(selects)
             .map(select => select.value)
             .filter(value => value !== "" && value !== null);
@@ -51,14 +51,17 @@ export default class extends Controller {
 
             options.forEach(option => {
                 if (option.value === "" || option.value === currentValue) {
-                    option.style.display = "";
+                    option.hidden = false;
                     option.disabled = false;
+                    option.style.display = "";
                 } else if (selectedValues.includes(option.value)) {
-                    option.style.display = "none";
+                    option.hidden = true;
                     option.disabled = true;
+                    option.style.display = "none";
                 } else {
-                    option.style.display = "";
+                    option.hidden = false;
                     option.disabled = false;
+                    option.style.display = "";
                 }
             });
         });

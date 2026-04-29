@@ -29,7 +29,7 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid px-4">
+<div class="container-fluid px-4" data-controller="kit-inventory" data-kit-inventory-update-url-value="{{ path('app_kit_update_ideal_quantity', {id: unit.id}) }}">
     <div class="row g-4">
         <div class="col-lg-4">
             <div class="card border-0 shadow-sm rounded-3 mb-4">
@@ -89,152 +89,181 @@
                                     <th class="text-xxs font-black uppercase text-slate-400 border-0 text-end pe-4">Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                {% set locationQuantities = {} %}
-
-                                {% if unit.kitLocation %}
-                                    {# Aggregate non-technical stock (consumables and others) #}
-                                    {% for stock in unit.kitLocation.stocks %}
-                                        {% if stock.material.nature != 'EQUIPO_TECNICO' %}
-                                            {% set matId = 'mat_' ~ stock.material.id %}
-                                            {% set currentCount = locationQuantities[matId] ?? 0 %}
-                                            {% set locationQuantities = locationQuantities|merge({(matId): currentCount + stock.quantity}) %}
-                                        {% endif %}
-                                    {% endfor %}
-
-                                    {# Add technical unit counts #}
-                                    {% for techUnit in unit.kitLocation.units %}
-                                        {% if techUnit.id != unit.id %} {# Don't count the kit itself #}
-                                            {% set matId = 'mat_' ~ techUnit.material.id %}
-                                            {% set currentCount = locationQuantities[matId] ?? 0 %}
-                                            {% set locationQuantities = locationQuantities|merge({(matId): currentCount + 1}) %}
-                                        {% endif %}
-                                    {% endfor %}
-                                {% endif %}
-
-                                {% set displayedMaterialIds = [] %}
-
-                                {# First, items in the template #}
-                                {% for item in unit.template.items %}
-                                    {% if item.material %}
-                                        {% set mId = 'mat_' ~ item.material.id %}
-                                        {% set displayedMaterialIds = displayedMaterialIds|merge([mId]) %}
-                                        {% set currentQty = locationQuantities[mId] ?? 0 %}
-                                        <tr>
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center">
-                                                    {% if item.material.imagePath %}
-                                                        <img src="{{ asset('uploads/material/' ~ item.material.imagePath) }}" class="rounded-2 me-3" style="width: 40px; height: 40px; object-fit: cover;">
+                            {# --- TABLE BODY --- #}
+                            <tbody class="divide-y divide-slate-100 dark:divide-slate-800">
+                                {# 1. TEMPLATE ITEMS #}
+                                {% for row in templateRows %}
+                                    {% set item = row.templateItem %}
+                                    {% set material = row.material %}
+                                    {% set currentQty = row.currentQty %}
+                                    
+                                    <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors">
+                                        <td class="px-3 py-3">
+                                            <div class="flex items-center">
+                                                <div class="w-8 h-8 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center mr-3">
+                                                    {% if material and material.imagePath %}
+                                                        <img src="{{ material.imagePath }}" class="w-6 h-6 object-contain" alt="">
+                                                    {% elseif row.matchedMaterial and row.matchedMaterial.imagePath %}
+                                                        <img src="{{ row.matchedMaterial.imagePath }}" class="w-6 h-6 object-contain" alt="">
                                                     {% else %}
-                                                        <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
-                                                            <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
-                                                        </div>
+                                                        <i data-lucide="{{ material ? 'package' : 'help-circle' }}" class="w-4 h-4 text-slate-400"></i>
                                                     {% endif %}
+                                                </div>
+                                                <div>
+                                                    {% set targetMaterial = material ?: row.matchedMaterial|default(null) %}
+                                                    {% set isLinked = targetMaterial is not null %}
+                                                    {% set isShortage = currentQty < row.idealQuantity %}
+                                                    
+                                                    {% set nameClass = 'text-slate-700 dark:text-slate-200' %}
+                                                    {% if isLinked %}
+                                                        {% if isShortage %}
+                                                            {% set nameClass = 'text-red-600 dark:text-red-400 font-black' %}
+                                                        {% else %}
+                                                            {% set nameClass = 'text-green-600 dark:text-green-400 font-bold' %}
+                                                        {% endif %}
+                                                    {% endif %}
+
+                                                    <div class="font-bold {{ nameClass }} leading-tight">
+                                                        {% if isLinked %}
+                                                            {{ targetMaterial.name }}
+                                                        {% else %}
+                                                            {{ item.suggestedName }}
+                                                        {% endif %}
+                                                    </div>
+                                                    
+                                                    <div class="text-[10px] text-slate-400 uppercase tracking-wider mt-0.5">
+                                                        {% if isLinked %}
+                                                            <span class="font-medium text-slate-500">{{ targetMaterial.nature }}</span>
+                                                        {% endif %}
+                                                        
+                                                        {% if row.matchedAliases is defined and row.matchedAliases|length > 0 %}
+                                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                                {% for alias in row.matchedAliases %}
+                                                                    <span class="text-[9px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1 rounded border border-slate-200 dark:border-slate-700">{{ alias }}</span>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+
+                                                        {% if row.sources is defined and row.sources|length > 1 %}
+                                                            <div class="mt-1">
+                                                                <span class="text-[8px] font-bold text-amber-600 bg-amber-50 px-1 rounded uppercase">Origen duplicado: {{ row.sources|join(' + ') }}</span>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td class="px-3 py-3 text-center">
+                                            {% set status = null %}
+                                            {% if material %}
+                                                {% set status = material.expirationStatus %}
+                                            {% elseif row.matchedMaterial %}
+                                                {% set status = row.matchedMaterial.expirationStatus %}
+                                            {% endif %}
+                                            
+                                            {% if status %}
+                                                <div class="w-2 h-2 rounded-full bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500 mx-auto shadow-sm"></div>
+                                            {% elseif currentQty > 0 %}
+                                                <div class="w-2 h-2 rounded-full bg-green-500 mx-auto shadow-sm shadow-green-500/50"></div>
+                                            {% else %}
+                                                <div class="w-2 h-2 rounded-full bg-slate-200 dark:bg-slate-700 mx-auto"></div>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-3 py-3 text-end">
+                                            <span class="text-sm {% if isLinked %}{% if isShortage %}text-red-600 font-bold{% else %}text-green-600 font-bold{% endif %}{% else %}text-slate-600 dark:text-slate-400{% endif %}">
+                                                {{ currentQty }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-3 text-end">
+                                            <input type="number" 
+                                                   value="{{ row.idealQuantity }}" 
+                                                   class="form-control form-control-sm text-end w-16 d-inline-block font-monospace bg-slate-50 border-slate-200"
+                                                   data-action="blur->kit-inventory#updateIdeal"
+                                                   data-item-id="{{ item.id }}"
+                                                   min="0">
+                                        </td>
+                                        <td class="px-3 py-3 text-end pe-4">
+                                            <div class="flex justify-end gap-1">
+                                                {% if material %}
+                                                    <a href="{{ path('app_material_transfer', {id: material.id, origin_id: unit.kitLocation.id}) }}" class="btn btn-xs btn-outline-secondary px-2 py-1" title="Gestionar traslados">
+                                                        <i data-lucide="arrow-right-left" class="w-3 h-3 inline mr-1"></i> Mover
+                                                    </a>
+                                                {% elseif row.matchedMaterial %}
+                                                    <a href="{{ path('app_material_transfer', {id: row.matchedMaterial.id, origin_id: unit.kitLocation.id}) }}" class="btn btn-xs btn-outline-secondary px-2 py-1" title="Gestionar traslados">
+                                                        <i data-lucide="arrow-right-left" class="w-3 h-3 inline mr-1"></i> Mover
+                                                    </a>
+                                                {% endif %}
+                                                
+                                                {% if currentQty < row.idealQuantity %}
+                                                    <a href="{{ path('app_kit_refill_preview', {id: unit.id}) }}" class="btn btn-xs btn-primary px-2 py-1" title="Reponer stock">
+                                                        <i data-lucide="shopping-cart" class="w-3 h-3 inline mr-1"></i> Reponer
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+
+                                {# 2. EXTRA ITEMS (Product added that are NOT in the template) #}
+                                {% if extraRows|length > 0 %}
+                                    <tr class="bg-slate-50/50 dark:bg-slate-900/20">
+                                        <td colspan="5" class="px-3 py-2 text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                            Productos Extra (No en plantilla)
+                                        </td>
+                                    </tr>
+                                    {% for row in extraRows %}
+                                        {% set material = row.material %}
+                                        <tr class="hover:bg-slate-50/50 dark:hover:bg-slate-800/30 transition-colors border-l-2 border-l-blue-400">
+                                            <td class="px-3 py-3">
+                                                <div class="flex items-center">
+                                                    <div class="w-8 h-8 rounded-lg bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center mr-3">
+                                                        {% if material.imagePath %}
+                                                            <img src="{{ material.imagePath }}" class="w-6 h-6 object-contain" alt="">
+                                                        {% else %}
+                                                            <i data-lucide="package-plus" class="w-4 h-4 text-blue-400"></i>
+                                                        {% endif %}
+                                                    </div>
                                                     <div>
-                                                        <div class="font-bold text-slate-800">{{ item.material.name }}</div>
-                                                        <div class="text-xxs text-slate-400 uppercase font-bold">{{ item.material.category }}</div>
+                                                        <div class="font-bold text-slate-700 dark:text-slate-200">{{ material.name }}</div>
+                                                        <div class="text-[10px] text-slate-400 uppercase tracking-wider">{{ material.nature }}</div>
+                                                        {% if row.aliases is defined and row.aliases|length > 0 %}
+                                                            <div class="mt-1 flex flex-wrap gap-1">
+                                                                {% for alias in row.aliases %}
+                                                                    <span class="text-[9px] bg-blue-50 dark:bg-blue-900/30 text-blue-600 px-1 rounded border border-blue-100 dark:border-blue-800">{{ alias }}</span>
+                                                                {% endfor %}
+                                                            </div>
+                                                        {% endif %}
+                                                        
+                                                        {% if row.sources is defined and row.sources|length > 1 %}
+                                                            <div class="mt-1">
+                                                                <span class="text-[8px] font-bold text-amber-600 bg-amber-50 px-1 rounded uppercase">Origen duplicado: {{ row.sources|join(' + ') }}</span>
+                                                            </div>
+                                                        {% endif %}
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td class="text-center">
-                                                {% set status = item.material.expirationStatus %}
-                                                <span class="w-3 h-3 rounded-full inline-block bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500" title="Caducidad: {{ item.material.expirationDate ? item.material.expirationDate|date('d/m/Y') : 'N/A' }}"></span>
+                                            <td class="px-3 py-3 text-center">
+                                                {% set status = material.expirationStatus %}
+                                                <div class="w-2 h-2 rounded-full bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500 mx-auto shadow-sm"></div>
                                             </td>
-                                            <td class="text-end font-monospace">
-                                                <span class="{% if currentQty < item.quantity %}text-red-600 font-bold{% endif %}">{{ currentQty }}</span>
+                                            <td class="px-3 py-3 text-end font-bold text-blue-600">
+                                                {{ row.quantity }}
                                             </td>
-                                            <td class="text-end text-slate-400 font-monospace">
-                                                {{ item.quantity }}
+                                            <td class="px-3 py-3 text-end text-slate-400">
+                                                -
                                             </td>
-                                            <td class="text-end pe-4">
-                                                <a href="{{ path('app_material_transfer', {id: item.material.id, origin_id: unit.kitLocation.id}) }}" class="btn btn-xs btn-outline-secondary" title="Traspasar desde este botiquín">
-                                                    <i data-lucide="move" class="w-3 h-3"></i>
+                                            <td class="px-3 py-3 text-end pe-4">
+                                                <a href="{{ path('app_material_transfer', {id: material.id, origin_id: unit.kitLocation.id}) }}" class="btn btn-xs btn-outline-secondary px-2 py-1" title="Gestionar traslados">
+                                                    <i data-lucide="arrow-right-left" class="w-3 h-3 inline mr-1"></i> Mover
                                                 </a>
                                             </td>
                                         </tr>
-                                    {% else %}
-                                        <tr class="bg-red-50/30">
-                                            <td class="ps-4">
-                                                <div class="d-flex align-items-center">
-                                                    <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
-                                                        <i data-lucide="help-circle" class="w-5 h-5 text-amber-500"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="font-bold text-slate-800">{{ item.suggestedName }} <small class="text-slate-400 font-normal">(No registrado)</small></div>
-                                                        <div class="text-xxs text-amber-600 uppercase font-bold">Por registrar</div>
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td class="text-center">
-                                                <span class="w-3 h-3 rounded-full inline-block bg-slate-200" title="Material no registrado en inventario"></span>
-                                            </td>
-                                            <td class="text-end font-monospace">
-                                                <span class="text-red-600 font-bold">0</span>
-                                            </td>
-                                            <td class="text-end text-slate-400 font-monospace">
-                                                {{ item.quantity }}
-                                            </td>
-                                            <td class="text-end pe-4">
-                                                <span class="text-xxs text-slate-400 italic">No disponible</span>
-                                            </td>
-                                        </tr>
-                                    {% endif %}
-                                {% endfor %}
+                                    {% endfor %}
+                                {% endif %}
 
-                                {# Then, extra items in the location #}
-                                {% for materialId, quantity in locationQuantities %}
-                                    {% if materialId not in displayedMaterialIds %}
-                                        {# Find a material object to get name and image #}
-                                        {% set extraMaterial = null %}
-                                        {% for stock in unit.kitLocation.stocks %}
-                                            {% if 'mat_' ~ stock.material.id == materialId %}{% set extraMaterial = stock.material %}{% endif %}
-                                        {% endfor %}
-                                        {% if not extraMaterial %}
-                                            {% for techUnit in unit.kitLocation.units %}
-                                                {% if 'mat_' ~ techUnit.material.id == materialId %}{% set extraMaterial = techUnit.material %}{% endif %}
-                                            {% endfor %}
-                                        {% endif %}
-
-                                        {% if extraMaterial %}
-                                            <tr class="bg-slate-50">
-                                                <td class="ps-4">
-                                                    <div class="d-flex align-items-center opacity-75">
-                                                        {% if extraMaterial.imagePath %}
-                                                            <img src="{{ asset('uploads/material/' ~ extraMaterial.imagePath) }}" class="rounded-2 me-3" style="width: 40px; height: 40px; object-fit: cover;">
-                                                        {% else %}
-                                                            <div class="bg-slate-100 rounded-2 me-3 flex items-center justify-center" style="width: 40px; height: 40px;">
-                                                                <i data-lucide="package" class="w-5 h-5 text-slate-400"></i>
-                                                            </div>
-                                                        {% endif %}
-                                                        <div>
-                                                            <div class="font-bold text-slate-800">{{ extraMaterial.name }} <small class="text-slate-400">(Extra)</small></div>
-                                                            <div class="text-xxs text-slate-400 uppercase font-bold">{{ extraMaterial.category }}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="text-center">
-                                                    {% set status = extraMaterial.expirationStatus %}
-                                                    <span class="w-3 h-3 rounded-full inline-block bg-{{ status == 'green' ? 'green' : (status == 'red' ? 'red' : (status == 'orange' ? 'orange' : 'yellow')) }}-500"></span>
-                                                </td>
-                                                <td class="text-end font-monospace">
-                                                    {{ quantity }}
-                                                </td>
-                                                <td class="text-end text-slate-400 font-monospace">
-                                                    -
-                                                </td>
-                                                <td class="text-end pe-4">
-                                                    <a href="{{ path('app_material_transfer', {id: extraMaterial.id, origin_id: unit.kitLocation.id}) }}" class="btn btn-xs btn-outline-secondary" title="Traspasar desde este botiquín">
-                                                        <i data-lucide="move" class="w-3 h-3"></i>
-                                                    </a>
-                                                </td>
-                                            </tr>
-                                        {% endif %}
-                                    {% endif %}
-                                {% endfor %}
-
-                                {% if unit.template.items|length == 0 and locationQuantities|length == 0 %}
+                                {% if templateRows|length == 0 and extraRows|length == 0 %}
                                     <tr>
-                                        <td colspan="4" class="text-center py-5 text-slate-400 italic">Este botiquín está vacío y no tiene plantilla asignada.</td>
+                                        <td colspan="5" class="text-center py-5 text-slate-400 italic">Este botiquín está vacío y no tiene plantilla asignada.</td>
                                     </tr>
                                 {% endif %}
                             </tbody>

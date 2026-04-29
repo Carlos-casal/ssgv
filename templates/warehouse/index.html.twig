@@ -112,7 +112,11 @@
                                                     {% if material.nature == 'CONSUMIBLE' %}
                                                         {{ material.stock }}
                                                     {% else %}
-                                                        {{ material.units|length }}
+                                                        {% if material.units|length > 0 %}
+                                                            {{ material.units|length }}
+                                                        {% else %}
+                                                            {{ material.stock }}
+                                                        {% endif %}
                                                     {% endif %}
                                                 </span>
                                             </td>
@@ -121,18 +125,27 @@
                                                 {% set assigned_total = 0 %}
                                                 {% if material.nature == 'CONSUMIBLE' %}
                                                     {% for stock in material.stocks %}
-                                                        {% set loc_name = stock.location.name|default('Ubicación desconocida') %}
+                                                        {% set loc_name = stock.location.name|default('Sin ubicación') %}
                                                         {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + stock.quantity }) %}
                                                         {% set assigned_total = assigned_total + stock.quantity %}
                                                     {% endfor %}
                                                 {% else %}
-                                                    {% for unit in material.units %}
-                                                        {% set loc_name = unit.location.name|default('Sin ubicación') %}
-                                                        {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + 1 }) %}
-                                                        {% if unit.location is not null %}
-                                                            {% set assigned_total = assigned_total + 1 %}
-                                                        {% endif %}
-                                                    {% endfor %}
+                                                    {% if material.units|length > 0 %}
+                                                        {% for unit in material.units %}
+                                                            {% set loc_name = unit.location.name|default('Sin ubicación') %}
+                                                            {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + 1 }) %}
+                                                            {% if unit.location is not null %}
+                                                                {% set assigned_total = assigned_total + 1 %}
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    {% else %}
+                                                        {# Fallback for technical equipment without tracked units (bulk) #}
+                                                        {% for stock in material.stocks %}
+                                                            {% set loc_name = stock.location.name|default('Sin ubicación') %}
+                                                            {% set loc_totals = loc_totals|merge({ (loc_name): (loc_totals[loc_name] ?? 0) + stock.quantity }) %}
+                                                            {% set assigned_total = assigned_total + stock.quantity %}
+                                                        {% endfor %}
+                                                    {% endif %}
                                                 {% endif %}
 
                                                 <div class="d-flex flex-wrap gap-1">

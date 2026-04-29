@@ -101,9 +101,23 @@ class MaterialUnit
     #[ORM\OneToMany(mappedBy: 'materialUnit', targetEntity: MaterialUnitHistory::class, orphanRemoval: true)]
     private Collection $history;
 
+    #[ORM\Column(type: 'json', nullable: true)]
+    private ?array $customQuantities = [];
+
     public function __construct()
     {
         $this->history = new ArrayCollection();
+    }
+
+    public function getCustomQuantities(): ?array
+    {
+        return $this->customQuantities;
+    }
+
+    public function setCustomQuantities(?array $customQuantities): static
+    {
+        $this->customQuantities = $customQuantities;
+        return $this;
     }
 
     public function getId(): ?int

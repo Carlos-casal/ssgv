@@ -64,7 +64,10 @@
                         </div>
                         <div class="row mt-2">
                             <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA Y MODELO'}) }}</div>
-                            <div class="col-md-6 d-none">{{ form_row(form.category) }}</div>
+                            <div class="col-md-6">{{ form_row(form.subFamily, {'label': 'SUBFAMILIA'}) }}</div>
+                            {% if form.category is defined and not form.category.rendered %}
+                                <div class="d-none">{{ form_row(form.category) }}</div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -150,9 +153,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="d-none">
-                            {{ form_row(form.category) }}
-                        </div>
+                        {% if form.category is defined and not form.category.rendered %}
+                            <div class="d-none">
+                                {{ form_row(form.category) }}
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
 
@@ -227,7 +232,7 @@
                                 }) }}
                             </div>
                             <div class="flex-shrink-0">
-                                {% if material.category in ['Sanitario', 'Uniformidad', 'Logística'] %}
+                                {% if material.category is not empty %}
                                     <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
                                     <div class="d-flex gap-0">
                                         {{ form_widget(form.subFamily, {'attr': {'class': 'form-input w-auto', 'style': 'border-top-right-radius: 0; border-bottom-right-radius: 0;', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
@@ -267,21 +272,45 @@
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Marca y Modelo</label>
-                            {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.brandModel is defined and not form.brandModel.rendered %}
+                                {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif material.brandModel is not empty %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.brandModel }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Número de Serie (S/N)</label>
-                            {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.serialNumber is defined and not form.serialNumber.rendered %}
+                                {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.serialNumber is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.serialNumber|default('Ya registrado') }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Fecha de Compra</label>
-                            {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}
+                                {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.purchaseDate is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.purchaseDate ? material.purchaseDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Garantía</label>
-                            {{ form_widget(form.warrantyDate, {'attr': {'class': 'form-input'}}) }}
+                            {% if form.warrantyDate is defined and not form.warrantyDate.rendered %}
+                                {{ form_widget(form.warrantyDate, {'attr': {'class': 'form-input'}}) }}
+                            {% elseif form.warrantyDate is defined %}
+                                <input type="text" class="form-input bg-gray-50" value="{{ material.warrantyDate ? material.warrantyDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
+                            {% else %}
+                                <input type="text" class="form-input" disabled placeholder="N/A">
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -309,7 +338,9 @@
                             {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
                         </div>
                     </div>
-                    <div class="d-none">{{ form_row(form.category) }}</div>
+                    {% if form.category is defined and not form.category.rendered %}
+                        <div class="d-none">{{ form_row(form.category) }}</div>
+                    {% endif %}
                 </div>
             </div>
 
@@ -492,6 +523,7 @@
         {% if form.hasCharger is defined and not form.hasCharger.rendered %}{{ form_row(form.hasCharger) }}{% endif %}
         {% if form.hasClip is defined and not form.hasClip.rendered %}{{ form_row(form.hasClip) }}{% endif %}
         {% if form.hasMicrophone is defined and not form.hasMicrophone.rendered %}{{ form_row(form.hasMicrophone) }}{% endif %}
+        {% if form.category is defined and not form.category.rendered %}{{ form_row(form.category) }}{% endif %}
     </div>
     {{ form_end(form) }}
 </div>

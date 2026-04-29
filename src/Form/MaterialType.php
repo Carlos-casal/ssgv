@@ -53,9 +53,12 @@ class MaterialType extends AbstractType
             }
         }
 
-        $subFamilyChoices = [
-            'Material de Entrenamiento' => 'Material de Entrenamiento'
-        ];
+        $existingSubFamilies = array_filter($this->materialRepository->findAllExistingSubFamilies());
+        $subFamilyChoices = array_combine($existingSubFamilies, $existingSubFamilies);
+        if (!isset($subFamilyChoices['Material de Entrenamiento'])) {
+            $subFamilyChoices['Material de Entrenamiento'] = 'Material de Entrenamiento';
+        }
+        ksort($subFamilyChoices);
 
         $builder
             ->add('name', TextType::class, [
@@ -352,23 +355,6 @@ class MaterialType extends AbstractType
         $builder->get('numPackages')->addModelTransformer($spanishIntegerTransformer);
         $builder->get('stock')->addModelTransformer($spanishIntegerTransformer);
         $builder->get('iva')->addModelTransformer($spanishIntegerTransformer);
-
-        // Ensure these are not required by default to allow dynamic frontend hiding
-        $builder->add('safetyStock', TextType::class, [
-            'label' => 'STOCK MÍNIMO (Nº ENVASES)',
-            'required' => false,
-            'attr' => [
-                'class' => 'form-control',
-            ]
-        ]);
-        $builder->get('safetyStock')->addModelTransformer($spanishIntegerTransformer);
-
-        $builder->add('warrantyDate', \Symfony\Component\Form\Extension\Core\Type\DateTimeType::class, [
-            'label' => 'Garantía',
-            'widget' => 'single_text',
-            'required' => false,
-            'attr' => ['class' => 'form-control']
-        ]);
 
         $builder->get('unitPrice')->addModelTransformer($spanishNumericTransformer);
         $builder->get('totalPrice')->addModelTransformer($spanishNumericTransformer);

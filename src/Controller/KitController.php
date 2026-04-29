@@ -507,10 +507,6 @@ class KitController extends AbstractController
         $entityManager->refresh($unit);
         if ($unit->getKitLocation()) {
             $entityManager->refresh($unit->getKitLocation());
-        }
-
-        $movements = [];
-        if ($unit->getKitLocation()) {
             $movements = $movementRepository->createQueryBuilder('m')
                 ->where('m.origin = :location OR m.destination = :location')
                 ->setParameter('location', $unit->getKitLocation())
@@ -518,17 +514,143 @@ class KitController extends AbstractController
                 ->setMaxResults(50)
                 ->getQuery()
                 ->getResult();
+        } else {
+            $movements = [];
+        }
+
+        // --- Refactored Inventory Logic ---
+        $inventoryData = [];
+        $displayedMaterialIds = [];
+        $location = $unit->getKitLocation();
+        
+        // 1. Aggregate current contents by Material ID
+        $contents = [];
+        if ($location) {
+            foreach ($location->getStocks() as $stock) {
+                if ($stock->getQuantity() <= 0) continue;
+                $mid = $stock->getMaterial()->getId();
+                if (!isset($contents[$mid])) {
+                    $contents[$mid] = ['material' => $stock->getMaterial(), 'quantity' => 0, 'aliases' => [], 'sources' => []];
+                }
+                $contents[$mid]['quantity'] += $stock->getQuantity();
+                $contents[$mid]['sources'][] = 'Stock Granel: ' . $stock->getQuantity();
+            }
+            foreach ($location->getUnits() as $u) {
+                if ($u->getId() === $unit->getId()) continue; // Skip container
+                $mid = $u->getMaterial()->getId();
+                if (!isset($contents[$mid])) {
+                    $contents[$mid] = ['material' => $u->getMaterial(), 'quantity' => 0, 'aliases' => [], 'sources' => []];
+                }
+                $contents[$mid]['quantity'] += 1;
+                $contents[$mid]['sources'][] = 'Unidad Individual';
+                $info = [];
+                if ($u->getAlias()) $info[] = $u->getAlias();
+                if ($u->getSerialNumber()) $info[] = 'S/N: ' . $u->getSerialNumber();
+                if ($u->getCollectiveNumber()) $info[] = '#' . $u->getCollectiveNumber();
+                
+                if (!empty($info)) {
+                    $contents[$mid]['aliases'][] = implode(' • ', $info);
+                }
+            }
+        }
+
+        // 2. Process Template Items and match with contents
+        $templateRows = [];
+        $customQuantities = $unit->getCustomQuantities() ?: [];
+
+        foreach ($unit->getTemplate()->getItems() as $item) {
+            $idealQuantity = $customQuantities[$item->getId()] ?? $item->getQuantity();
+            $row = [
+                'templateItem' => $item,
+                'material' => $item->getMaterial(),
+                'currentQty' => 0,
+                'idealQuantity' => $idealQuantity,
+                'isMatch' => false,
+                'matchedMaterial' => null,
+                'matchedAliases' => []
+            ];
+
+            if ($item->getMaterial()) {
+                $mid = $item->getMaterial()->getId();
+                if (isset($contents[$mid])) {
+                    $row['currentQty'] = $contents[$mid]['quantity'];
+                    $row['sources'] = $contents[$mid]['sources'] ?? [];
+                    $row['matchedAliases'] = $contents[$mid]['aliases'] ?? [];
+                    $displayedMaterialIds[] = $mid;
+                }
+            } else {
+                // Fuzzy matching for suggested items without linked material
+                $normalize = function($str) {
+                    $str = strtolower(trim($str));
+                    $str = str_replace(['á', 'é', 'í', 'ó', 'ú', 'ñ'], ['a', 'e', 'i', 'o', 'u', 'n'], $str);
+                    return preg_replace('/[^a-z0-9 ]/', '', $str);
+                };
+                
+                $suggestedNameNormalized = $normalize($item->getSuggestedName());
+                foreach ($contents as $mid => $data) {
+                    $matNameNormalized = $normalize($data['material']->getName());
+                    if (str_contains($matNameNormalized, $suggestedNameNormalized) || str_contains($suggestedNameNormalized, $matNameNormalized)) {
+                        $row['currentQty'] += $data['quantity'];
+                        $row['matchedMaterial'] = $data['material'];
+                        $row['isMatch'] = true;
+                        $row['matchedAliases'] = array_merge($row['matchedAliases'], $data['aliases'] ?? []);
+                        $row['sources'] = $data['sources'] ?? [];
+                        $displayedMaterialIds[] = $mid;
+                    }
+                }
+            }
+            $templateRows[] = $row;
+        }
+
+        // 3. Process Extras (contents not in template)
+        $extraRows = [];
+        foreach ($contents as $mid => $data) {
+            if (!in_array($mid, $displayedMaterialIds)) {
+                $extraRows[] = [
+                    'material' => $data['material'],
+                    'quantity' => $data['quantity'],
+                    'aliases' => $data['aliases'] ?? [],
+                    'sources' => $data['sources'] ?? []
+                ];
+            }
         }
 
         $response = $this->render('kit/inventory.html.twig', [
             'unit' => $unit,
             'movements' => $movements,
+            'templateRows' => $templateRows,
+            'extraRows' => $extraRows
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
         // Prevent browser caching to ensure latest inventory is shown when navigating back
         $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
         $response->headers->set('Pragma', 'no-cache');
         return $response;
+    }
+
+    #[Route('/{id}/update-ideal-quantity', name: 'app_kit_update_ideal_quantity', methods: ['POST'])]
+    public function updateIdealQuantity(int $id, Request $request, MaterialUnitRepository $unitRepository, EntityManagerInterface $entityManager): JsonResponse
+    {
+        $unit = $unitRepository->find($id);
+        if (!$unit) {
+            return new JsonResponse(['success' => false, 'message' => 'Kit not found'], 404);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $itemId = $data['itemId'] ?? null;
+        $quantity = $data['quantity'] ?? null;
+
+        if ($itemId === null || $quantity === null) {
+            return new JsonResponse(['success' => false, 'message' => 'Missing data'], 400);
+        }
+
+        $customQuantities = $unit->getCustomQuantities() ?: [];
+        $customQuantities[$itemId] = (int)$quantity;
+        $unit->setCustomQuantities($customQuantities);
+
+        $entityManager->flush();
+
+        return new JsonResponse(['success' => true]);
     }
 
     #[Route('/{id}/consume', name: 'app_kit_consume', methods: ['GET', 'POST'])]
@@ -591,11 +713,6 @@ class KitController extends AbstractController
         // 1. Map existing stock in the kit (to avoid "disappearance" on reload/back)
         foreach ($kitLocation->getStocks() as $stock) {
             if ($stock->getQuantity() <= 0) continue;
-
-            // Skip technical equipment in the stock loop as they are handled in the units loop below
-            if ($stock->getMaterial()->getNature() === Material::NATURE_TECHNICAL) {
-                continue;
-            }
 
             $currentContents[] = [
                 'material' => $stock->getMaterial(),
@@ -680,15 +797,15 @@ class KitController extends AbstractController
         // Calculate current stock in the kit correctly
         $currentQty = 0;
         if ($kitLocation->getId()) {
-            if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-                $stocks = $entityManager->getRepository(MaterialStock::class)->findBy([
-                    'material' => $material,
-                    'location' => $kitLocation
-                ]);
-                foreach ($stocks as $s) $currentQty += $s->getQuantity();
-            } else {
-                // For Technical, count physical units assigned to this location
-                // EXCLUDE the container unit itself from the count of its own contents
+            // 1. Count bulk stock (MaterialStock) - Works for Consumables AND technical items without S/N
+            $stocks = $entityManager->getRepository(MaterialStock::class)->findBy([
+                'material' => $material,
+                'location' => $kitLocation
+            ]);
+            foreach ($stocks as $s) $currentQty += $s->getQuantity();
+
+            // 2. For Technical materials, ALSO count physical units (MaterialUnit) assigned here
+            if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
                 $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
                     ->select('COUNT(u.id)')
                     ->where('u.material = :material')
@@ -700,9 +817,10 @@ class KitController extends AbstractController
                     $qb->andWhere('u.id != :containerId')
                        ->setParameter('containerId', $unit->getId());
                 }
-                $currentQty = (int)$qb->getQuery()->getSingleScalarResult();
+                $currentQty += (int)$qb->getQuery()->getSingleScalarResult();
             }
         }
+    
 
         $needed = $idealQty - $currentQty;
         if ($needed <= 0 && !$manualOnly) return;
