@@ -70,7 +70,7 @@ class KitController extends AbstractController
         return $response;
     }
 
-    #[Route('/templates/seed-defaults', name: 'app_kit_template_seed_defaults', methods: ['POST'])]
+    #[Route('/templates/seed-defaults', name: 'app_kit_template_seed_defaults', methods: ['GET', 'POST'])]
     public function seedDefaultTemplates(Request $request, EntityManagerInterface $entityManager): Response
     {
         if (!$this->isCsrfTokenValid('seed_defaults', $request->request->get('_token'))) {
@@ -372,6 +372,10 @@ class KitController extends AbstractController
                 'template_id' => $request->request->get('template_id'),
                 'alias' => $alias,
                 'serial_number' => $request->request->get('serial_number'),
+                'brand' => $request->request->get('brand'),
+                'model' => $request->request->get('model'),
+                'barcode' => $request->request->get('barcode'),
+                'subfamily' => $request->request->get('subfamily'),
                 'supplier' => $request->request->get('supplier'),
                 'purchase_price' => $request->request->get('purchase_price'),
                 'margin_percentage' => $request->request->get('margin_percentage'),
@@ -412,8 +416,15 @@ class KitController extends AbstractController
         $unit->setSerialNumber($draft['serial_number']);
         $unit->setTemplate($template);
         
-        // Use 'Botiquín' material for the dummy unit
-        $unit->setMaterial($this->getOrCreateKitMaterial($entityManager));
+        // Use the appropriate material for the dummy unit
+        $unit->setMaterial($this->getOrCreateKitMaterial(
+            $entityManager,
+            $template->getName(),
+            $draft['brand'] ?? null,
+            $draft['model'] ?? null,
+            $draft['barcode'] ?? null,
+            $draft['subfamily'] ?? null
+        ));
 
         $proposals = [];
         $shortages = [];
@@ -1312,7 +1323,14 @@ class KitController extends AbstractController
         $template = $entityManager->getRepository(KitTemplate::class)->find($draft['template_id']);
         
         // 1. Physical Unit deduplication/creation
-        $material = $this->getOrCreateKitMaterial($entityManager);
+        $material = $this->getOrCreateKitMaterial(
+            $entityManager,
+            $template->getName(),
+            $draft['brand'] ?? null,
+            $draft['model'] ?? null,
+            $draft['barcode'] ?? null,
+            $draft['subfamily'] ?? null
+        );
 
         // Handle "IVA Incluido" logic: desglosar hacia atrás (Precio / 1.21)
         // Handle "IVA Incluido" logic: reverse calculate base price
@@ -1367,12 +1385,34 @@ class KitController extends AbstractController
         return $unit;
     }
 
-    private function getOrCreateKitMaterial(EntityManagerInterface $entityManager): Material
-    {
-        $material = $entityManager->getRepository(Material::class)->findOneBy(['name' => 'Botiquín']);
+    private function getOrCreateKitMaterial(
+        EntityManagerInterface $entityManager,
+        string $name = 'Botiquín',
+        ?string $brand = null,
+        ?string $model = null,
+        ?string $barcode = null,
+        ?string $subFamily = null
+    ): Material {
+        $repo = $entityManager->getRepository(Material::class);
+        $material = null;
+
+        if ($barcode) {
+            $material = $repo->findOneBy(['barcode' => $barcode]);
+        }
+
+        if (!$material) {
+            $criteria = ['name' => $name];
+            if ($brand) $criteria['brandModel'] = $brand . ($model ? ' ' . $model : '');
+
+            $material = $repo->findOneBy($criteria);
+        }
+
         if (!$material) {
             $material = new Material();
-            $material->setName('Botiquín');
+            $material->setName($name);
+            $material->setBrandModel($brand . ($model ? ' ' . $model : ''));
+            $material->setBarcode($barcode);
+            $material->setSubFamily($subFamily);
             $material->setCategory('Sanitario'); // This ensures it routes to Pharmacy by default
             $material->setNature(Material::NATURE_TECHNICAL);
             $material->setStock(0);

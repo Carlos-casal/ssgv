@@ -96,6 +96,7 @@ class KitTransferTest extends TestCase
         $qbStock->method('where')->willReturnSelf();
         $qbStock->method('andWhere')->willReturnSelf();
         $qbStock->method('setParameter')->willReturnSelf();
+        $qbStock->method('addSelect')->willReturnSelf();
         $qbStock->method('orderBy')->willReturnSelf();
         $qbStock->method('addOrderBy')->willReturnSelf();
         $qbStock->method('getQuery')->willReturn($query);

@@ -249,6 +249,24 @@ class MaterialManagerTest extends TestCase
         $stock->setQuantity(10);
         $origin->addStock($stock);
 
+        // Mock QueryBuilder for FIFO in transfer
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->method('getResult')->willReturn([$stock]);
+
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('leftJoin')->willReturnSelf();
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('setParameter')->willReturnSelf();
+        $qb->method('addSelect')->willReturnSelf();
+        $qb->method('orderBy')->willReturnSelf();
+        $qb->method('addOrderBy')->willReturnSelf();
+        $qb->method('getQuery')->willReturn($query);
+
+        $this->stockRepository->method('createQueryBuilder')->willReturn($qb);
+
         $this->stockRepository->method('findOneBy')
             ->willReturnCallback(function($criteria) use ($origin, $stock) {
                 if ($criteria['location'] === $origin) return $stock;
@@ -276,6 +294,10 @@ class MaterialManagerTest extends TestCase
 
         // Global stock should remain unchanged
         $this->assertEquals(10, $material->getStock());
+        // Since transfer logic now calls recordMovement twice (one per split if it were split, but here one for subtract and one for add)?
+        // Wait, the new logic for transfer Consumable calls recordMovement INSIDE the loop:
+        // $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $currentBatch, $now, $destination === null);
+        // It's called once per stock record handled.
         $this->assertEquals(1, $movementPersists, "Should persist exactly one atomic movement record for transfer");
     }
 
@@ -295,6 +317,24 @@ class MaterialManagerTest extends TestCase
         $stock->setLocation($origin);
         $stock->setQuantity(10);
         $origin->addStock($stock);
+
+        // Mock QueryBuilder for FIFO in transfer
+        $query = $this->getMockBuilder(\Doctrine\ORM\Query::class)
+            ->disableOriginalConstructor()
+            ->getMock();
+        $query->method('getResult')->willReturn([$stock]);
+
+        $qb = $this->createMock(\Doctrine\ORM\QueryBuilder::class);
+        $qb->method('leftJoin')->willReturnSelf();
+        $qb->method('where')->willReturnSelf();
+        $qb->method('andWhere')->willReturnSelf();
+        $qb->method('setParameter')->willReturnSelf();
+        $qb->method('addSelect')->willReturnSelf();
+        $qb->method('orderBy')->willReturnSelf();
+        $qb->method('addOrderBy')->willReturnSelf();
+        $qb->method('getQuery')->willReturn($query);
+
+        $this->stockRepository->method('createQueryBuilder')->willReturn($qb);
 
         $this->stockRepository->method('findOneBy')->willReturnCallback(function($criteria) use ($origin, $stock) {
             if ($criteria['location'] === $origin) return $stock;
@@ -320,9 +360,10 @@ class MaterialManagerTest extends TestCase
         );
 
         $this->assertNotNull($recordedMovement);
-        // The last recorded movement is the Entry one
+        // The movement should record origin and destination
         $this->assertEquals(5, $recordedMovement->getQuantity());
         $this->assertEquals($destination, $recordedMovement->getDestination());
+        $this->assertEquals($origin, $recordedMovement->getOrigin());
     }
 
     public function testIdempotencyCacheCatchSameRequestDuplicates(): void

@@ -634,18 +634,21 @@ export default class extends Controller {
         if (!this.hasTechnicalBlocksContainerTarget) return;
 
         const isEdit = this.element.dataset.materialAction === 'edit';
-        const isTechnical = this.natureSelectTarget.value === 'EQUIPO_TECNICO';
         const defaultBrand = this.element.dataset.materialBrand || '';
         const defaultPurchase = this.element.dataset.materialPurchase || '';
         const defaultWarranty = this.element.dataset.materialWarranty || '';
 
-        if (count > 50) count = 50; // Safety limit
-
         const currentData = {};
 
-        // If it's the first time and we have initialUnits, use them
+        // Capture current values from existing fields before re-rendering
+        this.technicalBlocksContainerTarget.querySelectorAll('input, select, textarea').forEach(input => {
+            currentData[input.name] = input.value;
+        });
+
+        // Initialize with initialUnits if the container is empty and we have them
         if (this.technicalBlocksContainerTarget.children.length === 0 && this.initialUnits.length > 0) {
             this.initialUnits.forEach((unit, i) => {
+                currentData[`units_data[${i}][id]`] = unit.id;
                 currentData[`units_data[${i}][alias]`] = unit.alias;
                 currentData[`units_data[${i}][serialNumber]`] = unit.serialNumber;
                 currentData[`units_data[${i}][brandModel]`] = unit.brandModel;
@@ -653,136 +656,135 @@ export default class extends Controller {
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
                 currentData[`units_data[${i}][warrantyDate]`] = unit.warrantyDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
-                currentData[`units_data[${i}][purchasePrice]`] = this.formatToUserLocale(unit.purchasePrice);
+                currentData[`units_data[${i}][purchasePrice]` ] = this.formatToUserLocale(unit.purchasePrice);
                 currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
-                currentData[`units_data[${i}][history]`] = unit.history;
+                currentData[`units_data[${i}][history]` ] = unit.history;
             });
         }
 
-        this.technicalBlocksContainerTarget.querySelectorAll('input, select').forEach(input => {
-            currentData[input.name] = input.value;
-        });
+        // Group data by model for better UX
+        const groups = {};
+        for (let i = 0; i < count; i++) {
+            const model = currentData[`units_data[${i}][brandModel]`] || defaultBrand || 'Estándar';
+            if (!groups[model]) groups[model] = [];
+            groups[model].push(i);
+        }
 
         let html = '';
-        for (let i = 0; i < count; i++) {
-            const aliasName = `units_data[${i}][alias]`;
-            const snName = `units_data[${i}][serialNumber]`;
-            const brandName = `units_data[${i}][brandModel]`;
-            const supplierName = `units_data[${i}][supplier]`;
-            const purchaseName = `units_data[${i}][purchaseDate]`;
-            const warrantyName = `units_data[${i}][warrantyDate]`;
-            const statusName = `units_data[${i}][operationalStatus]`;
-            const priceName = `units_data[${i}][purchasePrice]`;
-            const discountName = `units_data[${i}][discountPct]`;
-
+        Object.entries(groups).forEach(([model, indices]) => {
             html += `
                 <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #f6c23e !important;">
-                    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-warning text-uppercase">
-                            UNIDAD ${i + 1}${count > 1 ? ' de ' + count : ''}: Datos Técnicos
+                    <div class="card-header bg-gray-50 py-3 d-flex justify-content-between align-items-center">
+                        <h6 class="m-0 font-weight-bold text-gray-700 text-uppercase">
+                            <i class="fas fa-boxes mr-2"></i> ${model} (${indices.length} unidades)
                         </h6>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Alias / Identificador</label>
-                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-input" placeholder="Ej: Botiquin Alfa 1">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Número de Serie (S/N) <span class="text-muted small">(opcional)</span></label>
-                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-input" placeholder="Dejar vacío si no aplica"
-                                    data-material-dynamic-form-target="serialNumberInput"
-                                    data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
-                                    data-check-url="${this.element.dataset.serialCheckUrl}">
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Marca y Modelo <span class="text-muted small">(opcional)</span></label>
-                                <input type="text" name="${brandName}" value="${currentData[brandName] || defaultBrand}" class="form-input" placeholder="Ej: Botiquin B-120">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Proveedor</label>
-                                <input type="text" name="${supplierName}" value="${currentData[supplierName] || ''}" class="form-input" placeholder="Nombre del proveedor">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Fecha de Compra</label>
-                                <input type="date" name="${purchaseName}" value="${currentData[purchaseName] || defaultPurchase}" 
-                                    data-action="change->material-dynamic-form#handleDateChange"
-                                    class="form-input">
-                            </div>
-                            <div class="col-md-3 mb-3">
-                                <label class="form-label">Garantía</label>
-                                <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-input">
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Estado Operativo</label>
-                                <select name="${statusName}" class="form-input">
-                                    <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
-                                    <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
-                                    <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
-                                    <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">Precio de Compra (IVA inc.)</label>
-                                <div class="input-group">
-                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-input" placeholder="0,00"
-                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                    <span class="input-group-text">€</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-3">
-                                <label class="form-label">% Margen</label>
-                                <div class="input-group">
-                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-input" placeholder="0"
-                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                        </div>
-                        ${isEdit ? `
-                        <div class="row mt-2">
-                            <div class="col-12 mb-2">
-                                <label class="form-label text-muted small">Motivo del cambio de estado (opcional)</label>
-                                <textarea name="units_data[${i}][statusReason]" class="form-input" rows="2" 
-                                    placeholder="Describe el motivo si cambias el estado operativo..."></textarea>
-                            </div>
-                        </div>
-                        ${(currentData['history'] && currentData['history'].length > 0) ? `
-                        <div class="mt-3">
-                            <div class="text-xs font-weight-bold text-uppercase text-muted mb-2">
-                                <i class="fas fa-history mr-1"></i> Historial de estados
-                            </div>
-                            <table class="table table-sm table-bordered mb-0">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover table-sm mb-0">
                                 <thead class="bg-light">
-                                    <tr>
-                                        <th class="small">Fecha</th>
-                                        <th class="small">Estado</th>
-                                        <th class="small">Usuario</th>
-                                        <th class="small">Motivo</th>
+                                    <tr class="text-xxs font-black text-gray-500 uppercase tracking-widest">
+                                        <th class="px-3 py-2">Identificación (Alias / S/N)</th>
+                                        <th class="px-3 py-2">Proveedor</th>
+                                        <th class="px-3 py-2">Estado</th>
+                                        <th class="px-3 py-2">Precio & Margen</th>
+                                        <th class="px-3 py-2">Fechas</th>
+                                        ${isEdit ? '<th class="px-3 py-2">Historial</th>' : ''}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${currentData['history'].map(h => `
-                                        <tr>
-                                            <td class="small">${h.date || '-'}</td>
-                                            <td><span class="badge ${h.status === 'OPERATIVO' ? 'bg-success' : 'bg-warning text-dark'}">${h.status}</span></td>
-                                            <td class="small">${h.user || 'Sistema'}</td>
-                                            <td class="small text-muted">${h.reason || '-'}</td>
-                                        </tr>
-                                    `).join('')}
+                                    ${indices.map(i => {
+                                        const aliasName = `units_data[${i}][alias]`;
+                                        const snName = `units_data[${i}][serialNumber]`;
+                                        const brandName = `units_data[${i}][brandModel]`;
+                                        const supplierName = `units_data[${i}][supplier]`;
+                                        const purchaseName = `units_data[${i}][purchaseDate]`;
+                                        const warrantyName = `units_data[${i}][warrantyDate]`;
+                                        const statusName = `units_data[${i}][operationalStatus]`;
+                                        const priceName = `units_data[${i}][purchasePrice]`;
+                                        const discountName = `units_data[${i}][discountPct]`;
+                                        const reasonName = `units_data[${i}][statusReason]`;
+
+                                        return `
+                                        <tr class="align-middle">
+                                            <td class="px-3 py-3">
+                                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm font-bold mb-1" placeholder="Alias">
+                                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm text-xxs font-mono" placeholder="N/S"
+                                                    data-material-dynamic-form-target="serialNumberInput"
+                                                    data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
+                                                    data-check-url="${this.element.dataset.serialCheckUrl}">
+                                                <input type="hidden" name="${brandName}" value="${currentData[brandName] || model}">
+                                            </td>
+                                            <td class="px-3">
+                                                <input type="text" name="${supplierName}" value="${currentData[supplierName] || ''}" class="form-control form-control-sm" placeholder="Proveedor">
+                                            </td>
+                                            <td class="px-3">
+                                                <select name="${statusName}" class="form-select form-select-sm mb-1 ${currentData[statusName] === 'AVERIADO' || currentData[statusName] === 'REPARACION' ? 'text-danger border-danger' : ''}">
+                                                    <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
+                                                    <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
+                                                    <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>REPARACIÓN</option>
+                                                    <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
+                                                </select>
+                                                ${isEdit ? `<textarea name="${reasonName}" class="form-control form-control-sm text-xxs" rows="1" placeholder="Motivo cambio...">${currentData[reasonName] || ''}</textarea>` : ''}
+                                            </td>
+                                            <td class="px-3">
+                                                <div class="input-group input-group-sm mb-1">
+                                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
+                                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                                    <span class="input-group-text text-xxs p-1">€</span>
+                                                </div>
+                                                <div class="input-group input-group-sm">
+                                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
+                                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                                    <span class="input-group-text text-xxs p-1">%</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-3">
+                                                <div class="mb-1">
+                                                    <label class="text-xxs text-gray-400 uppercase m-0">Compra</label>
+                                                    <input type="date" name="${purchaseName}" value="${currentData[purchaseName] || defaultPurchase}" class="form-control form-control-sm text-xxs">
+                                                </div>
+                                                <div>
+                                                    <label class="text-xxs text-gray-400 uppercase m-0">Garantía</label>
+                                                    <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-control form-control-sm text-xxs">
+                                                </div>
+                                            </td>
+                                            ${isEdit ? `
+                                            <td class="px-3 text-center">
+                                                ${(currentData[`units_data[${i}][history]`] && currentData[`units_data[${i}][history]`].length > 0) ? `
+                                                    <button type="button" class="btn btn-sm btn-outline-info p-1" data-bs-toggle="popover" data-bs-trigger="focus" title="Historial"
+                                                            data-bs-content="${this.escapeHtml(this.generateHistoryHtml(currentData[`units_data[${i}][history]`]))}" data-bs-html="true">
+                                                        <i class="fas fa-history"></i>
+                                                    </button>
+                                                ` : '<span class="text-gray-300">-</span>'}
+                                            </td>` : ''}
+                                        </tr>`;
+                                    }).join('')}
                                 </tbody>
                             </table>
-                        </div>` : ''}
-                        ` : ''}
+                        </div>
                     </div>
                 </div>`;
-        }
+        });
 
         this.technicalBlocksContainerTarget.innerHTML = html;
+
+        // Initialize tooltips/popovers if bootstrap is available
+        if (window.bootstrap) {
+            const popoverTriggerList = [].slice.call(this.technicalBlocksContainerTarget.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                return new window.bootstrap.Popover(popoverTriggerEl);
+            });
+        }
+    }
+
+    generateHistoryHtml(history) {
+        let html = '<div class="small"><table class="table table-sm table-bordered mb-0"><tbody>';
+        history.forEach(h => {
+            html += `<tr><td>${h.date}</td><td><span class="badge bg-light text-dark">${h.status}</span></td><td>${h.user}</td><td>${h.reason || '-'}</td></tr>`;
+        });
+        html += '</tbody></table></div>';
+        return html;
     }
 
 
@@ -792,41 +794,49 @@ export default class extends Controller {
         // Limit count to avoid browser crash/abuse
         if (count > 100) count = 100;
 
-        // In edit mode, we might already have units.
-        // We only want to generate fields for NEW units if stock increases.
-        // However, the current backend logic expects units_data to be the FULL set if we want to sync,
-        // but my latest controller fix only creates if count > existing.
-        // So let's only generate fields for the DELTA if in edit mode,
-        // OR better, generate for all but mark existing ones?
-        // Simpler: the user only adds NEW units via this dynamic form in New/Edit.
         const currentData = {};
 
-        // If it's the first time and we have initialUnits, use them
+        // Capture current values from existing fields before re-rendering
+        this.unitsContainerTarget.querySelectorAll('input, select').forEach(input => {
+            currentData[input.name] = input.value;
+        });
+
+        // Initialize with initialUnits if the container is empty and we have them
         if (this.unitsContainerTarget.children.length === 0 && this.initialUnits.length > 0) {
             this.initialUnits.forEach((unit, i) => {
-                currentData[`units_data[${i}][alias]`] = unit.alias;
+                currentData[`units_data[${i}][alias]` ] = unit.alias;
                 currentData[`units_data[${i}][serialNumber]`] = unit.serialNumber;
                 currentData[`units_data[${i}][networkId]`] = unit.networkId;
                 currentData[`units_data[${i}][phoneNumber]`] = unit.phoneNumber;
+                currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
                 currentData[`units_data[${i}][purchasePrice]` ] = this.formatToUserLocale(unit.purchasePrice);
                 currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
+                currentData[`units_data[${i}][history]`] = unit.history;
             });
         }
-
-        this.unitsContainerTarget.querySelectorAll('input').forEach(input => {
-            currentData[input.name] = input.value;
-        });
 
         const isEdit = this.element.dataset.materialAction === 'edit';
         let html = '';
         if (count > 0) {
             html += `<div class="card shadow-sm mb-4 border-0 border-left-warning">
                 <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-warning">
-                        <i class="fas fa-list-ol mr-2"></i> IDENTIFICACIÓN DE UNIDADES (${count})
+                    <h6 class="m-0 font-weight-bold text-warning uppercase">
+                        <i class="fas fa-list-ol mr-2"></i> Identificación de Unidades (${count})
                     </h6>
                 </div>
-                <div class="card-body">`;
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm mb-0">
+                            <thead class="bg-light">
+                                <tr class="text-xxs font-black text-gray-500 uppercase tracking-widest">
+                                    <th class="px-3 py-2">Alias / S/N</th>
+                                    <th class="px-3 py-2">Red / Tel</th>
+                                    <th class="px-3 py-2">Estado</th>
+                                    <th class="px-3 py-2">Costes</th>
+                                    ${isEdit ? '<th class="px-3 py-2">Historial</th>' : ''}
+                                </tr>
+                            </thead>
+                            <tbody>`;
 
             for (let i = 0; i < count; i++) {
                 const aliasName = `units_data[${i}][alias]`;
@@ -836,88 +846,63 @@ export default class extends Controller {
                 const statusName = `units_data[${i}][operationalStatus]`;
                 const priceName = `units_data[${i}][purchasePrice]`;
                 const discountName = `units_data[${i}][discountPct]`;
+                const reasonName = `units_data[${i}][statusReason]`;
 
                 html += `
-                    <div class="unit-row p-3 mb-4 border rounded bg-light shadow-sm">
-                        <div class="row">
-                            <div class="col-md-3 mb-2">
-                                <label class="small font-weight-bold">NOMBRE / ALIAS EN RED</label>
-                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm" placeholder="Ej: ALFA 1">
+                    <tr class="align-middle">
+                        <td class="px-3 py-2">
+                            <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm font-bold mb-1" placeholder="Alias">
+                            <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm text-xxs font-mono" placeholder="S/N"
+                                data-material-dynamic-form-target="serialNumberInput"
+                                data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
+                                data-check-url="${this.element.dataset.serialCheckUrl}">
+                        </td>
+                        <td class="px-3 py-2">
+                            <input type="text" name="${netName}" value="${currentData[netName] || ''}" class="form-control form-control-sm text-xxs mb-1" placeholder="ID Red">
+                            <input type="text" name="${phoneName}" value="${currentData[phoneName] || ''}" class="form-control form-control-sm text-xxs" placeholder="Teléfono">
+                        </td>
+                        <td class="px-3 py-2">
+                            <select name="${statusName}" class="form-select form-select-sm mb-1 ${currentData[statusName] === 'AVERIADO' || currentData[statusName] === 'REPARACION' ? 'text-danger border-danger' : ''}">
+                                <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
+                                <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
+                                <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
+                                <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
+                            </select>
+                            ${isEdit ? `<input type="text" name="${reasonName}" class="form-control form-control-sm text-xxs" placeholder="Motivo cambio...">` : ''}
+                        </td>
+                        <td class="px-3 py-2">
+                            <div class="input-group input-group-sm mb-1">
+                                <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
+                                    data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                <span class="input-group-text text-xxs p-1">€</span>
                             </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="small font-weight-bold">Nº SERIE (S/N)</label>
-                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm"
-                                    data-material-dynamic-form-target="serialNumberInput"
-                                    data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
-                                    data-check-url="${this.element.dataset.serialCheckUrl}">
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
+                                    data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                <span class="input-group-text text-xxs p-1">%</span>
                             </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="small font-weight-bold">ID RED (ISSI/IMEI)</label>
-                                <input type="text" name="${netName}" value="${currentData[netName] || ''}" class="form-control form-control-sm">
-                            </div>
-                            <div class="col-md-3 mb-2">
-                                <label class="small font-weight-bold">Nº TELÉFONO</label>
-                                <input type="text" name="${phoneName}" value="${currentData[phoneName] || ''}" class="form-control form-control-sm" placeholder="+34...">
-                            </div>
-                        </div>
-                        <div class="row mt-2 border-top pt-2">
-                            <div class="col-md-4 mb-2">
-                                <label class="small font-weight-bold">ESTADO OPERATIVO</label>
-                                <select name="${statusName}" class="form-control form-control-sm">
-                                    <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
-                                    <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
-                                    <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
-                                    <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
-                                </select>
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="small font-weight-bold">PRECIO COMPRA (IVA inc.)</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
-                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                    <span class="input-group-text">€</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 mb-2">
-                                <label class="small font-weight-bold">% MARGEN</label>
-                                <div class="input-group input-group-sm">
-                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
-                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                    <span class="input-group-text">%</span>
-                                </div>
-                            </div>
-                        </div>
+                        </td>
                         ${isEdit ? `
-                        <div class="row mt-1">
-                            <div class="col-12">
-                                <label class="small text-muted">Motivo cambio estado (opcional)</label>
-                                <input type="text" name="units_data[${i}][statusReason]" class="form-control form-control-sm" placeholder="Describe el motivo si cambias el estado...">
-                            </div>
-                        </div>
-                        ${(currentData['history'] && currentData['history'].length > 0) ? `
-                        <div class="mt-2 small">
-                            <div class="font-weight-bold text-muted mb-1 text-uppercase" style="font-size: 0.65rem;">Historial de estados:</div>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered mb-0" style="font-size: 0.7rem;">
-                                    <tbody>
-                                        ${currentData['history'].map(h => `
-                                            <tr>
-                                                <td width="25%">${h.date || '-'}</td>
-                                                <td width="20%"><span class="badge ${h.status === 'OPERATIVO' ? 'bg-success' : 'bg-warning text-dark'}" style="font-size: 0.6rem;">${h.status}</span></td>
-                                                <td width="20%">${h.user || 'Sistema'}</td>
-                                                <td>${h.reason || '-'}</td>
-                                            </tr>
-                                        `).join('')}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>` : ''}
-                        ` : ''}
-                    </div>`;
+                        <td class="px-3 py-2 text-center">
+                            ${(currentData[`units_data[${i}][history]`] && currentData[`units_data[${i}][history]`].length > 0) ? `
+                                <button type="button" class="btn btn-sm btn-outline-info p-1" data-bs-toggle="popover" data-bs-trigger="focus" title="Historial"
+                                        data-bs-content="${this.escapeHtml(this.generateHistoryHtml(currentData[`units_data[${i}][history]`]))}" data-bs-html="true">
+                                    <i class="fas fa-history"></i>
+                                </button>
+                            ` : '<span class="text-gray-300">-</span>'}
+                        </td>` : ''}
+                    </tr>`;
             }
-            html += `</div></div>`;
+            html += `</tbody></table></div></div></div>`;
         }
         this.unitsContainerTarget.innerHTML = html;
+
+        if (window.bootstrap) {
+            const popoverTriggerList = [].slice.call(this.unitsContainerTarget.querySelectorAll('[data-bs-toggle="popover"]'));
+            popoverTriggerList.map(function (popoverTriggerEl) {
+                return new window.bootstrap.Popover(popoverTriggerEl);
+            });
+        }
     }
 
 
