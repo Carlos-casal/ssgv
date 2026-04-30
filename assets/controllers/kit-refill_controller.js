@@ -26,15 +26,34 @@ export default class extends Controller {
     }
 
     addRow() {
-        const template = this.prototypeTarget.innerHTML;
-        this.containerTarget.insertAdjacentHTML('beforeend', template);
+        const templateHtml = this.prototypeTarget.innerHTML.trim();
+        const temp = document.createElement('tbody');
+        temp.innerHTML = templateHtml;
+        const newRow = temp.firstElementChild;
 
-        const emptyRow = this.containerTarget.querySelector('.empty-row');
+        if (!newRow) return;
+
+        // Force insertion at the absolute beginning of the MANUAL section
+        const manualContainer = document.getElementById('MANUAL_ROWS') || this.containerTarget;
+        manualContainer.prepend(newRow);
+
+        const emptyRow = document.querySelector('.empty-row');
         if (emptyRow) emptyRow.remove();
 
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
+
+        // Highlight and scroll
+        setTimeout(() => {
+            newRow.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            newRow.style.border = '2px solid #22c55e'; // Temporal green border to confirm new version
+            newRow.classList.add('bg-green-50', 'dark:bg-green-900/10');
+            setTimeout(() => {
+                newRow.style.border = '';
+                newRow.classList.remove('bg-green-50', 'dark:bg-green-900/10');
+            }, 2000);
+        }, 100);
     }
 
     removeRow(event) {
@@ -46,19 +65,14 @@ export default class extends Controller {
 
     onMaterialChange(event) {
         const select = event.currentTarget;
-        const row = select.closest('.refill-row');
         const materialId = select.value;
-        const nature = select.options[select.selectedIndex].dataset.nature;
+        if (!materialId) return;
 
-        row.dataset.materialId = materialId;
+        const option = select.options[select.selectedIndex];
+        const nature = option.dataset.nature;
+        const row = select.closest('.refill-row');
         row.dataset.nature = nature;
-
-        const manualTitle = row.querySelector('.manual-title');
-        if (manualTitle) {
-            manualTitle.textContent = select.options[select.selectedIndex].text;
-            manualTitle.style.display = 'block';
-            select.style.display = 'none';
-        }
+        row.dataset.materialId = materialId;
 
         const identifierContainer = row.querySelector('.identifier-container');
         const options = this.warehouseOptions[materialId] || [];
@@ -86,8 +100,17 @@ export default class extends Controller {
             quantityInput.value = 1;
             quantityInput.readOnly = true;
         } else {
+            const dataEl = document.getElementById('template-quantities-data');
+            const templateQuantities = dataEl ? JSON.parse(dataEl.textContent || '{}') : {};
+            
+            // Robust lookup for both string and numeric keys
+            const ideal = templateQuantities[materialId] || templateQuantities[parseInt(materialId)] || 1;
+            quantityInput.value = ideal;
             quantityInput.readOnly = false;
         }
+
+        // Ensure the material selector itself is not disabled so it can be changed later
+        select.disabled = false;
     }
 
     updateAvailable(event) {
@@ -113,6 +136,10 @@ export default class extends Controller {
         const nature = row.dataset.nature;
 
         if (!select || !select.options[select.selectedIndex]) return;
+
+        const selectedValue = select.value;
+        // Skip validation if nothing is selected (placeholder/shortage) to allow showing needed quantity
+        if (!selectedValue) return;
 
         const available = parseInt(select.options[select.selectedIndex].dataset.available || 0);
         let value = parseInt(input.value);
@@ -249,6 +276,19 @@ export default class extends Controller {
             return;
         }
 
+        // Check for duplicates to warn user (backend handles grouping but UI should ideally be clean)
+        const seenIds = new Set();
+        let hasDuplicates = false;
+        proposals.forEach(p => {
+            const key = p.stock_id ? `stock_${p.stock_id}` : `unit_${p.unit_id}`;
+            if (seenIds.has(key)) hasDuplicates = true;
+            seenIds.add(key);
+        });
+
+        if (hasDuplicates) {
+            this.showToast('Has seleccionado el mismo lote/unidad en varias filas. Se combinarán automáticamente.', 'warning');
+        }
+
         document.getElementById('proposals_data').value = JSON.stringify(proposals);
 
         if (hasBusy) {
@@ -325,9 +365,10 @@ export default class extends Controller {
         });
 
         if (!targetRow) {
-            // 2. If no semi-empty row found, add a new one
+            // 2. If no semi-empty row found, add a new one at the TOP
             this.addRow();
-            targetRow = this.containerTarget.lastElementChild;
+            const manualContainer = document.getElementById('MANUAL_ROWS') || this.containerTarget;
+            targetRow = manualContainer.firstElementChild; 
             const matSelect = targetRow.querySelector('.material-selector');
             if (matSelect) {
                 matSelect.value = materialId;
@@ -335,11 +376,14 @@ export default class extends Controller {
             }
         }
 
-        // 3. Select the specific unit
+        // 3. Select the specific unit if provided
         const select = targetRow.querySelector('.identifier-select');
-        if (select) {
+        if (select && unitId) {
             select.value = unitId;
             this.updateAvailable({ currentTarget: select });
+        } else if (select) {
+            // Just focus the select if no specific unit was provided
+            select.focus();
         }
         
         // 4. Visual feedback

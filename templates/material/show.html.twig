@@ -20,214 +20,149 @@
             </div>
         </div>
         <div class="flex flex-wrap gap-3">
-            <a href="{{ path('app_material_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none transition-colors">
+            <a href="{{ path('app_material_index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors">
                 <i data-lucide="arrow-left" class="w-4 h-4 mr-2"></i> Volver al Listado
             </a>
-            <a href="{{ path('app_material_transfer', {id: material.id}) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none transition-colors">
-                <i data-lucide="arrow-left-right" class="w-4 h-4 mr-2"></i> Registrar Movimiento
+            <a href="{{ path('app_material_transfer', {id: material.id}) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-bold rounded-lg shadow-sm text-white bg-blue-600 hover:bg-blue-700 transition-all">
+                <i data-lucide="arrow-left-right" class="w-4 h-4 mr-2 text-white"></i> 
+                <span class="text-white">Registrar Movimiento</span>
             </a>
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {# Sidebar (col-lg-3 equivalent) #}
-        <aside class="lg:col-span-3 space-y-6">
-            {% if material.imagePath %}
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow duration-300">
-                <div class="aspect-square relative flex items-center justify-center p-4 bg-gray-50/50">
-                    <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}"
-                         alt="{{ material.name }}"
-                         class="max-h-full max-w-full object-contain transition-transform duration-500 hover:scale-105">
+    {# 4 Equal-Width Cards Ribbon #}
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-6">
+        
+        {# Card 1: Description & Barcode #}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-center min-h-[90px]">
+            <div class="flex items-center mb-1">
+                <div class="flex-shrink-0 p-1.5 rounded-lg bg-gray-50 text-gray-500 mr-2">
+                    <i data-lucide="tag" class="w-4 h-4"></i>
+                </div>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0">Identificación</p>
+            </div>
+            <div class="ml-8">
+                <h4 class="text-sm font-bold text-gray-900 m-0 leading-tight truncate" title="{{ material.description|default(material.name) }}">{{ material.description|default('Sin descripción') }}</h4>
+                <div class="text-xs font-mono text-gray-500 mt-0.5 truncate" title="{{ material.barcode|default('') }}">{{ material.barcode|default('Sin código') }}</div>
+            </div>
+        </div>
+
+        {# Card 2: Stock or Status #}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-center min-h-[90px]">
+            <div class="flex items-center mb-1">
+                <div class="flex-shrink-0 p-1.5 rounded-lg {{ material.nature == 'CONSUMIBLE' ? (material.isLowStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600') : 'bg-blue-50 text-blue-600' }} mr-2">
+                    <i data-lucide="{{ material.nature == 'CONSUMIBLE' ? 'boxes' : 'activity' }}" class="w-4 h-4"></i>
+                </div>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0">{{ material.nature == 'CONSUMIBLE' ? 'Stock Actual' : 'Estado Operativo' }}</p>
+            </div>
+            <div class="ml-8">
+                <div class="flex items-baseline">
+                    {% if material.nature == 'CONSUMIBLE' %}
+                        <h4 class="text-lg font-bold text-gray-900 m-0 leading-tight">{{ material.getTotalPackages()|round(2) }}</h4>
+                        <span class="ml-1 text-[10px] text-gray-500">envases</span>
+                    {% else %}
+                        <h4 class="text-sm font-bold m-0 leading-tight {{ material.operationalStatus == 'OPERATIVO' ? 'text-green-600' : 'text-amber-600' }}">{{ material.operationalStatus }}</h4>
+                    {% endif %}
                 </div>
             </div>
-            {% endif %}
+        </div>
 
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-6 hover:shadow-md transition-shadow duration-300">
-                {# Description Section #}
-                {% if material.description %}
-                <section>
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
-                        <i data-lucide="align-left" class="w-3.5 h-3.5 mr-1.5"></i> Descripción
-                    </h3>
-                    <p class="text-sm text-gray-700 leading-relaxed">{{ material.description|nl2br }}</p>
-                </section>
-                {% endif %}
-
-                {# Barcode Section #}
-                {% if material.barcode %}
-                <section>
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 flex items-center">
-                        <i data-lucide="barcode" class="w-3.5 h-3.5 mr-1.5"></i> Código de Barras
-                    </h3>
-                    <p class="text-sm font-mono font-bold text-gray-900 bg-gray-50 p-2 rounded border border-dashed border-gray-300 text-center tracking-widest">
-                        {{ material.barcode }}
-                    </p>
-                </section>
-                {% endif %}
-
-                {# Technical Info Section (for technical units) #}
-                {% if material.nature == 'EQUIPO_TECNICO' or material.category == 'Comunicaciones' %}
-                <section class="pt-4 border-t border-gray-100">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-                        <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i> Identificación Técnica
-                    </h3>
-                    <div class="space-y-2.5">
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">S/N:</span>
-                            <span class="font-medium text-gray-900">{{ material.serialNumber|default('N/A') }}</span>
-                        </div>
-                        {% if material.networkId %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">ID Red:</span>
-                            <span class="px-1.5 py-0.5 bg-blue-50 text-blue-700 rounded text-xs font-bold">{{ material.networkId }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.phoneNumber %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Teléfono:</span>
-                            <span class="font-medium text-gray-900">{{ material.phoneNumber }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.brandModel %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Marca/Mod:</span>
-                            <span class="font-medium text-gray-900 text-right">{{ material.brandModel }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.frequencyBand %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Banda:</span>
-                            <span class="font-medium text-gray-900">{{ material.frequencyBand }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.deviceType %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Tipo:</span>
-                            <span class="font-medium text-gray-900">{{ material.deviceType }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.purchaseDate %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">F. Compra:</span>
-                            <span class="font-medium text-gray-900">{{ material.purchaseDate|date('d/m/Y') }}</span>
-                        </div>
-                        {% endif %}
-                        {% if material.warrantyDate %}
-                        <div class="flex justify-between items-center text-sm">
-                            <span class="text-gray-500">Garantía:</span>
-                            <span class="font-medium {{ material.warrantyDate < date() ? 'text-red-600' : 'text-gray-900' }}">
-                                {{ material.warrantyDate|date('d/m/Y') }}
-                            </span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </section>
-
-                {% if material.hasCharger or material.hasClip or material.hasMicrophone %}
-                <section class="pt-4 border-t border-gray-100">
-                    <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 flex items-center">
-                        <i data-lucide="layers" class="w-3.5 h-3.5 mr-1.5"></i> Accesorios
-                    </h3>
-                    <div class="grid grid-cols-1 gap-2">
-                        {% if material.hasCharger %}
-                        <div class="flex items-center text-sm">
-                            <i data-lucide="check-circle" class="w-4 h-4 mr-2 text-green-500"></i>
-                            <span class="text-gray-900">Cargador</span>
-                        </div>
-                        {% endif %}
-                        {% if material.hasClip %}
-                        <div class="flex items-center text-sm">
-                            <i data-lucide="check-circle" class="w-4 h-4 mr-2 text-green-500"></i>
-                            <span class="text-gray-900">Pinza</span>
-                        </div>
-                        {% endif %}
-                        {% if material.hasMicrophone %}
-                        <div class="flex items-center text-sm">
-                            <i data-lucide="check-circle" class="w-4 h-4 mr-2 text-green-500"></i>
-                            <span class="text-gray-900">Micro-altavoz</span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </section>
-                {% endif %}
-
-                {% if material.assignedVehicle %}
-                <section class="pt-4 border-t border-gray-100">
-                    <div class="bg-indigo-50 rounded-lg p-3">
-                        <h3 class="text-xxs font-bold text-indigo-600 uppercase tracking-wider mb-1 flex items-center">
-                            <i data-lucide="truck" class="w-3 h-3 mr-1"></i> Vehículo Asignado
-                        </h3>
-                        <p class="text-sm font-bold text-indigo-900">{{ material.assignedVehicle.alias }}</p>
-                    </div>
-                </section>
-                {% endif %}
-                {% endif %}
+        {# Card 3: Total Valuation #}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-center min-h-[90px]">
+            <div class="flex items-center mb-1">
+                <div class="flex-shrink-0 p-1.5 rounded-lg bg-indigo-50 text-indigo-600 mr-2">
+                    <i data-lucide="banknote" class="w-4 h-4"></i>
+                </div>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0">Valoración Total</p>
             </div>
-        </aside>
+            <div class="ml-8">
+                <h4 class="text-lg font-bold text-gray-900 m-0 leading-tight">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</h4>
+            </div>
+        </div>
 
-        {# Main Content (col-lg-9 equivalent) #}
-        <main class="lg:col-span-9 space-y-6">
-            {# KPI Ribbon #}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {# KPI 1: Stock or Status #}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
-                    <div class="flex-shrink-0 p-3 rounded-lg {{ material.nature == 'CONSUMIBLE' ? (material.isLowStock ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600') : 'bg-blue-50 text-blue-600' }}">
-                        <i data-lucide="{{ material.nature == 'CONSUMIBLE' ? 'boxes' : 'activity' }}" class="w-6 h-6"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">{{ material.nature == 'CONSUMIBLE' ? 'Stock Actual' : 'Estado Operativo' }}</p>
-                        <div class="flex items-baseline">
-                            {% if material.nature == 'CONSUMIBLE' %}
-                                <h4 class="text-xl font-bold text-gray-900">{{ material.getTotalPackages()|round(2) }}</h4>
-                                <span class="ml-1.5 text-xs text-gray-500">envases</span>
-                            {% else %}
-                                <h4 class="text-xl font-bold {{ material.operationalStatus == 'OPERATIVO' ? 'text-green-600' : 'text-amber-600' }}">{{ material.operationalStatus }}</h4>
-                            {% endif %}
-                        </div>
-                    </div>
+        {# Card 4: Status Alert / Extra info #}
+        {% if material.nature == 'CONSUMIBLE' %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-center min-h-[90px] {{ material.isLowStock ? 'border-red-200 bg-red-50/30' : '' }}">
+            <div class="flex items-center mb-1">
+                <div class="flex-shrink-0 p-1.5 rounded-lg {{ material.isLowStock ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400' }} mr-2">
+                    <i data-lucide="{{ material.isLowStock ? 'alert-triangle' : 'info' }}" class="w-4 h-4"></i>
                 </div>
-
-                {# KPI 2: Total Valuation #}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
-                    <div class="flex-shrink-0 p-3 rounded-lg bg-indigo-50 text-indigo-600">
-                        <i data-lucide="banknote" class="w-6 h-6"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Valoración Total</p>
-                        <h4 class="text-xl font-bold text-gray-900">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</h4>
-                    </div>
-                </div>
-
-                {# KPI 3: Status Alert / Extra info #}
-                {% if material.nature == 'CONSUMIBLE' %}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center {{ material.isLowStock ? 'border-red-200 bg-red-50/30' : 'hover:shadow-md transition-all duration-300' }}">
-                    <div class="flex-shrink-0 p-3 rounded-lg {{ material.isLowStock ? 'bg-red-100 text-red-600 animate-pulse' : 'bg-slate-50 text-slate-400' }}">
-                        <i data-lucide="{{ material.isLowStock ? 'alert-triangle' : 'info' }}" class="w-6 h-6"></i>
-                    </div>
-                    <div class="ml-4">
-                        {% if material.isLowStock %}
-                            <p class="text-xs font-bold text-red-600 uppercase tracking-wider">Alerta de Stock</p>
-                            <h4 class="text-sm font-semibold text-red-700">Reposición Necesaria</h4>
-                        {% else %}
-                            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Stock Total</p>
-                            <h4 class="text-sm font-semibold text-gray-900">{{ material.stock }} <span class="text-xxs text-gray-400 font-normal uppercase">unidades</span></h4>
-                        {% endif %}
-                    </div>
-                </div>
+                <p class="text-[10px] font-semibold {{ material.isLowStock ? 'text-red-600' : 'text-gray-500' }} uppercase tracking-wider mb-0">
+                    {{ material.isLowStock ? 'Alerta' : 'Stock Total' }}
+                </p>
+            </div>
+            <div class="ml-8">
+                {% if material.isLowStock %}
+                    <h4 class="text-sm font-semibold text-red-700 m-0 leading-tight">Reposición</h4>
                 {% else %}
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-4 flex items-center hover:shadow-md transition-all duration-300">
-                    <div class="flex-shrink-0 p-3 rounded-lg bg-amber-50 text-amber-600">
-                        <i data-lucide="shield-check" class="w-6 h-6"></i>
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Garantía</p>
-                        <h4 class="text-sm font-semibold {{ material.warrantyDate and material.warrantyDate < date() ? 'text-red-600' : 'text-gray-900' }}">
-                            {{ material.warrantyDate ? material.warrantyDate|date('d/m/Y') : 'No registrada' }}
-                        </h4>
-                    </div>
+                    <h4 class="text-sm font-semibold text-gray-900 m-0 leading-tight">{{ material.stock }} <span class="text-[9px] text-gray-400 font-normal uppercase">unidades</span></h4>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col justify-center min-h-[90px]">
+            <div class="flex items-center mb-1">
+                <div class="flex-shrink-0 p-1.5 rounded-lg bg-amber-50 text-amber-600 mr-2">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                </div>
+                <p class="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-0">Garantía</p>
+            </div>
+            <div class="ml-8">
+                <h4 class="text-sm font-semibold m-0 leading-tight {{ material.warrantyDate and material.warrantyDate < date() ? 'text-red-600' : 'text-gray-900' }}">
+                    {{ material.warrantyDate ? material.warrantyDate|date('d/m/Y') : 'No registrada' }}
+                </h4>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    {# Detailed Tech Info (Only if it exists and needs space, else just tables below) #}
+    {% if material.nature == 'EQUIPO_TECNICO' or material.category == 'Comunicaciones' or material.imagePath %}
+    <div class="flex flex-col lg:flex-row gap-6 mb-6">
+        {% if material.imagePath %}
+        <div class="w-full lg:w-1/4 bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="aspect-square relative flex items-center justify-center p-4 bg-gray-50/50">
+                <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" alt="{{ material.name }}" class="max-h-full max-w-full object-contain">
+            </div>
+        </div>
+        {% endif %}
+
+        {% if material.nature == 'EQUIPO_TECNICO' or material.category == 'Comunicaciones' %}
+        <div class="flex-1 bg-white rounded-xl shadow-sm border border-gray-200 p-5">
+            <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4 flex items-center">
+                <i data-lucide="settings" class="w-3.5 h-3.5 mr-1.5"></i> Información Técnica Completa
+            </h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                <div class="flex flex-col text-sm">
+                    <span class="text-gray-500 text-xs">S/N:</span>
+                    <span class="font-medium text-gray-900 break-all">{{ material.serialNumber|default('N/A') }}</span>
+                </div>
+                {% if material.networkId %}
+                <div class="flex flex-col text-sm">
+                    <span class="text-gray-500 text-xs">ID Red:</span>
+                    <span class="font-bold text-blue-700">{{ material.networkId }}</span>
+                </div>
+                {% endif %}
+                {% if material.brandModel %}
+                <div class="flex flex-col text-sm">
+                    <span class="text-gray-500 text-xs">Modelo:</span>
+                    <span class="font-medium text-gray-900">{{ material.brandModel }}</span>
+                </div>
+                {% endif %}
+                {% if material.assignedVehicle %}
+                <div class="flex flex-col text-sm">
+                    <span class="text-gray-500 text-xs">Vehículo Asignado:</span>
+                    <span class="font-bold text-indigo-900">{{ material.assignedVehicle.alias }}</span>
                 </div>
                 {% endif %}
             </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {# Tables Section #}
+    <div class="space-y-6">
 
             {# Traceability Table (Consumables only) #}
             {% if material.nature == 'CONSUMIBLE' and material.batches|length > 0 %}
@@ -237,18 +172,18 @@
                         <i data-lucide="tags" class="w-4 h-4 mr-2 text-indigo-600"></i> Trazabilidad de Lotes y Costes
                     </h2>
                 </div>
-                <div class="overflow-x-auto overflow-y-hidden">
+                <div class="w-full overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Lote</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Caducidad</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Proveedor</th>
-                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Uds/Env</th>
-                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Envases</th>
-                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Stock (Uds)</th>
-                                <th scope="col" class="px-5 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">P. Compra</th>
-                                <th scope="col" class="px-5 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">Valoración/Ud</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Lote</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Caducidad</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Proveedor</th>
+                                <th scope="col" class="px-4 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Uds/Env</th>
+                                <th scope="col" class="px-4 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Envases</th>
+                                <th scope="col" class="px-4 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th scope="col" class="px-4 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">P. Compra</th>
+                                <th scope="col" class="px-4 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">Val/Ud</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
@@ -256,10 +191,10 @@
                                 {% set batchStock = 0 %}
                                 {% for s in batch.stocks %}{% set batchStock = batchStock + s.quantity %}{% endfor %}
                                 <tr class="{{ batchStock <= 0 ? 'opacity-40 bg-gray-50/50' : 'hover:bg-gray-50/80 transition-colors' }}">
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm font-bold text-indigo-600">
+                                    <td class="px-4 py-3 text-sm font-bold text-indigo-600 break-words">
                                         {{ batch.batchNumber }}
                                     </td>
-                                    <td class="px-5 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-3 whitespace-nowrap">
                                         {% set isExpired = batch.expirationDate and batch.expirationDate < date() %}
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                             <i data-lucide="calendar" class="w-3 h-3 mr-1"></i>
@@ -289,6 +224,35 @@
                                     </td>
                                 </tr>
                             {% endfor %}
+
+                            {# Check and display stock without batch #}
+                            {% set noBatchStock = 0 %}
+                            {% for s in material.stocks %}
+                                {% if s.batch is null and s.quantity > 0 %}
+                                    {% set noBatchStock = noBatchStock + s.quantity %}
+                                {% endif %}
+                            {% endfor %}
+                            
+                            {% if noBatchStock > 0 %}
+                            <tr class="bg-orange-50/60 hover:bg-orange-50 transition-colors border-t border-orange-100">
+                                <td class="px-4 py-3 text-sm font-bold text-orange-600">
+                                    <div class="flex items-center">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4 mr-1"></i> Sin Lote (Huérfano)
+                                    </div>
+                                </td>
+                                <td class="px-4 py-3 text-orange-500">-</td>
+                                <td class="px-4 py-3 text-orange-500">-</td>
+                                <td class="px-4 py-3 text-center text-orange-500">-</td>
+                                <td class="px-4 py-3 text-center text-orange-500">-</td>
+                                <td class="px-5 py-3 whitespace-nowrap text-center">
+                                    <span class="text-sm font-bold text-orange-600">
+                                        {{ noBatchStock }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-3 text-right text-orange-500">-</td>
+                                <td class="px-4 py-3 text-right text-orange-500">-</td>
+                            </tr>
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -298,43 +262,43 @@
             {# Individual Units Table (Technical Equipment only) #}
             {% if material.nature == 'EQUIPO_TECNICO' and material.units|length > 0 %}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h2 class="text-sm font-bold text-gray-900 flex items-center">
                         <i data-lucide="package" class="w-4 h-4 mr-2 text-indigo-600"></i> Desglose por Unidades Individuales
                     </h2>
                 </div>
-                <div class="overflow-x-auto overflow-y-hidden">
+                <div class="w-full overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Alias / S/N</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Modelo</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">F. Compra</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Garantía</th>
-                                <th scope="col" class="px-5 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">Valoración</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Alias / S/N</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Modelo</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">F. Compra</th>
+                                <th scope="col" class="px-4 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Garantía</th>
+                                <th scope="col" class="px-4 py-3 text-right text-xxs font-bold text-gray-500 uppercase tracking-wider">Valoración</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             {% for unit in material.units %}
                                 <tr class="hover:bg-gray-50/80 transition-colors">
-                                    <td class="px-5 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-3 break-words">
                                         <div class="text-sm font-bold text-indigo-600">{{ unit.alias|default('S/A') }}</div>
                                         <div class="text-xxs text-gray-400 font-normal uppercase">S/N: {{ unit.serialNumber|default('N/S') }}</div>
                                     </td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                    <td class="px-4 py-3 text-sm text-gray-600 break-words">
                                         {{ unit.brandModel|default(material.brandModel)|default('-') }}
                                     </td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-600">
                                         {{ unit.purchaseDate ? unit.purchaseDate|date('d/m/Y') : '-' }}
                                     </td>
-                                    <td class="px-5 py-3 whitespace-nowrap">
+                                    <td class="px-4 py-3 whitespace-nowrap">
                                         {% set isExpired = unit.warrantyDate and unit.warrantyDate < date() %}
                                         <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ isExpired ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
                                             <i data-lucide="shield" class="w-3 h-3 mr-1"></i>
                                             {{ unit.warrantyDate ? unit.warrantyDate|date('d/m/Y') : '-' }}
                                         </span>
                                     </td>
-                                    <td class="px-5 py-3 whitespace-nowrap text-right text-sm font-bold text-gray-900">
+                                    <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-bold text-gray-900">
                                         {{ unit.getValuation()|number_format(2, ',', '.') }}€
                                     </td>
                                 </tr>
@@ -347,35 +311,59 @@
 
             {# History Table #}
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
                     <h2 class="text-sm font-bold text-gray-900 flex items-center">
                         <i data-lucide="history" class="w-4 h-4 mr-2 text-indigo-600"></i> Historial de Movimientos
                     </h2>
                 </div>
-                <div class="overflow-x-auto overflow-y-hidden">
+                <div class="w-full overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Fecha</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Usuario</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">{{ material.nature == 'EQUIPO_TECNICO' ? 'N/S' : 'Lote' }}</th>
-                                <th scope="col" class="px-5 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Cantidad</th>
-                                <th scope="col" class="px-5 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Motivo</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Tipo</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Fecha</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Usuario</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">{{ material.nature == 'EQUIPO_TECNICO' ? 'N/S' : 'Lote' }}</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Origen → Destino</th>
+                                <th scope="col" class="px-3 py-3 text-center text-xxs font-bold text-gray-500 uppercase tracking-wider">Cant</th>
+                                <th scope="col" class="px-3 py-3 text-left text-xxs font-bold text-gray-500 uppercase tracking-wider">Motivo</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-100">
                             {% for movement in pagination %}
-                            <tr class="hover:bg-gray-50/80 transition-colors">
-                                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-600">
-                                    {{ movement.createdAt|date('d/m/Y H:i') }}
+                            {% set isBaja = movement.quantity < 0 and movement.destination is null %}
+                            {% set isEntrada = movement.quantity > 0 and movement.origin is null %}
+                            {% set isTraspaso = movement.origin is not null and movement.destination is not null %}
+                            <tr class="hover:bg-gray-50/80 transition-colors {{ isBaja ? 'bg-red-50/20' : (isEntrada ? 'bg-green-50/20' : '') }}">
+                                <td class="px-3 py-2">
+                                    {% if isBaja %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200">
+                                            <i data-lucide="arrow-down-circle" class="w-3 h-3 mr-1"></i> BAJA
+                                        </span>
+                                    {% elseif isEntrada %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200">
+                                            <i data-lucide="arrow-up-circle" class="w-3 h-3 mr-1"></i> ENTR.
+                                        </span>
+                                    {% elseif isTraspaso %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-blue-100 text-blue-700 border border-blue-200">
+                                            <i data-lucide="arrow-left-right" class="w-3 h-3 mr-1"></i> TRASP.
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                            <i data-lucide="refresh-cw" class="w-3 h-3 mr-1"></i> AJUS.
+                                        </span>
+                                    {% endif %}
                                 </td>
-                                <td class="px-5 py-3 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                    {{ movement.createdAt|date('d/m/Y') }}
+                                </td>
+                                <td class="px-3 py-2 text-xs text-gray-900 break-words">
                                     {{ movement.user ? (movement.user.name ?: movement.user.email) : 'Sistema' }}
                                 </td>
-                                <td class="px-5 py-3 whitespace-nowrap">
+                                <td class="px-3 py-2 break-words">
                                     {% if material.nature == 'EQUIPO_TECNICO' %}
                                         {% if movement.materialUnit %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
                                                 {{ movement.materialUnit.serialNumber ?: movement.materialUnit.alias }}
                                             </span>
                                         {% else %}
@@ -383,26 +371,31 @@
                                         {% endif %}
                                     {% else %}
                                         {% if movement.batch %}
-                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                                {{ movement.batch.batchNumber }}
-                                            </span>
-                                        {% else %}
-                                            <span class="text-gray-400 text-xs italic">-</span>
-                                        {% endif %}
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                            {{ movement.batch.batchNumber }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-gray-400 text-xs italic">-</span>
+                                    {% endif %}
                                     {% endif %}
                                 </td>
-                                <td class="px-5 py-3 whitespace-nowrap text-center">
+                                <td class="px-3 py-2 text-xs text-gray-500 break-words leading-tight">
+                                    <span class="font-medium text-gray-700 block sm:inline">{{ movement.origin ? movement.origin.name : '(Proveedor)' }}</span>
+                                    <span class="mx-1 text-gray-300 hidden sm:inline">→</span>
+                                    <span class="font-medium text-gray-700 block sm:inline">{{ movement.destination ? movement.destination.name : '(Baja)' }}</span>
+                                </td>
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
                                     <span class="text-sm font-bold {{ movement.quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
                                         {{ movement.quantity > 0 ? '+' : '' }}{{ movement.quantity }}
                                     </span>
                                 </td>
-                                <td class="px-5 py-3 text-sm text-gray-600 max-w-xs truncate">
+                                <td class="px-3 py-2 text-xs text-gray-600 max-w-[150px] break-words leading-tight">
                                     {{ movement.reason }}
                                 </td>
                             </tr>
                             {% else %}
                             <tr>
-                                <td colspan="5" class="px-5 py-10 text-center text-sm text-gray-500 italic">
+                                <td colspan="7" class="px-5 py-10 text-center text-sm text-gray-500 italic">
                                     No hay movimientos registrados.
                                 </td>
                             </tr>
@@ -416,7 +409,7 @@
                 </div>
                 {% endif %}
             </div>
-        </main>
+        </div> {# End Tables Wrapper #}
     </div>
 </div>
 {% endblock %}

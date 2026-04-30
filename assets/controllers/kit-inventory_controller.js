@@ -8,7 +8,14 @@ export default class extends Controller {
     async updateIdeal(event) {
         const input = event.target;
         const itemId = input.dataset.itemId;
-        const quantity = input.value;
+        const max = parseInt(input.getAttribute('max')) || 999;
+        let quantity = parseInt(input.value) || 0;
+
+        if (quantity > max) {
+            alert(`No puedes establecer una cantidad ideal superior al stock disponible en almacén (${max})`);
+            input.value = max;
+            quantity = max;
+        }
 
         try {
             const response = await fetch(this.updateUrlValue, {

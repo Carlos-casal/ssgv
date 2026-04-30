@@ -649,6 +649,7 @@ export default class extends Controller {
                 currentData[`units_data[${i}][alias]`] = unit.alias;
                 currentData[`units_data[${i}][serialNumber]`] = unit.serialNumber;
                 currentData[`units_data[${i}][brandModel]`] = unit.brandModel;
+                currentData[`units_data[${i}][supplier]`] = unit.supplier;
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
                 currentData[`units_data[${i}][warrantyDate]`] = unit.warrantyDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
@@ -667,6 +668,7 @@ export default class extends Controller {
             const aliasName = `units_data[${i}][alias]`;
             const snName = `units_data[${i}][serialNumber]`;
             const brandName = `units_data[${i}][brandModel]`;
+            const supplierName = `units_data[${i}][supplier]`;
             const purchaseName = `units_data[${i}][purchaseDate]`;
             const warrantyName = `units_data[${i}][warrantyDate]`;
             const statusName = `units_data[${i}][operationalStatus]`;
@@ -684,30 +686,34 @@ export default class extends Controller {
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Alias / Identificador</label>
-                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-input" placeholder="Ej: Unidad 01">
+                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-input" placeholder="Ej: Botiquin Alfa 1">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Número de Serie (S/N)<span class="text-red-500">*</span></label>
-                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-input" placeholder="Identificador único" data-required="true"
+                                <label class="form-label">Número de Serie (S/N) <span class="text-muted small">(opcional)</span></label>
+                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-input" placeholder="Dejar vacío si no aplica"
                                     data-material-dynamic-form-target="serialNumberInput"
                                     data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
                                     data-check-url="${this.element.dataset.serialCheckUrl}">
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Marca y Modelo<span class="text-red-500">*</span></label>
-                                <input type="text" name="${brandName}" value="${currentData[brandName] || defaultBrand}" class="form-input" data-required="true">
+                                <label class="form-label">Marca y Modelo <span class="text-muted small">(opcional)</span></label>
+                                <input type="text" name="${brandName}" value="${currentData[brandName] || defaultBrand}" class="form-input" placeholder="Ej: Botiquin B-120">
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Fecha de Compra<span class="text-red-500">*</span></label>
+                                <label class="form-label">Proveedor</label>
+                                <input type="text" name="${supplierName}" value="${currentData[supplierName] || ''}" class="form-input" placeholder="Nombre del proveedor">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Fecha de Compra</label>
                                 <input type="date" name="${purchaseName}" value="${currentData[purchaseName] || defaultPurchase}" 
                                     data-action="change->material-dynamic-form#handleDateChange"
-                                    class="form-input" data-required="true">
+                                    class="form-input">
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Garantía<span class="text-red-500">*</span></label>
-                                <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-input" data-required="true">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Garantía</label>
+                                <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-input">
                             </div>
                         </div>
                         <div class="row">

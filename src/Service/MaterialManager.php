@@ -192,6 +192,7 @@ class MaterialManager
 
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
+        if (isset($data['supplier'])) $unit->setSupplier($data['supplier']);
 
         $this->getEntityManager()->persist($unit);
         $this->getEntityManager()->flush();
@@ -285,7 +286,9 @@ class MaterialManager
                 ->andWhere('ms.quantity > 0')
                 ->setParameter('material', $material)
                 ->setParameter('origin', $origin)
-                ->orderBy('b.expirationDate', 'ASC')
+                ->addSelect('CASE WHEN b.expirationDate IS NULL THEN 1 ELSE 0 END as HIDDEN isNullExpiration')
+                ->orderBy('isNullExpiration', 'ASC')
+                ->addOrderBy('b.expirationDate', 'ASC')
                 ->addOrderBy('b.createdAt', 'ASC');
 
             $stocks = $qb->getQuery()->getResult();
@@ -293,14 +296,18 @@ class MaterialManager
             foreach ($stocks as $s) {
                 $toSubtract = min($remainingToSubtract, $s->getQuantity());
                 
+                // Guardamos el lote antes de actualizar, porque si el stock llega a 0, 
+                // Doctrine lo borra y le hace setBatch(null) por las relaciones.
+                $currentBatch = $s->getBatch();
+                
                 // Pasamos el $s explícitamente para evitar heurísticas
-                $this->updateStockWithBatch($material, $origin, -$toSubtract, $s->getBatch(), $s);
+                $this->updateStockWithBatch($material, $origin, -$toSubtract, $currentBatch, $s);
 
                 if ($destination) {
-                    $this->updateStockWithBatch($material, $destination, $toSubtract, $s->getBatch());
+                    $this->updateStockWithBatch($material, $destination, $toSubtract, $currentBatch);
                 }
 
-                $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $s->getBatch(), $now, $destination === null);
+                $this->recordMovement($material, $toSubtract, $transferReason, $origin, $destination, $responsible, $currentBatch, $now, $destination === null);
 
                 $remainingToSubtract -= $toSubtract;
                 if ($remainingToSubtract <= 0) break;
@@ -319,6 +326,53 @@ class MaterialManager
 
             $finalReason = $origin ? $transferReason : $entryReason;
             $this->recordMovement($material, $quantity, $finalReason, $origin, $destination, $responsible, $batch, $now, $destination === null && $origin !== null);
+        }
+    }
+
+    /**
+     * Decommissions stock from ALL locations globally until the requested quantity is reached.
+     * Uses FIFO (expiration date) across the whole system.
+     */
+    public function globalWithdrawal(Material $material, int $quantity, string $reason, ?Volunteer $responsible, ?MaterialBatch $batch = null): void
+    {
+        $remainingToSubtract = $quantity;
+        $now = new \DateTimeImmutable();
+
+        // Find all stock records for this material across all locations, sorted by expiration
+        $qb = $this->stockRepository->createQueryBuilder('ms')
+            ->leftJoin('ms.batch', 'b')
+            ->where('ms.material = :material')
+            ->andWhere('ms.quantity > 0')
+            ->setParameter('material', $material);
+
+        if ($batch) {
+            $qb->andWhere('ms.batch = :batch')->setParameter('batch', $batch);
+        }
+
+        $qb->addSelect('CASE WHEN b.expirationDate IS NULL THEN 1 ELSE 0 END as HIDDEN isNullExpiration')
+           ->orderBy('isNullExpiration', 'ASC')
+           ->addOrderBy('b.expirationDate', 'ASC')
+           ->addOrderBy('b.createdAt', 'ASC');
+
+        $stocks = $qb->getQuery()->getResult();
+
+        foreach ($stocks as $s) {
+            $toSubtract = min($remainingToSubtract, $s->getQuantity());
+            $origin = $s->getLocation();
+            
+            // Guardamos el lote antes de actualizar, porque si el stock llega a 0, 
+            // Doctrine lo borra y le hace setBatch(null) por las relaciones.
+            $currentBatch = $s->getBatch();
+            
+            $this->updateStockWithBatch($material, $origin, -$toSubtract, $currentBatch, $s);
+            $this->recordMovement($material, $toSubtract, '[GLOBAL] ' . $reason, $origin, null, $responsible, $currentBatch, $now, true);
+
+            $remainingToSubtract -= $toSubtract;
+            if ($remainingToSubtract <= 0) break;
+        }
+
+        if ($remainingToSubtract > 0) {
+            throw new \RuntimeException(sprintf("Stock global insuficiente para el material '%s'. Solicitado: %d, Faltan: %d.", $material->getName(), $quantity, $remainingToSubtract));
         }
     }
 

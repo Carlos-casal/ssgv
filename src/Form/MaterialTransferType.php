@@ -25,29 +25,34 @@ class MaterialTransferType extends AbstractType
             ->add('origin', EntityType::class, [
                 'class' => Location::class,
                 'query_builder' => function (EntityRepository $er) use ($material) {
-                    $qb = $er->createQueryBuilder('l');
+                    $qb = $er->createQueryBuilder('l')
+                        ->orderBy('l.name', 'ASC');
+
                     if ($material) {
                         if ($material->getNature() === Material::NATURE_CONSUMABLE) {
-                            $qb->join('l.stocks', 's')
-                                ->where('s.material = :material')
-                                ->andWhere('s.quantity > 0')
-                                ->setParameter('material', $material);
+                            $qb->innerJoin('l.stocks', 's')
+                               ->where('s.material = :material')
+                               ->andWhere('s.quantity > 0')
+                               ->setParameter('material', $material);
                         } else {
-                            $qb->join('l.units', 'u')
-                                ->where('u.material = :material')
-                                ->setParameter('material', $material);
+                            $qb->innerJoin('l.materialUnits', 'mu')
+                               ->where('mu.material = :material')
+                               ->setParameter('material', $material);
                         }
                     }
-                    return $qb->orderBy('l.name', 'ASC');
+                    return $qb;
                 },
                 'choice_label' => function (Location $location) use ($material) {
                     $label = $location->getName();
+                    // Add ID to distinguish duplicates
+                    $label .= ' (#' . $location->getId() . ')';
+                    
                     if ($material && $material->getNature() === Material::NATURE_CONSUMABLE) {
                         $qty = 0;
                         foreach ($location->getStocks() as $s) {
                             if ($s->getMaterial() === $material) $qty += $s->getQuantity();
                         }
-                        $label .= sprintf(' (Disp: %d)', $qty);
+                        $label .= sprintf(' [Disp: %d]', $qty);
                     }
                     return $label;
                 },
@@ -55,6 +60,12 @@ class MaterialTransferType extends AbstractType
                 'required' => false,
                 'placeholder' => 'Proveedor (Entrada)',
                 'attr' => ['class' => 'form-select']
+            ])
+            ->add('isGlobal', \Symfony\Component\Form\Extension\Core\Type\CheckboxType::class, [
+                'label' => '¿Realizar ajuste GLOBAL? (Afecta a todas las ubicaciones)',
+                'required' => false,
+                'mapped' => false,
+                'attr' => ['class' => 'form-check-input']
             ])
             ->add('destination', EntityType::class, [
                 'class' => Location::class,
@@ -74,9 +85,14 @@ class MaterialTransferType extends AbstractType
             ])
             ->add('responsible', EntityType::class, [
                 'class' => Volunteer::class,
-                'choice_label' => 'name',
+                'choice_label' => function (Volunteer $v) {
+                    return $v->getName() . ' ' . ($v->getLastName() ?? '');
+                },
                 'label' => 'Responsable del Movimiento',
-                'attr' => ['class' => 'form-control']
+                'required' => false,
+                'placeholder' => 'Sin responsable asignado',
+                'constraints' => [], // Disable cascade validation of Volunteer entity
+                'attr' => ['class' => 'form-select']
             ]);
 
         if ($material) {
@@ -117,6 +133,7 @@ class MaterialTransferType extends AbstractType
     {
         $resolver->setDefaults([
             'material' => null,
+            'validation_groups' => false, // Prevent cascade validation of referenced entities
         ]);
     }
 }

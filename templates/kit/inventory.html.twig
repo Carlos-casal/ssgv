@@ -180,7 +180,8 @@
                                                    class="form-control form-control-sm text-end w-16 d-inline-block font-monospace bg-slate-50 border-slate-200"
                                                    data-action="blur->kit-inventory#updateIdeal"
                                                    data-item-id="{{ item.id }}"
-                                                   min="0">
+                                                   min="0"
+                                                   max="{{ row.availableStock|default(999) }}">
                                         </td>
                                         <td class="px-3 py-3 text-end pe-4">
                                             <div class="flex justify-end gap-1">

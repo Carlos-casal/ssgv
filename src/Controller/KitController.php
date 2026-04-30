@@ -418,6 +418,7 @@ class KitController extends AbstractController
         $proposals = [];
         $shortages = [];
         $warehouseOptions = [];
+        $reservedStock = []; // Track stock already proposed to avoid double-allocation
 
         // 1. Proposals for items IN THE TEMPLATE (FIFO)
         $dummyLocation = new Location(); // Not persisted
@@ -426,7 +427,7 @@ class KitController extends AbstractController
             $material = $item->getMaterial();
             if (!$material) continue; // Skip items that are only suggestions for now in auto-refill logic
             $defaultWarehouse = $materialManager->getDefaultLocation($material);
-            $this->addMaterialOptionsToRefill($material, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity());
+            $this->addMaterialOptionsToRefill($material, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity(), false, $reservedStock);
         }
 
         // 2. Proposals for ALL OTHER materials in inventory
@@ -434,7 +435,7 @@ class KitController extends AbstractController
         foreach ($allMaterials as $m) {
             if (isset($warehouseOptions[$m->getId()])) continue;
             $defaultWarehouse = $materialManager->getDefaultLocation($m);
-            $this->addMaterialOptionsToRefill($m, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true);
+            $this->addMaterialOptionsToRefill($m, $unit, $dummyLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true, $reservedStock);
         }
 
         // Sort warehouse options: Non-busy first (Warehouse), then busy ones (Other locations/unassigned).
@@ -458,6 +459,13 @@ class KitController extends AbstractController
             });
         }
 
+        $templateQuantities = [];
+        foreach ($template->getItems() as $item) {
+            if ($item->getMaterial()) {
+                $templateQuantities[$item->getMaterial()->getId()] = $item->getQuantity();
+            }
+        }
+
         $response = $this->render('kit/refill_preview.html.twig', [
             'unit' => $unit,
             'proposals' => $proposals,
@@ -466,7 +474,8 @@ class KitController extends AbstractController
             'warehouseOptions' => $warehouseOptions,
             'centralWarehouse' => $centralWarehouse,
             'is_new' => true,
-            'allMaterials' => $allMaterials
+            'allMaterials' => $allMaterials,
+            'templateQuantities' => $templateQuantities
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
         return $response;
@@ -474,7 +483,7 @@ class KitController extends AbstractController
     }
 
     #[Route('/{id}/inventory', name: 'app_kit_inventory', methods: ['GET'])]
-    public function inventory(int $id, MaterialUnitRepository $unitRepository, \App\Repository\MaterialMovementRepository $movementRepository, EntityManagerInterface $entityManager): Response
+    public function inventory(int $id, MaterialUnitRepository $unitRepository, \App\Repository\MaterialMovementRepository $movementRepository, EntityManagerInterface $entityManager, MaterialManager $materialManager): Response
     {
         // Eager load everything to ensure consistency
         $unit = $unitRepository->createQueryBuilder('u')
@@ -525,16 +534,9 @@ class KitController extends AbstractController
         
         // 1. Aggregate current contents by Material ID
         $contents = [];
+        $unitCounts = []; // To keep track of units for deduplication of technical stock
         if ($location) {
-            foreach ($location->getStocks() as $stock) {
-                if ($stock->getQuantity() <= 0) continue;
-                $mid = $stock->getMaterial()->getId();
-                if (!isset($contents[$mid])) {
-                    $contents[$mid] = ['material' => $stock->getMaterial(), 'quantity' => 0, 'aliases' => [], 'sources' => []];
-                }
-                $contents[$mid]['quantity'] += $stock->getQuantity();
-                $contents[$mid]['sources'][] = 'Stock Granel: ' . $stock->getQuantity();
-            }
+            // Process Units first to establish the baseline for technical items
             foreach ($location->getUnits() as $u) {
                 if ($u->getId() === $unit->getId()) continue; // Skip container
                 $mid = $u->getMaterial()->getId();
@@ -543,6 +545,8 @@ class KitController extends AbstractController
                 }
                 $contents[$mid]['quantity'] += 1;
                 $contents[$mid]['sources'][] = 'Unidad Individual';
+                $unitCounts[$mid] = ($unitCounts[$mid] ?? 0) + 1;
+
                 $info = [];
                 if ($u->getAlias()) $info[] = $u->getAlias();
                 if ($u->getSerialNumber()) $info[] = 'S/N: ' . $u->getSerialNumber();
@@ -550,6 +554,28 @@ class KitController extends AbstractController
                 
                 if (!empty($info)) {
                     $contents[$mid]['aliases'][] = implode(' • ', $info);
+                }
+            }
+
+            // Process Stocks, deduplicating shadow stock for technical items
+            foreach ($location->getStocks() as $stock) {
+                if ($stock->getQuantity() <= 0) continue;
+                $mid = $stock->getMaterial()->getId();
+                $material = $stock->getMaterial();
+
+                $qty = $stock->getQuantity();
+                if ($material->getNature() === \App\Entity\Material::NATURE_TECHNICAL) {
+                    $uCount = $unitCounts[$mid] ?? 0;
+                    // Technical stock is often a shadow of the units. Only count what's extra.
+                    $qty = max(0, $qty - $uCount);
+                }
+
+                if ($qty > 0) {
+                    if (!isset($contents[$mid])) {
+                        $contents[$mid] = ['material' => $material, 'quantity' => 0, 'aliases' => [], 'sources' => []];
+                    }
+                    $contents[$mid]['quantity'] += $qty;
+                    $contents[$mid]['sources'][] = 'Stock Granel: ' . $qty;
                 }
             }
         }
@@ -572,6 +598,7 @@ class KitController extends AbstractController
 
             if ($item->getMaterial()) {
                 $mid = $item->getMaterial()->getId();
+                $row['availableStock'] = $materialManager->getAvailableStock($item->getMaterial());
                 if (isset($contents[$mid])) {
                     $row['currentQty'] = $contents[$mid]['quantity'];
                     $row['sources'] = $contents[$mid]['sources'] ?? [];
@@ -709,20 +736,15 @@ class KitController extends AbstractController
         $shortages = [];
         $currentContents = [];
         $warehouseOptions = []; // To store all available batches/units for each material
+        $reservedStock = []; // Track stock already proposed to avoid double-allocation
 
         // 1. Map existing stock in the kit (to avoid "disappearance" on reload/back)
-        foreach ($kitLocation->getStocks() as $stock) {
-            if ($stock->getQuantity() <= 0) continue;
-
-            $currentContents[] = [
-                'material' => $stock->getMaterial(),
-                'quantity' => $stock->getQuantity(),
-                'batch' => $stock->getBatch(),
-                'unit' => null
-            ];
-        }
+        $unitCounts = [];
         foreach ($kitLocation->getUnits() as $kitUnit) {
             if ($kitUnit->getId() === $unit->getId()) continue; // Skip container
+            $mid = $kitUnit->getMaterial()->getId();
+            $unitCounts[$mid] = ($unitCounts[$mid] ?? 0) + 1;
+
             $currentContents[] = [
                 'material' => $kitUnit->getMaterial(),
                 'quantity' => 1,
@@ -731,12 +753,33 @@ class KitController extends AbstractController
             ];
         }
 
+        foreach ($kitLocation->getStocks() as $stock) {
+            if ($stock->getQuantity() <= 0) continue;
+            $mid = $stock->getMaterial()->getId();
+            $material = $stock->getMaterial();
+
+            $qty = $stock->getQuantity();
+            if ($material->getNature() === \App\Entity\Material::NATURE_TECHNICAL) {
+                $uCount = $unitCounts[$mid] ?? 0;
+                $qty = max(0, $qty - $uCount);
+            }
+
+            if ($qty > 0) {
+                $currentContents[] = [
+                    'material' => $material,
+                    'quantity' => $qty,
+                    'batch' => $stock->getBatch(),
+                    'unit' => null
+                ];
+            }
+        }
+
         // 2. Proposals for items IN THE TEMPLATE (FIFO)
         foreach ($template->getItems() as $item) {
             $material = $item->getMaterial();
             if (!$material) continue; // Skip suggestions
             $defaultWarehouse = $materialManager->getDefaultLocation($material);
-            $this->addMaterialOptionsToRefill($material, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity());
+            $this->addMaterialOptionsToRefill($material, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, $item->getQuantity(), false, $reservedStock);
         }
 
         // 3. Proposals for ALL OTHER materials in inventory (empty lists for manual addition)
@@ -744,7 +787,7 @@ class KitController extends AbstractController
         foreach ($allMaterials as $m) {
             if (isset($warehouseOptions[$m->getId()])) continue; // Skip if already processed for template
             $defaultWarehouse = $materialManager->getDefaultLocation($m);
-            $this->addMaterialOptionsToRefill($m, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true);
+            $this->addMaterialOptionsToRefill($m, $unit, $kitLocation, $defaultWarehouse, $proposals, $shortages, $warehouseOptions, $entityManager, 0, true, $reservedStock);
         }
 
         // Sort warehouse options: Non-busy first (Warehouse), then busy ones (Other locations/unassigned).
@@ -768,6 +811,13 @@ class KitController extends AbstractController
             });
         }
 
+        $templateQuantities = [];
+        foreach ($template->getItems() as $item) {
+            if ($item->getMaterial()) {
+                $templateQuantities[$item->getMaterial()->getId()] = $item->getQuantity();
+            }
+        }
+
         $response = $this->render('kit/refill_preview.html.twig', [
             'unit' => $unit,
             'proposals' => $proposals,
@@ -775,7 +825,8 @@ class KitController extends AbstractController
             'currentContents' => $currentContents,
             'warehouseOptions' => $warehouseOptions,
             'centralWarehouse' => $centralWarehouse,
-            'allMaterials' => $allMaterials
+            'allMaterials' => $allMaterials,
+            'templateQuantities' => $templateQuantities
         ]);
         $response->headers->set('Content-Type', 'text/html; charset=utf-8');
         return $response;
@@ -792,7 +843,8 @@ class KitController extends AbstractController
         &$warehouseOptions,
         EntityManagerInterface $entityManager,
         int $idealQty = 0,
-        bool $manualOnly = false
+        bool $manualOnly = false,
+        array &$reservedStock = []
     ): void {
         // Calculate current stock in the kit correctly
         $currentQty = 0;
@@ -805,6 +857,7 @@ class KitController extends AbstractController
             foreach ($stocks as $s) $currentQty += $s->getQuantity();
 
             // 2. For Technical materials, ALSO count physical units (MaterialUnit) assigned here
+            // We deduplicate to avoid double-counting "shadow" stock maintained by MaterialManager
             if ($material->getNature() !== Material::NATURE_CONSUMABLE) {
                 $qb = $entityManager->getRepository(MaterialUnit::class)->createQueryBuilder('u')
                     ->select('COUNT(u.id)')
@@ -817,7 +870,9 @@ class KitController extends AbstractController
                     $qb->andWhere('u.id != :containerId')
                        ->setParameter('containerId', $unit->getId());
                 }
-                $currentQty += (int)$qb->getQuery()->getSingleScalarResult();
+                $unitCount = (int)$qb->getQuery()->getSingleScalarResult();
+                // Deduction logic: total physical count is the number of units PLUS any extra bulk stock
+                $currentQty = $unitCount + max(0, $currentQty - $unitCount);
             }
         }
     
@@ -845,17 +900,22 @@ class KitController extends AbstractController
 
             $foundAutoSelect = false;
             foreach ($stocks as $stock) {
+                $stockId = $stock->getId();
                 $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
 
                 // Skip if it is ALREADY in the current kit (avoid duplicates)
                 if ($stock->getLocation() === $kitLocation) continue;
 
+                // Important: Show the NET available quantity (original - reserved by other items)
+                $reserved = $reservedStock[$stockId] ?? 0;
+                $netAvailable = max(0, $stock->getQuantity() - $reserved);
+
                 // For consumables, the option ID MUST be the MaterialStock ID to ensure uniqueness across locations
                 $options[] = [
-                    'id' => $stock->getId(),
+                    'id' => $stockId,
                     'batch_id' => $stock->getBatch() ? $stock->getBatch()->getId() : 'NO_BATCH',
                     'label' => $stock->getBatch() ? 'Lote: ' . $stock->getBatch()->getBatchNumber() . ' (Exp: ' . ($stock->getBatch()->getExpirationDate() ? $stock->getBatch()->getExpirationDate()->format('d/m/Y') : 'N/A') . ')' : 'Sin Lote',
-                    'available' => $stock->getQuantity(),
+                    'available' => $netAvailable,
                     'busy' => $isBusy,
                     'selected' => false, // Will be overridden by proposal matching in Twig
                     'locationName' => $stock->getLocation() ? $stock->getLocation()->getName() : 'Sin asignar',
@@ -863,7 +923,7 @@ class KitController extends AbstractController
                 ];
 
                 if (!$isBusy) {
-                    $availableInWarehouse += $stock->getQuantity();
+                    $availableInWarehouse += $netAvailable;
                 }
             }
 
@@ -871,20 +931,27 @@ class KitController extends AbstractController
             if (!$manualOnly) {
                 $remainingNeeded = $needed;
                 foreach ($stocks as $stock) {
+                    $stockId = $stock->getId();
                     $isBusy = ($stock->getLocation() && $stock->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
                     // Skip stocks already assigned to any kit or the current kit
                     if ($isBusy || $stock->getLocation() === $kitLocation) continue;
 
+                    // Subtract already reserved quantity from this stock record (in case material is repeated in template)
+                    $reserved = $reservedStock[$stockId] ?? 0;
+                    $available = $stock->getQuantity() - $reserved;
+                    if ($available <= 0) continue;
+
                     if ($remainingNeeded <= 0) break;
-                    $take = min($remainingNeeded, $stock->getQuantity());
+                    $take = min($remainingNeeded, $available);
                     $proposals[] = [
                         'material' => $material,
                         'quantity' => $take,
                         'origin' => $stock->getLocation(),
                         'batch' => $stock->getBatch(),
-                        'stock_id' => $stock->getId(),
+                        'stock_id' => $stockId,
                         'unit' => null
                     ];
+                    $reservedStock[$stockId] = $reserved + $take;
                     $remainingNeeded -= $take;
                 }
 
@@ -895,15 +962,18 @@ class KitController extends AbstractController
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
                     ];
 
-                    // Add a placeholder for the missing quantity so it always appears in the table
-                    $proposals[] = [
-                        'material' => $material,
-                        'quantity' => $remainingNeeded,
-                        'origin' => $centralWarehouse,
-                        'batch' => null,
-                        'unit' => null,
-                        'placeholder' => true
-                    ];
+                    // ONLY add a placeholder row if we found ZERO stock in warehouse.
+                    // If we found some stock, we don't add a second "shortage" row to avoid "repeats".
+                    if ($availableInWarehouse <= 0) {
+                        $proposals[] = [
+                            'material' => $material,
+                            'quantity' => $remainingNeeded,
+                            'origin' => $centralWarehouse,
+                            'batch' => null,
+                            'unit' => null,
+                            'placeholder' => true
+                        ];
+                    }
                 }
             }
         } else {
@@ -923,19 +993,24 @@ class KitController extends AbstractController
             $foundAutoSelect = false;
 
             foreach ($allUnits as $u) {
+                $uId = $u->getId();
                 // Skip the kit container itself
-                if ($unit->getId() && $u->getId() === $unit->getId()) continue;
+                if ($unit->getId() && $uId === $unit->getId()) continue;
 
                 // Skip if it is ALREADY in the current kit
                 if ($u->getLocation() === $kitLocation) continue;
 
+                // Check if already reserved by a previous item in this template
+                $isReserved = $reservedStock['unit_' . $uId] ?? false;
+                $netAvailable = $isReserved ? 0 : 1;
+
                 $isBusy = ($u->getLocation() === null || $u->getLocation()->getType() !== Location::TYPE_WAREHOUSE);
-                $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $u->getId());
+                $label = $u->getAlias() ?: ($u->getSerialNumber() ?: 'Unidad ' . $uId);
 
                 $options[] = [
-                    'id' => $u->getId(),
+                    'id' => $uId,
                     'label' => $label,
-                    'available' => 1,
+                    'available' => $netAvailable,
                     'busy' => $isBusy,
                     'selected' => false, // Will be overridden by proposal matching in Twig
                     'locationName' => $u->getLocation() ? $u->getLocation()->getName() : 'Sin ubicación / Sin asignar',
@@ -943,22 +1018,27 @@ class KitController extends AbstractController
                 ];
 
                 if (!$isBusy) {
-                    $availableInWarehouse += 1;
-                    $warehouseUnits[] = $u;
+                    $availableInWarehouse += $netAvailable;
+                    if (!$isReserved) {
+                        $warehouseUnits[] = $u;
+                    }
                 }
             }
 
             if (!$manualOnly) {
                 // Initial FIFO proposal from warehouse units
-                for ($i = 0; $i < min($needed, count($warehouseUnits)); $i++) {
+                $takeCount = min($needed, count($warehouseUnits));
+                for ($i = 0; $i < $takeCount; $i++) {
+                    $u = $warehouseUnits[$i];
                     $proposals[] = [
                         'material' => $material,
                         'quantity' => 1,
-                        'origin' => $warehouseUnits[$i]->getLocation() ?: $centralWarehouse,
+                        'origin' => $u->getLocation() ?: $centralWarehouse,
                         'batch' => null,
-                        'unit' => $warehouseUnits[$i],
-                        'unit_id' => $warehouseUnits[$i]->getId()
+                        'unit' => $u,
+                        'unit_id' => $u->getId()
                     ];
+                    $reservedStock['unit_' . $u->getId()] = true;
                 }
 
                 if ($needed > $availableInWarehouse) {
@@ -967,14 +1047,12 @@ class KitController extends AbstractController
                         'needed' => $needed - $availableInWarehouse,
                         'alternatives' => $this->findAlternativeLocations($material, $centralWarehouse, $kitLocation, $entityManager)
                     ];
-                }
 
-                // If no unit was available in warehouse for some of the needed ones, add placeholders
-                if ($needed > count($warehouseUnits)) {
-                    for ($i = 0; $i < ($needed - count($warehouseUnits)); $i++) {
+                    // ONLY add a placeholder if we found NO units at all in warehouse
+                    if ($availableInWarehouse <= 0) {
                         $proposals[] = [
                             'material' => $material,
-                            'quantity' => 1,
+                            'quantity' => $needed,
                             'origin' => $centralWarehouse,
                             'batch' => null,
                             'unit' => null,
@@ -1131,9 +1209,27 @@ class KitController extends AbstractController
             return $this->redirectToRoute('app_kit_inventory', ['id' => $unit->getId()]);
         }
 
+        // Pre-process: Group proposals by stock_id (for consumables) or unit_id (for technical)
+        // to handle duplicates from the UI and sum their quantities.
+        $finalProposals = [];
+        foreach ($proposals as $p) {
+            $matId = $p['material_id'] ?? 0;
+            $sId = $p['stock_id'] ?? null;
+            $uId = $p['unit_id'] ?? null;
+            
+            if (!$matId || (!$sId && !$uId)) continue;
+            
+            $key = $sId ? "stock_$sId" : "unit_$uId";
+            if (!isset($finalProposals[$key])) {
+                $finalProposals[$key] = $p;
+            } else {
+                $finalProposals[$key]['quantity'] += (int)$p['quantity'];
+            }
+        }
+
         try {
-            $entityManager->wrapInTransaction(function() use ($proposals, $entityManager, $materialManager, $kitLocation, $unit, $proposalsData) {
-                foreach ($proposals as $p) {
+            $entityManager->wrapInTransaction(function() use ($finalProposals, $entityManager, $materialManager, $kitLocation, $unit, $proposalsData) {
+                foreach ($finalProposals as $p) {
                     $materialId = (int)($p['material_id'] ?? 0);
                     if (!$materialId) continue;
 

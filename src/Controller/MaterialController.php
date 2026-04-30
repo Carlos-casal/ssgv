@@ -563,20 +563,11 @@ class MaterialController extends AbstractController
                     $batch = null;
                     $isNewRowInForm = empty($bData['id']);
                     if (!$isNewRowInForm) {
+                        // Row has an ID: find and update the existing batch
                         $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->find($bData['id']);
                     }
-
-                    if (!$batch) {
-                        // Check for existing batch with same properties for consolidation
-                        $batch = $entityManager->getRepository(\App\Entity\MaterialBatch::class)->findOneBy([
-                            'material' => $material,
-                            'batchNumber' => $batchNumber,
-                            'unitsPerPackage' => $unitsPerPackage,
-                            'totalPrice' => $totalPrice,
-                            'marginPercentage' => $marginPercentage,
-                            'iva' => $iva
-                        ]);
-                    }
+                    // If isNewRowInForm OR the ID was invalid, always create a brand-new batch
+                    // (no consolidation by properties: the user explicitly clicked "Añadir" to create a new one)
 
                     if (!$batch) {
                         $batch = new \App\Entity\MaterialBatch();
@@ -657,10 +648,11 @@ class MaterialController extends AbstractController
 
                     for ($i = $existingCount; $i < count($unitsData); $i++) {
                         $unitData = $unitsData[$i];
+                        // Serial number is optional - only validate if provided
                         if (!empty($unitData['serialNumber'])) {
                             // Check if duplicate within the submission
                             if (in_array($unitData['serialNumber'], $seenSNs)) {
-                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' ya está en uso o repetido.');
+                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' está duplicado en el formulario.');
                                 return $this->render('material/edit.html.twig', [
                                     'material' => $material,
                                     'form' => $form,
@@ -705,15 +697,19 @@ class MaterialController extends AbstractController
                     for ($i = $existingCount; $i < count($unitsData); $i++) {
                         $unitData = $unitsData[$i];
                         $materialManager->createUnit($material, [
-                            'alias' => $unitData['alias'] ?? null,
-                            'serialNumber' => $unitData['serialNumber'] ?? null,
-                            'networkId' => $unitData['networkId'] ?? null,
-                            'phoneNumber' => $unitData['phoneNumber'] ?? null,
+                            'alias'         => $unitData['alias'] ?? null,
+                            'serialNumber'  => !empty($unitData['serialNumber']) ? $unitData['serialNumber'] : null,
+                            'brandModel'    => !empty($unitData['brandModel']) ? $unitData['brandModel'] : null,
+                            'supplier'      => !empty($unitData['supplier']) ? $unitData['supplier'] : null,
+                            'networkId'     => $unitData['networkId'] ?? null,
+                            'phoneNumber'   => $unitData['phoneNumber'] ?? null,
                             'batteryStatus' => $unitData['batteryStatus'] ?? null,
-                            'hasCharger' => $form->get('hasCharger')->getData(),
-                            'hasClip' => $form->get('hasClip')->getData(),
+                            'hasCharger'    => $form->get('hasCharger')->getData(),
+                            'hasClip'       => $form->get('hasClip')->getData(),
+                            'purchaseDate'  => !empty($unitData['purchaseDate']) ? new \DateTime($unitData['purchaseDate']) : null,
+                            'warrantyDate'  => !empty($unitData['warrantyDate']) ? new \DateTime($unitData['warrantyDate']) : null,
                             'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', $unitData['purchasePrice']) : null,
-                            'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
+                            'discountPct'   => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
                         ]);
                     }
                 }
@@ -862,22 +858,41 @@ class MaterialController extends AbstractController
             $defaultOrigin = $materialManager->getDefaultLocation($material);
         }
 
-        $form = $this->createForm(MaterialTransferType::class, ['origin' => $defaultOrigin], ['material' => $material]);
+        $defaultResponsible = null;
+        if ($this->getUser()) {
+            $defaultResponsible = $entityManager->getRepository(\App\Entity\Volunteer::class)->findOneBy(['user' => $this->getUser()]);
+        }
+
+        $form = $this->createForm(MaterialTransferType::class, [
+            'origin' => $defaultOrigin,
+            'responsible' => $defaultResponsible
+        ], ['material' => $material]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
+            $isGlobal = $form->get('isGlobal')->getData();
 
-            $materialManager->transfer(
-                $material,
-                $data['origin'],
-                $data['destination'],
-                $data['quantity'],
-                $data['reason'],
-                $data['responsible'],
-                $data['materialUnit'] ?? null,
-                $data['batch'] ?? null
-            );
+            if ($isGlobal) {
+                $materialManager->globalWithdrawal(
+                    $material,
+                    $data['quantity'],
+                    $data['reason'],
+                    $data['responsible'],
+                    $data['batch'] ?? null
+                );
+            } else {
+                $materialManager->transfer(
+                    $material,
+                    $data['origin'],
+                    $data['destination'],
+                    $data['quantity'],
+                    $data['reason'],
+                    $data['responsible'],
+                    $data['materialUnit'] ?? null,
+                    $data['batch'] ?? null
+                );
+            }
 
             $entityManager->flush();
 
@@ -978,5 +993,28 @@ class MaterialController extends AbstractController
             'form' => $form,
             'current_section' => 'recursos'
         ]);
+    }
+
+    #[Route('/{id}/debug-stock', name: 'app_material_debug_stock', methods: ['GET'])]
+    public function debugStock(Material $material, \App\Repository\MaterialStockRepository $stockRepo): Response
+    {
+        $stocks = $stockRepo->findBy(['material' => $material]);
+        $html = "<h1>Debug Stock for: " . $material->getName() . "</h1><table border='1' cellpadding='5'><tr><th>Stock ID</th><th>Location</th><th>Quantity</th><th>Batch ID</th><th>Batch Number</th></tr>";
+        
+        foreach ($stocks as $s) {
+            $batch = $s->getBatch();
+            $loc = $s->getLocation() ? $s->getLocation()->getName() : 'NULL';
+            $html .= sprintf(
+                "<tr><td>%d</td><td>%s</td><td>%d</td><td>%s</td><td>%s</td></tr>",
+                $s->getId(),
+                $loc,
+                $s->getQuantity(),
+                $batch ? $batch->getId() : 'NULL',
+                $batch ? $batch->getBatchNumber() : 'NULL'
+            );
+        }
+        $html .= "</table>";
+        
+        return new Response($html);
     }
 }
