@@ -459,20 +459,18 @@ class MaterialController extends AbstractController
         $groupedUnits = [];
         if ($material->getNature() === Material::NATURE_TECHNICAL) {
             foreach ($material->getUnits() as $unit) {
-                $pDate = $unit->getPurchaseDate() ? $unit->getPurchaseDate()->format('Y-m-d') : 'none';
-                $wDate = $unit->getWarrantyDate() ? $unit->getWarrantyDate()->format('Y-m-d') : 'none';
-                $key = ($unit->getSerialNumber() ?: 'no-sn') . '_' . $pDate . '_' . $wDate;
+                $model = $unit->getBrandModel() ?: ($material->getBrandModel() ?: 'Estándar');
+                $key = $model;
 
                 if (!isset($groupedUnits[$key])) {
                     $groupedUnits[$key] = [
-                        'sn' => $unit->getSerialNumber(),
-                        'model' => $unit->getBrandModel() ?: $material->getBrandModel(),
-                        'purchaseDate' => $unit->getPurchaseDate(),
-                        'warrantyDate' => $unit->getWarrantyDate(),
+                        'model' => $model,
+                        'units' => [],
                         'count' => 0,
                         'valuation' => 0.0
                     ];
                 }
+                $groupedUnits[$key]['units'][] = $unit;
                 $groupedUnits[$key]['count']++;
                 $groupedUnits[$key]['valuation'] += $unit->getValuation();
             }
@@ -635,6 +633,21 @@ class MaterialController extends AbstractController
                         if (isset($uData['discountPct'])) {
                             $unit->setDiscountPct($uData['discountPct'] !== '' ? str_replace(',', '.', $uData['discountPct']) : null);
                         }
+                        if (isset($uData['supplier'])) {
+                            $unit->setSupplier($uData['supplier'] ?: null);
+                        }
+                        if (isset($uData['alias'])) {
+                            $unit->setAlias($uData['alias'] ?: null);
+                        }
+                        if (isset($uData['serialNumber'])) {
+                            $unit->setSerialNumber($uData['serialNumber'] ?: null);
+                        }
+                        if (!empty($uData['purchaseDate'])) {
+                            $unit->setPurchaseDate(new \DateTime($uData['purchaseDate']));
+                        }
+                        if (!empty($uData['warrantyDate'])) {
+                            $unit->setWarrantyDate(new \DateTime($uData['warrantyDate']));
+                        }
                     }
                 }
 
@@ -746,9 +759,10 @@ class MaterialController extends AbstractController
                     'id' => $unit->getId(),
                     'alias' => $unit->getAlias(),
                     'serialNumber' => $unit->getSerialNumber(),
-                    'brandModel' => $material->getBrandModel(),
-                    'purchaseDate' => $material->getPurchaseDate() ? $material->getPurchaseDate()->format('Y-m-d') : null,
-                    'warrantyDate' => $material->getWarrantyDate() ? $material->getWarrantyDate()->format('Y-m-d') : null,
+                    'brandModel' => $unit->getBrandModel() ?: $material->getBrandModel(),
+                    'supplier' => $unit->getSupplier(),
+                    'purchaseDate' => $unit->getPurchaseDate() ? $unit->getPurchaseDate()->format('Y-m-d') : ($material->getPurchaseDate() ? $material->getPurchaseDate()->format('Y-m-d') : null),
+                    'warrantyDate' => $unit->getWarrantyDate() ? $unit->getWarrantyDate()->format('Y-m-d') : ($material->getWarrantyDate() ? $material->getWarrantyDate()->format('Y-m-d') : null),
                     'operationalStatus' => $unit->getOperationalStatus(),
                     'batteryStatus' => $unit->getBatteryStatus(),
                     'networkId' => $unit->getNetworkId(),

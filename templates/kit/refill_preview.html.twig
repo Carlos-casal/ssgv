@@ -185,7 +185,7 @@
                     <form action="{{ form_action }}" method="POST" data-action="submit->kit-refill#submit">
                         <input type="hidden" name="_token" value="{{ csrf_token(csrf_token_name) }}">
                         <input type="hidden" name="proposals_data" id="proposals_data">
-                        <button type="submit" class="btn btn-success px-5 font-black uppercase shadow-md">
+                        <button type="submit" id="btn-confirm-refill" class="btn btn-success px-5 font-black uppercase shadow-md">
                             <i data-lucide="send" class="w-4 h-4 inline mr-2"></i> 
                             {% if is_new|default(false) %}
                                 CONFIGURAR Y TRASLADAR
