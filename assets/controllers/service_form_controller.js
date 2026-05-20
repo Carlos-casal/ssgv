@@ -55,11 +55,30 @@ export default class extends Controller {
                 subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
             }
 
-            // Explicitly remove TinyMCE from tasks field to ensure it remains plain text
-            const tasksInput = this.hasTasksInputTarget ? this.tasksInputTarget : (document.getElementById('service_form_tasks') || document.getElementById('service_tasks'));
-            if (tasksInput && typeof tinymce !== 'undefined') {
-                tinymce.remove(tasksInput);
-            }
+            // Plain Textarea Logic (Matches Material Form)
+            const textareas = [
+                this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description')),
+                this.hasTasksInputTarget ? this.tasksInputTarget : (document.getElementById('service_form_tasks') || document.getElementById('service_tasks')),
+                document.getElementById('service_form_whatsappMessage') || document.getElementById('service_whatsappMessage')
+            ];
+
+            textareas.forEach(el => {
+                if (el) {
+                    if (typeof tinymce !== 'undefined') tinymce.remove(el);
+                    el.style.minHeight = '46px';
+                    el.style.height = 'auto';
+                    el.style.overflow = 'hidden';
+                    el.addEventListener('input', () => {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                    });
+                    // Initial resize
+                    setTimeout(() => {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                    }, 200);
+                }
+            });
 
             // Date Listeners for Availability Check
             const startInput = this.hasStartDateInputTarget ? this.startDateInputTarget : (document.getElementById('service_form_startDate') || document.getElementById('service_startDate'));
@@ -67,35 +86,6 @@ export default class extends Controller {
             if (startInput && endInput) {
                 startInput.addEventListener('input', () => this.updateAllMaterialAvailability());
                 endInput.addEventListener('input', () => this.updateAllMaterialAvailability());
-            }
-
-            // TinyMCE configuration for Description
-            const descInput = this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description'));
-            if (descInput && typeof tinymce !== 'undefined') {
-                console.log("Initializing TinyMCE for description...");
-                tinymce.init({
-                    target: descInput,
-                    plugins: 'lists link',
-                    toolbar: 'bold italic strikethrough | bullist numlist | link | removeformat',
-                    menubar: false,
-                    statusbar: false,
-                    branding: false,
-                    resize: false,
-                    height: 350,
-                    toolbar_mode: 'floating',
-                    promotion: false,
-                    base_url: '/build/tinymce',
-                    suffix: '.min',
-                    license_key: 'gpl',
-                    'api-key': 'no-api-key',
-                    setup: function(editor) {
-                        editor.on('init', function() {
-                            if (editor.getContainer()) {
-                                editor.getContainer().style.borderRadius = "1rem";
-                            }
-                        });
-                    }
-                });
             }
 
             this.updateAllAfluenciaColors();
