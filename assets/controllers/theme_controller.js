@@ -1,8 +1,6 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ["icon"];
-
     connect() {
         const hasDarkClass = document.documentElement.classList.contains('dark');
         this.theme = localStorage.getItem('theme') || (hasDarkClass ? 'dark' : 'light');
@@ -18,25 +16,12 @@ export default class extends Controller {
     _applyTheme() {
         if (this.theme === 'dark') {
             document.documentElement.classList.add('dark');
-            document.body.classList.remove('light-theme');
         } else {
             document.documentElement.classList.remove('dark');
-            document.body.classList.add('light-theme');
         }
-
-        this._updateIcon();
-    }
-
-    _updateIcon() {
-        if (!this.hasIconTarget) return;
-
-        // Moon = Dark Mode, Sun = Light Mode
-        if (this.theme === 'dark') {
-            this.iconTarget.setAttribute('data-lucide', 'moon');
-        } else {
-            this.iconTarget.setAttribute('data-lucide', 'sun');
-        }
-
+        
+        // No need to manually update icons anymore as we use CSS dark: classes
+        // but we trigger lucide just in case for new elements
         if (window.lucide) {
             window.lucide.createIcons();
         }

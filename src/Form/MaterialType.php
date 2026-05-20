@@ -19,6 +19,8 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\File;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
 use Symfony\Component\Form\CallbackTransformer;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 
 class MaterialType extends AbstractType
 {
@@ -62,7 +64,7 @@ class MaterialType extends AbstractType
 
         $builder
             ->add('name', TextType::class, [
-                'label' => 'NOMBRE COMERCIAL**',
+                'label' => 'NOMBRE COLOQUIAL**',
                 'attr' => [
                     'class' => 'form-control',
                     'placeholder' => 'Ej: Paracetamol 500mg'
@@ -95,8 +97,7 @@ class MaterialType extends AbstractType
                 'choices' => $natureChoices,
                 'attr' => [
                     'class' => 'form-control',
-                    'data-material-dynamic-form-target' => 'natureSelect',
-                    'data-action' => 'change->material-dynamic-form#toggleTechnicalBlock change->material-dynamic-form#handleNatureChange'
+                    'data-action' => 'change->material-refactored-form#handleNatureChange'
                 ]
             ])
             ->add('stock', TextType::class, [
@@ -360,6 +361,25 @@ class MaterialType extends AbstractType
         $builder->get('totalPrice')->addModelTransformer($spanishNumericTransformer);
         $builder->get('discountPercentage')->addModelTransformer($spanishNumericTransformer);
         $builder->get('discountedPrice')->addModelTransformer($spanishNumericTransformer);
+
+        // Listener para permitir subfamilias nuevas (que no están en la lista inicial)
+        $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
+            $data = $event->getData();
+            if (!$data || !isset($data['subFamily'])) {
+                return;
+            }
+
+            $form = $event->getForm();
+            $subFamily = $data['subFamily'];
+
+            // Añadimos la opción dinámicamente para que la validación del ChoiceType no falle
+            $form->add('subFamily', ChoiceType::class, [
+                'label' => 'SUBFAMILIA',
+                'required' => false,
+                'choices' => [$subFamily => $subFamily],
+                'attr' => ['class' => 'form-control']
+            ]);
+        });
     }
 
     public function configureOptions(OptionsResolver $resolver): void

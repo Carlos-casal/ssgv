@@ -29,6 +29,7 @@ class Material
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank(message: 'El nombre comercial es obligatorio.')]
     private ?string $name = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -311,9 +312,29 @@ class Material
         return $this;
     }
 
-    public function getSafetyStock(): int
+    public function getSafetyStock(): ?int
     {
         return $this->safetyStock;
+    }
+
+    public function getStockStatus(): array
+    {
+        if ($this->nature !== self::NATURE_CONSUMABLE) {
+            return ['label' => 'OK', 'color' => 'green', 'bg' => 'bg-green-50', 'text' => 'text-green-600'];
+        }
+
+        $totalPacks = $this->getTotalPackages();
+        $safety = (float)($this->getSafetyStock() ?? 0);
+
+        if ($totalPacks <= $safety) {
+            return ['label' => 'REPOSICIÓN', 'color' => 'red', 'bg' => 'bg-red-50', 'text' => 'text-red-600'];
+        }
+
+        if ($totalPacks <= ($safety * 1.5)) {
+            return ['label' => 'BAJO MÍNIMO', 'color' => 'orange', 'bg' => 'bg-orange-50', 'text' => 'text-orange-600'];
+        }
+
+        return ['label' => 'OK', 'color' => 'green', 'bg' => 'bg-green-50', 'text' => 'text-green-600'];
     }
 
     public function setSafetyStock(int $safetyStock): static
@@ -714,23 +735,26 @@ class Material
         return $this;
     }
 
-    public function getExpirationStatus(): string
+    public function getEffectiveExpirationDate(): ?\DateTimeInterface
     {
         $expirationDate = $this->expirationDate;
 
-        // If we have batches, use the earliest expiration date from active batches
         if (!$this->batches->isEmpty()) {
             foreach ($this->batches as $batch) {
                 if ($batch->getExpirationDate()) {
-                    // Assuming they are ordered by expirationDate ASC in the collection if I didn't change it,
-                    // but I changed it to ID ASC for the form.
-                    // Let's just find the min.
                     if ($expirationDate === null || $batch->getExpirationDate() < $expirationDate) {
                         $expirationDate = $batch->getExpirationDate();
                     }
                 }
             }
         }
+
+        return $expirationDate;
+    }
+
+    public function getExpirationStatus(): string
+    {
+        $expirationDate = $this->getEffectiveExpirationDate();
 
         if ($expirationDate === null) {
             return 'gray';

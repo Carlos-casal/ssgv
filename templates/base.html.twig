@@ -10,12 +10,19 @@
             {{ vite_entry_link_tags('app') }}
         {% endblock %}
         {% block javascripts %}
+            <script>
+                if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            </script>
             {{ vite_entry_script_tags('app') }}
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
         {% endblock %}
         <style> body, html { margin: 0 !important; padding: 0 !important; } </style>
     </head>
-    <body class="{% block body_class %}bg-gray-50{% endblock %} antialiased m-0 p-0 h-screen overflow-hidden">
+    <body class="{% block body_class %}dashboard-bg{% endblock %} antialiased m-0 p-0 h-screen overflow-hidden">
         {% block body %}{% endblock %}
     </body>
 </html>

@@ -1,12 +1,13 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
+{% block page_title %}{% endblock %}
 <div class="flex h-screen w-full overflow-hidden m-0 p-0" data-controller="sidebar" data-sidebar-collapsed-value="false">
     <!-- Sidebar -->
     {% include 'layout/sidebar.html.twig' %}
     
     <!-- Main content -->
-    <div class="main-content flex-1 h-full overflow-y-auto bg-gray-50" data-sidebar-target="content">
+    <div class="main-content dashboard-bg flex-1 h-full overflow-y-auto" data-sidebar-target="content" {% block body_attr %}{% endblock %}>
         {% set pageTitle = block('page_title') %}
         {% if pageTitle|trim is not empty %}
         <header class="p-6">

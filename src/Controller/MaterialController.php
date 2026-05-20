@@ -23,11 +23,28 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 use Symfony\Component\Routing\Annotation\Route;
 
 #[Route('/material')]
 class MaterialController extends AbstractController
 {
+    #[Route('/report', name: 'app_material_report', methods: ['GET'])]
+    public function report(MaterialRepository $materialRepository): Response
+    {
+        $materials = $materialRepository->findAll();
+        $totalValue = 0;
+        foreach ($materials as $material) {
+            $totalValue += $material->getTotalValuation();
+        }
+
+        return $this->render('material/report.html.twig', [
+            'totalValue' => $totalValue,
+            'materials' => $materials,
+            'current_section' => 'recursos'
+        ]);
+    }
+
     #[Route('/', name: 'app_material_index', methods: ['GET'])]
     public function index(Request $request, MaterialRepository $materialRepository, MaterialStockRepository $stockRepository): Response
     {
@@ -127,6 +144,12 @@ class MaterialController extends AbstractController
                 }
             }
 
+            // Handle Description
+            $extraData = $request->request->all('extra_data');
+            if (isset($extraData['description'])) {
+                $material->setDescription($extraData['description']);
+            }
+
             $entityManager->persist($material);
 
             // Handle dynamic batch creation for Consumables
@@ -223,7 +246,7 @@ class MaterialController extends AbstractController
 
                 // Extract common data from the first unit for Technical Equipment
                 if ($material->getNature() === Material::NATURE_TECHNICAL && !empty($unitsData)) {
-                    $first = $unitsData[0];
+                    $first = reset($unitsData);
                     if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
                     if (!empty($first['purchaseDate'])) {
                         $material->setPurchaseDate(new \DateTime($first['purchaseDate']));
@@ -237,13 +260,19 @@ class MaterialController extends AbstractController
                     $materialManager->createUnit($material, [
                         'alias' => $unitData['alias'] ?? null,
                         'serialNumber' => $unitData['serialNumber'] ?? null,
+                        'brandModel' => $unitData['brandModel'] ?? null,
+                        'supplier' => $unitData['supplier'] ?? null,
+                        'purchaseDate' => !empty($unitData['purchaseDate']) ? new \DateTime($unitData['purchaseDate']) : null,
+                        'warrantyDate' => !empty($unitData['warrantyDate']) ? new \DateTime($unitData['warrantyDate']) : null,
+                        'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', str_replace('.', '', $unitData['purchasePrice'])) : null,
+                        'discountPct' => isset($unitData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $unitData['marginPercentage'])) : null, // Used for margin in template
+                        'iva' => $unitData['iva'] ?? '21',
                         'networkId' => $unitData['networkId'] ?? null,
                         'phoneNumber' => $unitData['phoneNumber'] ?? null,
-                        'batteryStatus' => $unitData['batteryStatus'] ?? null,
-                        'hasCharger' => $form->get('hasCharger')->getData(), // Apply from bulk selection
-                        'hasClip' => $form->get('hasClip')->getData(),
-                        'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', $unitData['purchasePrice']) : null,
-                        'discountPct' => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
+                        'operationalStatus' => $unitData['operationalStatus'] ?? 'OPERATIVO',
+                        'notes' => $unitData['notes'] ?? null,
+                        'hasCharger' => $form->has('hasCharger') ? $form->get('hasCharger')->getData() : false,
+                        'hasClip' => $form->has('hasClip') ? $form->get('hasClip')->getData() : false,
                     ]);
                 }
             }
@@ -536,6 +565,11 @@ class MaterialController extends AbstractController
                     // Handle exception if something happens during file upload
                 }
             }
+            // Handle Description
+            $extraData = $request->request->all('extra_data');
+            if (isset($extraData['description'])) {
+                $material->setDescription($extraData['description']);
+            }
 
             // $entityManager->flush(); // Removed redundant flush
 
@@ -609,121 +643,93 @@ class MaterialController extends AbstractController
                     }
                 }
             }
-
-            // Handle dynamic unit creation in edit (only for NEW units)
+            // Handle dynamic unit creation in edit
             if ($request->request->has('units_data')) {
                 $unitsData = $request->request->all('units_data');
                 $existingUnits = $material->getUnits()->toArray();
                 $existingCount = count($existingUnits);
+                $unitImages = $request->files->get('unit_images', []);
 
-                // Update existing units with submitted data (status, price)
                 foreach ($existingUnits as $idx => $unit) {
                     if (isset($unitsData[$idx])) {
                         $uData = $unitsData[$idx];
-                        // Track status change and record traceability
+                        
+                        // Update basic fields
+                        if (isset($uData['alias'])) $unit->setAlias($uData['alias'] ?: null);
+                        if (isset($uData['serialNumber'])) $unit->setSerialNumber($uData['serialNumber'] ?: null);
+                        if (isset($uData['brandModel'])) $unit->setBrandModel($uData['brandModel'] ?: null);
+                        if (isset($uData['supplier'])) $unit->setSupplier($uData['supplier'] ?: null);
+                        if (isset($uData['networkId'])) $unit->setNetworkId($uData['networkId'] ?: null);
+                        if (isset($uData['phoneNumber'])) $unit->setPhoneNumber($uData['phoneNumber'] ?: null);
+                        
+                        if (!empty($uData['purchaseDate'])) $unit->setPurchaseDate(new \DateTime($uData['purchaseDate']));
+                        if (!empty($uData['warrantyDate'])) $unit->setWarrantyDate(new \DateTime($uData['warrantyDate']));
+                        
+                        if (isset($uData['purchasePrice'])) $unit->setPurchasePrice($uData['purchasePrice'] !== '' ? str_replace(',', '.', str_replace('.', '', $uData['purchasePrice'])) : null);
+                        if (isset($uData['marginPercentage'])) $unit->setDiscountPct($uData['marginPercentage'] !== '' ? str_replace(',', '.', str_replace('.', '', $uData['marginPercentage'])) : null);
+                        if (isset($uData['iva'])) $unit->setIva($uData['iva'] ?: '21');
+                        if (isset($uData['notes'])) $unit->setNotes($uData['notes'] ?: null);
+
+                        // Update Status and History
                         if (isset($uData['operationalStatus'])) {
                             $newStatus = $uData['operationalStatus'];
+                            $updatedAt = !empty($uData['updatedAt']) ? new \DateTime($uData['updatedAt']) : new \DateTime();
+                            $updatedBy = $uData['updatedBy'] ?? null;
+
                             if ($newStatus !== $unit->getOperationalStatus()) {
-                                $materialManager->changeUnitStatus($unit, $newStatus, $uData['statusReason'] ?? null);
+                                $materialManager->changeUnitStatus($unit, $newStatus, $uData['statusReason'] ?? null, $updatedBy, $updatedAt);
+                            } else {
+                                // Just update modification info if provided
+                                $unit->setUpdatedAt($updatedAt);
+                                if ($updatedBy) $unit->setUpdatedBy($updatedBy);
                             }
                         }
-                        if (isset($uData['purchasePrice'])) {
-                            $unit->setPurchasePrice($uData['purchasePrice'] !== '' ? str_replace(',', '.', $uData['purchasePrice']) : null);
-                        }
-                        if (isset($uData['discountPct'])) {
-                            $unit->setDiscountPct($uData['discountPct'] !== '' ? str_replace(',', '.', $uData['discountPct']) : null);
-                        }
-                        if (isset($uData['supplier'])) {
-                            $unit->setSupplier($uData['supplier'] ?: null);
-                        }
-                        if (isset($uData['alias'])) {
-                            $unit->setAlias($uData['alias'] ?: null);
-                        }
-                        if (isset($uData['serialNumber'])) {
-                            $unit->setSerialNumber($uData['serialNumber'] ?: null);
-                        }
-                        if (!empty($uData['purchaseDate'])) {
-                            $unit->setPurchaseDate(new \DateTime($uData['purchaseDate']));
-                        }
-                        if (!empty($uData['warrantyDate'])) {
-                            $unit->setWarrantyDate(new \DateTime($uData['warrantyDate']));
+
+                        // Handle Unit Specific Image
+                        if (isset($unitImages[$idx])) {
+                            /** @var UploadedFile $file */
+                            $file = $unitImages[$idx];
+                            $newFilename = 'unit-' . uniqid() . '.' . $file->guessExtension();
+                            $file->move($this->getParameter('material_images_directory'), $newFilename);
+                            
+                            // Delete old unit image if exists
+                            if ($unit->getImagePath()) {
+                                $oldPath = $this->getParameter('material_images_directory') . '/' . $unit->getImagePath();
+                                if (file_exists($oldPath)) unlink($oldPath);
+                            }
+                            $unit->setImagePath($newFilename);
                         }
                     }
                 }
 
-                // Validate Serial Numbers for uniqueness (only for NEW units being added)
-                if (count($unitsData) > $existingCount) {
-                    $seenSNs = [];
-                    // Add existing unit SNs to seen list
-                    foreach ($material->getUnits() as $unit) {
-                        if ($unit->getSerialNumber()) $seenSNs[] = $unit->getSerialNumber();
-                    }
-
-                    for ($i = $existingCount; $i < count($unitsData); $i++) {
-                        $unitData = $unitsData[$i];
-                        // Serial number is optional - only validate if provided
-                        if (!empty($unitData['serialNumber'])) {
-                            // Check if duplicate within the submission
-                            if (in_array($unitData['serialNumber'], $seenSNs)) {
-                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' está duplicado en el formulario.');
-                                return $this->render('material/edit.html.twig', [
-                                    'material' => $material,
-                                    'form' => $form,
-                                    'units_data' => $unitsData,
-                                    'current_section' => 'recursos'
-                                ]);
-                            }
-                            $seenSNs[] = $unitData['serialNumber'];
-
-                            // Check if exists in DB
-                            $existing = $entityManager->getRepository(MaterialUnit::class)->findOneBy(['serialNumber' => $unitData['serialNumber']]);
-                            if ($existing) {
-                                $this->addFlash('error', 'El número de serie ' . $unitData['serialNumber'] . ' ya está registrado en otra unidad.');
-                                return $this->render('material/edit.html.twig', [
-                                    'material' => $material,
-                                    'form' => $form,
-                                    'units_data' => $unitsData,
-                                    'current_section' => 'recursos'
-                                ]);
-                            }
-                        }
-                    }
-                }
-
-                // Update common data for Technical Equipment from the first unit block
-                if ($material->getNature() === Material::NATURE_TECHNICAL && !empty($unitsData)) {
-                    $first = $unitsData[0];
-                    if (isset($first['brandModel'])) $material->setBrandModel($first['brandModel']);
-                    if (!empty($first['purchaseDate'])) {
-                        $material->setPurchaseDate(new \DateTime($first['purchaseDate']));
-                    }
-                    if (!empty($first['warrantyDate'])) {
-                        $material->setWarrantyDate(new \DateTime($first['warrantyDate']));
-                    }
-                    if (isset($first['operationalStatus'])) {
-                        $material->setOperationalStatus($first['operationalStatus']);
-                    }
-                }
-
-                $existingCount = count($material->getUnits());
+                // Handle NEW units
                 if (count($unitsData) > $existingCount) {
                     for ($i = $existingCount; $i < count($unitsData); $i++) {
                         $unitData = $unitsData[$i];
-                        $materialManager->createUnit($material, [
+                        $unit = $materialManager->createUnit($material, [
                             'alias'         => $unitData['alias'] ?? null,
-                            'serialNumber'  => !empty($unitData['serialNumber']) ? $unitData['serialNumber'] : null,
-                            'brandModel'    => !empty($unitData['brandModel']) ? $unitData['brandModel'] : null,
-                            'supplier'      => !empty($unitData['supplier']) ? $unitData['supplier'] : null,
+                            'serialNumber'  => $unitData['serialNumber'] ?? null,
+                            'brandModel'    => $unitData['brandModel'] ?? null,
+                            'supplier'      => $unitData['supplier'] ?? null,
                             'networkId'     => $unitData['networkId'] ?? null,
                             'phoneNumber'   => $unitData['phoneNumber'] ?? null,
-                            'batteryStatus' => $unitData['batteryStatus'] ?? null,
-                            'hasCharger'    => $form->get('hasCharger')->getData(),
-                            'hasClip'       => $form->get('hasClip')->getData(),
                             'purchaseDate'  => !empty($unitData['purchaseDate']) ? new \DateTime($unitData['purchaseDate']) : null,
                             'warrantyDate'  => !empty($unitData['warrantyDate']) ? new \DateTime($unitData['warrantyDate']) : null,
-                            'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', $unitData['purchasePrice']) : null,
-                            'discountPct'   => isset($unitData['discountPct']) ? str_replace(',', '.', $unitData['discountPct']) : null,
+                            'purchasePrice' => isset($unitData['purchasePrice']) ? str_replace(',', '.', str_replace('.', '', $unitData['purchasePrice'])) : null,
+                            'discountPct'   => isset($unitData['marginPercentage']) ? str_replace(',', '.', str_replace('.', '', $unitData['marginPercentage'])) : null,
+                            'iva'           => $unitData['iva'] ?? '21',
+                            'notes'         => $unitData['notes'] ?? null,
+                            'updatedAt'     => !empty($unitData['updatedAt']) ? new \DateTime($unitData['updatedAt']) : new \DateTime(),
+                            'updatedBy'     => $unitData['updatedBy'] ?? null,
                         ]);
+
+                        // Handle image for new unit
+                        if (isset($unitImages[$i])) {
+                            $file = $unitImages[$i];
+                            $newFilename = 'unit-' . uniqid() . '.' . $file->guessExtension();
+                            $file->move($this->getParameter('material_images_directory'), $newFilename);
+                            $unit->setImagePath($newFilename);
+                        }
                     }
                 }
             }
@@ -772,9 +778,10 @@ class MaterialController extends AbstractController
                     'history' => array_map(fn($h) => [
                         'date'   => $h->getCreatedAt() ? $h->getCreatedAt()->format('d/m/Y H:i') : '-',
                         'status' => $h->getStatus(),
-                        'user'   => $h->getUser() ? ($h->getUser()->getName() ?? $h->getUser()->getEmail()) : 'Sistema',
+                        'user'   => $h->getUser() ? ($h->getUser()->getName() ?? $h->getUser()->getEmail()) : ($h->getUserName() ?: 'Sistema'),
                         'reason' => $h->getReason(),
                     ], $unit->getHistory()->toArray()),
+                    'notes' => $unit->getNotes(),
                 ];
             }
         }

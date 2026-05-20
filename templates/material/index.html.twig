@@ -2,7 +2,7 @@
 
 {% block title %}Gestión de Materiales{% endblock %}
 
-{% block page_title %}Inventario de Materiales{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block content %}
 <style>
@@ -15,10 +15,55 @@
     .hover-lift:hover { transform: translateY(-3px); }
     .transition-all { transition: all 0.3s ease; }
     .bg-white { background-color: #ffffff !important; }
+
+    .btn-36 {
+        height: 36px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+    }
+
+    /* Estilos para tablas cebra (striped) */
+    .table-striped > tbody > tr:nth-of-type(odd) {
+        --bs-table-accent-bg: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    .table > tbody > tr, .table > thead > tr > th {
+        color: #334155 !important;
+        text-align: left !important;
+        vertical-align: middle !important;
+    }
+
+    html.dark .table-striped > tbody > tr:nth-of-type(odd) {
+        background-color: rgba(15, 23, 42, 0.5) !important;
+        --bs-table-accent-bg: rgba(15, 23, 42, 0.5) !important;
+    }
+    
+    html.dark .table-striped > tbody > tr:nth-of-type(even) {
+        background-color: transparent !important;
+    }
+
+    html.dark .table > tbody > tr td,
+    html.dark .table > tbody > tr th,
+    html.dark .table > thead > tr th {
+        color: #FFFFFF !important;
+        text-align: left !important;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    }
+
+    html.dark .table {
+        --bs-table-bg: transparent !important;
+        --bs-table-color: #FFFFFF !important;
+        border-collapse: collapse !important;
+    }
 </style>
 <div class="container-fluid py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="h4 mb-0 text-gray-800">Listado General {{ current_category ? '- ' ~ current_category : '' }}</h2>
+    <div class="d-flex justify-content-between align-items-start mb-6">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white mb-1">Inventario {{ current_category }}</h1>
+        </div>
         <div class="d-flex gap-2">
             <form class="d-flex align-items-center gap-2 me-3" method="get">
                 {% if current_category %}
@@ -38,21 +83,24 @@
                     <a href="{{ path('app_material_index', {category: current_category}) }}" class="btn btn-sm btn-outline-secondary">Limpiar</a>
                 {% endif %}
             </form>
-            <button type="button" class="btn btn-success mr-2" data-bs-toggle="modal" data-bs-target="#importModal">
-                <i class="fas fa-file-excel mr-2"></i>Carga Masiva Excel
+            <button type="button" class="btn btn-success btn-36 px-3" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="fas fa-file-excel me-2"></i>Carga Masiva
             </button>
-            <a href="{{ path('app_material_new', {category: current_category}) }}" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i> Nuevo Material
+            <a href="{{ path('app_material_report') }}" class="btn btn-info btn-36 px-3">
+                <i class="fas fa-chart-pie me-2"></i> Informe
+            </a>
+            <a href="{{ path('app_material_new', {category: current_category}) }}" class="btn btn-primary btn-36 px-3">
+                <i class="fas fa-plus me-2"></i> Nuevo
             </a>
         </div>
     </div>
 
     {% include 'material/_import_modal.html.twig' %}
 
-    <div class="card shadow mb-4">
-        <div class="card-body">
+    <div class="card border-0 shadow-sm mb-4 dashboard-card">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover" id="dataTable" width="100%" cellspacing="0">
+                <table class="table table-striped table-hover mb-0" id="dataTable">
                     <thead class="bg-light text-primary">
                         <tr>
                             <th>Imagen</th>
@@ -131,33 +179,28 @@
                                 <span class="font-bold text-primary">{{ material.getTotalValuation()|number_format(2, ',', '.') }}€</span>
                             </td>
                             <td>
-                                {% if material.isLowStock %}
-                                    <span class="px-3 py-1 rounded-lg bg-red-50 text-red-600 text-xs font-black uppercase flex items-center w-fit">
-                                        <i data-lucide="alert-triangle" class="w-3 h-3 mr-1"></i> Reposición
-                                    </span>
-                                {% else %}
-                                    <span class="px-3 py-1 rounded-lg bg-green-50 text-green-600 text-xs font-black uppercase flex items-center w-fit">
-                                        <i data-lucide="check" class="w-3 h-3 mr-1"></i> OK
-                                    </span>
-                                {% endif %}
+                                {% set stockStatus = material.getStockStatus() %}
+                                <span class="px-3 py-1 rounded-lg {{ stockStatus.bg }} {{ stockStatus.text }} text-xs font-black uppercase flex items-center w-fit" title="Stock: {{ material.getStock() }} / Mín: {{ material.getSafetyStock() }}">
+                                    <i data-lucide="{{ stockStatus.label == 'OK' ? 'check' : 'alert-triangle' }}" class="w-3 h-3 mr-1"></i> {{ stockStatus.label }}
+                                </span>
                             </td>
                             <td>
                                 <div class="d-flex gap-2">
                                     <a href="{{ path('app_material_show', {'id': material.id}) }}" 
-                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center btn-36" 
                                        title="Ver Detalles" 
                                        data-bs-toggle="tooltip">
                                         <i data-lucide="eye" class="w-4 h-4 text-blue-600"></i>
                                     </a>
                                     <a href="{{ path('app_material_edit', {'id': material.id}) }}" 
-                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                       class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center btn-36" 
                                        title="Editar" 
                                        data-bs-toggle="tooltip">
                                         <i data-lucide="edit-3" class="w-4 h-4 text-slate-600"></i>
                                     </a>
                                     {# Add delete button if needed, although it wasn't explicitly in the original code, the user mentioned trash icon #}
                                     <button type="button" 
-                                            class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center p-2" 
+                                            class="btn btn-sm btn-light border shadow-sm rounded-3 hover-lift transition-all d-flex align-items-center justify-content-center btn-36" 
                                             title="Eliminar" 
                                             data-bs-toggle="tooltip">
                                         <i data-lucide="trash-2" class="w-4 h-4 text-red-500"></i>

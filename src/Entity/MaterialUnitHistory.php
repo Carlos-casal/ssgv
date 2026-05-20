@@ -28,6 +28,9 @@ class MaterialUnitHistory
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $userName = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -95,6 +98,16 @@ class MaterialUnitHistory
     {
         $this->createdAt = $createdAt;
 
+        return $this;
+    }
+    public function getUserName(): ?string
+    {
+        return $this->userName;
+    }
+
+    public function setUserName(?string $userName): static
+    {
+        $this->userName = $userName;
         return $this;
     }
 }

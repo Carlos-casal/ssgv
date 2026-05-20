@@ -1,7 +1,7 @@
 {% extends 'layout/app.html.twig' %}
 
 {% block title %}Panel Gestión{% endblock %}
-{% block page_title %}Panel de Gestión{% endblock %}
+{% block page_title %}{% endblock %}
 
 {% block content %}
 <div class="p-8 w-full max-w-none">
@@ -12,13 +12,13 @@
 
             <div class="grid grid-cols-1 xl:grid-cols-2 gap-10">
                 <!-- Actividad Reciente -->
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="dashboard-card bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between mb-8">
                         <div>
-                            <h3 class="text-lg font-black text-slate-800 dark:text-white">Log de Actividad</h3>
+                            <h3 class="text-lg font-black text-slate-800">Log de Actividad</h3>
                             <p class="text-xs text-slate-400">Últimos movimientos del sistema</p>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <div class="p-2">
                             <i data-lucide="list-checks" class="w-5 h-5 text-slate-400"></i>
                         </div>
                     </div>
@@ -26,11 +26,11 @@
                     <div class="space-y-6">
                         {% for activity in recent_activities|slice(0, 5) %}
                             <div class="flex items-center gap-4 group">
-                                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {{ attribute(activity, 'joinDate') is defined ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600' : 'bg-green-50 dark:bg-green-900/30 text-green-600' }}">
+                                <div class="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 {{ attribute(activity, 'joinDate') is defined ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600' }}">
                                     <i data-lucide="{{ attribute(activity, 'joinDate') is defined ? 'user-plus' : (activity.archived|default(false) ? 'check-circle' : 'alert-circle') }}" class="w-5 h-5"></i>
                                 </div>
                                 <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200 truncate">
+                                    <p class="text-sm font-bold text-slate-800 truncate">
                                         {% if attribute(activity, 'joinDate') is defined %}
                                             Registro: {{ activity.name }}
                                         {% else %}
@@ -39,9 +39,9 @@
                                     </p>
                                     <p class="text-xxs font-medium text-slate-400 uppercase tracking-tight">
                                         {% if attribute(activity, 'joinDate') is defined %}
-                                            {{ activity.joinDate|date('d M, H:i') }}
+                                            {{ activity.joinDate ? activity.joinDate|date('d M, H:i') : '' }}
                                         {% else %}
-                                            {{ activity.endDate|date('d M, H:i') }}
+                                            {{ activity.endDate ? activity.endDate|date('d M, H:i') : '' }}
                                         {% endif %}
                                     </p>
                                 </div>
@@ -51,26 +51,26 @@
                 </div>
 
                 <!-- Próximos Eventos -->
-                <div class="bg-white dark:bg-slate-800 rounded-3xl p-8 shadow-sm border border-slate-100 dark:border-slate-700">
+                <div class="dashboard-card bg-white rounded-3xl p-8 shadow-sm border border-slate-100">
                     <div class="flex items-center justify-between mb-8">
                         <div>
-                            <h3 class="text-lg font-black text-slate-800 dark:text-white">Próximos Servicios</h3>
+                            <h3 class="text-lg font-black text-slate-800">Próximos Servicios</h3>
                             <p class="text-xs text-slate-400">Agenda operativa inmediata</p>
                         </div>
-                        <div class="p-2 bg-slate-50 dark:bg-slate-700 rounded-xl">
+                        <div class="p-2">
                             <i data-lucide="calendar" class="w-5 h-5 text-slate-400"></i>
                         </div>
                     </div>
 
                     <div class="space-y-4">
                         {% for service in upcoming_services %}
-                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-slate-50 dark:border-slate-700 hover:border-blue-100 dark:hover:border-blue-900 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-all">
-                                <div class="w-12 h-12 rounded-xl bg-slate-900 dark:bg-slate-700 text-white flex flex-col items-center justify-center flex-shrink-0">
+                            <div class="flex items-center gap-4 p-3 rounded-2xl border border-slate-50 hover:border-blue-100 hover:bg-blue-50/30 transition-all">
+                                <div class="w-12 h-12 rounded-xl bg-slate-900 text-white flex flex-col items-center justify-center flex-shrink-0">
                                     <span class="text-sm font-black leading-none">{{ service.startDate|date('d') }}</span>
                                     <span class="text-xxs font-bold uppercase">{{ service.startDate|date('M') }}</span>
                                 </div>
                                 <div class="flex-1">
-                                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ service.title }}</p>
+                                    <p class="text-sm font-bold text-slate-800">{{ service.title }}</p>
                                     <p class="text-xxs text-slate-500">{{ service.startDate|date('H:i') }} · {{ service.maxAttendees }} voluntarios</p>
                                 </div>
                             </div>
@@ -86,7 +86,7 @@
             <!-- KPIs con Bordes Laterales -->
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-{{ low_stock_materials_count > 0 ? '5' : '4' }} gap-6">
                 <!-- Voluntarios -->
-                <a href="{{ path('app_volunteer_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_volunteer_list') }}" class="group dashboard-card p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-blue-500 hover:shadow-md transition-all">
                     <p class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1">Voluntarios</p>
                     <div class="flex items-end justify-between">
                         <div>
@@ -98,7 +98,7 @@
                 </a>
 
                 <!-- Servicios -->
-                <a href="{{ path('app_services_list') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-green-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_services_list') }}" class="group dashboard-card p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-green-500 hover:shadow-md transition-all">
                     <p class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1">Servicios Mes</p>
                     <div class="flex items-end justify-between">
                         <div>
@@ -110,7 +110,7 @@
                 </a>
 
                 <!-- Vehículos -->
-                <a href="{{ path('app_vehicle_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_vehicle_index') }}" class="group dashboard-card p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-amber-500 hover:shadow-md transition-all">
                     <p class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1">Parque Móvil</p>
                     <div class="flex items-end justify-between">
                         <div>
@@ -122,7 +122,7 @@
                 </a>
 
                 <!-- Horas -->
-                <a href="{{ path('app_reports') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_reports') }}" class="group dashboard-card p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-indigo-500 hover:shadow-md transition-all">
                     <p class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1">Horas Anuales</p>
                     <div class="flex items-end justify-between">
                         <div>
@@ -135,7 +135,7 @@
 
                 <!-- Materiales (Low Stock Alert) -->
                 {% if low_stock_materials_count > 0 %}
-                <a href="{{ path('app_material_index') }}" class="group bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-red-500 hover:shadow-md transition-all">
+                <a href="{{ path('app_material_index') }}" class="group dashboard-card p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-red-500 hover:shadow-md transition-all">
                     <p class="text-xxs font-black uppercase tracking-widest text-slate-400 mb-1">Reposición</p>
                     <div class="flex items-end justify-between">
                         <div>
@@ -151,74 +151,40 @@
         </div>
 
         <!-- ACCIONES RÁPIDAS (BANNERS) -->
-        <div class="lg:w-80 space-y-6">
+        <div class="lg:w-80 flex flex-col gap-6">
             <h3 class="text-xxs font-black uppercase tracking-[0.2em] text-slate-500 ml-4">Acciones Rápidas</h3>
 
             <!-- Banner: Nuevo Servicio -->
             <a href="{{ path('app_service_new') }}" class="block group bg-blue-600 rounded-3xl p-8 text-white shadow-xl shadow-blue-600/20 hover:scale-[1.02] transition-all relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                <div class="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
                     <i data-lucide="plus-circle" class="w-24 h-24"></i>
                 </div>
                 <div class="relative z-10">
                     <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
-                        <i data-lucide="plus" class="w-6 h-6"></i>
+                        <i data-lucide="plus" class="w-6 h-6 text-white"></i>
                     </div>
                     <p class="text-xl font-black leading-tight">Nuevo<br>Servicio</p>
-                    <p class="text-blue-100 text-xxs mt-2 font-medium">Planifica preventivos o emergencias</p>
+                    <p class="text-blue-100/60 text-xxs mt-2 font-medium">Planifica preventivos o emergencias</p>
                 </div>
             </a>
 
             <!-- Banner: Invitar Voluntario -->
-            <div data-controller="modal">
-                <button data-action="click->modal#open" class="w-full text-left group bg-green-600 rounded-3xl p-8 text-white shadow-xl shadow-green-600/20 hover:scale-[1.02] transition-all relative overflow-hidden">
-                    <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
-                        <i data-lucide="user-plus" class="w-24 h-24"></i>
-                    </div>
-                    <div class="relative z-10">
-                        <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
-                            <i data-lucide="mail" class="w-6 h-6"></i>
-                        </div>
-                        <p class="text-xl font-black leading-tight">Invitar<br>Voluntario</p>
-                        <p class="text-green-100 text-xxs mt-2 font-medium">Enviar enlace de registro rápido</p>
-                    </div>
-                </button>
-
-                <!-- Modal (reused from existing logic) -->
-                <div data-modal-target="modal" data-action="click->modal#close" class="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm overflow-y-auto h-full w-full flex items-center justify-center hidden">
-                    <div data-modal-target="content" class="relative p-10 bg-white w-full max-w-md m-auto flex-col flex rounded-2xl shadow-2xl">
-                        <div data-modal-target="invitationForm">
-                            <div class="flex justify-between items-center mb-8">
-                                <h2 class="text-2xl font-black text-slate-800">Añadir Voluntario</h2>
-                                <button data-action="click->modal#closeButton" class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-slate-100 text-slate-400 hover:text-slate-800 transition-all">&times;</button>
-                            </div>
-                            <div class="space-y-8">
-                                <div class="group">
-                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Añadir manualmente</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Introduce los datos directamente en el sistema.</p>
-                                    <a href="{{ path('app_volunteer_new') }}" class="mt-4 block w-full text-center p-4 bg-blue-600 text-white font-bold rounded-xl hover:bg-blue-700 shadow-lg shadow-blue-600/20 transition-all active:scale-95">
-                                        Ir al formulario
-                                    </a>
-                                </div>
-                                <div class="border-t border-slate-100 pt-8 group">
-                                    <h3 class="font-bold text-slate-800 group-hover:text-blue-600 transition-colors">Enviar invitación</h3>
-                                    <p class="text-sm text-slate-500 mt-1">Enlace de registro al correo del nuevo voluntario.</p>
-                                    <div class="mt-6 space-y-3">
-                                        <label for="invitation-email" class="block text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Correo electrónico</label>
-                                        <input type="email" data-modal-target="emailInput" placeholder="ejemplo@voluntarios.org" class="w-full p-4 bg-slate-50 border border-slate-200 rounded-xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all">
-                                    </div>
-                                    <button data-action="click->modal#sendInvitation" class="mt-6 w-full p-4 bg-slate-800 text-white font-bold rounded-xl hover:bg-slate-900 shadow-lg transition-all active:scale-95">
-                                        Enviar inscripción
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <a href="#" class="block group bg-green-600 rounded-3xl p-8 text-white shadow-xl shadow-green-600/20 hover:scale-[1.02] transition-all relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
+                    <i data-lucide="user-plus" class="w-24 h-24"></i>
                 </div>
-            </div>
+                <div class="relative z-10">
+                    <div class="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-6">
+                        <i data-lucide="mail" class="w-6 h-6 text-white"></i>
+                    </div>
+                    <p class="text-xl font-black leading-tight">Invitar<br>Voluntario</p>
+                    <p class="text-green-100/60 text-xxs mt-2 font-medium">Enviar enlace de registro rápido</p>
+                </div>
+            </a>
 
             <!-- Banner: Estadísticas -->
             <a href="#" class="block group bg-slate-800 rounded-3xl p-8 text-white shadow-xl shadow-slate-800/20 hover:scale-[1.02] transition-all relative overflow-hidden">
-                <div class="absolute -right-6 -bottom-6 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                <div class="absolute -right-6 -bottom-6 opacity-10 group-hover:scale-110 transition-transform duration-500">
                     <i data-lucide="bar-chart-2" class="w-24 h-24"></i>
                 </div>
                 <div class="relative z-10">

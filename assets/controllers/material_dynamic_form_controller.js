@@ -1,15 +1,28 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput', 'batchesContainer', 'addBatchBtnContainer', 'stockAndCostsBlock', 'headerAddBtnContainer', 'subFamilySelect', 'numPackagesContainer', 'safetyStockContainer', 'totalPriceContainer', 'discountPercentageContainer', 'discountedPriceContainer', 'unitPriceContainer', 'ivaContainer'];
+    static targets = ['unitsContainer', 'totalStockInput', 'totalPrice', 'unitPrice', 'unitsPerPackageInput', 'numPackagesInput', 'natureSelect', 'technicalBlock', 'technicalBlocksContainer', 'consumableBlock', 'discountPercentageInput', 'discountedPriceInput', 'unitsPerPackageContainer', 'barcodeInput', 'serialNumberInput', 'batchesContainer', 'addBatchBtnContainer', 'stockAndCostsBlock', 'headerAddBtnContainer', 'subFamilySelect', 'numPackagesContainer', 'safetyStockContainer', 'totalPriceContainer', 'discountPercentageContainer', 'discountedPriceContainer', 'unitPriceContainer', 'ivaContainer', 'stockStatusBadge', 'safetyStockInput', 'stockAlertIcon'];
+    
+    static values = {
+        initialUnits: Array,
+        initialBatches: Array,
+        materialCategory: String,
+        materialAction: String,
+        materialBrand: String,
+        materialPurchase: String,
+        materialWarranty: String,
+        serialCheckUrl: String,
+        initialUnitCount: Number,
+        currentUser: String
+    }
 
     connect() {
-        this.initialUnits = JSON.parse(this.element.dataset.initialUnits || '[]');
-        this.initialBatches = JSON.parse(this.element.dataset.initialBatches || '[]');
+        this.initialUnits = this.initialUnitsValue || [];
+        this.initialBatches = this.initialBatchesValue || [];
 
         // On edit mode, sync numPackages input with the real unit count
         // so that generateTechnicalBlocks() creates the correct number of blocks.
-        const initialCount = parseInt(this.element.dataset.initialUnitCount || '0');
+        const initialCount = this.initialUnitCountValue || 0;
         if (initialCount > 0 && this.hasNumPackagesInputTarget) {
             this.numPackagesInputTarget.value = String(initialCount);
         }
@@ -24,7 +37,7 @@ export default class extends Controller {
     }
 
     setupCategorySpecifics() {
-        const category = this.element.dataset.materialCategory;
+        const category = this.materialCategoryValue;
         if (category === 'Comunicaciones' && this.hasNatureSelectTarget) {
             // Requirement: Change "Consumible" to "Accesorios"
             Array.from(this.natureSelectTarget.options).forEach(option => {
@@ -311,6 +324,7 @@ export default class extends Controller {
             this.calculateCosts();
         }
         this.updateDynamicBlocks();
+        this.updateStockStatus();
     }
 
     updateDynamicBlocks() {
@@ -391,6 +405,31 @@ export default class extends Controller {
 
     calculateStockSanitario() {
         this.performCalculations();
+    }
+
+    updateStockStatus() {
+        if (!this.hasStockStatusBadgeTarget || !this.hasTotalStockInputTarget) return;
+
+        const stock = parseInt(this.totalStockInputTarget.value) || 0;
+        this.stockStatusBadgeTarget.textContent = stock;
+
+        let safetyStock = 0;
+        if (this.hasSafetyStockInputTarget) {
+            safetyStock = parseInt(this.safetyStockInputTarget.value) || 0;
+        }
+
+        this.stockStatusBadgeTarget.classList.remove('text-success', 'text-warning', 'text-danger');
+
+        if (stock <= safetyStock) {
+            this.stockStatusBadgeTarget.classList.add('text-danger');
+            if (this.hasStockAlertIconTarget) this.stockAlertIconTarget.classList.remove('d-none');
+        } else if (stock <= safetyStock + 5) {
+            this.stockStatusBadgeTarget.classList.add('text-warning');
+            if (this.hasStockAlertIconTarget) this.stockAlertIconTarget.classList.add('d-none');
+        } else {
+            this.stockStatusBadgeTarget.classList.add('text-success');
+            if (this.hasStockAlertIconTarget) this.stockAlertIconTarget.classList.add('d-none');
+        }
     }
 
     toggleTechnicalBlock() {
@@ -490,9 +529,9 @@ export default class extends Controller {
             }
             if (this.hasNumPackagesContainerTarget) this.numPackagesContainerTarget.style.setProperty('display', 'block', 'important');
             if (this.hasTotalPriceContainerTarget) this.totalPriceContainerTarget.style.setProperty('display', 'block', 'important');
+            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.style.setProperty('display', 'block', 'important');
 
             // Hide others for specific view
-            if (this.hasSafetyStockContainerTarget) this.safetyStockContainerTarget.style.setProperty('display', 'none', 'important');
             if (this.hasDiscountPercentageContainerTarget) this.discountPercentageContainerTarget.style.setProperty('display', 'none', 'important');
             if (this.hasDiscountedPriceContainerTarget) this.discountedPriceContainerTarget.style.setProperty('display', 'none', 'important');
             if (this.hasUnitPriceContainerTarget) this.unitPriceContainerTarget.style.setProperty('display', 'none', 'important');
@@ -633,10 +672,10 @@ export default class extends Controller {
     generateTechnicalBlocks(count) {
         if (!this.hasTechnicalBlocksContainerTarget) return;
 
-        const isEdit = this.element.dataset.materialAction === 'edit';
-        const defaultBrand = this.element.dataset.materialBrand || '';
-        const defaultPurchase = this.element.dataset.materialPurchase || '';
-        const defaultWarranty = this.element.dataset.materialWarranty || '';
+        const isEdit = this.materialActionValue === 'edit';
+        const defaultBrand = this.materialBrandValue || '';
+        const defaultPurchase = this.materialPurchaseValue || '';
+        const defaultWarranty = this.materialWarrantyValue || '';
 
         const currentData = {};
 
@@ -656,11 +695,18 @@ export default class extends Controller {
                 currentData[`units_data[${i}][purchaseDate]`] = unit.purchaseDate;
                 currentData[`units_data[${i}][warrantyDate]`] = unit.warrantyDate;
                 currentData[`units_data[${i}][operationalStatus]`] = unit.operationalStatus;
-                currentData[`units_data[${i}][purchasePrice]` ] = this.formatToUserLocale(unit.purchasePrice);
-                currentData[`units_data[${i}][discountPct]`] = this.formatToUserLocale(unit.discountPct);
+                currentData[`units_data[${i}][purchasePrice]` ] = unit.purchasePrice;
+                currentData[`units_data[${i}][discountPct]` ] = unit.discountPct;
+                currentData[`units_data[${i}][iva]` ] = unit.iva;
                 currentData[`units_data[${i}][history]` ] = unit.history;
+                currentData[`units_data[${i}][updatedAt]` ] = unit.updatedAt ? unit.updatedAt.split('T')[0] : '';
+                currentData[`units_data[${i}][updatedBy]` ] = unit.updatedBy;
+                currentData[`units_data[${i}][imagePath]` ] = unit.imagePath;
             });
         }
+
+        const today = new Date().toISOString().split('T')[0];
+        const currentUser = this.currentUserValue || 'Sistema';
 
         // Group data by model for better UX
         const groups = {};
@@ -671,101 +717,152 @@ export default class extends Controller {
         }
 
         let html = '';
-        Object.entries(groups).forEach(([model, indices]) => {
-            html += `
-                <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #f6c23e !important;">
-                    <div class="card-header bg-gray-50 py-3 d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold text-gray-700 text-uppercase">
-                            <i class="fas fa-boxes mr-2"></i> ${model} (${indices.length} unidades)
-                        </h6>
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover table-sm mb-0">
-                                <thead class="bg-light">
-                                    <tr class="text-xxs font-black text-gray-500 uppercase tracking-widest">
-                                        <th class="px-3 py-2">Identificación (Alias / S/N)</th>
-                                        <th class="px-3 py-2">Proveedor</th>
-                                        <th class="px-3 py-2">Estado</th>
-                                        <th class="px-3 py-2">Precio & Margen</th>
-                                        <th class="px-3 py-2">Fechas</th>
-                                        ${isEdit ? '<th class="px-3 py-2">Historial</th>' : ''}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    ${indices.map(i => {
-                                        const aliasName = `units_data[${i}][alias]`;
-                                        const snName = `units_data[${i}][serialNumber]`;
-                                        const brandName = `units_data[${i}][brandModel]`;
-                                        const supplierName = `units_data[${i}][supplier]`;
-                                        const purchaseName = `units_data[${i}][purchaseDate]`;
-                                        const warrantyName = `units_data[${i}][warrantyDate]`;
-                                        const statusName = `units_data[${i}][operationalStatus]`;
-                                        const priceName = `units_data[${i}][purchasePrice]`;
-                                        const discountName = `units_data[${i}][discountPct]`;
-                                        const reasonName = `units_data[${i}][statusReason]`;
+        for (let i = 0; i < count; i++) {
+            const idName = `units_data[${i}][id]`;
+            const aliasName = `units_data[${i}][alias]`;
+            const barcodeName = `units_data[${i}][barcode]`;
+            const snName = `units_data[${i}][serialNumber]`;
+            const swFwName = `units_data[${i}][swFwVersion]`;
+            const brandName = `units_data[${i}][brandModel]`;
+            const supplierName = `units_data[${i}][supplier]`;
+            const purchaseName = `units_data[${i}][purchaseDate]`;
+            const warrantyName = `units_data[${i}][warrantyDate]`;
+            const descName = `units_data[${i}][description]`;
+            const statusName = `units_data[${i}][operationalStatus]`;
+            const priceName = `units_data[${i}][purchasePrice]`;
+            const discountName = `units_data[${i}][discountPct]`;
+            const ivaName = `units_data[${i}][iva]`;
+            const reasonName = `units_data[${i}][statusReason]`;
+            const modDateName = `units_data[${i}][updatedAt]`;
+            const modUserName = `units_data[${i}][updatedBy]`;
+            const imageName = `unit_images[${i}]`;
 
-                                        return `
-                                        <tr class="align-middle">
-                                            <td class="px-3 py-3">
-                                                <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm font-bold mb-1" placeholder="Alias">
-                                                <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm text-xxs font-mono" placeholder="N/S"
-                                                    data-material-dynamic-form-target="serialNumberInput"
-                                                    data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
-                                                    data-check-url="${this.element.dataset.serialCheckUrl}">
-                                                <input type="hidden" name="${brandName}" value="${currentData[brandName] || model}">
-                                            </td>
-                                            <td class="px-3">
-                                                <input type="text" name="${supplierName}" value="${currentData[supplierName] || ''}" class="form-control form-control-sm" placeholder="Proveedor">
-                                            </td>
-                                            <td class="px-3">
-                                                <select name="${statusName}" class="form-select form-select-sm mb-1 ${currentData[statusName] === 'AVERIADO' || currentData[statusName] === 'REPARACION' ? 'text-danger border-danger' : ''}">
-                                                    <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
-                                                    <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
-                                                    <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>REPARACIÓN</option>
-                                                    <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
-                                                </select>
-                                                ${isEdit ? `<textarea name="${reasonName}" class="form-control form-control-sm text-xxs" rows="1" placeholder="Motivo cambio...">${currentData[reasonName] || ''}</textarea>` : ''}
-                                            </td>
-                                            <td class="px-3">
-                                                <div class="input-group input-group-sm mb-1">
-                                                    <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
-                                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                                    <span class="input-group-text text-xxs p-1">€</span>
-                                                </div>
-                                                <div class="input-group input-group-sm">
-                                                    <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
-                                                        data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                                    <span class="input-group-text text-xxs p-1">%</span>
-                                                </div>
-                                            </td>
-                                            <td class="px-3">
-                                                <div class="mb-1">
-                                                    <label class="text-xxs text-gray-400 uppercase m-0">Compra</label>
-                                                    <input type="date" name="${purchaseName}" value="${currentData[purchaseName] || defaultPurchase}" class="form-control form-control-sm text-xxs">
-                                                </div>
-                                                <div>
-                                                    <label class="text-xxs text-gray-400 uppercase m-0">Garantía</label>
-                                                    <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-control form-control-sm text-xxs">
-                                                </div>
-                                            </td>
-                                            ${isEdit ? `
-                                            <td class="px-3 text-center">
-                                                ${(currentData[`units_data[${i}][history]`] && currentData[`units_data[${i}][history]`].length > 0) ? `
-                                                    <button type="button" class="btn btn-sm btn-outline-info p-1" data-bs-toggle="popover" data-bs-trigger="focus" title="Historial"
-                                                            data-bs-content="${this.escapeHtml(this.generateHistoryHtml(currentData[`units_data[${i}][history]`]))}" data-bs-html="true">
-                                                        <i class="fas fa-history"></i>
-                                                    </button>
-                                                ` : '<span class="text-gray-300">-</span>'}
-                                            </td>` : ''}
-                                        </tr>`;
-                                    }).join('')}
-                                </tbody>
-                            </table>
+            html += `
+            <div class="card shadow-sm mb-4 border-0 unit-card" style="border-top: 4px solid #f6c23e !important;">
+                <div class="card-header bg-gray-50 py-2 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-warning text-uppercase" style="font-size: 0.75rem;">
+                        <i class="fas fa-tag mr-2"></i> UNIDAD ${i + 1}
+                    </h6>
+                    <div class="d-flex align-items-center">
+                        ${(isEdit && currentData[`units_data[${i}][history]`] && currentData[`units_data[${i}][history]`].length > 0) ? `
+                            <button type="button" class="btn btn-sm btn-link text-info p-0 mr-3" data-bs-toggle="popover" data-bs-trigger="focus" title="Historial de Cambios"
+                                    data-bs-content="${this.escapeHtml(this.generateHistoryHtml(currentData[`units_data[${i}][history]`]))}" data-bs-html="true">
+                                <i class="fas fa-history mr-1"></i> Historial
+                            </button>
+                        ` : ''}
+                        ${isEdit ? `
+                            <div class="text-xxs text-muted font-italic">
+                                <i class="fas fa-user-edit mr-1"></i> Modificado por: ${currentData[modUserName] || 'N/A'} (${currentData[modDateName] || 'N/A'})
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="card-body p-3 bg-white">
+                    <input type="hidden" name="${idName}" value="${currentData[idName] || ''}">
+                    <div class="row gx-2 mb-2">
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Identificador*</label>
+                            <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm" data-required="true" placeholder="Alias">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Cód. Barras*</label>
+                            <input type="text" name="${barcodeName}" value="${currentData[barcodeName] || ''}" class="form-control form-control-sm" data-required="true" placeholder="EAN-13">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">S/N (Serie)*</label>
+                            <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm" data-required="true"
+                                data-material-dynamic-form-target="serialNumberInput"
+                                data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
+                                data-check-url="${this.element.dataset.serialCheckUrl}" placeholder="S/N">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Marca/Modelo*</label>
+                            <input type="text" name="${brandName}" value="${currentData[brandName] || defaultBrand}" class="form-control form-control-sm" data-required="true" placeholder="Fabricante">
                         </div>
                     </div>
-                </div>`;
-        });
+                    <div class="row gx-2 mb-2">
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Versión SW/FW</label>
+                            <input type="text" name="${swFwName}" value="${currentData[swFwName] || ''}" class="form-control form-control-sm" placeholder="v1.0">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Proveedor</label>
+                            <input type="text" name="${supplierName}" value="${currentData[supplierName] || ''}" class="form-control form-control-sm" placeholder="Distribuidor">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">F. Compra</label>
+                            <input type="date" name="${purchaseName}" value="${currentData[purchaseName] || defaultPurchase}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">F. Garantía</label>
+                            <input type="date" name="${warrantyName}" value="${currentData[warrantyName] || defaultWarranty}" class="form-control form-control-sm">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Foto Unidad</label>
+                            <div class="d-flex align-items-center">
+                                <label class="btn btn-xs btn-outline-secondary mb-0 w-100 py-1" style="font-size: 0.65rem;">
+                                    <i class="fas fa-camera mr-1"></i> ${currentData[`units_data[${i}][imagePath]`] ? 'Cambiar' : 'Subir'}
+                                    <input type="file" name="${imageName}" class="d-none" accept="image/*">
+                                </label>
+                                ${currentData[`units_data[${i}][imagePath]` ] ? `
+                                    <a href="/uploads/materials/${currentData[`units_data[${i}][imagePath]`]}" target="_blank" class="ml-1 text-primary">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                ` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row gx-2 mb-2">
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Estado</label>
+                            <select name="${statusName}" class="form-select form-select-sm status-select" 
+                                data-previous-status="${currentData[statusName] || 'OPERATIVO'}" 
+                                data-action="change->material-dynamic-form#handleUnitStatusChange"
+                                style="font-size: 0.75rem;">
+                                <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
+                                <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
+                                <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
+                                <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Precio Compra</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control border-gray-300 text-right" data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                <span class="input-group-text bg-light text-muted">€</span>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">% Marg.</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control border-gray-300 text-center" data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                <span class="input-group-text bg-light text-muted px-1">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">IVA</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" name="${ivaName}" value="${currentData[ivaName] || '21'}" class="form-control border-gray-300 text-center" data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                                <span class="input-group-text bg-light text-muted px-1">%</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">Modificado Por</label>
+                            <input type="text" name="${modUserName}" value="${currentData[modUserName] || currentUser}" class="form-control form-control-sm bg-gray-50" placeholder="Nombre">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label text-xs font-weight-bold text-uppercase text-primary mb-1">F. Modificación</label>
+                            <input type="date" name="${modDateName}" value="${currentData[modDateName] || today}" class="form-control form-control-sm bg-gray-50">
+                        </div>
+                    </div>
+                    <div class="row gx-2">
+                        <div class="col-md-12">
+                            <input type="text" name="${reasonName}" value="${currentData[reasonName] || ''}" class="form-control form-control-sm reason-input text-xs" placeholder="Motivo del cambio de estado o notas adicionales de modificación...">
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        }
 
         this.technicalBlocksContainerTarget.innerHTML = html;
 
@@ -847,39 +944,57 @@ export default class extends Controller {
                 const priceName = `units_data[${i}][purchasePrice]`;
                 const discountName = `units_data[${i}][discountPct]`;
                 const reasonName = `units_data[${i}][statusReason]`;
+                const modDateName = `units_data[${i}][updatedAt]`;
+                const modUserName = `units_data[${i}][updatedBy]`;
+                const imageName = `unit_images[${i}]`;
 
                 html += `
-                    <tr class="align-middle">
-                        <td class="px-3 py-2">
+                    <tr class="align-middle unit-card">
+                        <td class="px-2 py-2">
                             <input type="text" name="${aliasName}" value="${currentData[aliasName] || ''}" class="form-control form-control-sm font-bold mb-1" placeholder="Alias">
                             <input type="text" name="${snName}" value="${currentData[snName] || ''}" class="form-control form-control-sm text-xxs font-mono" placeholder="S/N"
                                 data-material-dynamic-form-target="serialNumberInput"
                                 data-action="input->material-dynamic-form#checkSerialNumberUniqueness"
                                 data-check-url="${this.element.dataset.serialCheckUrl}">
                         </td>
-                        <td class="px-3 py-2">
+                        <td class="px-2 py-2">
                             <input type="text" name="${netName}" value="${currentData[netName] || ''}" class="form-control form-control-sm text-xxs mb-1" placeholder="ID Red">
                             <input type="text" name="${phoneName}" value="${currentData[phoneName] || ''}" class="form-control form-control-sm text-xxs" placeholder="Teléfono">
                         </td>
-                        <td class="px-3 py-2">
-                            <select name="${statusName}" class="form-select form-select-sm mb-1 ${currentData[statusName] === 'AVERIADO' || currentData[statusName] === 'REPARACION' ? 'text-danger border-danger' : ''}">
+                        <td class="px-2 py-2">
+                            <select name="${statusName}" class="form-select form-select-sm mb-1 status-select" 
+                                data-previous-status="${currentData[statusName] || 'OPERATIVO'}" 
+                                data-action="change->material-dynamic-form#handleUnitStatusChange"
+                                style="font-size: 0.7rem;">
                                 <option value="OPERATIVO" ${(currentData[statusName] || 'OPERATIVO') === 'OPERATIVO' ? 'selected' : ''}>OPERATIVO</option>
                                 <option value="AVERIADO" ${currentData[statusName] === 'AVERIADO' ? 'selected' : ''}>AVERIADO</option>
-                                <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>EN REPARACIÓN</option>
+                                <option value="REPARACION" ${currentData[statusName] === 'REPARACION' ? 'selected' : ''}>REPARACIÓN</option>
                                 <option value="BAJA" ${currentData[statusName] === 'BAJA' ? 'selected' : ''}>BAJA</option>
                             </select>
-                            ${isEdit ? `<input type="text" name="${reasonName}" class="form-control form-control-sm text-xxs" placeholder="Motivo cambio...">` : ''}
+                            <input type="text" name="${modUserName}" value="${currentData[modUserName] || currentUser}" class="form-control form-control-sm text-xxs mb-1" placeholder="Quien...">
+                            <input type="date" name="${modDateName}" value="${currentData[modDateName] || today}" class="form-control form-control-sm text-xxs">
                         </td>
-                        <td class="px-3 py-2">
+                        <td class="px-2 py-2">
                             <div class="input-group input-group-sm mb-1">
-                                <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control" placeholder="0,00"
+                                <input type="text" name="${priceName}" value="${currentData[priceName] || ''}" class="form-control text-right" placeholder="0,00"
                                     data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                <span class="input-group-text text-xxs p-1">€</span>
+                                <span class="input-group-text p-1 text-xxs">€</span>
                             </div>
-                            <div class="input-group input-group-sm">
-                                <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control" placeholder="0"
+                            <div class="input-group input-group-sm mb-1">
+                                <input type="text" name="${discountName}" value="${currentData[discountName] || ''}" class="form-control text-center" placeholder="0"
                                     data-type="decimal" data-action="input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                                <span class="input-group-text text-xxs p-1">%</span>
+                                <span class="input-group-text p-1 text-xxs">%</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <label class="btn btn-xs btn-outline-secondary mb-0 w-100 py-0" style="font-size: 0.6rem;">
+                                    <i class="fas fa-camera"></i> Foto
+                                    <input type="file" name="${imageName}" class="d-none" accept="image/*">
+                                </label>
+                                ${currentData[`units_data[${i}][imagePath]` ] ? `
+                                    <a href="/uploads/materials/${currentData[`units_data[${i}][imagePath]`]}" target="_blank" class="ml-1 text-primary">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </a>
+                                ` : ''}
                             </div>
                         </td>
                         ${isEdit ? `
@@ -983,31 +1098,34 @@ export default class extends Controller {
                             data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label class="form-label">Precio Compra<span class="text-red-500">*</span></label>
-                        <div class="input-group">
-                            <input type="text" name="batches_data[${index}][totalPrice]" value="${this.formatToUserLocale(initialData?.totalPrice, 2) || ''}" class="form-input" data-required="true" data-type="decimal"
+                        <label class="form-label text-xs font-weight-bold text-uppercase text-danger mb-1">Precio Compra*</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="batches_data[${index}][totalPrice]" value="${this.formatToUserLocale(initialData?.totalPrice, 2) || ''}" class="form-control text-right" data-required="true" data-type="decimal"
                                 data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                            <span class="input-group-text p-1">€</span>
+                            <span class="input-group-text bg-light text-muted">€</span>
                         </div>
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label class="form-label">% Margen</label>
-                        <div class="input-group">
-                            <input type="text" name="batches_data[${index}][marginPercentage]" value="${this.formatToUserLocale(initialData?.marginPercentage, 2) || ''}" class="form-input" data-type="decimal"
+                        <label class="form-label text-xs font-weight-bold text-uppercase text-danger mb-1">% Margen</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="batches_data[${index}][marginPercentage]" value="${this.formatToUserLocale(initialData?.marginPercentage, 2) || ''}" class="form-control text-center" data-type="decimal"
                                 data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
-                            <span class="input-group-text p-1">%</span>
+                            <span class="input-group-text bg-light text-muted px-1">%</span>
                         </div>
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label class="form-label">IVA (%)</label>
-                        <input type="text" name="batches_data[${index}][iva]" value="${initialData?.iva || '21'}" class="form-input"
-                            data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                        <label class="form-label text-xs font-weight-bold text-uppercase text-danger mb-1">IVA (%)</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="batches_data[${index}][iva]" value="${initialData?.iva || '21'}" class="form-control text-center"
+                                data-action="input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput">
+                            <span class="input-group-text bg-light text-muted px-1">%</span>
+                        </div>
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label class="form-label">P/Ud</label>
-                        <div class="input-group">
-                            <input type="text" name="batches_data[${index}][unitPrice]" value="${this.formatToUserLocale(initialData?.unitPrice, 2) || ''}" class="form-input bg-light font-weight-bold" readonly>
-                            <span class="input-group-text p-1">€</span>
+                        <label class="form-label text-xs font-weight-bold text-uppercase text-danger mb-1">P/Ud</label>
+                        <div class="input-group input-group-sm">
+                            <input type="text" name="batches_data[${index}][unitPrice]" value="${this.formatToUserLocale(initialData?.unitPrice, 2) || ''}" class="form-control bg-gray-50 font-weight-bold text-right" readonly>
+                            <span class="input-group-text bg-light text-muted">€</span>
                         </div>
                     </div>
                 </div>
@@ -1231,5 +1349,90 @@ export default class extends Controller {
                 console.error('Error checking serial number:', error);
             }
         }, 500);
+    }
+
+    handleUnitStatusChange(event) {
+        const select = event.target;
+        const newStatus = select.value;
+        const previousStatus = select.dataset.previousStatus || 'OPERATIVO';
+
+        if (newStatus !== previousStatus) {
+            select.dataset.pendingStatus = newStatus;
+            select.value = previousStatus; // Revert until confirmed
+            
+            this.currentStatusSelect = select;
+            
+            const reasonInput = document.getElementById('modal-status-reason');
+            if (reasonInput) reasonInput.value = '';
+            
+            const modalElement = document.getElementById('statusReasonModal');
+            if (modalElement) {
+                const title = modalElement.querySelector('.modal-title');
+                const warningMsg = modalElement.querySelector('#baja-warning');
+                
+                if (newStatus === 'BAJA') {
+                    if (title) title.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i> Confirmar BAJA DEFINITIVA';
+                    if (warningMsg) warningMsg.classList.remove('d-none');
+                } else {
+                    if (title) title.innerHTML = '<i class="fas fa-info-circle mr-2"></i> Motivo del Cambio de Estado';
+                    if (warningMsg) warningMsg.classList.add('d-none');
+                }
+
+                if (window.bootstrap) {
+                    const modal = new window.bootstrap.Modal(modalElement);
+                    modal.show();
+                }
+            }
+        }
+    }
+
+    confirmStatusChange() {
+        if (this.currentStatusSelect) {
+            const select = this.currentStatusSelect;
+            const newStatus = select.dataset.pendingStatus;
+            const reasonInput = document.getElementById('modal-status-reason');
+            const reason = reasonInput ? reasonInput.value.trim() : '';
+            
+            select.value = newStatus;
+            select.dataset.previousStatus = newStatus;
+            
+            const card = select.closest('.unit-card');
+            if (card) {
+                const reasonField = card.querySelector('.reason-input');
+                if (reasonField) {
+                    reasonField.value = reason;
+                }
+                
+                if (newStatus === 'BAJA') {
+                    card.remove();
+                    if (this.hasNumPackagesInputTarget) {
+                        const currentCount = parseInt(this.numPackagesInputTarget.value) || 0;
+                        if (currentCount > 0) {
+                            this.numPackagesInputTarget.value = String(currentCount - 1);
+                            this.performCalculations();
+                        }
+                    }
+                }
+            }
+            
+            const modalElement = document.getElementById('statusReasonModal');
+            if (modalElement && window.bootstrap) {
+                const modal = window.bootstrap.Modal.getInstance(modalElement);
+                if (modal) modal.hide();
+            }
+        }
+    }
+
+    cancelStatusChange() {
+        if (this.currentStatusSelect) {
+            delete this.currentStatusSelect.dataset.pendingStatus;
+            this.currentStatusSelect = null;
+        }
+        
+        const modalElement = document.getElementById('statusReasonModal');
+        if (modalElement && window.bootstrap) {
+            const modal = window.bootstrap.Modal.getInstance(modalElement);
+            if (modal) modal.hide();
+        }
     }
 }

@@ -60,55 +60,66 @@ class NotificationService
 
     public function syncSystemAlerts(User $user): void
     {
-        $currentLowStockIds = [];
+        $currentAlertIds = [];
         $currentExpiredIds = [];
-        $currentExpiringSoonIds = [];
 
-        // 1. Check Low Stock
-        $lowStockMaterials = $this->materialRepository->findLowStockMaterials();
-        foreach ($lowStockMaterials as $material) {
-            $currentLowStockIds[] = $material->getId();
-            $this->ensureNotificationExists($user, 'low_stock', [
-                'title' => 'Stock Bajo',
-                'message' => 'El material "' . $material->getName() . '" está por debajo del stock mínimo.',
-                'link' => '/material/' . $material->getId(),
-                'severity' => 'warning',
-                'type' => 'low_stock'
-            ]);
+        // 1. Check Stock Status (Reposición & Bajo Mínimo)
+        $materials = $this->materialRepository->findAll();
+        foreach ($materials as $material) {
+            $status = $material->getStockStatus();
+            if ($status['label'] !== 'OK') {
+                $type = $status['label'] === 'REPOSICIÓN' ? 'reposicion' : 'bajo_minimo';
+                $severity = $status['label'] === 'REPOSICIÓN' ? 'danger' : 'warning';
+                
+                $currentAlertIds[] = $material->getId();
+                $this->ensureNotificationExists($user, $type, [
+                    'title' => $status['label'] . ': ' . $material->getName(),
+                    'message' => 'Stock actual: ' . $material->getStock() . '. Nivel de seguridad: ' . $material->getSafetyStock(),
+                    'link' => '/material/' . $material->getId() . '/edit',
+                    'severity' => $severity,
+                    'type' => $type
+                ]);
+            }
         }
 
         // 2. Check Expiry
         $threshold = (new \DateTimeImmutable('today'))->modify('+6 months');
         $expiringMaterials = $this->materialRepository->findExpiringMaterials($threshold);
         foreach ($expiringMaterials as $material) {
-            $status = $material->getExpirationStatus();
-            if ($status === 'red') {
+            $expiryStatus = $material->getExpirationStatus();
+            $effectiveDate = $material->getEffectiveExpirationDate();
+            if ($expiryStatus === 'red' && $effectiveDate) {
                 $currentExpiredIds[] = $material->getId();
                 $this->ensureNotificationExists($user, 'expired', [
-                    'title' => 'Material Caducado',
-                    'message' => 'El material "' . $material->getName() . '" ha caducado.',
-                    'link' => '/material/' . $material->getId(),
+                    'title' => 'Material Caducado: ' . $material->getName(),
+                    'message' => 'El material ha caducado el ' . $effectiveDate->format('d/m/Y'),
+                    'link' => '/material/' . $material->getId() . '/edit',
                     'severity' => 'danger',
                     'type' => 'expired'
-                ]);
-            } elseif ($status === 'orange') {
-                $currentExpiringSoonIds[] = $material->getId();
-                $this->ensureNotificationExists($user, 'expiring_soon', [
-                    'title' => 'Próxima Caducidad',
-                    'message' => 'El material "' . $material->getName() . '" caducará pronto.',
-                    'link' => '/material/' . $material->getId(),
-                    'severity' => 'warning',
-                    'type' => 'expiring_soon'
                 ]);
             }
         }
 
-        // 3. Auto-delete notifications if issue is resolved
-        $this->cleanupResolvedAlerts($user, 'low_stock', $currentLowStockIds);
-        $this->cleanupResolvedAlerts($user, 'expired', $currentExpiredIds);
-        $this->cleanupResolvedAlerts($user, 'expiring_soon', $currentExpiringSoonIds);
+        // 3. Auto-delete resolved notifications
+        $this->cleanupResolvedAlertsByType($user, ['reposicion', 'bajo_minimo'], $currentAlertIds);
+        $this->cleanupResolvedAlertsByType($user, ['expired'], $currentExpiredIds);
 
         $this->entityManager->flush();
+    }
+
+    private function cleanupResolvedAlertsByType(User $user, array $types, array $currentIds): void
+    {
+        foreach ($types as $type) {
+            $notifications = $this->notificationRepository->findBy(['recipient' => $user, 'type' => $type]);
+            foreach ($notifications as $notification) {
+                if (preg_match('/\/material\/(\d+)/', $notification->getLink() ?? '', $matches)) {
+                    $materialId = (int)$matches[1];
+                    if (!in_array($materialId, $currentIds)) {
+                        $this->entityManager->remove($notification);
+                    }
+                }
+            }
+        }
     }
 
     private function cleanupResolvedAlerts(User $user, string $type, array $currentIds): void

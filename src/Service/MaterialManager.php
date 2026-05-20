@@ -188,11 +188,19 @@ class MaterialManager
         if (isset($data['hasMicrophone'])) $unit->setHasMicrophone($data['hasMicrophone']);
         if (isset($data['brandModel'])) $unit->setBrandModel($data['brandModel']);
 
+        /** @var User|null $currentUser */
+        $currentUser = $this->security->getUser();
+        $unit->setUpdatedBy($data['updatedBy'] ?? $currentUser);
+        $unit->setUpdatedAt($data['updatedAt'] ?? new \DateTime());
+
         $unit->setLocation($finalLocation);
 
         if (isset($data['purchasePrice'])) $unit->setPurchasePrice($data['purchasePrice']);
         if (isset($data['discountPct'])) $unit->setDiscountPct($data['discountPct']);
         if (isset($data['supplier'])) $unit->setSupplier($data['supplier']);
+        if (isset($data['notes'])) $unit->setNotes($data['notes']);
+        if (isset($data['iva'])) $unit->setIva($data['iva']);
+        if (isset($data['operationalStatus'])) $unit->setOperationalStatus($data['operationalStatus']);
 
         $this->getEntityManager()->persist($unit);
         $this->getEntityManager()->flush();
@@ -617,21 +625,33 @@ class MaterialManager
         return $warehouse;
     }
 
-    public function changeUnitStatus(MaterialUnit $unit, string $status, ?string $reason): void
+    public function changeUnitStatus(MaterialUnit $unit, string $status, ?string $reason, ?string $updatedBy = null, ?\DateTime $updatedAt = null): void
     {
         /** @var User|null $currentUser */
-        $currentUser = $this->security->getUser();
+        $currentUser = $updatedBy ?: $this->security->getUser();
         $history = new MaterialUnitHistory();
         $history->setMaterialUnit($unit);
         $history->setStatus($status);
         $history->setReason($reason);
-        $history->setUser($currentUser);
+        $history->setUser($this->security->getUser() instanceof User ? $this->security->getUser() : null);
+        $history->setUserName($updatedBy ?: ($this->security->getUser() ? ($this->security->getUser()->getName() ?: $this->security->getUser()->getEmail()) : 'Sistema'));
         $this->getEntityManager()->persist($history);
+
         $unit->setOperationalStatus($status);
-        if (in_array($status, ['EN REPARACION', 'AVERIADO'])) {
+        $unit->setUpdatedBy($updatedBy ?: ($this->security->getUser() ? ($this->security->getUser()->getName() ?: $this->security->getUser()->getEmail()) : 'Sistema'));
+        $unit->setUpdatedAt($updatedAt ?: new \DateTime());
+
+        if (in_array($status, ['EN REPARACION', 'AVERIADO', 'REPARACION'])) {
             $unit->setIsInMaintenance(true);
         } else if ($status === 'OPERATIVO') {
             $unit->setIsInMaintenance(false);
+        } else if ($status === 'BAJA') {
+            $unit->setIsInMaintenance(false);
+            if ($unit->getLocation()) {
+                $location = $unit->getLocation();
+                $this->updateStockWithBatch($unit->getMaterial(), $location, -1, null);
+                $unit->setLocation(null);
+            }
         }
     }
 }

@@ -24,12 +24,8 @@ export default class extends Controller {
         const item = event.currentTarget.closest('.has-submenu');
         if (!item) return;
 
-        // In collapsed mode, we might want different behavior,
-        // but for now let's just toggle.
-
         const isAlreadyOpen = item.classList.contains('submenu-open');
 
-        // Close other submenus at the same level
         const parentUl = item.parentElement;
         parentUl.querySelectorAll(':scope > .has-submenu').forEach(sibling => {
             if (sibling !== item) {
@@ -57,15 +53,13 @@ export default class extends Controller {
                 this.contentTarget.classList.add('sidebar-collapsed-content');
             }
 
-            // Update icon
             if (this.hasToggleIconTarget) {
-                this.toggleIconTarget.setAttribute('data-lucide', 'panel-left-open');
+                // Ensure the icon is chevron-right when collapsed (to expand)
+                this.toggleIconTarget.setAttribute('data-lucide', 'chevron-right');
             }
 
-            // Close all submenus when collapsing
             this.submenuTargets.forEach(el => el.classList.remove('submenu-open'));
 
-            // Add tooltips (title attribute) to nav links
             const links = this.element.querySelectorAll('a[data-title]');
             links.forEach(link => {
                 const title = link.getAttribute('data-title');
@@ -81,24 +75,22 @@ export default class extends Controller {
                 this.contentTarget.classList.remove('sidebar-collapsed-content');
             }
 
-            // Update icon
             if (this.hasToggleIconTarget) {
-                this.toggleIconTarget.setAttribute('data-lucide', 'panel-left-close');
+                // Ensure the icon is chevron-left when expanded (to collapse)
+                this.toggleIconTarget.setAttribute('data-lucide', 'chevron-left');
             }
 
-            // Remove tooltips when expanded
             const links = this.element.querySelectorAll('a[data-title]');
             links.forEach(link => {
                 link.removeAttribute('title');
             });
         }
 
-        // Re-initialize Lucide icons
+        // Refresh Lucide icons
         if (window.lucide) {
             window.lucide.createIcons();
         }
 
-        // Dispatch event for other components if needed
         this.dispatch('toggled', { detail: { collapsed: this.collapsedValue } });
     }
 }

@@ -5,6 +5,7 @@ import Sidebar from './components/Layout/Sidebar';
 import Dashboard from './components/Dashboard/Dashboard';
 import PersonalListado from './components/Personal/PersonalListado';
 import ComingSoon from './components/Common/ComingSoon';
+import BatchRegisterDemo from './components/Material/BatchRegisterDemo';
 
 const AppContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
@@ -49,6 +50,8 @@ const AppContent: React.FC = () => {
         return <Dashboard />;
       case 'personal-listado':
         return <PersonalListado />;
+      case 'entradas-salidas':
+        return <BatchRegisterDemo />;
       default:
         return (
           <ComingSoon

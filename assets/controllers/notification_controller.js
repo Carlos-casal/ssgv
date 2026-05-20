@@ -3,6 +3,30 @@ import { Controller } from '@hotwired/stimulus';
 export default class extends Controller {
     static targets = ["item", "badge", "dropdown"];
 
+    connect() {
+        this.closeHandler = this.closeOnOutsideClick.bind(this);
+        document.addEventListener('click', this.closeHandler);
+    }
+
+    disconnect() {
+        document.removeEventListener('click', this.closeHandler);
+    }
+
+    toggleDropdown(event) {
+        event.stopPropagation();
+        this.dropdownTarget.classList.toggle('hidden');
+        const isExpanded = !this.dropdownTarget.classList.contains('hidden');
+        event.currentTarget.setAttribute('aria-expanded', isExpanded);
+    }
+
+    closeOnOutsideClick(event) {
+        if (!this.element.contains(event.target)) {
+            this.dropdownTarget.classList.add('hidden');
+            const button = this.element.querySelector('#alertsDropdown');
+            if (button) button.setAttribute('aria-expanded', 'false');
+        }
+    }
+
     markAsRead(event) {
         const id = event.currentTarget.dataset.id;
         const url = event.currentTarget.dataset.url;
@@ -86,9 +110,9 @@ export default class extends Controller {
         const unreadCount = this.itemTargets.filter(item => !item.classList.contains('opacity-30')).length;
         if (unreadCount > 0) {
             this.badgeTarget.textContent = unreadCount;
-            this.badgeTarget.classList.remove('d-none');
+            this.badgeTarget.classList.remove('hidden');
         } else {
-            this.badgeTarget.classList.add('d-none');
+            this.badgeTarget.classList.add('hidden');
         }
     }
 }

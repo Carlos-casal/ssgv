@@ -1,592 +1,556 @@
 {% extends 'layout/app.html.twig' %}
 
-{% block title %}
-    Editar {{ material.category ?: 'Material' }}
-{% endblock %}
+{% block title %}Editar Material - {{ material.name }}{% endblock %}
 
-{% block page_title %}
-    <div class="d-flex justify-content-between align-items-center w-100">
-        <span>
-            Edición de {{ material.category ?: 'Material' }}
-        </span>
-        <div class="d-flex align-items-center">
-            <div id="header-add-btn-container" class="mr-2" data-material-dynamic-form-target="headerAddBtnContainer">
-                <button type="button" class="btn btn-danger shadow-sm px-4" data-action="click->material-dynamic-form#handleAddButton">
-                    <i class="fas fa-plus mr-1"></i> Añadir
-                </button>
-            </div>
-            <button type="submit" form="material-form" class="btn btn-primary shadow-sm px-4" aria-label="Guardar cambios" title="Guardar">
-                <i class="fas fa-save mr-2"></i> Guardar Cambios
-            </button>
-            <a href="{{ path('app_material_show', {id: material.id}) }}" class="btn btn-outline-secondary ml-2" aria-label="Cancelar y volver" title="Cancelar">Cancelar</a>
-        </div>
-    </div>
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        :root {
+            --bg-body: #F1F5F9;
+            --card-bg: #ffffff;
+            --input-bg: #fdfdfd;
+            --border-ui: #e5e7eb;
+            --text-main: #111827;
+            --text-dim: #64748b;
+            --accent-cyan: #06b6d4;
+            --accent-red: #ef4444;
+            --shadow-ui: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .dark {
+            --bg-body: #121926;
+            --card-bg: #1f2937;
+            --input-bg: #111827;
+            --border-ui: rgba(255, 255, 255, 0.1);
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --accent-cyan: #22d3ee;
+            --accent-red: #ef4444;
+            --shadow-ui: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        body { 
+            background-color: var(--bg-body) !important; 
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .main-content { background-color: var(--bg-body) !important; padding: 2rem 1.5rem !important; }
+
+        .layout-container { display: flex; gap: 2rem; max-width: 100%; margin: 0 auto; }
+        .main-content-col { flex: 1; min-width: 0; }
+        .sidebar-col { width: 350px; flex-shrink: 0; }
+
+        @media (max-width: 1200px) {
+            .layout-container { flex-direction: column; }
+            .sidebar-col { width: 100%; }
+        }
+
+        .ui-fieldset {
+            position: relative;
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 3.5rem 2rem 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-ui);
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .ui-fieldset::before {
+            content: ''; position: absolute; top: 1.25rem; left: 1.25rem; right: 1.25rem; bottom: 1.25rem;
+            border: 1px solid var(--border-ui); border-radius: 0.5rem; pointer-events: none; z-index: 2;
+        }
+
+        .ui-legend {
+            position: absolute; top: 0.75rem; left: 2.5rem; background: var(--card-bg);
+            padding: 0 0.75rem; font-size: 13px; font-weight: 600; color: var(--text-dim); z-index: 10;
+        }
+
+        .field-group { margin-bottom: 1.5rem; position: relative; z-index: 5; }
+        .field-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main); }
+        .field-label span { color: var(--accent-red); margin-left: 2px; }
+
+        .ui-input {
+            width: 100%; height: 46px; background: var(--input-bg); border: 1px solid var(--border-ui);
+            border-radius: 0.6rem; padding: 0 1.25rem; font-size: 14px; color: var(--text-main); transition: all 0.2s ease;
+        }
+        .ui-input:focus { outline: none; border-color: var(--accent-cyan); box-shadow: 0 0 0 1px var(--accent-cyan); }
+        .ui-textarea { min-height: 120px; padding: 1.25rem; resize: none; font-size: 13px !important; }
+
+        .ui-btn {
+            height: 46px; padding: 0 1.5rem; border-radius: 0.6rem; font-size: 11px; font-weight: 800;
+            display: inline-flex; align-items: center; justify-content: center; border: none; cursor: pointer;
+            transition: all 0.2s; text-decoration: none; text-transform: uppercase; letter-spacing: 0.05em;
+        }
+        .btn-cyan { background: #22d3ee; color: #083344; }
+        .btn-red { background: #f43f5e; color: white; }
+        .btn-dark { background: #1e293b; color: white; border: 1px solid rgba(255,255,255,0.1); }
+        .btn-outline { background: transparent; color: var(--text-main); border: 1px solid var(--border-ui); }
+        .ui-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .stat-box {
+            background: var(--card-bg); border: 1px solid var(--border-ui); border-radius: 1rem;
+            padding: 2rem; text-align: center; margin-bottom: 2rem; box-shadow: var(--shadow-ui);
+        }
+        .stat-value { font-size: 3.5rem; font-weight: 900; color: var(--text-main); line-height: 1; }
+        .stat-label { font-size: 10px; font-weight: 900; color: var(--accent-cyan); text-transform: uppercase; letter-spacing: 0.1em; }
+        .sticky-side { position: sticky; top: 1rem; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(4px); z-index: 2000; display: none; align-items: center; justify-content: center;
+        }
+        .modal-content {
+            background: var(--card-bg); padding: 2rem; border-radius: 1rem; width: 100%; max-width: 450px;
+            position: relative; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-4"
-     data-controller="material-dynamic-form"
-     data-material-category="{{ material.category }}"
-     data-material-action="edit"
-     data-material-id="{{ material.id }}"
-     data-material-brand="{{ material.brandModel }}"
-     data-material-purchase="{{ material.purchaseDate ? material.purchaseDate|date('Y-m-d') : '' }}"
-     data-material-warranty="{{ material.warrantyDate ? material.warrantyDate|date('Y-m-d') : '' }}"
-     data-serial-check-url="{{ path('app_material_check_serial_number') }}"
-     data-initial-units="{{ units_data|default([])|json_encode }}"
-     data-initial-unit-count="{{ material.units|length }}"
-     data-initial-batches="{{ batches_data|default([])|json_encode }}">
-    {{ form_start(form, {'attr': {'id': 'material-form', 'class': 'material-form', 'novalidate': 'novalidate'}}) }}
-
-    <div class="row mb-3">
-        <div class="col-12 text-danger">
-            {{ form_errors(form) }}
+<div class="animate-in">
+    {{ form_start(form, {'attr': {'id': 'material-form', 'novalidate': 'novalidate'}}) }}
+    
+    <div class="mb-6">
+        <div>
+            <h1 class="text-2xl font-black text-slate-900 dark:text-white mb-1">Editar Material</h1>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mb-4">{{ material.name }}</p>
         </div>
     </div>
 
-    <div class="row">
-        {# Columna Izquierda (8) #}
-        <div class="col-lg-12">
-            {% if material.category == 'Comunicaciones' %}
-                {# COMUNICACIONES LAYOUT #}
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-radio mr-2"></i> PANEL A: DATOS DEL EQUIPO (FÍSICO)
-                        </h6>
+    <div class="layout-container">
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content-col">
+            <div class="ui-fieldset">
+                <div class="ui-legend">Datos del Material</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="field-group">
+                        <label class="field-label">Nombre Comercial<span>*</span></label>
+                        {{ form_widget(form.name, {'attr': {'class': 'ui-input', 'placeholder': 'Ej: Paracetamol 500mg'}}) }}
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                {{ form_row(form.name, {'label': 'NOMBRE COMERCIAL*'}) }}
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">{{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}</div>
-                            <div class="col-md-6">{{ form_row(form.deviceType, {'label': 'TIPO DE EQUIPO'}) }}</div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA Y MODELO'}) }}</div>
-                            <div class="col-md-6">{{ form_row(form.subFamily, {'label': 'SUBFAMILIA'}) }}</div>
-                            <div class="col-md-6 d-none">{% if form.category is defined and not form.category.rendered %}{{ form_row(form.category) }}{% endif %}</div>
-                        </div>
+                    <div class="field-group">
+                        <label class="field-label">Código de Barras<span>*</span></label>
+                        {{ form_widget(form.barcode, {'attr': {'class': 'ui-input', 'placeholder': 'EAN-13...'}}) }}
                     </div>
-                </div>
-
-                <div class="card shadow-sm mb-4 border-0 border-left-info">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-info">
-                            <i class="fas fa-network-wired mr-2"></i> PANEL B: DATOS DE RED (LÓGICO)
-                        </h6>
+                    <div class="field-group">
+                        <label class="field-label">Naturaleza</label>
+                        {{ form_widget(form.nature, {'attr': {'class': 'ui-input !bg-slate-50 dark:!bg-slate-900 font-bold text-cyan-600 dark:text-cyan-400'}}) }}
+                        <div class="hidden">{{ form_widget(form.category) }}</div>
                     </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                {{ form_row(form.networkId, {'label': 'ID DE RED (ISSI / IMEI / MMSI / TEI)'}) }}
-                            </div>
+                    <div class="field-group">
+                        <label class="field-label">Subfamilia</label>
+                        <div class="flex items-stretch">
+                            {{ form_widget(form.subFamily, {'attr': {'class': 'ui-input !rounded-r-none border-r-0'}}) }}
+                            <button type="button" class="ui-btn btn-cyan !rounded-l-none !h-[46px] !px-6 text-[11px] font-black border-l border-slate-200 dark:border-slate-800" onclick="window.openSubfamilyModal()">AÑADIR</button>
                         </div>
                     </div>
-                </div>
-
-                <div id="units-container" data-material-dynamic-form-target="unitsContainer" aria-live="polite"></div>
-
-                {# We render brandModel here for Communications #}
-                <div class="d-none">
-                    {% if not form.brandModel.rendered %}{{ form_widget(form.brandModel) }}{% endif %}
-                </div>
-
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-secondary">
-                            <i class="fas fa-tools mr-2"></i> PANEL C: MANTENIMIENTO Y ACCESORIOS
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-6">{{ form_row(form.purchaseDate, {'label': 'FECHA DE COMPRA'}) }}</div>
-                            <div class="col-md-6">{{ form_row(form.warrantyDate, {'label': 'GARANTÍA'}) }}</div>
-                        </div>
-                        <hr class="my-3">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-check custom-checkbox">
-                                    {{ form_widget(form.hasCharger) }}
-                                    {{ form_label(form.hasCharger, '¿INCLUYE CARGADOR?') }}
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-check custom-checkbox">
-                                    {{ form_widget(form.hasClip) }}
-                                    {{ form_label(form.hasClip, '¿INCLUYE PINZA?') }}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            {% elseif material.category in ['Logística', 'Mar', 'Vehículos', 'Varios'] %}
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-boxes mr-2"></i> IDENTIDAD DEL MATERIAL
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                {{ form_row(form.name, {'label': 'NOMBRE*'}) }}
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">{{ form_row(form.brandModel, {'label': 'MARCA / MODELO'}) }}</div>
-                            <div class="col-md-6">{{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}</div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                <label class="form-label">Subfamilia</label>
-                                <div class="input-group">
-                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
-                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            {% elseif material.category == 'Uniformidad' %}
-                <div class="card shadow-sm mb-4 border-0">
-                    <div class="card-header bg-white py-3">
-                        <h6 class="m-0 font-weight-bold text-primary">
-                            <i class="fas fa-tshirt mr-2"></i> DATOS DE UNIFORMIDAD
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="row">
-                            <div class="col-md-12">
-                                {{ form_row(form.name, {'label': 'NOMBRE DE LA PRENDA*'}) }}
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                            <div class="col-md-6">
-                                {{ form_row(form.nature, {'label': 'NATURALEZA*'}) }}
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label">Prenda</label>
-                                <div class="input-group">
-                                    {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
-                                    <button class="btn btn-outline-primary" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mt-2">
-                        </div>
-                    </div>
-                </div>
-            {% else %}
-                {# SANITARIO / GENERIC LAYOUT #}
-                {# BLOQUE A: IDENTIDAD DEL MATERIAL #}
-                <div class="card shadow-sm mb-4 border-0 mt-n3" style="border-top: 4px solid #4e73df !important;">
-                    <div class="card-header bg-white py-3 border-bottom-0">
-                        <h6 class="m-0 font-weight-bold text-primary text-uppercase">
-                            Bloque A: Identidad del Material
-                        </h6>
-                    </div>
-                    <div class="card-body pt-2">
-                        <div class="row">
-                            <div class="col-md-12">
-                                <label class="form-label pt-2">Nombre Comercial<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.name, {'attr': {'class': 'form-input', 'placeholder': 'Ej: Paracetamol 500mg', 'data-required': 'true'}}) }}
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Naturaleza</label>
-                                {{ form_widget(form.nature, {
-                                    'attr': {
-                                        'class': 'form-input',
-                                        'data-material-dynamic-form-target': 'natureSelect',
-                                        'data-action': 'change->material-dynamic-form#toggleTechnicalBlock change->material-dynamic-form#handleNatureChange'
-                                    }
-                                }) }}
-                            </div>
-                            <div class="col-md-6">
-                                {% if material.category is not empty %}
-                                    <label class="form-label">{{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}</label>
-                                    <div class="input-group">
-                                        {{ form_widget(form.subFamily, {'attr': {'class': 'form-input', 'data-material-dynamic-form-target': 'subFamilySelect'}}) }}
-                                        <button class="btn btn-primary d-flex align-items-center gap-2" type="button" data-bs-toggle="modal" data-bs-target="#addSubFamilyModal">
-                                            <i class="fas fa-plus"></i>
-                                            <span class="d-none d-md-inline">Añadir</span>
-                                        </button>
-                                    </div>
-                                {% else %}
-                                    <div class="d-none">{{ form_row(form.subFamily) }}</div>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-6">
-                                <label class="form-label">Código de Barras / QR<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.barcode, {
-                                    'attr': {
-                                        'class': 'form-input',
-                                        'data-required': 'true',
-                                        'data-material-id': material.id,
-                                        'data-material-dynamic-form-target': 'barcodeInput',
-                                        'data-action': 'input->material-dynamic-form#checkBarcodeUniqueness',
-                                        'data-check-url': path('app_material_check_barcode')
-                                    }
-                                }) }}
-                                <div class="text-danger font-weight-bold mt-1">{{ form_errors(form.barcode) }}</div>
-                                <p class="text-hint">Escanea o introduce el código de barras del artículo.</p>
-                            </div>
-                            <div class="col-md-6" data-material-dynamic-form-target="safetyStockContainer">
-                                <label class="form-label">Stock Mínimo (Nº Envases)<span class="text-red-500">*</span></label>
-                                {{ form_widget(form.safetyStock, {
-                                    'attr': {
-                                        'class': 'form-input',
-                                        'data-required': 'true',
-                                        'data-action': 'input->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                    }
-                                }) }}
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-md-12">
-                                <label class="form-label">Descripción</label>
-                                {{ form_widget(form.description, {'attr': {'class': 'form-input', 'rows': '3'}}) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            {% endif %}
-
-            {# Contenedores Comunes para Dinámica de Materiales #}
-            <div id="batches-container" data-material-dynamic-form-target="batchesContainer">
-            </div>
-
-            {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (OTROS) #}
-            <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #f6c23e !important;" data-material-dynamic-form-target="technicalBlock">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-warning text-uppercase">
-                        Bloque B: Seguridad y Trazabilidad (Otros)
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Marca y Modelo</label>
-                            {% if form.brandModel is defined and not form.brandModel.rendered %}
-                                {{ form_widget(form.brandModel, {'attr': {'class': 'form-input'}}) }}
-                            {% elseif form.brandModel is defined %}
-                                <input type="text" class="form-input bg-gray-50" value="{{ material.brandModel|default('Ya registrado') }}" readonly disabled>
-                            {% else %}
-                                <input type="text" class="form-input" disabled placeholder="N/A">
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Número de Serie (S/N)</label>
-                            {% if form.serialNumber is defined and not form.serialNumber.rendered %}
-                                {{ form_widget(form.serialNumber, {'attr': {'class': 'form-input'}}) }}
-                            {% elseif form.serialNumber is defined %}
-                                <input type="text" class="form-input bg-gray-50" value="{{ material.serialNumber|default('Ya registrado') }}" readonly disabled>
-                            {% else %}
-                                <input type="text" class="form-input" disabled placeholder="N/A">
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Fecha de Compra</label>
-                            {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}
-                                {{ form_widget(form.purchaseDate, {'attr': {'class': 'form-input'}}) }}
-                            {% elseif form.purchaseDate is defined %}
-                                <input type="text" class="form-input bg-gray-50" value="{{ material.purchaseDate ? material.purchaseDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
-                            {% else %}
-                                <input type="text" class="form-input" disabled placeholder="N/A">
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Garantía</label>
-                            {% if form.warrantyDate is defined and not form.warrantyDate.rendered %}
-                                {{ form_widget(form.warrantyDate, {'attr': {'class': 'form-input'}}) }}
-                            {% elseif form.warrantyDate is defined %}
-                                <input type="text" class="form-input bg-gray-50" value="{{ material.warrantyDate ? material.warrantyDate|date('d/m/Y') : 'N/A' }}" readonly disabled>
-                            {% else %}
-                                <input type="text" class="form-input" disabled placeholder="N/A">
-                            {% endif %}
-                        </div>
+                    <div class="field-group md:col-span-2 !mb-0">
+                        <label class="field-label">Descripción</label>
+                        <textarea name="extra_data[description]" id="material-description" class="ui-input ui-textarea" style="min-height: 46px; height: 46px; overflow: hidden;" placeholder="Especificaciones técnicas...">{{ material.description|default('') }}</textarea>
                     </div>
                 </div>
             </div>
 
-            {# BLOQUE B: SEGURIDAD Y TRAZABILIDAD (FALLBACK) #}
-            <div class="card shadow-sm mb-4 border-0 d-none" style="border-top: 4px solid #e74a3b !important;" data-material-dynamic-form-target="consumableBlock">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 font-weight-bold text-danger text-uppercase">
-                        Bloque B: Seguridad y Trazabilidad (Lote Único)
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <label class="form-label">Lote</label>
-                            {{ form_widget(form.batchNumber, {'attr': {'class': 'form-input'}}) }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Fecha de Caducidad</label>
-                            {{ form_widget(form.expirationDate, {'attr': {'class': 'form-input'}}) }}
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Proveedor</label>
-                            {{ form_widget(form.supplier, {'attr': {'class': 'form-input'}}) }}
+            <div id="dynamic-blocks-container" class="space-y-20" 
+                 data-initial-batches="{{ batches_data|default([])|json_encode }}" 
+                 data-initial-units="{{ units_data|default([])|json_encode }}"></div>
+
+            <!-- Image -->
+            <div class="ui-fieldset text-center">
+                <div class="ui-legend">Imagen General</div>
+                <div class="group relative aspect-square bg-slate-50 dark:bg-slate-900 rounded-xl border-2 border-dashed border-slate-200 dark:border-slate-800 flex flex-col items-center justify-center cursor-pointer hover:border-cyan-400 transition-all overflow-hidden mx-auto max-w-[300px]"
+                     onclick="this.querySelector('input').click()">
+                    <div id="general-photo-preview" class="absolute inset-0 {{ material.imagePath ? '' : 'hidden' }}">
+                        <img src="{{ material.imagePath ? asset('uploads/materials/' ~ material.imagePath) : '' }}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <span class="text-white text-[10px] font-black uppercase tracking-widest">Cambiar</span>
                         </div>
                     </div>
-                    <div class="d-none">{% if form.category is defined and not form.category.rendered %}{{ form_row(form.category) }}{% endif %}</div>
+                    <div id="general-photo-placeholder" class="flex flex-col items-center justify-center {{ material.imagePath ? 'hidden' : '' }}">
+                        <i class="fas fa-camera text-2xl text-slate-300 mb-2 group-hover:text-cyan-400 transition-colors"></i>
+                        <span class="text-[10px] font-bold text-slate-400 uppercase group-hover:text-cyan-400 transition-colors">Añadir Foto</span>
+                    </div>
+                    <input type="file" name="extra_data[image]" class="hidden" onchange="window.previewGeneralPhoto(this)">
                 </div>
-            </div>
-
-            {# Contenedor para Bloques Técnicos Dinámicos #}
-            <div id="technical-blocks-container" class="d-none" data-material-dynamic-form-target="technicalBlocksContainer">
             </div>
         </div>
 
-            <div class="row">
-                <div class="col-lg-8">
-                    {# BLOQUE D: STOCK Y COSTES - RECONSTRUIDO PARA COINCIDIR CON LA IMAGEN #}
-                    <div class="card shadow-sm mb-4 border-0" style="border-top: 4px solid #1cc88a !important;" data-material-dynamic-form-target="stockAndCostsBlock">
-                        <div class="card-header bg-white py-3 border-bottom-1">
-                            <h6 class="m-0 font-weight-bold text-success text-uppercase">
-                                Bloque D: Stock y Costes
-                            </h6>
+        <!-- SIDEBAR -->
+        <div class="sidebar-col">
+            <div class="sticky-side space-y-12">
+                <div class="stat-box overflow-hidden !py-10">
+                    <span class="stat-label !text-xs mb-4">Stock Actual</span>
+                    <div id="sidebar-total-stock" class="stat-value !text-[clamp(1.5rem,5vw,3rem)] leading-none break-all" title="{{ material.stock }}">{{ material.stock }}</div>
+                </div>
+
+                <div class="ui-fieldset !mb-0">
+                    <div class="ui-legend">Resumen Económico</div>
+                    <div class="space-y-10">
+                        <div class="field-group !mb-0">
+                            <label class="field-label">Total Envases</label>
+                            <input type="number" id="sidebar-total-packages" class="ui-input text-center font-bold" readonly value="0">
                         </div>
-
-                        <div class="card-body p-4">
-                            <div class="form-grid">
-                                {# Fila: Uds/Envase #}
-                                <div class="form-group" data-material-dynamic-form-target="unitsPerPackageContainer" data-redundant-multi-batch="true">
-                                    <label class="form-label">Unidades por Envase<span class="text-red-500">*</span></label>
-                                    {{ form_widget(form.unitsPerPackage, {
-                                        'attr': {
-                                            'class': 'form-input border-blue-400',
-                                            'data-material-dynamic-form-target': 'unitsPerPackageInput',
-                                            'data-required': 'true',
-                                            'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                        }
-                                    }) }}
-                                </div>
-
-                                {# Nº Envases #}
-                                <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="numPackagesContainer">
-                                    <label class="form-label">Total Nº Envases<span class="text-red-500">*</span></label>
-                                    {{ form_widget(form.numPackages, {
-                                        'attr': {
-                                            'class': 'form-input border-blue-400',
-                                            'data-material-dynamic-form-target': 'numPackagesInput',
-                                            'data-required': 'true',
-                                            'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                        }
-                                    }) }}
-                                </div>
-
-                                {# Stock Total Calculado - Span 2 #}
-                                <div class="form-group col-span-2 highlight-box">
-                                    <label class="form-label">Stock Total Registrado</label>
-                                    <div class="relative">
-                                        {{ form_widget(form.stock, {
-                                            'attr': {
-                                                'class': 'form-input text-center font-bold text-green-700 bg-white cursor-default',
-                                                'readonly': true,
-                                                'data-material-dynamic-form-target': 'totalStockInput'
-                                            }
-                                        }) }}
-                                    </div>
-                                    <p class="text-hint">Calculado: Uds x Envases.</p>
-                                </div>
-
-                                {# Coste Total #}
-                                <div class="form-group col-span-2" data-redundant-multi-batch="true" data-material-dynamic-form-target="totalPriceContainer">
-                                    <label class="form-label">Coste Total<span class="text-red-500">*</span></label>
-                                    <div class="currency-wrapper">
-                                        {{ form_widget(form.totalPrice, {
-                                            'attr': {
-                                                'class': 'form-input pr-8 border-emerald-400',
-                                                'placeholder': '0,00€',
-                                                'data-material-dynamic-form-target': 'totalPrice',
-                                                'data-required': 'true',
-                                                'data-type': 'decimal',
-                                                'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                            }
-                                        }) }}
-                                        <span class="currency-symbol suffix">€</span>
-                                    </div>
-                                </div>
-
-                                {# % Margen #}
-                                <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="discountPercentageContainer">
-                                    <label class="form-label">% Margen</label>
-                                    {{ form_widget(form.discountPercentage, {
-                                        'attr': {
-                                            'class': 'form-input border-emerald-400',
-                                            'data-type': 'decimal',
-                                            'data-material-dynamic-form-target': 'discountPercentageInput',
-                                            'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                        }
-                                    }) }}
-                                </div>
-
-                                {# Coste con Dto #}
-                                <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="discountedPriceContainer">
-                                    <label class="form-label">Coste con Dto</label>
-                                    <div class="currency-wrapper">
-                                        {{ form_widget(form.discountedPrice, {
-                                            'attr': {
-                                                'class': 'form-input pr-8 bg-gray-50 cursor-default',
-                                                'placeholder': '0,00€',
-                                                'readonly': true,
-                                                'data-material-dynamic-form-target': 'discountedPriceInput'
-                                            }
-                                        }) }}
-                                        <span class="currency-symbol suffix">€</span>
-                                    </div>
-                                </div>
-
-                                {# Precio/Ud #}
-                                <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="unitPriceContainer">
-                                    <label class="form-label">Precio/Ud</label>
-                                    <div class="currency-wrapper">
-                                        {{ form_widget(form.unitPrice, {
-                                            'attr': {
-                                                'class': 'form-input pr-8 bg-gray-50 cursor-default',
-                                                'placeholder': '0,00€',
-                                                'readonly': true,
-                                                'data-material-dynamic-form-target': 'unitPrice'
-                                            }
-                                        }) }}
-                                        <span class="currency-symbol suffix">€</span>
-                                    </div>
-                                </div>
-
-                                {# IVA #}
-                                <div class="form-group" data-redundant-multi-batch="true" data-material-dynamic-form-target="ivaContainer">
-                                    <label class="form-label">IVA (%)</label>
-                                    {{ form_widget(form.iva, {
-                                        'attr': {
-                                            'class': 'form-input border-emerald-400',
-                                            'data-type': 'decimal',
-                                            'data-action': 'input->material-dynamic-form#performCalculations input->material-dynamic-form#enforceNumericConstraints keyup->material-dynamic-form#enforceNumericConstraints paste->material-dynamic-form#enforceNumericConstraints blur->material-dynamic-form#formatInput'
-                                        }
-                                    }) }}
-                                </div>
+                        <div class="field-group !mb-0">
+                            <label class="field-label">Inversión Estimada</label>
+                            <div class="flex items-center bg-slate-50 dark:bg-slate-900 rounded-lg border border-slate-100 dark:border-slate-800 p-2 overflow-hidden">
+                                <input type="text" id="sidebar-total-cost-display" class="flex-1 min-w-0 bg-transparent border-none text-right !text-xl font-bold text-cyan-600 dark:text-cyan-400 outline-none" readonly value="0,00">
+                                <span class="ml-2 text-slate-400 font-bold">€</span>
                             </div>
                         </div>
                     </div>
                 </div>
-
-                <div class="col-lg-4">
-                    {# ZONA DE IMAGEN #}
-                    <div class="bg-gray-50 rounded-lg shadow-sm border border-gray-200 p-6">
-                <h6 class="block text-center text-xxs font-bold text-blue-600 uppercase mb-4 tracking-wider">
-                    Imagen del Producto
-                </h6>
-                {% if material.imagePath %}
-                    <div class="mb-4 text-center">
-                        <img src="{{ asset('uploads/material_images/' ~ material.imagePath) }}" alt="Preview" class="mx-auto rounded border border-gray-200 max-h-32 shadow-sm">
-                    </div>
-                {% endif %}
-                <div class="flex items-center space-x-2 border border-gray-200 rounded bg-white p-2">
-                    <label class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xxs px-3 py-1 rounded cursor-pointer transition-colors border border-gray-300">
-                        Seleccionar archivo
-                        {{ form_widget(form.imageFile, {
-                            'attr': {
-                                'class': 'hidden'
-                            }
-                        }) }}
-                    </label>
-                    <span class="text-xxs text-gray-500 truncate">Ningún archivo seleccionado</span>
-                </div>
-                <p class="text-xxs text-center text-gray-400 mt-3">
-                    Formatos permitidos: JPG, PNG. Tamaño máximo: 2MB
-                </p>
             </div>
         </div>
     </div>
-    <div class="d-none">
-        {% if form.serialNumber is defined and not form.serialNumber.rendered %}{{ form_row(form.serialNumber) }}{% endif %}
-        {% if form.brandModel is defined and not form.brandModel.rendered %}{{ form_widget(form.brandModel) }}{% endif %}
-        {% if form.purchaseDate is defined and not form.purchaseDate.rendered %}{{ form_row(form.purchaseDate) }}{% endif %}
-        {% if form.warrantyDate is defined and not form.warrantyDate.rendered %}{{ form_row(form.warrantyDate) }}{% endif %}
-        {% if form.operationalStatus is defined and not form.operationalStatus.rendered %}{{ form_row(form.operationalStatus) }}{% endif %}
-        {% if form.batteryStatus is defined and not form.batteryStatus.rendered %}{{ form_row(form.batteryStatus) }}{% endif %}
-        {% if form.deviceType is defined and not form.deviceType.rendered %}{{ form_row(form.deviceType) }}{% endif %}
-        {% if form.frequencyBand is defined and not form.frequencyBand.rendered %}{{ form_row(form.frequencyBand) }}{% endif %}
-        {% if form.phoneNumber is defined and not form.phoneNumber.rendered %}{{ form_row(form.phoneNumber) }}{% endif %}
-        {% if form.networkId is defined and not form.networkId.rendered %}{{ form_row(form.networkId) }}{% endif %}
-        {% if form.hasCharger is defined and not form.hasCharger.rendered %}{{ form_row(form.hasCharger) }}{% endif %}
-        {% if form.hasClip is defined and not form.hasClip.rendered %}{{ form_row(form.hasClip) }}{% endif %}
-        {% if form.hasMicrophone is defined and not form.hasMicrophone.rendered %}{{ form_row(form.hasMicrophone) }}{% endif %}
+
+    <!-- FOOTER -->
+    <div class="bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-6 mt-12">
+        <div class="max-w-[1750px] mx-auto flex justify-end gap-4">
+            <button type="submit" form="material-form" class="ui-btn btn-cyan">Guardar Cambios</button>
+            <button type="button" id="btn-add-block-footer" class="ui-btn btn-red">Añadir Registro</button>
+            <a href="{{ path('app_material_index') }}" class="ui-btn btn-dark">Cancelar</a>
+        </div>
     </div>
+
+    <div class="hidden">{{ form_rest(form) }}</div>
     {{ form_end(form) }}
 </div>
 
-<!-- Modal Añadir Subfamilia / Prenda -->
-<div class="modal fade" id="addSubFamilyModal" tabindex="-1" aria-labelledby="addSubFamilyModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="addSubFamilyModalLabel">
-                    <i class="fas fa-plus-circle mr-2"></i> Añadir {{ material.category == 'Uniformidad' ? 'Prenda' : 'Subfamilia' }}
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <div class="form-group">
-                    <label class="form-label">Nombre de la nueva {{ material.category == 'Uniformidad' ? 'prenda' : 'subfamilia' }}</label>
-                    <input type="text" id="new-subfamily-name" class="form-control" placeholder="Ej: Nueva Categoría">
+<!-- MODALS -->
+<div id="subfamilyModal" class="modal-overlay">
+    <div class="modal-content">
+        <h3 class="text-xl font-black mb-4">Nueva Subfamilia</h3>
+        <div class="field-group">
+            <label class="field-label">Nombre de la Subfamilia</label>
+            <input type="text" id="new-subfamily-name" class="ui-input" placeholder="Ej: Curas, Medicación...">
+        </div>
+        <div class="flex justify-end gap-2 mt-6">
+            <button type="button" class="ui-btn btn-dark" onclick="window.closeSubfamilyModal()">Cancelar</button>
+            <button type="button" class="ui-btn btn-cyan" onclick="window.saveSubfamily()">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- TEMPLATES -->
+<template id="tpl-batch">
+    <div class="ui-fieldset batch-block animate-in">
+        <div class="ui-legend">Registro Lote __INDEX__
+            <button type="button" class="ml-3 text-slate-300 hover:text-rose-500 btn-remove-block"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+            <div class="field-group !mb-0"><label class="field-label">Nº Lote</label><input type="text" name="batches_data[__INDEX__][batchNumber]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label">Caducidad</label><input type="date" name="batches_data[__INDEX__][expirationDate]" class="ui-input" min="{{ 'now'|date('Y-m-d') }}"></div>
+            <div class="field-group !mb-0"><label class="field-label">Proveedor</label><input type="text" name="batches_data[__INDEX__][supplier]" class="ui-input"></div>
+            <div class="field-group !mb-0">
+                <label class="field-label">Imagen</label>
+                <div class="flex items-center gap-3">
+                    <div class="record-image-preview w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <i class="fas fa-image text-slate-300"></i>
+                    </div>
+                    <button type="button" class="ui-btn btn-outline flex-1 flex items-center justify-center gap-2" onclick="this.nextElementSibling.click()"><i class="fas fa-camera"></i><span>Subir</span></button>
+                    <input type="file" name="batches_data[__INDEX__][image]" class="hidden" onchange="window.updateRecordImageButton(this)">
                 </div>
             </div>
-            <div class="modal-footer bg-light border-0">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary px-4" data-action="click->material-dynamic-form#saveNewSubFamily">Guardar y Seleccionar</button>
-            </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl items-end border border-slate-100 dark:border-slate-800">
+            <div><label class="field-label !text-[10px]">UDS/ENV</label><input type="text" name="batches_data[__INDEX__][unitsPerPackage]" class="ui-input text-center calc-trigger mask-money-int" value="1" placeholder="0"></div>
+            <div><label class="field-label !text-[10px]">Nº ENV</label><input type="text" name="batches_data[__INDEX__][numPackages]" class="ui-input text-center calc-trigger mask-money-int" value="1" placeholder="0"></div>
+            <div><label class="field-label !text-[10px]">TARIFA €</label><input type="text" class="ui-input block-tarifa calc-trigger mask-money text-right" placeholder="0,00"></div>
+            <div><label class="field-label !text-[10px]">DESC %</label><input type="text" name="batches_data[__INDEX__][supplierDiscount]" class="ui-input block-desc-prov calc-trigger mask-money text-right" value="0"></div>
+            <div><label class="field-label !text-[10px]">IVA %</label><input type="text" class="ui-input block-iva calc-trigger mask-money text-right" value="0"></div>
+            <div><label class="field-label !text-[10px]">P/UD</label><input type="text" class="ui-input block-unit-price text-center !text-cyan-500 font-bold !bg-slate-100/50" readonly value="0,00"></div>
+            <div><label class="field-label !text-[10px]">TOTAL</label><input type="text" class="ui-input block-total-price text-right !text-cyan-600 font-black !bg-slate-100 dark:!bg-slate-800" readonly value="0,00"></div>
         </div>
     </div>
-</div>
+</template>
 
-<!-- Modal Aviso Código de Barras Duplicado (Equipo Técnico) -->
-<div class="modal fade" id="barcodeWarningModal" tabindex="-1" aria-labelledby="barcodeWarningModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-warning text-white">
-                <h5 class="modal-title" id="barcodeWarningModalLabel">
-                    <i class="fas fa-exclamation-triangle mr-2"></i> Aviso: Código de Barras Registrado
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <p class="mb-0 text-dark">Este Código de Barras ya pertenece al material:</p>
-                <p class="mt-2 mb-3"><strong id="barcodeDuplicateName" class="text-primary font-size-lg border-bottom border-primary pb-1"></strong></p>
-                <p class="text-muted small mt-2">Dado que es <strong>Equipo Técnico</strong>, puedes continuar si se trata de otra unidad de este mismo modelo, pero asegúrate de que el <strong>Número de Serie</strong> sea único.</p>
-            </div>
-            <div class="modal-footer bg-light border-0">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Entendido</button>
+<template id="tpl-unit">
+    <div class="ui-fieldset unit-block animate-in">
+        <div class="ui-legend">Registro Equipo __INDEX__
+            <button type="button" class="ml-3 text-slate-300 hover:text-rose-500 btn-remove-block"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="field-group !mb-0"><label class="field-label">ALIAS</label><input type="text" name="units_data[__INDEX__][alias]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label">S/N</label><input type="text" name="units_data[__INDEX__][serialNumber]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label">FABRICANTE</label><input type="text" name="units_data[__INDEX__][manufacturer]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label">MODELO</label><input type="text" name="units_data[__INDEX__][model]" class="ui-input"></div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+            <div class="field-group !mb-0"><label class="field-label">VERSIÓN SW/FW</label><input type="text" name="units_data[__INDEX__][version]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label">PROVEEDOR</label><input type="text" name="units_data[__INDEX__][supplier]" class="ui-input"></div>
+            <div class="field-group !mb-0"><label class="field-label text-rose-500 font-bold">PRÓX. REV.</label><input type="date" name="units_data[__INDEX__][nextRevisionDate]" class="ui-input border-rose-200" min="{{ 'now'|date('Y-m-d') }}"></div>
+            <div class="field-group !mb-0">
+                <label class="field-label">Imagen</label>
+                <div class="flex items-center gap-3">
+                    <div class="record-image-preview w-12 h-12 rounded-lg bg-slate-100 dark:bg-slate-800 flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700">
+                        <i class="fas fa-image text-slate-300"></i>
+                    </div>
+                    <button type="button" class="ui-btn btn-outline flex-1 flex items-center justify-center gap-2" onclick="this.nextElementSibling.click()"><i class="fas fa-camera"></i><span>Subir</span></button>
+                    <input type="file" name="units_data[__INDEX__][image]" class="hidden" onchange="window.updateRecordImageButton(this)">
+                </div>
             </div>
         </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+            <div class="field-group !mb-0"><label class="field-label">FECHA COMPRA</label><input type="date" name="units_data[__INDEX__][purchaseDate]" class="ui-input date-purchase-trigger" onchange="window.handlePurchaseDateChange(this)"></div>
+            <div class="field-group !mb-0"><label class="field-label">FECHA GARANTÍA</label><input type="date" name="units_data[__INDEX__][warrantyDate]" class="ui-input date-warranty-field"></div>
+            </div>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 bg-slate-50 dark:bg-slate-900 p-4 rounded-xl items-end border border-slate-100 dark:border-slate-800">
+            <div class="col-span-2 md:col-span-1"><label class="field-label !text-[10px]">TARIFA COMPRA €</label><input type="text" name="units_data[__INDEX__][purchasePrice]" class="ui-input block-tarifa calc-trigger mask-money text-right" placeholder="0"></div>
+            <div><label class="field-label !text-[10px]">DESC %</label><input type="text" name="units_data[__INDEX__][supplierDiscount]" class="ui-input block-desc-prov calc-trigger mask-money text-right" value="0"></div>
+            <div><label class="field-label !text-[10px]">IVA %</label><input type="text" name="units_data[__INDEX__][iva]" class="ui-input block-iva calc-trigger mask-money text-right" value="0"></div>
+            <div class="col-span-2 md:col-span-1 md:col-start-7"><label class="field-label !text-[10px]">TOTAL</label><input type="text" class="ui-input block-total-price text-right !text-cyan-600 font-black !bg-slate-100 dark:!bg-slate-800" readonly value="0,00"></div>
+        </div>
     </div>
-</div>
+</template>
 
-<style>
-    .material-form label {
-        font-weight: 700;
-        color: #4e73df;
-        font-size: 0.75rem;
-        text-transform: uppercase;
-        margin-bottom: 0.25rem;
-    }
-</style>
+<template id="tpl-others">
+    <div class="ui-fieldset others-block animate-in">
+        <div class="ui-legend">Registro Personalizado __INDEX__
+            <button type="button" class="ml-3 text-slate-300 hover:text-rose-500 btn-remove-block"><i class="fas fa-trash-alt"></i></button>
+        </div>
+        <div class="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 rounded-lg">
+            <p class="text-[10px] font-bold text-blue-700 uppercase mb-1">Personalización</p>
+            <p class="text-[10px] text-blue-600">Marca los campos que necesites para este registro.</p>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6 p-4 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-100 dark:border-slate-800">
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="alias" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">ALIAS</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="batchNumber" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">Nº LOTE</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="expirationDate" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">CADUCIDAD</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="serialNumber" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">S/N</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="revisionDate" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-rose-500">PRÓX. REV.</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="purchaseDate" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">F. COMPRA</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="supplier" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">PROVEEDOR</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="brand" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">MARCA</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="model" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">MODELO</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="version" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">VERSIÓN</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="warranty" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">GARANTÍA</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="price" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">PRECIO €</span></label>
+            <label class="flex items-center gap-2 cursor-pointer"><input type="checkbox" value="image" class="w-4 h-4 rounded border-slate-300 text-cyan-600" onchange="window.toggleOtherField(this.closest('.others-block'), this.value, this.checked)"><span class="text-[10px] font-bold text-slate-600 dark:text-slate-400">IMAGEN</span></label>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 others-dynamic-fields mb-4"></div>
+        <textarea name="others_data[__INDEX__][notes]" class="ui-input !h-[38px] !text-[11px]" placeholder="Notas..."></textarea>
+    </div>
+</template>
+
+<script>
+    /**
+     * GLOBAL HELPERS
+     */
+    window.openSubfamilyModal = () => { document.getElementById('subfamilyModal').style.display = 'flex'; };
+    window.closeSubfamilyModal = () => { document.getElementById('subfamilyModal').style.display = 'none'; };
+    window.saveSubfamily = () => {
+        const input = document.getElementById('new-subfamily-name');
+        const name = input ? input.value : '';
+        if (!name) return;
+        const select = document.querySelector('select[name*="[subFamily]"]');
+        if (select) { select.add(new Option(name, name)); select.value = name; }
+        window.closeSubfamilyModal();
+        if (input) input.value = '';
+    };
+
+    window.previewGeneralPhoto = (input) => {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const p = document.getElementById('general-photo-preview');
+                const h = document.getElementById('general-photo-placeholder');
+                if (p && h) { p.querySelector('img').src = e.target.result; p.classList.remove('hidden'); h.classList.add('hidden'); }
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    window.handlePurchaseDateChange = (input) => {
+        const block = input.closest('.ui-fieldset');
+        const warranty = block.querySelector('.date-warranty-field');
+        if (input.value && warranty) {
+            const date = new Date(input.value);
+            date.setFullYear(date.getFullYear() + 2);
+            warranty.value = date.toISOString().split('T')[0];
+        }
+    };
+
+    window.updateRecordImageButton = (input) => {
+        const btn = input.previousElementSibling;
+        const preview = input.parentElement.querySelector('.record-image-preview');
+        if (btn && input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                if (preview) {
+                    preview.innerHTML = `<img src="${e.target.result}" class="w-full h-full object-cover">`;
+                }
+                btn.classList.remove('btn-outline'); btn.classList.add('btn-cyan');
+                const span = btn.querySelector('span'); if (span) span.textContent = 'LISTO';
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    };
+
+    window.applyMask = (input) => {
+        if (!input) return;
+        const isInt = input.classList.contains('mask-money-int');
+        input.addEventListener('input', (e) => {
+            let val = e.target.value.replace(/[^\d,]/g, '');
+            if (isInt) val = val.split(',')[0];
+            if (val !== '') {
+                let parts = val.split(',');
+                let integer = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                e.target.value = (!isInt && parts.length > 1) ? integer + ',' + parts[1].substring(0, 2) : integer;
+            }
+        });
+    };
+
+    window.toggleOtherField = (block, name, isChecked) => {
+        const container = block.querySelector('.others-dynamic-fields');
+        if (!container) return;
+        const idx = block.dataset.index;
+        if (isChecked) {
+            if (container.querySelector(`[data-field="${name}"]`)) return;
+            let html = '';
+            switch(name) {
+                case 'alias': html = `<div class="field-group !mb-0" data-field="alias"><label class="field-label">Alias / ID</label><input type="text" name="others_data[${idx}][alias]" class="ui-input"></div>`; break;
+                case 'batchNumber': html = `<div class="field-group !mb-0" data-field="batchNumber"><label class="field-label">Nº Lote</label><input type="text" name="others_data[${idx}][batchNumber]" class="ui-input"></div>`; break;
+                case 'expirationDate': html = `<div class="field-group !mb-0" data-field="expirationDate"><label class="field-label">Caducidad</label><input type="date" name="others_data[${idx}][expirationDate]" class="ui-input" min="${new Date().toISOString().split('T')[0]}"></div>`; break;
+                case 'serialNumber': html = `<div class="field-group !mb-0" data-field="serialNumber"><label class="field-label">Nº Serie</label><input type="text" name="others_data[${idx}][serialNumber]" class="ui-input"></div>`; break;
+                case 'revisionDate': html = `<div class="field-group !mb-0" data-field="revisionDate"><label class="field-label text-rose-500 font-bold">Próx. Rev</label><input type="date" name="others_data[${idx}][nextRevisionDate]" class="ui-input border-rose-200" min="${new Date().toISOString().split('T')[0]}"></div>`; break;
+                case 'purchaseDate': html = `<div class="field-group !mb-0" data-field="purchaseDate"><label class="field-label">F. Compra</label><input type="date" name="others_data[${idx}][purchaseDate]" class="ui-input date-purchase-trigger" onchange="window.handlePurchaseDateChange(this)"></div>`; break;
+                case 'warranty': html = `<div class="field-group !mb-0" data-field="warranty"><label class="field-label">F. Garantía</label><input type="date" name="others_data[${idx}][warrantyDate]" class="ui-input date-warranty-field"></div>`; break;
+                case 'supplier': html = `<div class="field-group !mb-0" data-field="supplier"><label class="field-label">Proveedor</label><input type="text" name="others_data[${idx}][supplier]" class="ui-input"></div>`; break;
+                case 'brand': html = `<div class="field-group !mb-0" data-field="brand"><label class="field-label">Marca</label><input type="text" name="others_data[${idx}][brand]" class="ui-input"></div>`; break;
+                case 'model': html = `<div class="field-group !mb-0" data-field="model"><label class="field-label">Modelo</label><input type="text" name="others_data[${idx}][model]" class="ui-input"></div>`; break;
+                case 'version': html = `<div class="field-group !mb-0" data-field="version"><label class="field-label">Versión</label><input type="text" name="others_data[${idx}][version]" class="ui-input"></div>`; break;
+                case 'price': html = `<div class="field-group !mb-0" data-field="price"><label class="field-label">Precio €</label><input type="text" name="others_data[${idx}][price]" class="ui-input mask-money text-right" placeholder="0,00"></div>`; break;
+                case 'image': html = `<div class="field-group !mb-0" data-field="image"><label class="field-label">Imagen</label><div class="flex items-center gap-2"><div class="record-image-preview w-10 h-10 rounded bg-slate-100 flex items-center justify-center overflow-hidden border border-slate-200"><i class="fas fa-image text-slate-300"></i></div><button type="button" class="ui-btn btn-outline w-full flex items-center justify-center gap-2" onclick="this.nextElementSibling.click()"><i class="fas fa-camera"></i><span class="text-[10px]">Subir</span></button><input type="file" name="others_data[${idx}][image]" class="hidden" onchange="window.updateRecordImageButton(this)"></div></div>`; break;
+            }
+            const div = document.createElement('div'); div.innerHTML = html; container.appendChild(div.firstElementChild);
+            if (name === 'price') window.applyMask(container.lastElementChild.querySelector('.mask-money'));
+        } else {
+            const f = container.querySelector(`[data-field="${name}"]`);
+            if (f) f.remove();
+        }
+    };
+
+    /**
+     * INITIALIZATION
+     */
+    (function() {
+        const init = () => {
+            const container = document.getElementById('dynamic-blocks-container');
+            const natureSel = document.querySelector('select[name*="[nature]"]');
+            const btnFooter = document.getElementById('btn-add-block-footer');
+            if (!container || !natureSel) { setTimeout(init, 100); return; }
+
+            const parseM = (v) => { if (!v) return 0; let s = v.toString().replace(/[^\d,]/g, '').replace(',', '.'); return parseFloat(s) || 0; };
+            const formatM = (v) => new Intl.NumberFormat('es-ES', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(v);
+
+            const recalculate = () => {
+                let totalStock = 0, totalInv = 0, totalPkgs = 0;
+                container.querySelectorAll('.ui-fieldset').forEach(block => {
+                    if (block.classList.contains('batch-block')) {
+                        const uInput = block.querySelector('[name*="[unitsPerPackage]"]');
+                        const nInput = block.querySelector('[name*="[numPackages]"]');
+                        let u = parseM(uInput?.value || '0');
+                        let n = parseM(nInput?.value || '0');
+                        let t = parseM(block.querySelector('.block-tarifa')?.value || '0');
+                        let d = parseM(block.querySelector('[name*="[supplierDiscount]"]')?.value || '0');
+                        let i = parseM(block.querySelector('.block-iva')?.value || '0');
+
+                        // Constraints
+                        if (u > 999999) { u = 999999; uInput.value = "999.999"; }
+                        if (u < 0) { u = 0; uInput.value = "0"; }
+                        if (n > 999999) { n = 999999; nInput.value = "999.999"; }
+                        if (n < 0) { n = 0; nInput.value = "0"; }
+                        if (d > 100) { d = 100; block.querySelector('[name*="[supplierDiscount]"]').value = "100,00"; }
+                        if (d < 0) { d = 0; block.querySelector('[name*="[supplierDiscount]"]').value = "0,00"; }
+                        if (i > 99) { i = 99; block.querySelector('.block-iva').value = "99,00"; }
+                        if (i < 0) { i = 0; block.querySelector('.block-iva').value = "0,00"; }
+                        if (t > 999999999.99) { t = 999999999.99; block.querySelector('.block-tarifa').value = "999.999.999,99"; }
+                        if (t < 0) { t = 0; block.querySelector('.block-tarifa').value = "0"; }
+
+                        const pIva = (t * (1 - (d/100))) * (1 + (i/100));
+                        const total = pIva * n;
+                        const pUd = u > 0 ? (pIva / u) : 0;
+
+                        if (block.querySelector('.block-unit-price')) block.querySelector('.block-unit-price').value = formatM(pUd);
+                        if (block.querySelector('.block-total-price')) block.querySelector('.block-total-price').value = formatM(total);
+                        totalInv += total; totalStock += (u * n); totalPkgs += n;
+                    } else if (block.classList.contains('unit-block')) {
+                        let p = parseM(block.querySelector('[name*="[purchasePrice]"]')?.value || '0');
+                        let d = parseM(block.querySelector('[name*="[supplierDiscount]"]')?.value || '0');
+                        let i = parseM(block.querySelector('.block-iva')?.value || '0');
+
+                        if (d > 100) { d = 100; block.querySelector('[name*="[supplierDiscount]"]').value = "100,00"; }
+                        if (d < 0) { d = 0; block.querySelector('[name*="[supplierDiscount]"]').value = "0"; }
+                        if (i > 99) { i = 99; block.querySelector('.block-iva').value = "99"; }
+                        if (i < 0) { i = 0; block.querySelector('.block-iva').value = "0"; }
+                        if (p > 999999999.99) { p = 999999999.99; block.querySelector('[name*="[purchasePrice]"]').value = "999.999.999,99"; }
+                        if (p < 0) { p = 0; block.querySelector('[name*="[purchasePrice]"]').value = "0"; }
+
+                        const total = (p * (1 - (d/100))) * (1 + (i/100));
+                        if (block.querySelector('.block-total-price')) block.querySelector('.block-total-price').value = formatM(total);
+                        totalInv += total; totalStock += 1; totalPkgs += 1;
+                    }
+                });
+                const sStock = document.getElementById('sidebar-total-stock');
+                const sPkgs = document.getElementById('sidebar-total-packages');
+                const sCost = document.getElementById('sidebar-total-cost-display');
+                if (sStock) sStock.textContent = totalStock;
+                if (sPkgs) sPkgs.value = totalPkgs;
+                if (sCost) sCost.value = formatM(totalInv);
+            };
+
+            const addBlock = (nature, data = null) => {
+                const v = (nature || '').toUpperCase();
+                let id = 'tpl-batch';
+                if (v.includes('EQUIPO')) id = 'tpl-unit';
+                else if (v.includes('OTROS')) id = 'tpl-others';
+                const tpl = document.getElementById(id); if (!tpl) return;
+                const idx = container.querySelectorAll('.ui-fieldset').length + 1;
+                const div = document.createElement('div');
+                div.innerHTML = tpl.innerHTML.replace(/__INDEX__/g, idx);
+                const row = div.firstElementChild; row.dataset.index = idx;
+
+                if (data) {
+                    for (const key in data) {
+                        const input = row.querySelector(`[name*="[${key}]"]`);
+                        if (input) input.value = input.classList.contains('mask-money') ? formatM(data[key]) : data[key];
+                    }
+                    if (data.photo || data.imagePath) {
+                        const preview = row.querySelector('.record-image-preview');
+                        if (preview) {
+                            const path = data.photo || data.imagePath;
+                            preview.innerHTML = `<img src="/uploads/materials/${path}" class="w-full h-full object-cover">`;
+                        }
+                    }
+                }
+
+                row.querySelector('.btn-remove-block')?.addEventListener('click', () => { row.remove(); recalculate(); });
+                row.querySelectorAll('.calc-trigger').forEach(input => {
+                    input.addEventListener('input', recalculate);
+                    if (input.classList.contains('mask-money') || input.classList.contains('mask-money-int')) window.applyMask(input);
+                });
+                container.appendChild(row); recalculate();
+            };
+
+            natureSel.addEventListener('change', () => { container.innerHTML = ''; addBlock(natureSel.value); });
+            if (btnFooter) btnFooter.addEventListener('click', () => addBlock(natureSel.value));
+            
+            // Initial data
+            const initialBatches = JSON.parse(container.dataset.initialBatches || '[]');
+            const initialUnits = JSON.parse(container.dataset.initialUnits || '[]');
+            if (initialBatches.length > 0) initialBatches.forEach(b => addBlock(natureSel.value, b));
+            else if (initialUnits.length > 0) initialUnits.forEach(u => addBlock(natureSel.value, u));
+            else if (container.children.length === 0) addBlock(natureSel.value);
+
+            const desc = document.getElementById('material-description');
+            if (desc) desc.addEventListener('input', function() { this.style.height = '46px'; this.style.height = (this.scrollHeight) + 'px'; });
+        };
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init); else init();
+    })();
+</script>
 {% endblock %}

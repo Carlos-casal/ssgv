@@ -9,20 +9,42 @@
     /* Base styles can remain if they are truly global */
 }
 
+/* Scrollbar Premium para el Menú */
+.no-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.no-scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.4); /* Más visible */
+    border-radius: 20px;
+}
+
+html.dark .no-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(59, 130, 246, 0.3);
+}
+
+.no-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(59, 130, 246, 0.5);
+}
+
 :root {
-    --bg-main: #FFFFFF;
-    --bg-card: #F9FAFB;
-    --text-primary: #111827;
-    --text-secondary: #4B5563;
-    --border-color: #e5e7eb;
+    --bg-main: #F1F5F9 !important; /* Gris Suave - Fondo Light */
+    --bg-card: #FFFFFF !important; /* Blanco - Tarjetas Light */
+    --text-primary: #111827 !important;
+    --text-secondary: #4B5563 !important;
+    --border-color: rgba(0, 0, 0, 0.1) !important;
 }
 
 html.dark {
-    --bg-main: #121926;
-    --bg-card: #1f2937;
-    --text-primary: #FFFFFF;
-    --text-secondary: #9CA3AF;
-    --border-color: rgba(255, 255, 255, 0.1);
+    --bg-main: #121926 !important; /* Negro/Azul - Fondo Dark */
+    --bg-card: #1f2937 !important; /* Gris Oscuro - Tarjetas Dark */
+    --text-primary: #FFFFFF !important;
+    --text-secondary: #9CA3AF !important;
+    --border-color: rgba(255, 255, 255, 0.1) !important;
     color-scheme: dark;
 }
 
@@ -37,9 +59,18 @@ html, body {
     color: var(--text-primary);
 }
 
+.dashboard-bg {
+    background-color: var(--bg-main) !important;
+}
+
+.dashboard-card {
+    background-color: var(--bg-card) !important;
+}
+
 .main-content {
     background-color: var(--bg-main) !important;
     color: var(--text-primary) !important;
+    min-height: 100vh;
 }
 
 .card, .bg-white {
@@ -189,7 +220,7 @@ html.dark #alertsDropdown i {
 .sidebar {
     width: 260px !important;
     transition: width 0.3s ease;
-    /* overflow: visible !important; */
+    background-color: var(--bg-main) !important;
 }
 
 .sidebar-collapsed {
@@ -215,7 +246,11 @@ html.dark #alertsDropdown i {
 }
 
 .sidebar-collapsed .sidebar-user-info {
-    display: none;
+    justify-content: center;
+}
+
+.sidebar-collapsed .sidebar-user-info div:last-child {
+    display: none !important;
 }
 
 .sidebar-collapsed .has-submenu > ul {
