@@ -135,7 +135,7 @@
         .date-badge {
             position: absolute;
             top: 0;
-            left: 1rem;
+            left: 1.25rem;
             background: #1e293b;
             color: #94a3b8;
             font-size: 9px;
@@ -146,11 +146,30 @@
             z-index: 20;
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: translateY(-50%);
+            text-transform: uppercase;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
         }
 
         .dark .date-badge {
-            background: #0f172a;
-            color: #64748b;
+            background: #1f2937;
+            color: #94a3b8;
+            border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .ui-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .ui-input-icon-right {
+            position: absolute;
+            right: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-dim);
+            pointer-events: none;
+            width: 16px;
+            height: 16px;
         }
     </style>
 {% endblock %}
@@ -256,45 +275,60 @@
                     <div class="ui-fieldset h-full">
                         <div class="ui-legend">Cronología y Ubicación</div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                            <div class="field-group !mb-0">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
+                            <div class="lg:col-span-6">
                                 <label class="field-label">Rango de Fechas <span>*</span></label>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="date-input-container">
                                         <span class="date-badge">INICIO</span>
-                                        {{ form_widget(form.startDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'startDateInput'}}) }}
+                                        <div class="ui-input-wrapper">
+                                            {{ form_widget(form.startDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'startDateInput'}}) }}
+                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                        </div>
                                     </div>
                                     <div class="date-input-container">
                                         <span class="date-badge">FIN</span>
-                                        {{ form_widget(form.endDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'endDateInput'}}) }}
+                                        <div class="ui-input-wrapper">
+                                            {{ form_widget(form.endDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'endDateInput'}}) }}
+                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                            <div class="field-group !mb-0">
+                            <div class="lg:col-span-6">
                                 <label class="field-label">Ubicación / Lugar <span>*</span></label>
-                                <div class="relative">
+                                <div class="ui-input-wrapper">
                                     <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                                     {{ form_widget(form.locality, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Dirección o punto de encuentro...'}}) }}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <div class="date-input-container">
                                 <span class="date-badge">HORA EN BASE</span>
-                                {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input'}}) }}
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input'}}) }}
+                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
+                                </div>
                             </div>
                             <div class="date-input-container">
                                 <span class="date-badge">HORA SALIDA</span>
-                                {{ form_widget(form.departureTime, {'attr': {'class': 'ui-input'}}) }}
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.departureTime, {'attr': {'class': 'ui-input'}}) }}
+                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
+                                </div>
                             </div>
                             <div class="date-input-container">
                                 <span class="date-badge">LÍMITE INSCRIPCION</span>
-                                {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input'}}) }}
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input'}}) }}
+                                    <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                </div>
                             </div>
                             <div class="field-group !mb-0">
                                 <label class="field-label">Límite Inscritos</label>
-                                <div class="relative">
+                                <div class="ui-input-wrapper">
                                     <i data-lucide="users" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
                                     {{ form_widget(form.maxAttendees, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Sin límite'}}) }}
                                 </div>
@@ -316,19 +350,6 @@
                             <div class="field-group !mb-0">
                                 <label class="field-label">Descripción Detallada</label>
                                 {{ form_widget(form.description, {'attr': {'class': 'ui-input ui-textarea', 'style': 'height: 250px;', 'data-service-form-target': 'descriptionInput'}}) }}
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                            <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-900/50 p-4 rounded-xl border border-slate-100 dark:border-slate-800">
-                                <label class="field-label !mb-0 flex-1">¿Requiere Avituallamiento?</label>
-                                <div class="form-check form-switch m-0 p-0 flex items-center">
-                                    {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input !mt-0'}}) }}
-                                </div>
-                            </div>
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Mensaje de WhatsApp (Opcional)</label>
-                                {{ form_widget(form.whatsappMessage, {'attr': {'class': 'ui-input !h-[46px] !py-3', 'placeholder': 'El mensaje se generará automáticamente si se deja vacío...'}}) }}
                             </div>
                         </div>
                     </div>
@@ -390,6 +411,13 @@
                                             {{ form_widget(form.hasFieldHospital, {'attr': {'class': 'form-check-input !mt-0'}}) }}
                                         </div>
                                     </div>
+
+                            <div class="flex justify-between items-center bg-orange-50/50 dark:bg-orange-900/20 p-2 px-3 rounded-lg border border-orange-100 dark:border-orange-900/30 mt-2">
+                                <span class="text-[11px] font-bold text-orange-700 dark:text-orange-400">Avituallamiento</span>
+                                <div class="form-check form-switch m-0 p-0">
+                                    {{ form_widget(form.hasProvisions, {'attr': {'class': 'form-check-input !mt-0'}}) }}
+                                </div>
+                            </div>
                                 </div>
                             </div>
                             <!-- Ambulancias -->

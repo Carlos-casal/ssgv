@@ -1,4 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import { Spanish } from 'flatpickr/dist/l10n/es.js';
 import tinymce from 'tinymce';
 import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
@@ -41,6 +44,7 @@ export default class extends Controller {
     async connect() {
         console.log("Service Form Controller: Connecting...");
         try {
+            this.initFlatpickr();
             this.kits = [];
             await this.fetchKits();
 
@@ -60,17 +64,30 @@ export default class extends Controller {
             // TinyMCE for Description
             const descriptionEl = this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description'));
             if (descriptionEl) {
+                const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
                 tinymce.init({
                     target: descriptionEl,
-                    height: 300,
+                    height: 400,
                     menubar: false,
                     skin: false,
                     content_css: false,
                     license_key: 'gpl',
-                    plugins: 'lists link',
-                    toolbar: 'undo redo | bold italic | bullist numlist | link',
+                    plugins: 'lists link autolink charmap emoticons wordcount table',
+                    toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table emoticons charmap | removeformat',
                     promotion: false,
                     branding: false,
+                    content_style: `
+                        body {
+                            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                            font-size: 14px;
+                            background-color: ${isDark ? '#111827' : '#fdfdfd'};
+                            color: ${isDark ? '#f8fafc' : '#111827'};
+                            padding: 1.5rem;
+                            line-height: 1.6;
+                        }
+                        body::placeholder { color: #64748b; }
+                        p { margin-bottom: 1rem; }
+                    `,
                     setup: (editor) => {
                         editor.on('change', () => {
                             editor.save();
@@ -152,6 +169,49 @@ export default class extends Controller {
     disconnect() {
         if (this.hasDescriptionInputTarget) {
             tinymce.remove(this.descriptionInputTarget);
+        }
+        this.flatpickrInstances?.forEach(fp => fp.destroy());
+    }
+
+    initFlatpickr() {
+        const commonConfig = {
+            locale: Spanish,
+            dateFormat: "Y-m-d H:i",
+            enableTime: true,
+            time_24hr: true,
+            allowInput: true,
+            disableMobile: "true"
+        };
+
+        const dateInputs = [
+            this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_form_startDate'),
+            this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_form_endDate'),
+            document.getElementById('service_form_timeAtBase'),
+            document.getElementById('service_form_departureTime')
+        ];
+
+        this.flatpickrInstances = [];
+        dateInputs.forEach(input => {
+            if (input) {
+                // Use the type to decide if it's date-time or just time
+                const config = { ...commonConfig };
+                if (input.id.includes('timeAtBase') || input.id.includes('departureTime')) {
+                    config.noCalendar = true;
+                    config.dateFormat = "H:i";
+                }
+
+                this.flatpickrInstances.push(flatpickr(input, config));
+            }
+        });
+
+        // Registration limit is only date usually
+        const limitInput = document.getElementById('service_form_registrationLimitDate');
+        if (limitInput) {
+            this.flatpickrInstances.push(flatpickr(limitInput, {
+                locale: Spanish,
+                dateFormat: "Y-m-d",
+                allowInput: true
+            }));
         }
     }
 
