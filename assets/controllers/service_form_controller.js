@@ -1,6 +1,8 @@
 import { Controller } from '@hotwired/stimulus';
 import tinymce from 'tinymce';
+import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
+import 'tinymce/models/dom';
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.min.css';
 import 'tinymce/skins/content/default/content.min.css';
@@ -55,14 +57,35 @@ export default class extends Controller {
                 subcategorySelect.innerHTML = '<option value="">Selecciona primero un Tipo...</option>';
             }
 
+            // TinyMCE for Description
+            const descriptionEl = this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description'));
+            if (descriptionEl) {
+                tinymce.init({
+                    target: descriptionEl,
+                    height: 300,
+                    menubar: false,
+                    skin: false,
+                    content_css: false,
+                    license_key: 'gpl',
+                    plugins: 'lists link',
+                    toolbar: 'undo redo | bold italic | bullist numlist | link',
+                    promotion: false,
+                    branding: false,
+                    setup: (editor) => {
+                        editor.on('change', () => {
+                            editor.save();
+                        });
+                    }
+                });
+            }
+
             // Plain Textarea Logic (Matches Material Form)
-            const textareas = [
-                this.hasDescriptionInputTarget ? this.descriptionInputTarget : (document.getElementById('service_form_description') || document.getElementById('service_description')),
+            const plainTextareas = [
                 this.hasTasksInputTarget ? this.tasksInputTarget : (document.getElementById('service_form_tasks') || document.getElementById('service_tasks')),
                 document.getElementById('service_form_whatsappMessage') || document.getElementById('service_whatsappMessage')
             ];
 
-            textareas.forEach(el => {
+            plainTextareas.forEach(el => {
                 if (el) {
                     if (typeof tinymce !== 'undefined') tinymce.remove(el);
                     el.style.minHeight = '46px';

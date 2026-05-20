@@ -125,6 +125,33 @@
         .afluencia-baja { color: #16a34a !important; font-weight: 700; }
         .afluencia-media { color: #ea580c !important; font-weight: 700; }
         .afluencia-alta { color: #dc2626 !important; font-weight: 900; }
+
+        /* Date Range Styling */
+        .date-input-container {
+            position: relative;
+            padding-top: 0.5rem;
+        }
+
+        .date-badge {
+            position: absolute;
+            top: 0;
+            left: 1rem;
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 9px;
+            font-weight: 900;
+            padding: 2px 8px;
+            border-radius: 4px;
+            letter-spacing: 0.05em;
+            z-index: 20;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(-50%);
+        }
+
+        .dark .date-badge {
+            background: #0f172a;
+            color: #64748b;
+        }
     </style>
 {% endblock %}
 
@@ -232,14 +259,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                             <div class="field-group !mb-0">
                                 <label class="field-label">Rango de Fechas <span>*</span></label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div class="relative">
-                                        <span class="absolute top-0 left-0 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-tl-md rounded-br-md text-[9px] font-black text-slate-500 uppercase z-10">INICIO</span>
-                                        {{ form_widget(form.startDate, {'attr': {'class': 'ui-input !pt-4', 'data-service-form-target': 'startDateInput'}}) }}
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="date-input-container">
+                                        <span class="date-badge">INICIO</span>
+                                        {{ form_widget(form.startDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'startDateInput'}}) }}
                                     </div>
-                                    <div class="relative">
-                                        <span class="absolute top-0 left-0 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded-tl-md rounded-br-md text-[9px] font-black text-slate-500 uppercase z-10">FIN</span>
-                                        {{ form_widget(form.endDate, {'attr': {'class': 'ui-input !pt-4', 'data-service-form-target': 'endDateInput'}}) }}
+                                    <div class="date-input-container">
+                                        <span class="date-badge">FIN</span>
+                                        {{ form_widget(form.endDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'endDateInput'}}) }}
                                     </div>
                                 </div>
                             </div>
@@ -253,16 +280,16 @@
                         </div>
 
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Hora en Base <span>*</span></label>
+                            <div class="date-input-container">
+                                <span class="date-badge">HORA EN BASE</span>
                                 {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input'}}) }}
                             </div>
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Hora Salida <span>*</span></label>
+                            <div class="date-input-container">
+                                <span class="date-badge">HORA SALIDA</span>
                                 {{ form_widget(form.departureTime, {'attr': {'class': 'ui-input'}}) }}
                             </div>
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Límite Inscripción <span>*</span></label>
+                            <div class="date-input-container">
+                                <span class="date-badge">LÍMITE INSCRIPCION</span>
                                 {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input'}}) }}
                             </div>
                             <div class="field-group !mb-0">
@@ -403,13 +430,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <div class="bg-white/80 dark:bg-slate-950/80 backdrop-blur-md border-t border-slate-200 dark:border-slate-800 p-6 mt-12 -mx-6 mb-[-2rem] sticky bottom-0 z-[100]">
-        <div class="max-w-[1750px] mx-auto flex justify-end gap-4">
-            <button type="button" data-action="click->service-form#submitForm" class="ui-btn btn-cyan">GUARDAR SERVICIO</button>
-            <a href="{{ path('app_services_list') }}" class="ui-btn btn-dark">CANCELAR</a>
         </div>
     </div>
 
