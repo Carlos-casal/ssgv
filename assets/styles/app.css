@@ -218,21 +218,43 @@ html.dark #alertsDropdown i {
 
 /* Sidebar - Clases de utilidad se encargan del layout */
 .sidebar {
-    width: 260px !important;
-    transition: width 0.3s ease;
+    width: 260px;
+    transition: width 0.3s ease, transform 0.3s ease;
     background-color: var(--bg-main) !important;
 }
 
 .sidebar-collapsed {
-    width: 80px !important;
+    width: 80px;
 }
 
+/* Ocultar texto en sidebar contraído */
 .sidebar-collapsed .sidebar-text,
 .sidebar-collapsed .sidebar-header-text,
 .sidebar-collapsed .sidebar-section-title,
 .sidebar-collapsed .sidebar-header-container,
 .sidebar-collapsed .sidebar-user-info p {
     display: none !important;
+}
+
+/* Soporte Móvil (Responsive Extremo) */
+@media (max-width: 768px) {
+    .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        z-index: 50;
+        box-shadow: 10px 0 30px rgba(0,0,0,0.1);
+    }
+
+    .sidebar-collapsed {
+        transform: translateX(-100%);
+        width: 260px; /* Mantener ancho completo cuando está visible pero "contraído" significa oculto en móvil */
+    }
+
+    .sidebar-collapsed-content {
+        margin-left: 0 !important;
+    }
 }
 
 .sidebar-collapsed .sidebar-item {

@@ -3,6 +3,12 @@
 {% block body %}
 {% block page_title %}{% endblock %}
 <div class="flex h-screen w-full overflow-hidden m-0 p-0" data-controller="sidebar" data-sidebar-collapsed-value="false">
+    <!-- Mobile Toggle Button -->
+    <button data-action="click->sidebar#toggleCollapse"
+            class="hidden max-md:flex fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl z-[60] items-center justify-center hover:bg-blue-700 transition-all active:scale-95">
+        <i data-lucide="menu" class="w-6 h-6" data-sidebar-target="mobileIcon"></i>
+    </button>
+
     <!-- Sidebar -->
     {% include 'layout/sidebar.html.twig' %}
     

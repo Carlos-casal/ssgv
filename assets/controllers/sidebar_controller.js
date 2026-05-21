@@ -1,7 +1,7 @@
 import { Controller } from '@hotwired/stimulus';
 
 export default class extends Controller {
-    static targets = ["sidebar", "content", "submenu", "toggleIcon"];
+    static targets = ["sidebar", "content", "submenu", "toggleIcon", "mobileIcon"];
     static values = {
         collapsed: Boolean
     }
@@ -10,8 +10,32 @@ export default class extends Controller {
         const stored = localStorage.getItem('sidebar-collapsed');
         if (stored !== null) {
             this.collapsedValue = stored === 'true';
+        } else {
+            // Auto-collapse on small screens if no preference is stored
+            this.collapsedValue = window.innerWidth < 1024;
         }
+
         this._updateState();
+
+        // Listen for resize to auto-collapse/expand
+        this.resizeObserver = new ResizeObserver(() => {
+            this._handleResize();
+        });
+        this.resizeObserver.observe(document.body);
+    }
+
+    disconnect() {
+        if (this.resizeObserver) {
+            this.resizeObserver.disconnect();
+        }
+    }
+
+    _handleResize() {
+        const shouldCollapse = window.innerWidth < 1024;
+        if (shouldCollapse !== this.collapsedValue) {
+            this.collapsedValue = shouldCollapse;
+            this._updateState();
+        }
     }
 
     toggleCollapse() {
@@ -58,6 +82,10 @@ export default class extends Controller {
                 this.toggleIconTarget.setAttribute('data-lucide', 'chevron-right');
             }
 
+            if (this.hasMobileIconTarget) {
+                this.mobileIconTarget.setAttribute('data-lucide', 'menu');
+            }
+
             this.submenuTargets.forEach(el => el.classList.remove('submenu-open'));
 
             const links = this.element.querySelectorAll('a[data-title]');
@@ -78,6 +106,10 @@ export default class extends Controller {
             if (this.hasToggleIconTarget) {
                 // Ensure the icon is chevron-left when expanded (to collapse)
                 this.toggleIconTarget.setAttribute('data-lucide', 'chevron-left');
+            }
+
+            if (this.hasMobileIconTarget) {
+                this.mobileIconTarget.setAttribute('data-lucide', 'x');
             }
 
             const links = this.element.querySelectorAll('a[data-title]');
