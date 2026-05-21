@@ -137,9 +137,9 @@
             top: 0;
             left: 1.25rem;
             background: #1e293b;
-            color: #94a3b8;
+            color: #f8fafc;
             font-size: 9px;
-            font-weight: 900;
+            font-weight: 800;
             padding: 2px 8px;
             border-radius: 4px;
             letter-spacing: 0.05em;
@@ -147,13 +147,29 @@
             border: 1px solid rgba(255, 255, 255, 0.1);
             transform: translateY(-50%);
             text-transform: uppercase;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.3);
         }
 
         .dark .date-badge {
             background: #1f2937;
             color: #94a3b8;
             border-color: rgba(255, 255, 255, 0.05);
+        }
+
+        /* Flatpickr Modern Customization */
+        .flatpickr-calendar {
+            background: #1f2937 !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3) !important;
+        }
+        .flatpickr-day.selected {
+            background: var(--accent-cyan) !important;
+            border-color: var(--accent-cyan) !important;
+        }
+        .flatpickr-months .flatpickr-month {
+            background: #1f2937 !important;
+            color: #f8fafc !important;
         }
 
         .ui-input-wrapper {
