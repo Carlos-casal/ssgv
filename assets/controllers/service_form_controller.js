@@ -1,11 +1,23 @@
 import { Controller } from '@hotwired/stimulus';
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
+import 'flatpickr/dist/themes/dark.css';
 import { Spanish } from 'flatpickr/dist/l10n/es.js';
 import tinymce from 'tinymce';
 import 'tinymce/icons/default';
 import 'tinymce/themes/silver';
 import 'tinymce/models/dom';
+
+// Plugins
+import 'tinymce/plugins/lists';
+import 'tinymce/plugins/link';
+import 'tinymce/plugins/autolink';
+import 'tinymce/plugins/charmap';
+import 'tinymce/plugins/emoticons';
+import 'tinymce/plugins/emoticons/js/emojis';
+import 'tinymce/plugins/wordcount';
+import 'tinymce/plugins/table';
+
 import 'tinymce/skins/ui/oxide/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.min.css';
 import 'tinymce/skins/content/default/content.min.css';
@@ -91,6 +103,10 @@ export default class extends Controller {
                     setup: (editor) => {
                         editor.on('change', () => {
                             editor.save();
+                        });
+                        editor.on('init', () => {
+                            const toolbar = editor.getContainer().querySelector('.tox-toolbar__group');
+                            if (toolbar) toolbar.style.border = 'none';
                         });
                     }
                 });
