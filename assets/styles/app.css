@@ -236,8 +236,8 @@ html.dark #alertsDropdown i {
     display: none !important;
 }
 
-/* Soporte Móvil (Responsive Extremo) */
-@media (max-width: 768px) {
+/* Soporte Móvil (Responsive Extremo) - Ahora desde 1023px */
+@media (max-width: 1023px) {
     .sidebar {
         position: fixed;
         left: 0;
@@ -250,6 +250,11 @@ html.dark #alertsDropdown i {
     .sidebar-collapsed {
         transform: translateX(-100%);
         width: 260px; /* Mantener ancho completo cuando está visible pero "contraído" significa oculto en móvil */
+    }
+
+    /* Ocultar botón de colapso interno en móvil/tablet ya que usamos el FAB */
+    .sidebar button[data-action="click->sidebar#toggleCollapse"] {
+        display: none !important;
     }
 
     .sidebar-collapsed-content {

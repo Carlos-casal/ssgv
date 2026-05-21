@@ -22,16 +22,32 @@ export default class extends Controller {
             this._handleResize();
         });
         this.resizeObserver.observe(document.body);
+
+        // Close sidebar when clicking outside on mobile
+        this._handleClickOutside = (event) => {
+            if (window.innerWidth < 1024 && !this.collapsedValue) {
+                const sidebar = this.sidebarTarget;
+                const toggleBtn = this.element.querySelector('button[data-action="click->sidebar#toggleCollapse"]');
+
+                if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                    this.collapsedValue = true;
+                    this._updateState();
+                }
+            }
+        };
+        document.addEventListener('mousedown', this._handleClickOutside);
     }
 
     disconnect() {
         if (this.resizeObserver) {
             this.resizeObserver.disconnect();
         }
+        document.removeEventListener('mousedown', this._handleClickOutside);
     }
 
     _handleResize() {
         const shouldCollapse = window.innerWidth < 1024;
+
         if (shouldCollapse !== this.collapsedValue) {
             this.collapsedValue = shouldCollapse;
             this._updateState();
