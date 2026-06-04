@@ -205,6 +205,54 @@ class ServiceController extends AbstractController
      * @param VolunteerServiceRepository $volunteerServiceRepository The repository for volunteer-service associations.
      * @return Response The response object, rendering the edit page or redirecting upon success.
      */
+    #[Route('/servicios/{id}/duplicate', name: 'app_service_duplicate', methods: ['POST'])]
+    public function duplicate(Service $service, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('duplicate' . $service->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_services_list');
+        }
+        $newService = clone $service;
+        $newService->setTitle($service->getTitle() . ' (Copia)');
+        $newService->setNumeration(null); // Clear numeration to avoid unique constraint
+        $newService->setSlug(null);
+
+        // Clear relationships that shouldn't be cloned directly
+        foreach ($newService->getAssistanceConfirmations() as $confirmation) {
+            $newService->removeAssistanceConfirmation($confirmation);
+        }
+        foreach ($newService->getVolunteerServices() as $vs) {
+            $newService->removeVolunteerService($vs);
+        }
+
+        $entityManager->persist($newService);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $newService->getId()]);
+    }
+
+    #[Route('/servicios/{id}/archive', name: 'app_service_archive', methods: ['POST'])]
+    public function archive(Service $service, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if (!$this->isCsrfTokenValid('archive' . $service->getId(), $request->request->get('_token'))) {
+            return $this->redirectToRoute('app_services_list');
+        }
+        $service->setArchived(true);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_services_list');
+    }
+
+    #[Route('/servicios/{id}/delete', name: 'app_service_delete', methods: ['POST'])]
+    public function delete(Service $service, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        if ($this->isCsrfTokenValid('delete' . $service->getId(), $request->request->get('_token'))) {
+            $entityManager->remove($service);
+            $entityManager->flush();
+        }
+
+        return $this->redirectToRoute('app_services_list');
+    }
+
     #[Route('/servicios/{id}/editar', name: 'app_service_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $volunteerServiceRepository): Response
     {
@@ -435,49 +483,114 @@ class ServiceController extends AbstractController
         return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencias']);
     }
 
+    #[Route('/assistance-confirmation/{id}/update-justification', name: 'app_assistance_confirmation_update_justification', methods: ['POST'])]
+    public function updateJustification(AssistanceConfirmation $confirmation, Request $request, EntityManagerInterface $entityManager): Response
+    {
+        $justification = $request->request->get('justification');
+        $confirmation->setJustification($justification);
+        $entityManager->flush();
+
+        return $this->redirectToRoute('app_service_edit', ['id' => $confirmation->getService()->getId(), '_fragment' => 'asistencia']);
+    }
+
+    #[Route('/service/{id}/assign-vehicle-crew', name: 'app_service_assign_vehicle_crew', methods: ['POST'])]
+    public function assignVehicleCrew(Service $service, Request $request, EntityManagerInterface $entityManager, VehicleRepository $vehicleRepository, AssistanceConfirmationRepository $confirmationRepository): Response
+    {
+        $payload = json_decode($request->getContent(), true);
+        if (!$payload) {
+            return $this->json(['success' => false, 'message' => 'Invalid JSON'], 400);
+        }
+
+        $vehicleId = $payload['vehicleId'] ?? null;
+        $role = $payload['role'] ?? null; // conductor, copiloto, acompañante
+        $volunteerId = $payload['volunteerId'] ?? null;
+
+        if (!$vehicleId || !$role) {
+            return $this->json(['success' => false, 'message' => 'Missing data'], 400);
+        }
+
+        $vehicle = $vehicleRepository->find($vehicleId);
+        if (!$vehicle) {
+            return $this->json(['success' => false, 'message' => 'Vehicle not found'], 404);
+        }
+
+        $volunteer = $volunteerId ? $entityManager->getRepository(Volunteer::class)->find($volunteerId) : null;
+
+        if (in_array($role, ['conductor', 'copiloto'])) {
+            // Clear previous assignments for this specific role on this vehicle
+            $previous = $confirmationRepository->findBy(['service' => $service, 'assignedVehicle' => $vehicle, 'vehicleRole' => $role]);
+            foreach ($previous as $prev) {
+                $prev->setAssignedVehicle(null);
+                $prev->setVehicleRole(null);
+            }
+
+            if ($volunteer) {
+                $confirmation = $confirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+                if ($confirmation) {
+                    $confirmation->setAssignedVehicle($vehicle);
+                    $confirmation->setVehicleRole($role);
+                }
+            }
+        } else {
+            // Acompañante logic
+            if ($volunteer) {
+                $confirmation = $confirmationRepository->findOneBy(['service' => $service, 'volunteer' => $volunteer]);
+                if ($confirmation) {
+                    if ($payload['unassign'] ?? false) {
+                        $confirmation->setAssignedVehicle(null);
+                        $confirmation->setVehicleRole(null);
+                    } else {
+                        $confirmation->setAssignedVehicle($vehicle);
+                        $confirmation->setVehicleRole($role);
+                    }
+                }
+            }
+        }
+
+        $entityManager->flush();
+        return $this->json(['success' => true]);
+    }
+
     /**
-     * Toggles whether a volunteer is responsible for managing clock-in/out records for a service.
-     * Ensures that only one volunteer can be responsible at a time.
-     *
-     * @param Request $request The request object.
-     * @param AssistanceConfirmation $confirmation The assistance confirmation of the volunteer.
-     * @param EntityManagerInterface $entityManager The entity manager.
-     * @param AssistanceConfirmationRepository $assistanceConfirmationRepository The repository for assistance confirmations.
-     * @return Response A redirection to the service edit page.
+     * Toggles a specific role for a volunteer in a service.
      */
-    #[Route('/assistance-confirmation/{id}/toggle-responsible', name: 'app_assistance_confirmation_toggle_responsible', methods: ['POST'])]
-    public function toggleFichajeResponsible(Request $request, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository): Response
+    #[Route('/assistance-confirmation/{id}/toggle-role/{role}', name: 'app_assistance_confirmation_toggle_role', methods: ['POST'])]
+    public function toggleRole(string $role, AssistanceConfirmation $confirmation, EntityManagerInterface $entityManager, AssistanceConfirmationRepository $assistanceConfirmationRepository, Request $request): Response
     {
         $service = $confirmation->getService();
         $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
 
-        if (!$this->isCsrfTokenValid('toggle-responsible'.$confirmation->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('toggle-role'.$confirmation->getId(), $request->request->get('_token'))) {
             $this->addFlash('error', 'Token CSRF inválido.');
             return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
         }
 
-        $isCurrentlyResponsible = $confirmation->isFichajeResponsible();
-
-        // If we are about to make this user responsible, we must first ensure no one else is.
-        if (!$isCurrentlyResponsible) {
-            $currentResponsible = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'isFichajeResponsible' => true]);
-            if ($currentResponsible && $currentResponsible !== $confirmation) {
-                $currentResponsible->setFichajeResponsible(false);
-            }
-        }
-
-        // Toggle the state for the selected user
-        $confirmation->setFichajeResponsible(!$isCurrentlyResponsible);
-
-        if ($isCurrentlyResponsible) {
-            $this->addFlash('success', 'Se ha quitado la responsabilidad de fichaje al voluntario.');
-        } else {
-            $this->addFlash('success', 'Se ha asignado la responsabilidad de fichaje al voluntario.');
+        switch ($role) {
+            case 'responsible':
+                $isCurrentlyResponsible = $confirmation->isFichajeResponsible();
+                if (!$isCurrentlyResponsible) {
+                    $currentResponsible = $assistanceConfirmationRepository->findOneBy(['service' => $service, 'isFichajeResponsible' => true]);
+                    if ($currentResponsible && $currentResponsible !== $confirmation) {
+                        $currentResponsible->setFichajeResponsible(false);
+                    }
+                }
+                $confirmation->setFichajeResponsible(!$isCurrentlyResponsible);
+                break;
+            case 'sanitario':
+                $confirmation->setSanitario(!$confirmation->isSanitario());
+                break;
+            case 'socorrista':
+                $confirmation->setSocorrista(!$confirmation->isSocorrista());
+                break;
+            case 'conductor':
+                $confirmation->setConductor(!$confirmation->isConductor());
+                break;
         }
 
         $entityManager->flush();
+        $this->addFlash('success', 'Rol actualizado correctamente.');
 
-        return $this->redirectToRoute('app_service_edit', ['id' => $service->getId(), '_fragment' => 'asistencias']);
+        return $this->redirectToRoute('app_service_edit', ['id' => $service->getId()]);
     }
 
     /**

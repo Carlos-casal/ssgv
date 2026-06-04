@@ -102,114 +102,117 @@
                 <i data-lucide="users" class="w-4 h-4 inline me-2"></i> Asistencia ({{ service.assistanceConfirmations|length }})
             </button>
         </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="vehiculos-tab" data-bs-toggle="tab" data-bs-target="#vehiculos_dotacion" type="button" role="tab" aria-controls="vehiculos_dotacion" aria-selected="false">
+                <i data-lucide="truck" class="w-4 h-4 inline me-2"></i> Vehículos y Dotaciones
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="registro-tab" data-bs-toggle="tab" data-bs-target="#registro_partes" type="button" role="tab" aria-controls="registro_partes" aria-selected="false">
+                <i data-lucide="clipboard-list" class="w-4 h-4 inline me-2"></i> Registro y Partes
+            </button>
+        </li>
     </ul>
 
     <div class="tab-content" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
             <div class="row g-3">
-                <!-- COLUMNA IZQUIERDA: Identificación -->
-                <div class="col-lg-4">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-header-compact d-flex align-items-center">
                             <i data-lucide="info" class="w-4 h-4 text-blue-600 mr-2"></i>
-                            <span class="section-title">Datos Identificativos</span>
+                            <span class="section-title">Datos Identificativos y Ubicación</span>
                         </div>
                         <div class="card-body p-3">
-                            <div class="mb-2">
-                                <label class="form-label-sm">Título del Servicio <span class="text-danger">*</span></label>
-                                {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError', 'data-service-form-target': 'title'}}) }}
-                                <div class="invalid-feedback hidden" id="error-service_title"></div>
+                            <div class="row g-2 mb-3">
+                                <div class="col-md-4">
+                                    <label class="form-label-sm">Título del Servicio <span class="text-danger">*</span></label>
+                                    {{ form_widget(form.title, {'attr': {'class': 'form-control form-control-sm font-bold', 'data-action': 'input->service-form#clearError', 'data-service-form-target': 'title'}}) }}
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label-sm">Nº de Registro (ID)</label>
+                                    {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-sm font-monospace bg-light', 'data-service-form-target': 'numeration'}}) }}
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label-sm">Ubicación / Lugar <span class="text-danger">*</span></label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i></span>
+                                        {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    </div>
+                                </div>
                             </div>
-
-                            <div class="mb-2">
-                                <label class="form-label-sm">Nº de Registro (ID)</label>
-                                {{ form_widget(form.numeration, {'attr': {'class': 'form-control form-control-sm font-monospace bg-light', 'data-service-form-target': 'numeration'}}) }}
-                            </div>
-
-                            <div class="row g-2 mb-2">
-                                <div class="col-6">
+                            <div class="row g-2">
+                                <div class="col-md-3">
                                     <label class="form-label-sm">Tipo <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
                                         {{ form_widget(form.type, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateCategories', 'data-service-form-target': 'typeSelect'}}) }}
-                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
-                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openTypeModal"><i data-lucide="plus" class="w-3 h-3"></i></button>
                                     </div>
                                 </div>
-                                <div class="col-6">
+                                <div class="col-md-3">
                                     <label class="form-label-sm">Categoría <span class="text-danger">*</span></label>
                                     <div class="input-group input-group-sm">
                                         {{ form_widget(form.subcategory, {'attr': {'class': 'form-select form-select-sm', 'data-service-form-target': 'subcategorySelect'}}) }}
-                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal">
-                                            <i data-lucide="plus" class="w-3 h-3"></i>
-                                        </button>
+                                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#openSubcategoryModal"><i data-lucide="plus" class="w-3 h-3"></i></button>
                                     </div>
                                 </div>
-                            </div>
-
-                            <div>
-                                <label class="form-label-sm">Afluencia Estimada <span class="text-danger">*</span></label>
-                                <div class="row g-2">
-                                    <div class="col-8">
-                                        {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
+                                <div class="col-md-4">
+                                    <label class="form-label-sm">Afluencia Estimada <span class="text-danger">*</span></label>
+                                    <div class="row g-2">
+                                        <div class="col-8">
+                                            {{ form_widget(form.afluencia, {'attr': {'class': 'form-select form-select-sm', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
+                                        </div>
+                                        <div class="col-4">
+                                            {{ form_widget(form.estimatedPeople, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Nº aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
+                                        </div>
                                     </div>
-                                    <div class="col-4">
-                                        {{ form_widget(form.estimatedPeople, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Nº aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
-                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <label class="form-label-sm">Límite Inscritos</label>
+                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'form-control form-control-sm', 'placeholder': 'Sin límite'}}) }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- COLUMNA DERECHA: Cronología y Ubicación -->
-                <div class="col-lg-8">
-                    <div class="card border-0 shadow-sm rounded-3 h-100">
+                <div class="col-12">
+                    <div class="card border-0 shadow-sm rounded-3">
                         <div class="card-header-compact d-flex align-items-center">
                             <i data-lucide="calendar" class="w-4 h-4 text-orange-600 mr-2"></i>
-                            <span class="section-title">Cronología y Ubicación</span>
+                            <span class="section-title">Cronología del Servicio</span>
                         </div>
                         <div class="card-body p-3">
-                            <div class="row g-3 mb-3">
-                                <div class="col-md-6">
+                            <div class="row g-2">
+                                <div class="col-md-4">
                                     <label class="form-label-sm">Rango de Fechas <span class="text-danger">*</span></label>
                                     <div class="row g-2">
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text bg-light text-xxs py-0 px-2">INICIO</span>
-                                        {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'startDateInput'}}) }}
+                                                {{ form_widget(form.startDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'startDateInput'}}) }}
                                             </div>
                                         </div>
                                         <div class="col-6">
                                             <div class="input-group input-group-sm">
                                                 <span class="input-group-text bg-light text-xxs py-0 px-2">FIN</span>
-                                        {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'endDateInput'}}) }}
+                                                {{ form_widget(form.endDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'endDateInput'}}) }}
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-md-6">
-                                    <label class="form-label-sm" for="service_locality">Ubicación / Lugar <span class="text-danger">*</span></label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text bg-white"><i data-lucide="map-pin" class="w-3 h-3"></i></span>
-                                        {{ form_widget(form.locality, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                    </div>
+                                <div class="col-md-2">
+                                    <label class="form-label-sm">Hora en Base (Regreso)</label>
+                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'timeAtBaseInput'}}) }}
                                 </div>
-                            </div>
-
-                            <div class="row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label-sm">Hora en Base <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'form-control form-control-sm'}}) }}
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label-sm">Hora Salida <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                <div class="col-md-2">
+                                    <label class="form-label-sm">Hora Salida</label>
+                                    {{ form_widget(form.departureTime, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'departureTimeInput'}}) }}
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label-sm">Límite Inscripción <span class="text-danger">*</span></label>
-                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm'}}) }}
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'form-control form-control-sm', 'data-service-form-target': 'registrationLimitInput'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -312,9 +315,7 @@
                                                 {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
                                                     <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
                                                         <span class="text-xxs font-bold text-slate-600">{{ form[field].vars.label }}</span>
-                                                        <div class="form-check form-switch m-0 p-0">
-                                                            {{ form_widget(form[field], {'attr': {'class': 'form-check-input ms-0'}}) }}
-                                                        </div>
+                                                        {{ form_widget(form[field], {'attr': {'class': 'form-control !h-6 !w-12 !p-0 text-center text-xxs', 'type': 'number', 'min': '0'}}) }}
                                                     </div>
                                                 {% endfor %}
                                             </div>
@@ -390,12 +391,25 @@
                                         {% set vs = fichajes[confirmation.volunteer.id] ?? null %}
                                         <div class="flex items-center justify-between">
                                             <div class="flex-grow">
-                                                <p class="text-sm font-bold text-slate-800 m-0">
-                                                    {% if confirmation.isFichajeResponsible %}
-                                                        <i data-lucide="star" class="h-3 w-3 inline-block text-yellow-500 fill-current mr-1"></i>
-                                                    {% endif %}
-                                                    {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
-                                                </p>
+                                                <div class="flex items-center gap-2 mb-1">
+                                                    <p class="text-sm font-bold text-slate-800 m-0">
+                                                        {{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}
+                                                    </p>
+                                                    <div class="flex items-center gap-1">
+                                                        <button type="button" class="btn p-0 border-0 {{ confirmation.isFichajeResponsible ? 'text-yellow-500' : 'text-slate-200' }}" title="Responsable">
+                                                            <i data-lucide="star" class="h-3 w-3 fill-current"></i>
+                                                        </button>
+                                                        <button type="button" class="btn p-0 border-0 {{ confirmation.isSanitario ? 'text-blue-500' : 'text-slate-200' }}" title="Sanitario">
+                                                            <i data-lucide="cross" class="h-3 w-3"></i>
+                                                        </button>
+                                                        <button type="button" class="btn p-0 border-0 {{ confirmation.isSocorrista ? 'text-orange-500' : 'text-slate-200' }}" title="Socorrista">
+                                                            <i data-lucide="life-buoy" class="h-3 w-3"></i>
+                                                        </button>
+                                                        <button type="button" class="btn p-0 border-0 {{ confirmation.isConductor ? 'text-green-500' : 'text-slate-200' }}" title="Conductor">
+                                                            <i data-lucide="truck" class="h-3 w-3"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
                                                 {% if vs %}
                                                     {% set totalMinutes = vs.calculateTotalDuration() %}
                                                     {% if totalMinutes > 0 %}
@@ -404,6 +418,13 @@
                                                         <span class="text-xxs font-bold text-slate-400 uppercase tracking-tight">{{ hours }}h {{ minutes }}m totales</span>
                                                     {% endif %}
                                                 {% endif %}
+                                                <div class="mt-2">
+                                                    <input type="text" name="justification" value="{{ confirmation.justification }}"
+                                                           placeholder="Motivo / Detalle horas..."
+                                                           class="form-control form-control-sm text-[10px] bg-slate-50 border-transparent focus:bg-white focus:border-slate-200 py-0 px-2 h-6 rounded-md"
+                                                           data-action="change->service-form#updateJustification"
+                                                           data-confirmation-id="{{ confirmation.id }}">
+                                                </div>
                                             </div>
                                             <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {% if vs %}
@@ -425,12 +446,46 @@
                                                         <i data-lucide="clock" class="h-3.5 w-3.5"></i>
                                                     </button>
                                                 {% endif %}
-                                                <form method="post" action="{{ path('app_assistance_confirmation_toggle_responsible', {'id': confirmation.id}) }}">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('toggle-responsible' ~ confirmation.id) }}">
-                                                    <button type="submit" class="p-1 rounded hover:bg-slate-100 text-slate-400 hover:text-yellow-500" title="Alternar Responsable">
+                                                <div class="dropdown">
+                                                    <button class="p-1 rounded hover:bg-slate-100 text-slate-400" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                         <i data-lucide="shield" class="h-3.5 w-3.5"></i>
                                                     </button>
-                                                </form>
+                                                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                                        <li><h6 class="dropdown-header text-xxs uppercase font-black">Asignar Rol</h6></li>
+                                                        <li>
+                                                            <form method="post" action="{{ path('app_assistance_confirmation_toggle_role', {'id': confirmation.id, 'role': 'responsible'}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-role' ~ confirmation.id) }}">
+                                                                <button type="submit" class="dropdown-item text-xs flex items-center gap-2">
+                                                                    <i data-lucide="star" class="w-3 h-3 {{ confirmation.isFichajeResponsible ? 'text-yellow-500 fill-current' : '' }}"></i> Responsable
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form method="post" action="{{ path('app_assistance_confirmation_toggle_role', {'id': confirmation.id, 'role': 'sanitario'}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-role' ~ confirmation.id) }}">
+                                                                <button type="submit" class="dropdown-item text-xs flex items-center gap-2">
+                                                                    <i data-lucide="cross" class="w-3 h-3 {{ confirmation.isSanitario ? 'text-blue-500' : '' }}"></i> Sanitario
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form method="post" action="{{ path('app_assistance_confirmation_toggle_role', {'id': confirmation.id, 'role': 'socorrista'}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-role' ~ confirmation.id) }}">
+                                                                <button type="submit" class="dropdown-item text-xs flex items-center gap-2">
+                                                                    <i data-lucide="life-buoy" class="w-3 h-3 {{ confirmation.isSocorrista ? 'text-orange-500' : '' }}"></i> Socorrista
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                        <li>
+                                                            <form method="post" action="{{ path('app_assistance_confirmation_toggle_role', {'id': confirmation.id, 'role': 'conductor'}) }}">
+                                                                <input type="hidden" name="_token" value="{{ csrf_token('toggle-role' ~ confirmation.id) }}">
+                                                                <button type="submit" class="dropdown-item text-xs flex items-center gap-2">
+                                                                    <i data-lucide="truck" class="w-3 h-3 {{ confirmation.isConductor ? 'text-green-500' : '' }}"></i> Conductor
+                                                                </button>
+                                                            </form>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                                 <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Eliminar asistencia?');">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
                                                     <button type="submit" class="p-1 rounded hover:bg-red-50 text-red-400" title="Eliminar">
@@ -493,6 +548,124 @@
                 </div>
             </div>
         </div>
+
+        <!-- TAB 4: VEHICULOS Y DOTACION -->
+        <div class="tab-pane fade" id="vehiculos_dotacion" role="tabpanel" aria-labelledby="vehiculos-tab">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center">
+                    <i data-lucide="truck" class="w-5 h-5 mr-2 text-blue-600"></i> Vehículos y Dotaciones
+                </h3>
+                <div class="row g-4">
+                    {% for vehicle in service.vehicles %}
+                        <div class="col-md-6 col-lg-4">
+                            <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 h-100">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-black text-slate-900">{{ vehicle.alias ?: vehicle.model }}</span>
+                                        <span class="text-xxs font-mono text-slate-400">{{ vehicle.licensePlate }}</span>
+                                    </div>
+                                    <i data-lucide="truck" class="w-5 h-5 text-slate-300"></i>
+                                </div>
+                                <div class="space-y-3">
+                                    <div class="field-group !mb-0">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1 block">Conductor</label>
+                                        <select class="form-select form-select-sm rounded-lg border-slate-200"
+                                                data-action="change->service-form#assignVehicleCrew"
+                                                data-vehicle-id="{{ vehicle.id }}"
+                                                data-role="conductor">
+                                            <option value="">Selecciona...</option>
+                                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                                <option value="{{ confirmation.volunteer.id }}" {{ (confirmation.assignedVehicle == vehicle and confirmation.vehicleRole == 'conductor') ? 'selected' : '' }}>
+                                                    {{ confirmation.volunteer.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="field-group !mb-0">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1 block">Copiloto</label>
+                                        <select class="form-select form-select-sm rounded-lg border-slate-200"
+                                                data-action="change->service-form#assignVehicleCrew"
+                                                data-vehicle-id="{{ vehicle.id }}"
+                                                data-role="copiloto">
+                                            <option value="">Selecciona...</option>
+                                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                                <option value="{{ confirmation.volunteer.id }}" {{ (confirmation.assignedVehicle == vehicle and confirmation.vehicleRole == 'copiloto') ? 'selected' : '' }}>
+                                                    {{ confirmation.volunteer.name }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="field-group !mb-0">
+                                        <label class="text-[10px] font-black uppercase text-slate-400 tracking-wider mb-1 block">Acompañantes</label>
+                                        <div class="bg-white border border-slate-200 rounded-lg p-2 max-h-32 overflow-y-auto">
+                                            {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'attending') %}
+                                                <div class="form-check text-xxs">
+                                                    <input class="form-check-input" type="checkbox"
+                                                           value="{{ confirmation.volunteer.id }}"
+                                                           id="v_{{ vehicle.id }}_{{ confirmation.id }}"
+                                                           data-action="change->service-form#assignVehicleCrew"
+                                                           data-vehicle-id="{{ vehicle.id }}"
+                                                           data-role="acompañante"
+                                                           {{ (confirmation.assignedVehicle == vehicle and confirmation.vehicleRole == 'acompañante') ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="v_{{ vehicle.id }}_{{ confirmation.id }}">
+                                                        {{ confirmation.volunteer.name }}
+                                                    </label>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="col-12">
+                            <div class="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-300">
+                                <i data-lucide="truck" class="w-12 h-12 text-slate-300 mx-auto mb-4"></i>
+                                <p class="text-slate-500 font-medium">No hay vehículos asignados a este servicio.</p>
+                                <p class="text-xs text-slate-400">Puedes asignarlos en la pestaña de 'Recursos y Dotación'.</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: REGISTRO Y PARTES -->
+        <div class="tab-pane fade" id="registro_partes" role="tabpanel" aria-labelledby="registro-tab">
+            <div class="card border-0 shadow-sm rounded-3 p-4">
+                <ul class="nav nav-pills mb-4 gap-2" id="partes-tab" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all" id="intervenciones-tab" data-bs-toggle="pill" data-bs-target="#intervenciones" type="button" role="tab">Intervenciones</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all" id="incendios-tab" data-bs-toggle="pill" data-bs-target="#incendios" type="button" role="tab">Incendios</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link px-4 py-2 rounded-xl font-bold text-xs uppercase transition-all" id="comms-tab" data-bs-toggle="pill" data-bs-target="#comms" type="button" role="tab">Comunicaciones</button>
+                    </li>
+                </ul>
+                <div class="tab-content border-top pt-4">
+                    <div class="tab-pane fade show active" id="intervenciones" role="tabpanel">
+                        <div class="text-center py-8">
+                            <i data-lucide="activity" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                            <p class="text-slate-400 text-sm font-medium italic">Estructura preparada para Intervenciones</p>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="incendios" role="tabpanel">
+                        <div class="text-center py-8">
+                            <i data-lucide="flame" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                            <p class="text-slate-400 text-sm font-medium italic">Estructura preparada para Incendios</p>
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="comms" role="tabpanel">
+                        <div class="text-center py-8">
+                            <i data-lucide="radio" class="w-8 h-8 text-slate-300 mx-auto mb-2"></i>
+                            <p class="text-slate-400 text-sm font-medium italic">Estructura preparada para Comunicaciones</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Hidden Fields -->
@@ -507,7 +680,18 @@
     <div class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;" data-service-form-target="modal">
         <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full mx-4 relative">
             <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <h3 class="text-2xl font-bold text-slate-900">Añadir Voluntarios</h3>
+                <div class="flex flex-col flex-1">
+                    <h3 class="text-2xl font-bold text-slate-900">Añadir Voluntarios</h3>
+                    <button type="button" data-action="click->service-form#triggerFicharTodos" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center mt-1">
+                        <i data-lucide="check-square" class="w-3 h-3 mr-1"></i> Fichar a todos simultáneamente
+                    </button>
+                </div>
+                <div class="flex-1 px-4">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="attendance_user_search" data-service-form-target="userSearchInput" data-action="keyup->service-form#search input->service-form#clearError" placeholder="Búsqueda predictiva..." class="form-control pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white text-sm">
+                    </div>
+                </div>
                 <button type="button" data-action="click->service-form#closeModal" class="text-slate-400 hover:text-slate-600 p-2">
                     <i data-lucide="x" class="h-6 w-6"></i>
                 </button>
@@ -521,12 +705,6 @@
                     <option value="not_attends">Confirmar Baja</option>
                 </select>
                 <div class="invalid-feedback hidden" id="error-attendance_status_select"></div>
-            </div>
-
-            <div class="mb-4 relative">
-                <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                <input type="text" id="attendance_user_search" data-service-form-target="userSearchInput" data-action="keyup->service-form#search input->service-form#clearError" placeholder="Buscar voluntario por nombre..." class="form-control pl-10 rounded-xl border-slate-200">
-                <div class="invalid-feedback hidden" id="error-attendance_user_search"></div>
             </div>
 
             <div data-service-form-target="userList" class="space-y-1 mb-6 border border-slate-100 rounded-xl p-3 max-h-60 overflow-y-auto bg-slate-50 shadow-inner">

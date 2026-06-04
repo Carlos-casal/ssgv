@@ -49,6 +49,9 @@ export default class extends Controller {
         "numeration",
         "startDateInput",
         "endDateInput",
+        "timeAtBaseInput",
+        "departureTimeInput",
+        "registrationLimitInput",
         "afluenciaSelect",
         "estimatedPeopleInput"
     ];
@@ -200,34 +203,112 @@ export default class extends Controller {
         };
 
         const dateInputs = [
-            this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_form_startDate'),
-            this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_form_endDate'),
-            document.getElementById('service_form_timeAtBase'),
-            document.getElementById('service_form_departureTime')
+            { target: 'startDateInput', id: 'service_form_startDate' },
+            { target: 'endDateInput', id: 'service_form_endDate' },
+            { target: 'timeAtBaseInput', id: 'service_form_timeAtBase', isTime: true },
+            { target: 'departureTimeInput', id: 'service_form_departureTime', isTime: true },
+            { target: 'registrationLimitInput', id: 'service_form_registrationLimitDate' }
         ];
 
         this.flatpickrInstances = [];
-        dateInputs.forEach(input => {
+        dateInputs.forEach(item => {
+            const input = this[`has${item.target.charAt(0).toUpperCase() + item.target.slice(1)}Target`]
+                ? this[`${item.target}Target`]
+                : document.getElementById(item.id);
+
             if (input) {
-                // Use the type to decide if it's date-time or just time
                 const config = { ...commonConfig };
-                if (input.id.includes('timeAtBase') || input.id.includes('departureTime')) {
+                if (item.isTime) {
                     config.noCalendar = true;
                     config.dateFormat = "H:i";
                 }
 
-                this.flatpickrInstances.push(flatpickr(input, config));
+                const fp = flatpickr(input, config);
+                this.flatpickrInstances.push(fp);
+
+                // Add validation listener
+                input.addEventListener('change', () => this.validateDateRange());
             }
         });
+    }
 
-        // Registration limit is only date usually
-        const limitInput = document.getElementById('service_form_registrationLimitDate');
-        if (limitInput) {
-            this.flatpickrInstances.push(flatpickr(limitInput, {
-                locale: Spanish,
-                dateFormat: "Y-m-d",
-                allowInput: true
-            }));
+    validateDateRange() {
+        const start = this.hasStartDateInputTarget ? this.startDateInputTarget.value : null;
+        const end = this.hasEndDateInputTarget ? this.endDateInputTarget.value : null;
+        const baseReturn = this.hasTimeAtBaseInputTarget ? this.timeAtBaseInputTarget.value : null;
+        const departure = this.hasDepartureTimeInputTarget ? this.departureTimeInputTarget.value : null;
+        const regLimit = this.hasRegistrationLimitInputTarget ? this.registrationLimitInputTarget.value : null;
+
+        if (!start || !end) return;
+
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+
+        // 1. Fecha/Hora Fin: No puede ser inferior a la Fecha/Hora de Inicio
+        if (endDate < startDate) {
+            this.showSwalError('La fecha de fin no puede ser anterior a la de inicio.');
+            this.endDateInputTarget.value = start;
+            return;
+        }
+
+        // Helper to check if a time (HH:mm) is within the [start, end] range
+        // For simplicity, we assume the time refers to the startDate day if not specified
+        const isTimeInRange = (timeStr) => {
+            if (!timeStr) return true;
+            const [hours, minutes] = timeStr.split(':').map(Number);
+            const checkDate = new Date(startDate);
+            checkDate.setHours(hours, minutes, 0, 0);
+            return checkDate >= startDate && checkDate <= endDate;
+        };
+
+        // 2. Hora Base (Salida): No puede ser anterior a la Hora de Inicio ni posterior a la Hora de Fin
+        if (departure && !isTimeInRange(departure)) {
+            this.showSwalError('La hora de salida debe estar dentro del rango de inicio y fin del servicio.');
+            this.departureTimeInputTarget.value = '';
+        }
+
+        // 3. Hora en Base (Regreso): No puede ser anterior a la Hora de Base (Salida) ni salirse del rango general
+        if (baseReturn) {
+            if (!isTimeInRange(baseReturn)) {
+                this.showSwalError('La hora de regreso a base debe estar dentro del rango de inicio y fin del servicio.');
+                this.timeAtBaseInputTarget.value = '';
+            } else if (departure) {
+                const [dH, dM] = departure.split(':').map(Number);
+                const [rH, rM] = baseReturn.split(':').map(Number);
+                if (rH < dH || (rH === dH && rM < dM)) {
+                    this.showSwalError('La hora de regreso no puede ser anterior a la hora de salida.');
+                    this.timeAtBaseInputTarget.value = departure;
+                }
+            }
+        }
+
+        // 4. Límite de Inscripción: No puede ser superior a la Hora de Fin del servicio
+        if (regLimit) {
+            const limitDate = new Date(regLimit);
+            // We compare only dates if regLimit is just Y-m-d
+            const endOnlyDate = new Date(endDate);
+            endOnlyDate.setHours(0, 0, 0, 0);
+            if (limitDate > endOnlyDate) {
+                this.showSwalError('El límite de inscripción no puede ser posterior al fin del servicio.');
+                this.registrationLimitInputTarget.value = end.split(' ')[0];
+            }
+        }
+    }
+
+    showSwalError(message, title = 'Error de validación') {
+        if (window.Swal) {
+            Swal.fire({
+                title: title,
+                text: message,
+                icon: 'error',
+                confirmButtonText: 'Aceptar',
+                customClass: {
+                    confirmButton: 'ui-btn btn-cyan',
+                    popup: 'rounded-2xl border-none shadow-2xl dark:bg-slate-800 dark:text-white'
+                }
+            });
+        } else {
+            alert(message);
         }
     }
 
@@ -924,7 +1005,7 @@ export default class extends Controller {
 
         const typeId = typeSelect.value;
         if (!typeId) {
-            this.showToast('Por favor, selecciona primero un Tipo de Servicio.');
+            this.showSwalError('Por favor, selecciona primero un Tipo de Servicio.', 'Atención');
             return;
         }
 
@@ -1190,9 +1271,22 @@ export default class extends Controller {
     }
 
     showToast(message) {
-        // Fallback to alert for visibility if no toast system is integrated
-        alert(message);
-        console.log('Toast:', message);
+        if (window.Swal) {
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                icon: 'success',
+                title: message,
+                customClass: {
+                    popup: 'rounded-xl shadow-lg border-none'
+                }
+            });
+        } else {
+            console.log('Toast:', message);
+        }
     }
 
     // Afluencia
@@ -1375,6 +1469,12 @@ export default class extends Controller {
         }
     }
 
+    triggerFicharTodos() {
+        this.closeModal();
+        const ficharTodosBtn = document.getElementById('fichar-todos-btn');
+        if (ficharTodosBtn) ficharTodosBtn.click();
+    }
+
     async saveAttendance() {
         // Clear previous errors in modal
         this.clearAllModalErrors(this.modalTarget);
@@ -1407,6 +1507,64 @@ export default class extends Controller {
             }
         } catch (error) {
             console.error('Error saving attendance:', error);
+        }
+    }
+
+    async updateJustification(event) {
+        const input = event.currentTarget;
+        const confirmationId = input.dataset.confirmationId;
+        const justification = input.value;
+        const serviceId = this.element.dataset.serviceId;
+
+        try {
+            const response = await fetch(`/assistance-confirmation/${confirmationId}/update-justification`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `justification=${encodeURIComponent(justification)}`
+            });
+            if (response.ok) {
+                console.log("Justification updated");
+            }
+        } catch (error) {
+            console.error('Error updating justification:', error);
+        }
+    }
+
+    async assignVehicleCrew(event) {
+        const select = event.currentTarget;
+        const vehicleId = select.dataset.vehicleId;
+        const role = select.dataset.role;
+        const serviceId = this.element.dataset.serviceId;
+
+        let volunteerId = null;
+        let unassign = false;
+        if (select.type === 'checkbox') {
+            volunteerId = select.value;
+            unassign = !select.checked;
+        } else {
+            volunteerId = select.value;
+        }
+
+        try {
+            const response = await fetch(`/service/${serviceId}/assign-vehicle-crew`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    vehicleId: vehicleId,
+                    role: role,
+                    volunteerId: volunteerId,
+                    unassign: unassign
+                })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                // If it's a dropdown (conductor/copiloto), we might want to reload to reflect exclusivity if multiple vehicles
+                // Or just show a toast
+                console.log("Crew assigned successfully");
+            }
+        } catch (error) {
+            console.error('Error assigning vehicle crew:', error);
         }
     }
 }
