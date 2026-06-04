@@ -106,9 +106,14 @@
                                                 </li>
                                                 <li><hr class="dropdown-divider"></li>
                                                 <li>
-                                                    <form action="{{ path('app_service_delete', {id: service.id}) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este servicio?')">
+                                                    <form action="{{ path('app_service_delete', {id: service.id}) }}" method="POST"
+                                                          data-controller="confirm"
+                                                          data-confirm-text-value="¿Estás seguro de que deseas eliminar permanentemente este servicio?"
+                                                          data-confirm-title-value="Eliminar Servicio"
+                                                          data-confirm-confirm-button-text-value="Eliminar"
+                                                          data-confirm-icon-value="error">
                                                         <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ service.id) }}">
-                                                        <button type="submit" class="dropdown-item flex items-center gap-2 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 w-full text-start">
+                                                        <button type="button" data-action="click->confirm#confirm" class="dropdown-item flex items-center gap-2 py-2 text-red-600 hover:bg-red-50 dark:hover:bg-red-950 w-full text-start">
                                                             <i data-lucide="trash-2" class="w-4 h-4"></i> Eliminar
                                                         </button>
                                                     </form>

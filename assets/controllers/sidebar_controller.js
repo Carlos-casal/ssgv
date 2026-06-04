@@ -88,6 +88,17 @@ export default class extends Controller {
         const toggleBtn = document.getElementById('sidebar-toggle-btn');
         const links = this.element.querySelectorAll('a[data-bs-toggle="tooltip"], button[data-bs-toggle="tooltip"]');
 
+        // Cleanup existing tooltips to avoid ghost tooltips
+        links.forEach(link => {
+            const tooltip = bootstrap.Tooltip.getInstance(link);
+            if (tooltip) {
+                tooltip.hide();
+                // We update the delay to 0 for the toggle button so it feels more responsive if needed,
+                // but user asked for 2s general. However, toggle button usually shouldn't wait 2s if it's the main UI action.
+                // Actually, user said: "al hacer hover debe aparecer un tooltip". Didn't specify different delay for it.
+            }
+        });
+
         if (this.collapsedValue) {
             this.sidebarTarget.classList.add('sidebar-collapsed');
             this.sidebarTarget.classList.remove('w-64');

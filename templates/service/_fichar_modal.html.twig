@@ -50,9 +50,12 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="flex justify-end gap-4">
+            <div class="flex justify-end gap-4"
+                 data-controller="confirm"
+                 data-confirm-title-value="Confirmar Fichaje Grupal"
+                 data-confirm-text-value="¿Deseas registrar el fichaje para los voluntarios seleccionados?">
                 <button type="button" id="cancel-fichar-btn-bottom" class="px-4 py-2 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition-colors">Cancelar</button>
-                <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Guardar</button>
+                <button type="button" data-action="click->confirm#confirm" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">Guardar</button>
             </div>
         </form>
     </div>

@@ -11,19 +11,6 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class ComingSoonController extends AbstractController
 {
-    /**
-     * Renders the "coming soon" page for the services list.
-     *
-     * @return Response The response object.
-     */
-    #[Route('/servicios/listado', name: 'app_services_list')]
-    public function servicesList(): Response
-    {
-        return $this->render('common/coming_soon.html.twig', [
-            'title' => 'Listado de Servicios',
-            'current_section' => 'servicios-listado'
-        ]);
-    }
 
     /**
      * Renders the "coming soon" page for service reports.
