@@ -8,7 +8,9 @@ export default class extends Controller {
 
     connect() {
         const stored = localStorage.getItem('sidebar-collapsed');
-        if (stored !== null) {
+        this.isManual = stored !== null;
+
+        if (this.isManual) {
             this.collapsedValue = stored === 'true';
         } else {
             // Auto-collapse on small screens if no preference is stored
@@ -17,11 +19,14 @@ export default class extends Controller {
 
         this._updateState();
 
-        // Listen for resize to auto-collapse/expand
+        // Store current width to detect breakpoint crossing
+        this.lastWidth = window.innerWidth;
+
+        // Listen for resize to auto-collapse/expand only when crossing breakpoint
         this.resizeObserver = new ResizeObserver(() => {
             this._handleResize();
         });
-        this.resizeObserver.observe(document.body);
+        this.resizeObserver.observe(document.documentElement);
 
         // Close sidebar when clicking outside on mobile
         this._handleClickOutside = (event) => {
@@ -46,17 +51,35 @@ export default class extends Controller {
     }
 
     _handleResize() {
-        const shouldCollapse = window.innerWidth < 1200;
+        const currentWidth = window.innerWidth;
+        const wasBelow = this.lastWidth < 1200;
+        const isBelow = currentWidth < 1200;
 
-        if (shouldCollapse !== this.collapsedValue) {
-            this.collapsedValue = shouldCollapse;
+        // Only auto-change if we cross the breakpoint
+        if (wasBelow !== isBelow) {
+            // If going to mobile, always collapse (drawer mode)
+            if (isBelow) {
+                this.collapsedValue = true;
+            } else {
+                // If going to desktop, restore manual preference or default to expanded
+                const stored = localStorage.getItem('sidebar-collapsed');
+                if (stored !== null) {
+                    this.collapsedValue = stored === 'true';
+                } else {
+                    this.collapsedValue = false;
+                }
+            }
             this._updateState();
         }
+        this.lastWidth = currentWidth;
     }
 
     toggleCollapse() {
         this.collapsedValue = !this.collapsedValue;
-        localStorage.setItem('sidebar-collapsed', this.collapsedValue);
+        // Only save preference if we are in desktop mode
+        if (window.innerWidth >= 1200) {
+            localStorage.setItem('sidebar-collapsed', this.collapsedValue);
+        }
         this._updateState();
     }
 
@@ -112,9 +135,20 @@ export default class extends Controller {
             }
 
             if (toggleBtn) {
-                toggleBtn.setAttribute('title', 'Expandir barra lateral');
-                const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-                if (tooltip) tooltip.setContent({ '.tooltip-inner': 'Expandir barra lateral' });
+                const newTitle = 'Expandir barra lateral';
+                toggleBtn.setAttribute('title', newTitle);
+                toggleBtn.setAttribute('data-bs-original-title', '');
+
+                let tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (tooltip) {
+                    tooltip.dispose();
+                }
+
+                // Re-initialize after a short delay or just ensure attributes are clean
+                toggleBtn.setAttribute('data-bs-title', newTitle);
+                new bootstrap.Tooltip(toggleBtn, {
+                    delay: { "show": 2000, "hide": 100 }
+                });
             }
 
             if (this.hasMobileIconTarget) {
@@ -141,9 +175,19 @@ export default class extends Controller {
             }
 
             if (toggleBtn) {
-                toggleBtn.setAttribute('title', 'Contraer barra lateral');
-                const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-                if (tooltip) tooltip.setContent({ '.tooltip-inner': 'Contraer barra lateral' });
+                const newTitle = 'Contraer barra lateral';
+                toggleBtn.setAttribute('title', newTitle);
+                toggleBtn.setAttribute('data-bs-original-title', '');
+
+                let tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (tooltip) {
+                    tooltip.dispose();
+                }
+
+                toggleBtn.setAttribute('data-bs-title', newTitle);
+                new bootstrap.Tooltip(toggleBtn, {
+                    delay: { "show": 2000, "hide": 100 }
+                });
             }
 
             if (this.hasMobileIconTarget) {
