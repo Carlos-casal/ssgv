@@ -73,6 +73,12 @@ html, body {
     min-height: 100vh;
 }
 
+@media (max-width: 1199px) {
+    .main-content {
+        padding-top: 4rem !important;
+    }
+}
+
 .card, .bg-white {
     background-color: var(--bg-card) !important;
     border-color: var(--border-color) !important;
@@ -236,8 +242,8 @@ html.dark #alertsDropdown i {
     display: none !important;
 }
 
-/* Soporte Móvil (Responsive Extremo) - Ahora desde 1023px */
-@media (max-width: 1023px) {
+/* Soporte Móvil (Responsive Extremo) - Ahora desde 1200px */
+@media (max-width: 1199px) {
     .sidebar {
         position: fixed;
         left: 0;

@@ -3,10 +3,19 @@
 {% block body %}
 {% block page_title %}{% endblock %}
 <div class="flex h-screen w-full overflow-hidden m-0 p-0" data-controller="sidebar">
-    <!-- Mobile Toggle Button -->
+    <!-- Header Responsive Superior Izquierda -->
+    <div class="hidden max-[1199px]:flex fixed top-0 left-0 w-full h-16 bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 z-[55] items-center px-4">
+        <button data-action="click->sidebar#toggleCollapse"
+                class="w-10 h-10 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
+            <i data-lucide="menu" class="w-6 h-6" data-sidebar-target="mobileIcon"></i>
+        </button>
+        <span class="ml-4 font-black text-slate-900 dark:text-white tracking-tighter text-sm uppercase">PC GESTIÓN</span>
+    </div>
+
+    <!-- Mobile Toggle Button (FAB) - Oculto por requerimiento de reubicar navegación -->
     <button data-action="click->sidebar#toggleCollapse"
-            class="hidden max-[1023px]:flex fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl z-[60] items-center justify-center hover:bg-blue-700 transition-all active:scale-95">
-        <i data-lucide="menu" class="w-6 h-6" data-sidebar-target="mobileIcon"></i>
+            class="hidden fixed bottom-6 right-6 w-14 h-14 bg-blue-600 text-white rounded-full shadow-2xl z-[60] items-center justify-center hover:bg-blue-700 transition-all active:scale-95">
+        <i data-lucide="menu" class="w-6 h-6"></i>
     </button>
 
     <!-- Sidebar -->

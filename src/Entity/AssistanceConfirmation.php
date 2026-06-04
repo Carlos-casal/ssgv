@@ -68,6 +68,15 @@ class AssistanceConfirmation
     #[ORM\Column(type: 'boolean', options: ['default' => false])]
     private bool $isFichajeResponsible = false;
 
+    #[ORM\Column(type: 'text', nullable: true)]
+    private ?string $justification = null;
+
+    #[ORM\ManyToOne(targetEntity: Vehicle::class)]
+    private ?Vehicle $assignedVehicle = null;
+
+    #[ORM\Column(length: 50, nullable: true)]
+    private ?string $vehicleRole = null;
+
     /**
      * Gets the unique identifier for the assistance confirmation.
      * @return int|null

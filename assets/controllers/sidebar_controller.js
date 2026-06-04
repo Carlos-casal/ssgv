@@ -12,7 +12,7 @@ export default class extends Controller {
             this.collapsedValue = stored === 'true';
         } else {
             // Auto-collapse on small screens if no preference is stored
-            this.collapsedValue = window.innerWidth < 1024;
+            this.collapsedValue = window.innerWidth < 1200;
         }
 
         this._updateState();
@@ -25,7 +25,7 @@ export default class extends Controller {
 
         // Close sidebar when clicking outside on mobile
         this._handleClickOutside = (event) => {
-            if (window.innerWidth < 1024 && !this.collapsedValue) {
+            if (window.innerWidth < 1200 && !this.collapsedValue) {
                 const sidebar = this.sidebarTarget;
                 const toggleBtn = this.element.querySelector('button[data-action="click->sidebar#toggleCollapse"]');
 
@@ -46,7 +46,7 @@ export default class extends Controller {
     }
 
     _handleResize() {
-        const shouldCollapse = window.innerWidth < 1024;
+        const shouldCollapse = window.innerWidth < 1200;
 
         if (shouldCollapse !== this.collapsedValue) {
             this.collapsedValue = shouldCollapse;
@@ -85,6 +85,9 @@ export default class extends Controller {
     }
 
     _updateState() {
+        const toggleBtn = document.getElementById('sidebar-toggle-btn');
+        const links = this.element.querySelectorAll('a[data-bs-toggle="tooltip"], button[data-bs-toggle="tooltip"]');
+
         if (this.collapsedValue) {
             this.sidebarTarget.classList.add('sidebar-collapsed');
             this.sidebarTarget.classList.remove('w-64');
@@ -94,8 +97,13 @@ export default class extends Controller {
             }
 
             if (this.hasToggleIconTarget) {
-                // Ensure the icon is chevron-right when collapsed (to expand)
                 this.toggleIconTarget.setAttribute('data-lucide', 'chevron-right');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.setAttribute('title', 'Expandir barra lateral');
+                const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (tooltip) tooltip.setContent({ '.tooltip-inner': 'Expandir barra lateral' });
             }
 
             if (this.hasMobileIconTarget) {
@@ -104,12 +112,10 @@ export default class extends Controller {
 
             this.submenuTargets.forEach(el => el.classList.remove('submenu-open'));
 
-            const links = this.element.querySelectorAll('a[data-title]');
             links.forEach(link => {
-                const title = link.getAttribute('data-title');
-                if (title) {
-                    link.setAttribute('title', title);
-                }
+                if (link.id === 'sidebar-toggle-btn') return;
+                const tooltip = bootstrap.Tooltip.getInstance(link);
+                if (tooltip) tooltip.enable();
             });
         } else {
             this.sidebarTarget.classList.remove('sidebar-collapsed');
@@ -120,17 +126,23 @@ export default class extends Controller {
             }
 
             if (this.hasToggleIconTarget) {
-                // Ensure the icon is chevron-left when expanded (to collapse)
                 this.toggleIconTarget.setAttribute('data-lucide', 'chevron-left');
+            }
+
+            if (toggleBtn) {
+                toggleBtn.setAttribute('title', 'Contraer barra lateral');
+                const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (tooltip) tooltip.setContent({ '.tooltip-inner': 'Contraer barra lateral' });
             }
 
             if (this.hasMobileIconTarget) {
                 this.mobileIconTarget.setAttribute('data-lucide', 'x');
             }
 
-            const links = this.element.querySelectorAll('a[data-title]');
             links.forEach(link => {
-                link.removeAttribute('title');
+                if (link.id === 'sidebar-toggle-btn') return;
+                const tooltip = bootstrap.Tooltip.getInstance(link);
+                if (tooltip) tooltip.disable();
             });
         }
 
