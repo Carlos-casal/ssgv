@@ -22,6 +22,7 @@ import NotificationController from './controllers/notification_controller.js';
 import KitRefillController from './controllers/kit-refill_controller.js';
 import KitRegistrationController from './controllers/kit_registration_controller.js';
 import MaterialRefactoredFormController from './controllers/material_refactored_form_controller.js';
+import ConfirmController from './controllers/confirm_controller.js';
 
 const app = Application.start();
 
@@ -48,5 +49,6 @@ app.register('material-comms-form', MaterialCommsFormController);
 app.register('kit-refill', KitRefillController);
 app.register('kit-registration', KitRegistrationController);
 app.register('material-refactored-form', MaterialRefactoredFormController);
+app.register('confirm', ConfirmController);
 
 export { app };

@@ -273,9 +273,13 @@ export default class extends Controller {
                 this.showSwalError('La hora de regreso a base debe estar dentro del rango de inicio y fin del servicio.');
                 this.timeAtBaseInputTarget.value = '';
             } else if (departure) {
+                // Ensure both are on the same day for time comparison within same day services
                 const [dH, dM] = departure.split(':').map(Number);
                 const [rH, rM] = baseReturn.split(':').map(Number);
-                if (rH < dH || (rH === dH && rM < dM)) {
+                const depTime = new Date(startDate); depTime.setHours(dH, dM, 0, 0);
+                const retTime = new Date(startDate); retTime.setHours(rH, rM, 0, 0);
+
+                if (retTime < depTime) {
                     this.showSwalError('La hora de regreso no puede ser anterior a la hora de salida.');
                     this.timeAtBaseInputTarget.value = departure;
                 }

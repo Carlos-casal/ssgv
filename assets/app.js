@@ -26,7 +26,11 @@ const initializeIcons = () => {
 const initializeTooltips = () => {
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
+        if (!bootstrap.Tooltip.getInstance(tooltipTriggerEl)) {
+            return new bootstrap.Tooltip(tooltipTriggerEl, {
+                delay: { "show": 2000, "hide": 100 }
+            });
+        }
     });
 };
 
