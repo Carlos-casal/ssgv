@@ -77,6 +77,15 @@ class AssistanceConfirmation
     #[ORM\Column(length: 50, nullable: true)]
     private ?string $vehicleRole = null;
 
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isSanitario = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isSocorrista = false;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private bool $isConductor = false;
+
     /**
      * Gets the unique identifier for the assistance confirmation.
      * @return int|null
@@ -199,5 +208,74 @@ class AssistanceConfirmation
     public function hasAttended(): bool
     {
         return $this->status === self::STATUS_ATTENDING;
+    }
+
+    public function isSanitario(): bool
+    {
+        return $this->isSanitario;
+    }
+
+    public function setSanitario(bool $isSanitario): static
+    {
+        $this->isSanitario = $isSanitario;
+
+        return $this;
+    }
+
+    public function isSocorrista(): bool
+    {
+        return $this->isSocorrista;
+    }
+
+    public function setSocorrista(bool $isSocorrista): static
+    {
+        $this->isSocorrista = $isSocorrista;
+
+        return $this;
+    }
+
+    public function isConductor(): bool
+    {
+        return $this->isConductor;
+    }
+
+    public function setConductor(bool $isConductor): static
+    {
+        $this->isConductor = $isConductor;
+
+        return $this;
+    }
+
+    public function getJustification(): ?string
+    {
+        return $this->justification;
+    }
+
+    public function setJustification(?string $justification): self
+    {
+        $this->justification = $justification;
+        return $this;
+    }
+
+    public function getAssignedVehicle(): ?Vehicle
+    {
+        return $this->assignedVehicle;
+    }
+
+    public function setAssignedVehicle(?Vehicle $assignedVehicle): self
+    {
+        $this->assignedVehicle = $assignedVehicle;
+        return $this;
+    }
+
+    public function getVehicleRole(): ?string
+    {
+        return $this->vehicleRole;
+    }
+
+    public function setVehicleRole(?string $vehicleRole): self
+    {
+        $this->vehicleRole = $vehicleRole;
+        return $this;
     }
 }
