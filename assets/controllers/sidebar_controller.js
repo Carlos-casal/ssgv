@@ -115,10 +115,7 @@ export default class extends Controller {
         links.forEach(link => {
             const tooltip = bootstrap.Tooltip.getInstance(link);
             if (tooltip) {
-                tooltip.hide();
-                // We update the delay to 0 for the toggle button so it feels more responsive if needed,
-                // but user asked for 2s general. However, toggle button usually shouldn't wait 2s if it's the main UI action.
-                // Actually, user said: "al hacer hover debe aparecer un tooltip". Didn't specify different delay for it.
+                tooltip.dispose();
             }
         });
 
@@ -136,15 +133,6 @@ export default class extends Controller {
 
             if (toggleBtn) {
                 const newTitle = 'Expandir barra lateral';
-                toggleBtn.setAttribute('title', newTitle);
-                toggleBtn.setAttribute('data-bs-original-title', '');
-
-                let tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-                if (tooltip) {
-                    tooltip.dispose();
-                }
-
-                // Re-initialize after a short delay or just ensure attributes are clean
                 toggleBtn.setAttribute('data-bs-title', newTitle);
                 new bootstrap.Tooltip(toggleBtn, {
                     delay: { "show": 2000, "hide": 100 }
@@ -159,8 +147,9 @@ export default class extends Controller {
 
             links.forEach(link => {
                 if (link.id === 'sidebar-toggle-btn') return;
-                const tooltip = bootstrap.Tooltip.getInstance(link);
-                if (tooltip) tooltip.enable();
+                new bootstrap.Tooltip(link, {
+                    delay: { "show": 0, "hide": 0 }
+                });
             });
         } else {
             this.sidebarTarget.classList.remove('sidebar-collapsed');
@@ -176,14 +165,6 @@ export default class extends Controller {
 
             if (toggleBtn) {
                 const newTitle = 'Contraer barra lateral';
-                toggleBtn.setAttribute('title', newTitle);
-                toggleBtn.setAttribute('data-bs-original-title', '');
-
-                let tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-                if (tooltip) {
-                    tooltip.dispose();
-                }
-
                 toggleBtn.setAttribute('data-bs-title', newTitle);
                 new bootstrap.Tooltip(toggleBtn, {
                     delay: { "show": 2000, "hide": 100 }
@@ -196,8 +177,7 @@ export default class extends Controller {
 
             links.forEach(link => {
                 if (link.id === 'sidebar-toggle-btn') return;
-                const tooltip = bootstrap.Tooltip.getInstance(link);
-                if (tooltip) tooltip.disable();
+                // No tooltips when expanded
             });
         }
 

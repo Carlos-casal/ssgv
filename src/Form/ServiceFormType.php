@@ -162,17 +162,20 @@ class ServiceFormType extends AbstractType
                 'required' => false,
                 'attr' => ['min' => 0, 'placeholder' => 'Ej: 500'],
             ])
-            ->add('numSvb', CheckboxType::class, [
+            ->add('numSvb', IntegerType::class, [
                 'label' => 'SVB',
                 'required' => false,
+                'attr' => ['min' => 0],
             ])
-            ->add('numColectiva', CheckboxType::class, [
+            ->add('numColectiva', IntegerType::class, [
                 'label' => 'Colectiva',
                 'required' => false,
+                'attr' => ['min' => 0],
             ])
-            ->add('numSva', CheckboxType::class, [
+            ->add('numSva', IntegerType::class, [
                 'label' => 'SVA',
                 'required' => false,
+                'attr' => ['min' => 0],
             ])
             ->add('numTes', IntegerType::class, [
                 'label' => 'TES',
@@ -233,14 +236,6 @@ class ServiceFormType extends AbstractType
                 'attr' => ['rows' => 8, 'class' => 'whatsapp-message-textarea'],
             ]);
 
-        $transformer = new CallbackTransformer(
-            function ($int) { return (bool)$int; },
-            function ($bool) { return $bool ? 1 : 0; }
-        );
-
-        foreach (['numSvb', 'numSva', 'numColectiva'] as $field) {
-            $builder->get($field)->addModelTransformer($transformer);
-        }
     }
 
     /**

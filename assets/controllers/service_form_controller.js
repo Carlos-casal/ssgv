@@ -312,7 +312,7 @@ export default class extends Controller {
                 }
             });
         } else {
-            alert(message);
+            console.error(title, message);
         }
     }
 
@@ -1475,8 +1475,45 @@ export default class extends Controller {
 
     triggerFicharTodos() {
         this.closeModal();
-        const ficharTodosBtn = document.getElementById('fichar-todos-btn');
-        if (ficharTodosBtn) ficharTodosBtn.click();
+        this.ficharTodos();
+    }
+
+    async ficharTodos() {
+        if (!window.Swal) {
+            console.error('SweetAlert2 not found');
+            return;
+        } else {
+            const result = await Swal.fire({
+                title: 'Fichar a todos',
+                text: '¿Deseas marcar la asistencia de todos los voluntarios inscritos con el horario del servicio?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, fichar a todos',
+                cancelButtonText: 'Cancelar',
+                customClass: {
+                    confirmButton: 'ui-btn btn-cyan',
+                    cancelButton: 'ui-btn btn-dark',
+                    popup: 'rounded-2xl dark:bg-slate-800 dark:text-white'
+                }
+            });
+            if (!result.isConfirmed) return;
+        }
+
+        const serviceId = this.element.dataset.serviceId;
+        try {
+            const response = await fetch(`/api/service/${serviceId}/fichar-todos`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
+            const result = await response.json();
+            if (result.success) {
+                location.reload();
+            } else {
+                this.showSwalError(result.message || 'Error al procesar el fichaje masivo');
+            }
+        } catch (error) {
+            console.error('Error in ficharTodos:', error);
+        }
     }
 
     async saveAttendance() {
