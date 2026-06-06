@@ -330,6 +330,199 @@ html.dark #alertsDropdown i {
     box-sizing: border-box;
 }
 
+/* UI Component Styles (Shared across forms) */
+:root {
+    --ui-accent: #06b6d4;
+    --ui-accent-hover: #0891b2;
+    --ui-danger: #ef4444;
+    --ui-success: #22c55e;
+}
+
+.ui-fieldset {
+    position: relative;
+    background: var(--bg-card);
+    border-radius: 1rem;
+    padding: 3.5rem 2rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+html.dark .ui-fieldset {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.ui-fieldset::before {
+    content: '';
+    position: absolute;
+    top: 1.25rem;
+    left: 1.25rem;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.5rem;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.ui-legend {
+    position: absolute;
+    top: 0.75rem;
+    left: 2.5rem;
+    background: var(--bg-card);
+    padding: 0 0.75rem;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    z-index: 10;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.field-group { margin-bottom: 1.5rem; position: relative; z-index: 5; }
+.field-label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 0.5rem; color: var(--text-primary); }
+.field-label span { color: var(--ui-danger); margin-left: 2px; }
+
+.ui-input {
+    width: 100%;
+    height: 46px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    padding: 0 1.25rem;
+    font-size: 14px;
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+html.dark .ui-input {
+    background: #111827;
+}
+
+.ui-input:focus {
+    outline: none;
+    border-color: var(--ui-accent);
+    box-shadow: 0 0 0 1px var(--ui-accent);
+}
+
+.ui-input.is-invalid {
+    border-color: var(--ui-danger) !important;
+    box-shadow: 0 0 0 1px var(--ui-danger) !important;
+}
+
+.ui-textarea {
+    min-height: 120px;
+    padding: 1.25rem;
+    resize: none;
+    font-size: 13px !important;
+}
+
+.ui-btn {
+    height: 46px;
+    padding: 0 1.5rem;
+    border-radius: 0.6rem;
+    font-size: 11px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.btn-cyan { background: #22d3ee; color: #083344; }
+.btn-cyan:hover { background: #06b6d4; }
+
+.btn-red { background: #f43f5e; color: white; }
+.btn-red:hover { background: #e11d48; }
+
+.btn-dark {
+    background: #1e293b;
+    color: white;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+html.dark .btn-dark {
+    background: #0f172a;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.ui-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+/* Tabs Styling */
+.nav-tabs-custom .nav-link {
+    border: none;
+    color: var(--text-secondary);
+    font-weight: 800;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    letter-spacing: 0.05em;
+    background: transparent !important;
+}
+
+.nav-tabs-custom .nav-link.active {
+    color: var(--ui-accent) !important;
+    border-bottom: 3px solid var(--ui-accent) !important;
+}
+
+/* Date Range Styling */
+.date-input-container {
+    position: relative;
+    padding-top: 0.5rem;
+}
+
+.date-badge {
+    position: absolute;
+    top: 0;
+    left: 1.25rem;
+    background: #1e293b;
+    color: #f8fafc;
+    font-size: 9px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.05em;
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transform: translateY(-50%);
+    text-transform: uppercase;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+
+html.dark .date-badge {
+    background: #1f2937;
+    color: #94a3b8;
+    border-color: rgba(255, 255, 255, 0.05);
+}
+
+.ui-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.ui-input-icon-right {
+    position: absolute;
+    right: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-secondary);
+    pointer-events: none;
+    width: 16px;
+    height: 16px;
+}
 
 @layer components {
     .no-scrollbar::-webkit-scrollbar {

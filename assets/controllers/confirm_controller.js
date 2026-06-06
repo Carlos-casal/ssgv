@@ -16,10 +16,7 @@ export default class extends Controller {
         const form = element.closest('form');
 
         if (!window.Swal) {
-            if (confirm(this.textValue || '¿Estás seguro?')) {
-                if (form) form.submit();
-                else if (element.tagName === 'A') window.location.href = element.href;
-            }
+            console.error('SweetAlert2 not found');
             return;
         }
 

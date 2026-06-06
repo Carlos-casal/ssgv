@@ -872,4 +872,40 @@ class ServiceController extends AbstractController
             'fichajes' => $fichajesByVolunteer,
         ]);
     }
+
+    #[Route('/api/service/{id}/fichar-todos', name: 'api_service_fichar_todos', methods: ['POST'])]
+    public function ficharTodos(Service $service, EntityManagerInterface $entityManager, VolunteerServiceRepository $vsRepo): JsonResponse
+    {
+        $this->denyAccessUnlessGranted(FichajeVoter::MANAGE_FICHANJE, $service);
+
+        $confirmations = $service->getAssistanceConfirmations();
+        $count = 0;
+
+        foreach ($confirmations as $conf) {
+            if ($conf->getStatus() === AssistanceConfirmation::STATUS_ATTENDING) {
+                $volunteer = $conf->getVolunteer();
+                $vs = $vsRepo->findOneBy(['volunteer' => $volunteer, 'service' => $service]);
+
+                if ($vs) {
+                    // Check if they already have an open fichaje
+                    $openFichaje = $entityManager->getRepository(\App\Entity\Fichaje::class)->findOneBy(['volunteerService' => $vs, 'endTime' => null]);
+                    if (!$openFichaje) {
+                        $fichaje = new \App\Entity\Fichaje();
+                        $fichaje->setVolunteerService($vs);
+                        $fichaje->setStartTime($service->getStartDate());
+                        $fichaje->setEndTime($service->getEndDate());
+                        $entityManager->persist($fichaje);
+                        $count++;
+                    }
+                }
+            }
+        }
+
+        $entityManager->flush();
+
+        return new JsonResponse([
+            'success' => true,
+            'message' => "Se ha registrado el fichaje de $count voluntarios.",
+        ]);
+    }
 }
