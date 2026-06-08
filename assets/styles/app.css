@@ -229,6 +229,19 @@ html.dark #alertsDropdown i {
     background-color: var(--bg-main) !important;
 }
 
+.sidebar-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    height: 64px;
+    display: flex;
+    align-items: center;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+.sidebar-header-row {
+    width: 100%;
+}
+
 .sidebar-collapsed {
     width: 80px;
 }
@@ -240,6 +253,13 @@ html.dark #alertsDropdown i {
 .sidebar-collapsed .sidebar-header-container,
 .sidebar-collapsed .sidebar-user-info p {
     display: none !important;
+}
+
+.sidebar-collapsed .sidebar-actions {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+    width: 100%;
 }
 
 /* Soporte Móvil (Responsive Extremo) - Ahora desde 1200px */
