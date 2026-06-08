@@ -1,4 +1,11 @@
-<form method="post" action="{{ path('app_vehicle_delete', {'id': vehicle.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este vehículo?');">
+<form method="post"
+      action="{{ path('app_vehicle_delete', {'id': vehicle.id}) }}"
+      data-controller="confirm"
+      data-confirm-text-value="¿Estás seguro de que quieres eliminar este vehículo? Esta acción no se puede deshacer."
+      data-confirm-title-value="Eliminar Vehículo"
+      data-confirm-confirm-button-text-value="Sí, eliminar">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vehicle.id) }}">
-    <button type="submit" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Eliminar</button>
+    <button type="button" data-action="click->confirm#confirm" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+        Eliminar
+    </button>
 </form>

@@ -172,6 +172,19 @@ export default class extends Controller {
                 });
             }
 
+            // Block negative values on staffing number inputs
+            document.querySelectorAll('input[type="number"][min="0"]').forEach(input => {
+                input.addEventListener('input', () => {
+                    const val = parseFloat(input.value);
+                    if (!isNaN(val) && val < 0) {
+                        input.value = 0;
+                    }
+                });
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === '-' || e.key === 'e') e.preventDefault();
+                });
+            });
+
             // Trigger category update on load if a type is already selected (for edit mode)
             if (typeSelect && typeSelect.value && subcategorySelect && subcategorySelect.options.length <= 1) {
                 console.log("Triggering initial category load...");
@@ -1362,34 +1375,48 @@ export default class extends Controller {
     renderVolunteers(volunteers) {
         this.userListTarget.innerHTML = '';
         if (volunteers.length === 0) {
-            this.userListTarget.innerHTML = '<p class="text-gray-500 p-4">No se encontraron voluntarios.</p>';
+            this.userListTarget.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-400 text-sm">No se encontraron voluntarios.</td></tr>';
             return;
         }
+        // Sync select-all checkbox state
+        const selectAll = document.getElementById('modal_select_all');
+        if (selectAll) selectAll.checked = false;
+
         volunteers.forEach(volunteer => {
             const isSelected = this.selectedVolunteers.includes(volunteer.id);
-            const row = document.createElement('div');
-            row.className = `flex items-center p-2 rounded-lg cursor-pointer transition-colors ${isSelected ? 'bg-blue-100' : 'hover:bg-gray-100'}`;
+            const row = document.createElement('tr');
+            row.className = `cursor-pointer transition-colors ${isSelected ? 'bg-cyan-50 dark:bg-cyan-900/20' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`;
             row.dataset.volunteerId = volunteer.id;
 
+            const checkboxTd = document.createElement('td');
+            checkboxTd.className = 'py-3 pr-3 w-8';
             const checkbox = document.createElement('input');
             checkbox.type = 'checkbox';
-            checkbox.className = 'form-checkbox h-5 w-5 text-blue-600 rounded border-gray-300';
+            checkbox.className = 'form-checkbox h-4 w-4 rounded text-cyan-600';
             checkbox.checked = isSelected;
             checkbox.addEventListener('change', (e) => {
                 e.stopPropagation();
                 this.toggleSelection(volunteer.id, row);
             });
+            checkboxTd.appendChild(checkbox);
 
-            const nameSpan = document.createElement('span');
-            nameSpan.className = 'ml-3 font-medium text-gray-700';
-            nameSpan.textContent = `${volunteer.id} - ${volunteer.name} ${volunteer.lastName || ''}`;
+            const nameTd = document.createElement('td');
+            nameTd.className = 'py-3 font-medium text-slate-800 dark:text-slate-200';
+            nameTd.textContent = `${volunteer.name} ${volunteer.lastName || ''}`;
 
-            row.appendChild(checkbox);
-            row.appendChild(nameSpan);
+            const indicativoTd = document.createElement('td');
+            indicativoTd.className = 'py-3 text-slate-500 dark:text-slate-400 font-mono text-xs';
+            indicativoTd.textContent = volunteer.indicativo || '—';
+
+            row.appendChild(checkboxTd);
+            row.appendChild(nameTd);
+            row.appendChild(indicativoTd);
 
             row.addEventListener('click', (e) => {
                 if (e.target.type !== 'checkbox') {
                     this.toggleSelection(volunteer.id, row);
+                    const cb = row.querySelector('input[type="checkbox"]');
+                    if (cb) cb.checked = this.selectedVolunteers.includes(volunteer.id);
                 }
             });
 
@@ -1403,13 +1430,44 @@ export default class extends Controller {
 
         if (index > -1) {
             this.selectedVolunteers.splice(index, 1);
-            checkbox.checked = false;
-            rowElement.classList.remove('bg-blue-100');
+            if (checkbox) checkbox.checked = false;
+            rowElement.classList.remove('bg-cyan-50', 'dark:bg-cyan-900/20', 'bg-blue-100');
         } else {
             this.selectedVolunteers.push(volunteerId);
-            checkbox.checked = true;
-            rowElement.classList.add('bg-blue-100');
+            if (checkbox) checkbox.checked = true;
+            rowElement.classList.add('bg-cyan-50');
         }
+
+        // Update select-all state
+        const allCheckboxes = this.userListTarget.querySelectorAll('input[type="checkbox"]');
+        const allChecked = allCheckboxes.length > 0 && [...allCheckboxes].every(cb => cb.checked);
+        const selectAll = document.getElementById('modal_select_all');
+        if (selectAll) selectAll.checked = allChecked;
+    }
+
+    toggleSelectAllInModal(event) {
+        const checked = event.currentTarget.checked;
+        const rows = this.userListTarget.querySelectorAll('tr[data-volunteer-id]');
+        rows.forEach(row => {
+            const cb = row.querySelector('input[type="checkbox"]');
+            const volunteerId = parseInt(row.dataset.volunteerId);
+            if (checked) {
+                if (!this.selectedVolunteers.includes(volunteerId)) {
+                    this.selectedVolunteers.push(volunteerId);
+                }
+                row.classList.add('bg-cyan-50');
+                if (cb) cb.checked = true;
+            } else {
+                const idx = this.selectedVolunteers.indexOf(volunteerId);
+                if (idx > -1) this.selectedVolunteers.splice(idx, 1);
+                row.classList.remove('bg-cyan-50');
+                if (cb) cb.checked = false;
+            }
+        });
+    }
+
+    onItemsPerPageChange() {
+        this.fetchVolunteers(1, this.hasUserSearchInputTarget ? this.userSearchInputTarget.value : '');
     }
 
     renderPagination(pagination, items) {
@@ -1600,12 +1658,173 @@ export default class extends Controller {
 
             const result = await response.json();
             if (result.success) {
-                // If it's a dropdown (conductor/copiloto), we might want to reload to reflect exclusivity if multiple vehicles
-                // Or just show a toast
                 console.log("Crew assigned successfully");
             }
         } catch (error) {
             console.error('Error assigning vehicle crew:', error);
         }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Individual Fichaje Modal Methods
+    // ─────────────────────────────────────────────────────────────────────────
+
+    openIndividualFichajeModal(event) {
+        const btn = event.currentTarget;
+        const volunteerServiceId = btn.dataset.volunteerServiceId;
+        const volunteerName = btn.dataset.volunteerName || 'Voluntario';
+        const lastClockOut = btn.dataset.lastClockOut || '';
+
+        if (!this.hasIndividualFichajeModalTarget) {
+            console.error('individualFichajeModal target not found');
+            return;
+        }
+
+        // Store the vs ID for form submission
+        this._currentVolunteerServiceId = volunteerServiceId;
+
+        // Update modal title
+        if (this.hasIndividualFichajeModalTitleTarget) {
+            this.individualFichajeModalTitleTarget.textContent = `Añadir Fichaje — ${volunteerName}`;
+        }
+
+        // Show last clock-out reference
+        if (this.hasLastClockOutTimeTarget) {
+            this.lastClockOutTimeTarget.textContent = lastClockOut
+                ? new Date(lastClockOut).toLocaleString('es-ES', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' })
+                : '--:--';
+        }
+
+        // Pre-fill dates with service dates if available
+        const serviceStartInput = this.hasStartDateInputTarget ? this.startDateInputTarget : document.getElementById('service_form_startDate');
+        const serviceEndInput = this.hasEndDateInputTarget ? this.endDateInputTarget : document.getElementById('service_form_endDate');
+
+        const startDateField = document.getElementById('individual-start-date');
+        const startTimeField = document.getElementById('individual-start-time');
+        const endDateField = document.getElementById('individual-end-date');
+        const endTimeField = document.getElementById('individual-end-time');
+
+        if (startDateField && serviceStartInput?.value) {
+            const d = new Date(serviceStartInput.value);
+            if (!isNaN(d)) {
+                startDateField.value = d.toISOString().split('T')[0];
+                if (startTimeField) startTimeField.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            }
+        }
+        if (endDateField && serviceEndInput?.value) {
+            const d = new Date(serviceEndInput.value);
+            if (!isNaN(d)) {
+                endDateField.value = d.toISOString().split('T')[0];
+                if (endTimeField) endTimeField.value = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            }
+        }
+
+        // Clear notes
+        const notesField = document.getElementById('individual-notes');
+        if (notesField) notesField.value = '';
+
+        // Show modal
+        this.individualFichajeModalTarget.classList.remove('hidden');
+        this.individualFichajeModalTarget.style.setProperty('display', 'flex', 'important');
+    }
+
+    closeIndividualFichajeModal() {
+        if (!this.hasIndividualFichajeModalTarget) return;
+        this.individualFichajeModalTarget.classList.add('hidden');
+        this.individualFichajeModalTarget.style.setProperty('display', 'none', 'important');
+        this._currentVolunteerServiceId = null;
+    }
+
+    async saveIndividualFichaje(keepOpen = false) {
+        const volunteerServiceId = this._currentVolunteerServiceId;
+        if (!volunteerServiceId) {
+            this.showSwalError('No se ha seleccionado un voluntario para el fichaje.', 'Error');
+            return false;
+        }
+
+        const startDate = document.getElementById('individual-start-date')?.value;
+        const startTime = document.getElementById('individual-start-time')?.value;
+        const endDate = document.getElementById('individual-end-date')?.value;
+        const endTime = document.getElementById('individual-end-time')?.value;
+        const notes = document.getElementById('individual-notes')?.value || '';
+
+        if (!startDate || !startTime) {
+            this.showSwalError('La fecha y hora de entrada son obligatorias.', 'Campos requeridos');
+            return false;
+        }
+
+        const startDatetime = `${startDate} ${startTime}`;
+        const endDatetime = (endDate && endTime) ? `${endDate} ${endTime}` : null;
+
+        // Validate: end must be after start
+        if (endDatetime) {
+            const startTs = new Date(startDatetime).getTime();
+            const endTs = new Date(endDatetime).getTime();
+            if (endTs < startTs) {
+                this.showSwalError('La hora de salida no puede ser anterior a la hora de entrada.', 'Error de validación');
+                return false;
+            }
+        }
+
+        try {
+            const response = await fetch(`/volunteer_service/${volunteerServiceId}/add_fichaje`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body: JSON.stringify({
+                    startDate: startDatetime,
+                    endDate: endDatetime,
+                    notes: notes
+                })
+            });
+
+            const result = await response.json();
+            if (result.success || response.ok) {
+                this.showToast('Fichaje guardado correctamente.');
+                if (!keepOpen) {
+                    this.closeIndividualFichajeModal();
+                    setTimeout(() => location.reload(), 800);
+                } else {
+                    // Clear time fields for next entry but keep the volunteer
+                    const startTimeField = document.getElementById('individual-start-time');
+                    const endDateField = document.getElementById('individual-end-date');
+                    const endTimeField = document.getElementById('individual-end-time');
+                    const notesField = document.getElementById('individual-notes');
+                    // Set start time to previous end time
+                    if (endDate && endTime && startTimeField) {
+                        document.getElementById('individual-start-date').value = endDate;
+                        startTimeField.value = endTime;
+                    }
+                    if (endDateField) endDateField.value = '';
+                    if (endTimeField) endTimeField.value = '';
+                    if (notesField) notesField.value = '';
+                    // Update last clock-out reference
+                    if (endDatetime && this.hasLastClockOutTimeTarget) {
+                        this.lastClockOutTimeTarget.textContent = new Date(endDatetime).toLocaleString('es-ES', {
+                            hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit'
+                        });
+                    }
+                }
+                return true;
+            } else {
+                const msg = result.message || result.error || 'Error al guardar el fichaje.';
+                this.showSwalError(msg, 'Error');
+                return false;
+            }
+        } catch (error) {
+            console.error('Error saving fichaje:', error);
+            this.showSwalError('Error de red al guardar el fichaje.', 'Error');
+            return false;
+        }
+    }
+
+    async saveAndAddAnother(event) {
+        event.preventDefault();
+        await this.saveIndividualFichaje(true);
+    }
+
+    // Handle the main submit button of the individual fichaje form
+    async handleIndividualFichajeSubmit(event) {
+        event.preventDefault();
+        await this.saveIndividualFichaje(false);
     }
 }

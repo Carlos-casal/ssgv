@@ -6,6 +6,30 @@ import './styles/material_form.css';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap;
 
+// Import SweetAlert2
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+window.Swal = Swal;
+
+// Global window.alert override
+window.alert = function(message) {
+    if (window.Swal) {
+        window.Swal.fire({
+            title: 'Notificación del sistema',
+            text: message,
+            icon: 'info',
+            confirmButtonText: 'Aceptar',
+            customClass: {
+                confirmButton: 'ui-btn btn-cyan px-4',
+                popup: 'rounded-2xl border-none shadow-2xl dark:bg-slate-800 dark:text-white'
+            },
+            buttonsStyling: false
+        });
+    } else {
+        console.warn("Alert: ", message);
+    }
+};
+
 // Import the Stimulus application
 import './bootstrap.js';
 
@@ -28,7 +52,7 @@ const initializeTooltips = () => {
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         if (!bootstrap.Tooltip.getInstance(tooltipTriggerEl)) {
             return new bootstrap.Tooltip(tooltipTriggerEl, {
-                delay: { "show": 2000, "hide": 100 }
+                delay: { "show": 0, "hide": 100 }
             });
         }
     });
@@ -46,3 +70,4 @@ document.addEventListener('turbo:render', () => {
     initializeIcons();
     initializeTooltips();
 });
+

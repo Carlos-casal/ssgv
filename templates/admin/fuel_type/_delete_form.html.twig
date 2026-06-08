@@ -1,4 +1,9 @@
-<form method="post" action="{{ path('app_admin_fuel_type_delete', {'id': fuel_type.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este tipo de combustible?');">
+<form method="post"
+      action="{{ path('app_admin_fuel_type_delete', {'id': fuel_type.id}) }}"
+      data-controller="confirm"
+      data-confirm-text-value="¿Estás seguro de que quieres eliminar este tipo de combustible?"
+      data-confirm-title-value="Eliminar Tipo de Combustible"
+      data-confirm-confirm-button-text-value="Sí, eliminar">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fuel_type.id) }}">
-    <button class="text-red-500 hover:text-red-800">Eliminar</button>
+    <button type="button" data-action="click->confirm#confirm" class="text-red-500 hover:text-red-800">Eliminar</button>
 </form>

@@ -12,9 +12,15 @@
             <a href="{{ path('app_kit_edit', {id: unit.id}) }}" class="btn btn-outline-amber btn-sm px-3 font-bold">
                 <i data-lucide="edit-3" class="w-4 h-4 inline mr-1"></i> IDENTIDAD
             </a>
-            <form action="{{ path('app_kit_refill', {id: unit.id}) }}" method="POST" onsubmit="return confirm('¿Reponer todos los productos hasta completar la plantilla?')">
+            <form action="{{ path('app_kit_refill', {id: unit.id}) }}"
+                  method="POST"
+                  data-controller="confirm"
+                  data-confirm-text-value="¿Reponer todos los productos hasta completar la plantilla? Esto actualizará el stock del botiquín."
+                  data-confirm-title-value="Reponer Botiquín"
+                  data-confirm-icon-value="question"
+                  data-confirm-confirm-button-text-value="Sí, reponer">
                 <input type="hidden" name="_token" value="{{ csrf_token('kit_refill') }}">
-                <button type="submit" class="btn btn-outline-primary btn-sm">
+                <button type="button" data-action="click->confirm#confirm" class="btn btn-outline-primary btn-sm">
                     <i data-lucide="refresh-cw" class="w-4 h-4 inline mr-1"></i> REPONER
                 </button>
             </form>

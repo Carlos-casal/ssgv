@@ -62,9 +62,14 @@
                                         <i data-lucide="clock" class="h-5 w-5"></i>
                                     </button>
                                 {% endif %}
-                                <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar la confirmación de asistencia de este voluntario? Esta acción no se puede deshacer.');">
+                                <form method="post"
+                                      action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}"
+                                      data-controller="confirm"
+                                      data-confirm-text-value="¿Estás seguro de que quieres eliminar la confirmación de asistencia de {{ confirmation.volunteer.name }}? Esta acción no se puede deshacer."
+                                      data-confirm-title-value="Eliminar Asistencia"
+                                      data-confirm-confirm-button-text-value="Sí, eliminar">
                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 p-1">
+                                    <button type="button" data-action="click->confirm#confirm" class="text-red-500 hover:text-red-700 p-1">
                                         <i data-lucide="trash-2" class="h-5 w-5"></i>
                                     </button>
                                 </form>
@@ -99,9 +104,15 @@
                                                         data-notes="{{ fichaje_item.notes }}">
                                                     <i data-lucide="pencil" class="h-4 w-4"></i>
                                                 </button>
-                                                <form method="post" action="{{ path('app_fichaje_delete', {'id': fichaje_item.id}) }}" onsubmit="return confirm('¿Estás seguro de que quieres eliminar este registro de fichaje?');" class="inline-block">
+                                                <form method="post"
+                                                      action="{{ path('app_fichaje_delete', {'id': fichaje_item.id}) }}"
+                                                      data-controller="confirm"
+                                                      data-confirm-text-value="¿Estás seguro de que quieres eliminar este registro de fichaje?"
+                                                      data-confirm-title-value="Eliminar Fichaje"
+                                                      data-confirm-confirm-button-text-value="Sí, eliminar"
+                                                      class="inline-block">
                                                     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ fichaje_item.id) }}">
-                                                    <button type="submit" class="text-gray-500 hover:text-red-600 p-1" title="Eliminar Fichaje">
+                                                    <button type="button" data-action="click->confirm#confirm" class="text-gray-500 hover:text-red-600 p-1" title="Eliminar Fichaje">
                                                         <i data-lucide="trash-2" class="h-4 w-4"></i>
                                                     </button>
                                                 </form>

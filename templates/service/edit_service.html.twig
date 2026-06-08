@@ -538,28 +538,6 @@
                         </div>
                     </div>
 
-                    <!-- No asisten -->
-                    <div class="col-md-4">
-                        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100 h-100">
-                            <h4 class="text-xs font-black uppercase tracking-wider text-red-700 mb-4 flex justify-between items-center">
-                                <span>Bajas</span>
-                                <span class="bg-red-100 px-2 py-0.5 rounded-full text-xxs">{{ service.assistanceConfirmations|filter(c => c.status == 'not_attending')|length }}</span>
-                            </h4>
-                            <ul class="space-y-2">
-                                {% for confirmation in service.assistanceConfirmations|filter(c => c.status == 'not_attending') %}
-                                    <li class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center">
-                                        <span class="text-sm text-slate-500 line-through">{{ confirmation.volunteer.name }} {{ confirmation.volunteer.lastname }}</span>
-                                        <form method="post" action="{{ path('app_assistance_confirmation_remove', {'id': confirmation.id}) }}">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ confirmation.id) }}">
-                                            <button type="submit" class="text-slate-300 hover:text-red-500 transition-colors">
-                                                <i data-lucide="trash-2" class="h-4 w-4"></i>
-                                            </button>
-                                        </form>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
@@ -692,44 +670,86 @@
 
     <!-- Modals -->
     <!-- Attendance Volunteer Picker Modal -->
-    <div class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;" data-service-form-target="modal">
-        <div class="bg-white rounded-3xl shadow-2xl p-8 max-w-2xl w-full mx-4 relative">
-            <div class="flex justify-between items-center mb-6 border-b pb-4">
-                <div class="flex flex-col flex-1">
-                    <h3 class="text-2xl font-bold text-slate-900">Añadir Voluntarios</h3>
-                    <button type="button" data-action="click->service-form#triggerFicharTodos" class="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center mt-1">
+    <div class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;" data-service-form-target="modal">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl mx-4 relative flex flex-col" style="max-height: 90vh;">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-6 border-b border-slate-100 dark:border-slate-700 flex-shrink-0">
+                <div class="flex flex-col">
+                    <h3 class="text-xl font-black text-slate-900 dark:text-white">Añadir Voluntarios</h3>
+                    <button type="button" data-action="click->service-form#triggerFicharTodos" class="text-xs font-bold text-cyan-600 hover:text-cyan-800 flex items-center mt-1">
                         <i data-lucide="check-square" class="w-3 h-3 mr-1"></i> Fichar a todos simultáneamente
                     </button>
                 </div>
-                <div class="flex-1 px-4">
-                    <div class="relative">
-                        <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                        <input type="text" id="attendance_user_search" data-service-form-target="userSearchInput" data-action="keyup->service-form#search input->service-form#clearError" placeholder="Búsqueda predictiva..." class="form-control pl-10 rounded-xl border-slate-200 bg-slate-50 focus:bg-white text-sm">
-                    </div>
-                </div>
-                <button type="button" data-action="click->service-form#closeModal" class="text-slate-400 hover:text-slate-600 p-2">
+                <button type="button" data-action="click->service-form#closeModal" class="text-slate-400 hover:text-rose-500 transition-colors p-2">
                     <i data-lucide="x" class="h-6 w-6"></i>
                 </button>
             </div>
 
-            <div class="mb-4">
-                <label class="block text-sm font-bold text-slate-700 mb-2">Estado de Inscripción</label>
-                <select id="attendance_status_select" data-service-form-target="attendanceStatusSelect" class="form-select w-full rounded-xl border-slate-200" data-action="change->service-form#clearError">
-                    <option value="" selected disabled>Selecciona...</option>
-                    <option value="attends">Confirmar Asistencia</option>
-                    <option value="not_attends">Confirmar Baja</option>
-                </select>
-                <div class="invalid-feedback hidden" id="error-attendance_status_select"></div>
+            <!-- Toolbar -->
+            <div class="flex flex-col sm:flex-row gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-900/50 flex-shrink-0">
+                <div class="flex-1">
+                    <div class="relative">
+                        <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                        <input type="text" id="attendance_user_search"
+                               data-service-form-target="userSearchInput"
+                               data-action="keyup->service-form#search input->service-form#clearError"
+                               placeholder="Buscar por nombre o indicativo..."
+                               class="form-control !pl-9 rounded-xl border-slate-200 bg-white text-sm">
+                    </div>
+                </div>
+                <div class="flex gap-3 items-center">
+                    <div class="flex items-center gap-2">
+                        <label class="text-xs font-bold text-slate-500 whitespace-nowrap">Mostrar</label>
+                        <select id="modal_items_per_page" data-service-form-target="itemsPerPageSelect"
+                                data-action="change->service-form#onItemsPerPageChange"
+                                class="form-select form-select-sm rounded-lg border-slate-200 !py-1 text-xs">
+                            <option value="10">10</option>
+                            <option value="25" selected>25</option>
+                            <option value="50">50</option>
+                        </select>
+                        <label class="text-xs font-bold text-slate-500">registros</label>
+                    </div>
+                    <div>
+                        <select id="attendance_status_select"
+                                data-service-form-target="attendanceStatusSelect"
+                                class="form-select form-select-sm rounded-lg border-slate-200 !py-1 text-xs"
+                                data-action="change->service-form#clearError">
+                            <option value="" selected disabled>Estado...</option>
+                            <option value="attends">✓ Confirmar Asistencia</option>
+                            <option value="not_attends">✗ Confirmar Baja</option>
+                        </select>
+                        <div class="invalid-feedback hidden text-xs" id="error-attendance_status_select"></div>
+                    </div>
+                </div>
             </div>
 
-            <div data-service-form-target="userList" class="space-y-1 mb-6 border border-slate-100 rounded-xl p-3 max-h-60 overflow-y-auto bg-slate-50 shadow-inner">
-                <!-- List populated via JS -->
+            <!-- Table -->
+            <div class="overflow-auto flex-1 px-6">
+                <table class="w-full text-sm">
+                    <thead class="sticky top-0 bg-white dark:bg-slate-800 z-10">
+                        <tr class="border-b border-slate-200 dark:border-slate-700">
+                            <th class="py-3 pr-3 w-8">
+                                <input type="checkbox" id="modal_select_all"
+                                       data-action="change->service-form#toggleSelectAllInModal"
+                                       class="form-checkbox h-4 w-4 rounded text-cyan-600">
+                            </th>
+                            <th class="py-3 text-left text-xs font-black uppercase tracking-wider text-slate-400">Usuario</th>
+                            <th class="py-3 text-left text-xs font-black uppercase tracking-wider text-slate-400">Indicativo</th>
+                        </tr>
+                    </thead>
+                    <tbody data-service-form-target="userList" class="divide-y divide-slate-100 dark:divide-slate-700">
+                        <!-- Populated via JS -->
+                    </tbody>
+                </table>
             </div>
 
-            <div class="flex justify-between items-center border-t pt-6">
+            <!-- Footer -->
+            <div class="flex justify-between items-center px-6 py-4 border-t border-slate-100 dark:border-slate-700 flex-shrink-0">
                 <div data-service-form-target="paginationSummary" class="text-xs font-bold text-slate-400"></div>
                 <div data-service-form-target="paginationContainer" class="flex gap-2"></div>
-                <button type="button" data-action="click->service-form#saveAttendance" class="btn btn-primary px-8">Guardar Cambios</button>
+                <button type="button" data-action="click->service-form#saveAttendance" class="ui-btn btn-cyan px-8">
+                    <i data-lucide="user-check" class="w-4 h-4 mr-2"></i> Guardar Cambios
+                </button>
             </div>
         </div>
     </div>

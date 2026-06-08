@@ -349,6 +349,7 @@ class ServiceController extends AbstractController
                 'id' => $volunteer->getId(),
                 'name' => $volunteer->getName(),
                 'lastName' => $volunteer->getLastname(),
+                'indicativo' => $volunteer->getIndicativo(),
             ];
         }
 

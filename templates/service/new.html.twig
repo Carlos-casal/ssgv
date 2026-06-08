@@ -95,43 +95,66 @@
     <div class="tab-content" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-            <!-- Título y Ubicación (Ancho Completo) -->
-            <div class="ui-fieldset !pb-4 !mb-4">
-                <div class="ui-legend">Identificación y Ubicación</div>
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div class="lg:col-span-6">
-                        <div class="field-group !mb-2">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <!-- COLUMNA IZQUIERDA: Datos Identificativos -->
+                <div class="lg:col-span-6">
+                    <div class="ui-fieldset h-full !pb-4">
+                        <div class="ui-legend">Datos Identificativos</div>
+                        
+                        <div class="field-group !mb-3">
                             <label class="field-label">Título del Servicio <span>*</span></label>
                             {{ form_widget(form.title, {'attr': {'class': 'ui-input font-bold', 'placeholder': 'Ej. Dispositivo Maratón', 'data-action': 'input->service-form#clearError', 'data-service-form-target': 'title'}}) }}
                             <div class="form-error hidden" id="error-service_title"></div>
                         </div>
-                    </div>
-                    <div class="lg:col-span-2">
-                        <div class="field-group !mb-2">
-                            <label class="field-label">Nº Registro</label>
-                            {{ form_widget(form.numeration, {'attr': {'class': 'ui-input font-mono !bg-slate-50 dark:!bg-slate-900', 'placeholder': 'ID', 'data-service-form-target': 'numeration'}}) }}
+
+                        <div class="field-group !mb-3">
+                            <label class="field-label">Nº de Registro (ID)</label>
+                            {{ form_widget(form.numeration, {'attr': {'class': 'ui-input font-mono !bg-slate-50 dark:!bg-slate-900', 'placeholder': 'Auto-generado si vacío', 'data-service-form-target': 'numeration'}}) }}
                         </div>
-                    </div>
-                    <div class="lg:col-span-4">
-                        <div class="field-group !mb-2">
-                            <label class="field-label">Ubicación / Lugar <span>*</span></label>
-                            <div class="ui-input-wrapper">
-                                <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                {{ form_widget(form.locality, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Dirección...'}}) }}
+
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 !mb-3">
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Tipo <span>*</span></label>
+                                <div class="flex">
+                                    {{ form_widget(form.type, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-action': 'change->service-form#updateCategories', 'data-service-form-target': 'typeSelect'}}) }}
+                                    <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openTypeModal">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Categoría <span>*</span></label>
+                                <div class="flex">
+                                    {{ form_widget(form.subcategory, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-service-form-target': 'subcategorySelect'}}) }}
+                                    <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openSubcategoryModal">
+                                        <i data-lucide="plus" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 !mb-0">
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Afluencia Estimada <span>*</span></label>
+                                {{ form_widget(form.afluencia, {'attr': {'class': 'ui-input', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Nº aprox.</label>
+                                {{ form_widget(form.estimatedPeople, {'attr': {'class': 'ui-input text-center', 'placeholder': 'Aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <!-- COLUMNA IZQUIERDA: Cronología (Balanced width) -->
-                <div class="lg:col-span-8">
-                    <div class="ui-fieldset !pb-4 h-full">
-                        <div class="ui-legend">Cronología del Servicio</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="lg:col-span-2">
-                                <div class="grid grid-cols-2 gap-4">
+                <!-- COLUMNA DERECHA: Cronología y Ubicación -->
+                <div class="lg:col-span-6">
+                    <div class="ui-fieldset h-full !pb-4">
+                        <div class="ui-legend">Cronología y Ubicación</div>
+
+                        <!-- Row 1: Dates & Location -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 !mb-4">
+                            <div class="sm:col-span-7">
+                                <div class="grid grid-cols-2 gap-3">
                                     <div class="date-input-container">
                                         <span class="date-badge">INICIO</span>
                                         <div class="ui-input-wrapper">
@@ -148,8 +171,21 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="sm:col-span-5">
+                                <div class="field-group !mb-0">
+                                    <label class="field-label">Ubicación / Lugar <span>*</span></label>
+                                    <div class="ui-input-wrapper">
+                                        <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                        {{ form_widget(form.locality, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Dirección...'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Hours & Limits -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
                             <div class="date-input-container">
-                                <span class="date-badge">H. EN BASE (REGRESO)</span>
+                                <span class="date-badge">HORA EN BASE</span>
                                 <div class="ui-input-wrapper">
                                     {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input', 'data-service-form-target': 'timeAtBaseInput'}}) }}
                                     <i data-lucide="clock" class="ui-input-icon-right"></i>
@@ -162,63 +198,23 @@
                                     <i data-lucide="clock" class="ui-input-icon-right"></i>
                                 </div>
                             </div>
-                            <div class="lg:col-span-2">
-                                <div class="date-input-container !pt-8">
-                                    <span class="date-badge">LÍMITE INSCRIPCION</span>
-                                    <div class="ui-input-wrapper">
-                                        {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'registrationLimitInput'}}) }}
-                                        <i data-lucide="calendar" class="ui-input-icon-right"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- COLUMNA DERECHA: Clasificación (Balanced width) -->
-                <div class="lg:col-span-4">
-                    <div class="ui-fieldset !pb-4 h-full">
-                        <div class="ui-legend">Clasificación</div>
-                        <div class="space-y-4">
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Tipo / Categoría <span>*</span></label>
-                                <div class="flex mb-2">
-                                    {{ form_widget(form.type, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-action': 'change->service-form#updateCategories', 'data-service-form-target': 'typeSelect'}}) }}
-                                    <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openTypeModal">
-                                        <i data-lucide="plus" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                                <div class="flex">
-                                    {{ form_widget(form.subcategory, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-service-form-target': 'subcategorySelect'}}) }}
-                                    <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openSubcategoryModal">
-                                        <i data-lucide="plus" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="field-group !mb-0">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="field-label">Afluencia <span>*</span></label>
-                                        {{ form_widget(form.afluencia, {'attr': {'class': 'ui-input', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
-                                    </div>
-                                    <div>
-                                        <label class="field-label">Nº Personas</label>
-                                        {{ form_widget(form.estimatedPeople, {'attr': {'class': 'ui-input text-center', 'placeholder': 'Aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="field-group !mb-0">
-                                <label class="field-label">Límite Inscritos</label>
+                            <div class="date-input-container">
+                                <span class="date-badge">LÍMITE INSCRIPCION</span>
                                 <div class="ui-input-wrapper">
-                                    <i data-lucide="users" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                    {% set maxAttendeesWidget = form_widget(form.maxAttendees, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Sin límite'}}) %}
-                                    {{ maxAttendeesWidget|raw }}
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'registrationLimitInput'}}) }}
+                                    <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                </div>
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label" style="font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 800; color: var(--text-secondary); margin-bottom: 0.35rem;">Límite Inscritos</label>
+                                <div class="ui-input-wrapper">
+                                    <i data-lucide="users" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'ui-input !pl-9 text-xs', 'placeholder': 'Sin límite'}}) }}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
                 <!-- FILA 2: Descripción y Tareas (Ancho Completo) -->
                 <div class="lg:col-span-12">

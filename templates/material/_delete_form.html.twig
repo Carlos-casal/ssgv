@@ -1,6 +1,11 @@
-<form method="post" action="{{ path('app_material_delete', {'id': material.id}) }}" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este material? Esta acción no se puede deshacer.');">
+<form method="post"
+      action="{{ path('app_material_delete', {'id': material.id}) }}"
+      data-controller="confirm"
+      data-confirm-text-value="¿Estás seguro de que deseas eliminar este material? Esta acción no se puede deshacer."
+      data-confirm-title-value="Eliminar Material"
+      data-confirm-confirm-button-text-value="Sí, eliminar">
     <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ material.id) }}">
-    <button class="{{ button_class|default('btn btn-danger') }}">
+    <button type="button" data-action="click->confirm#confirm" class="{{ button_class|default('btn btn-danger') }}">
         <i data-lucide="trash-2" class="w-4 h-4 mr-2"></i> Eliminar
     </button>
 </form>

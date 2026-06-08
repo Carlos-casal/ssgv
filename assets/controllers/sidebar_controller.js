@@ -132,10 +132,13 @@ export default class extends Controller {
             }
 
             if (toggleBtn) {
+                const oldTooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (oldTooltip) oldTooltip.dispose();
                 const newTitle = 'Expandir barra lateral';
                 toggleBtn.setAttribute('data-bs-title', newTitle);
+                toggleBtn.setAttribute('title', newTitle);
                 new bootstrap.Tooltip(toggleBtn, {
-                    delay: { "show": 2000, "hide": 100 }
+                    delay: { "show": 0, "hide": 100 }
                 });
             }
 
@@ -164,10 +167,13 @@ export default class extends Controller {
             }
 
             if (toggleBtn) {
+                const oldTooltip = bootstrap.Tooltip.getInstance(toggleBtn);
+                if (oldTooltip) oldTooltip.dispose();
                 const newTitle = 'Contraer barra lateral';
                 toggleBtn.setAttribute('data-bs-title', newTitle);
+                toggleBtn.setAttribute('title', newTitle);
                 new bootstrap.Tooltip(toggleBtn, {
-                    delay: { "show": 2000, "hide": 100 }
+                    delay: { "show": 0, "hide": 100 }
                 });
             }
 
