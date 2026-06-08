@@ -339,7 +339,7 @@ export default class extends Controller {
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 6000,
                 timerProgressBar: true,
                 icon: type === 'danger' ? 'error' : type,
                 title: message,

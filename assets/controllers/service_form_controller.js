@@ -19,8 +19,11 @@ import 'tinymce/plugins/wordcount';
 import 'tinymce/plugins/table';
 
 import 'tinymce/skins/ui/oxide/skin.min.css';
+import 'tinymce/skins/ui/oxide-dark/skin.min.css';
 import 'tinymce/skins/ui/oxide/content.min.css';
+import 'tinymce/skins/ui/oxide-dark/content.min.css';
 import 'tinymce/skins/content/default/content.min.css';
+import 'tinymce/skins/content/dark/content.min.css';
 
 export default class extends Controller {
     static targets = [
@@ -82,7 +85,9 @@ export default class extends Controller {
                 const isDark = document.documentElement.classList.contains('dark') || document.body.classList.contains('dark');
                 tinymce.init({
                     target: descriptionEl,
-                    height: 400,
+                    height: 200,
+                    min_height: 150,
+                    resize: 'vertical',
                     menubar: false,
                     skin: false,
                     content_css: false,
@@ -91,13 +96,15 @@ export default class extends Controller {
                     toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link table emoticons charmap | removeformat',
                     promotion: false,
                     branding: false,
+                    skin: isDark ? 'oxide-dark' : 'oxide',
+                    content_css: isDark ? 'dark' : 'default',
                     content_style: `
                         body {
                             font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                             font-size: 14px;
-                            background-color: ${isDark ? '#111827' : '#fdfdfd'};
-                            color: ${isDark ? '#f8fafc' : '#111827'};
-                            padding: 1.5rem;
+                            background-color: ${isDark ? '#111827' : 'var(--bg-card, #FFFFFF)'};
+                            color: ${isDark ? '#f8fafc' : 'var(--text-primary, #111827)'};
+                            padding: 1rem;
                             line-height: 1.6;
                         }
                         body::placeholder { color: #64748b; }
@@ -124,18 +131,10 @@ export default class extends Controller {
             plainTextareas.forEach(el => {
                 if (el) {
                     if (typeof tinymce !== 'undefined') tinymce.remove(el);
-                    el.style.minHeight = '46px';
-                    el.style.height = 'auto';
-                    el.style.overflow = 'hidden';
-                    el.addEventListener('input', () => {
-                        el.style.height = 'auto';
-                        el.style.height = el.scrollHeight + 'px';
-                    });
-                    // Initial resize
-                    setTimeout(() => {
-                        el.style.height = 'auto';
-                        el.style.height = el.scrollHeight + 'px';
-                    }, 200);
+                    el.style.minHeight = '150px';
+                    el.style.height = '200px';
+                    el.style.resize = 'vertical';
+                    el.style.overflow = 'auto';
                 }
             });
 
@@ -1293,7 +1292,7 @@ export default class extends Controller {
                 toast: true,
                 position: 'top-end',
                 showConfirmButton: false,
-                timer: 3000,
+                timer: 6000,
                 timerProgressBar: true,
                 icon: 'success',
                 title: message,

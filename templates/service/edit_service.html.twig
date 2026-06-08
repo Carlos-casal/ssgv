@@ -47,7 +47,7 @@
         }
     }) }}
 
-    <div class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-4">
+    <div class="mb-6 mt-4 lg:mt-0 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-900 dark:text-white mb-1">Editar Servicio</h1>
             <p class="text-sm text-slate-500 dark:text-slate-400">Actualizar planificación de {{ service.title }}</p>
@@ -94,98 +94,35 @@
     <div class="tab-content" id="serviceFormTabContent">
         <!-- TAB 1: DATOS GENERALES -->
         <div class="tab-pane fade show active" id="datos" role="tabpanel" aria-labelledby="datos-tab">
-            <!-- Título y Ubicación (Ancho Completo) -->
-            <div class="ui-fieldset !pb-4 !mb-4">
-                <div class="ui-legend">Identificación y Ubicación</div>
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                    <div class="lg:col-span-6">
-                        <div class="field-group !mb-2">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+                <!-- COLUMNA IZQUIERDA: Datos Identificativos -->
+                <div class="lg:col-span-6">
+                    <div class="ui-fieldset h-full !pb-4">
+                        <div class="ui-legend">Datos Identificativos</div>
+
+                        <div class="field-group !mb-3">
                             <label class="field-label">Título del Servicio <span>*</span></label>
                             {{ form_widget(form.title, {'attr': {'class': 'ui-input font-bold', 'placeholder': 'Ej. Dispositivo Maratón', 'data-action': 'input->service-form#clearError', 'data-service-form-target': 'title'}}) }}
+                            <div class="form-error hidden" id="error-service_title"></div>
                         </div>
-                    </div>
-                    <div class="lg:col-span-2">
-                        <div class="field-group !mb-2">
-                            <label class="field-label">Nº Registro</label>
-                            {{ form_widget(form.numeration, {'attr': {'class': 'ui-input font-mono !bg-slate-50 dark:!bg-slate-900', 'placeholder': 'ID', 'data-service-form-target': 'numeration'}}) }}
-                        </div>
-                    </div>
-                    <div class="lg:col-span-4">
-                        <div class="field-group !mb-2">
-                            <label class="field-label">Ubicación / Lugar <span>*</span></label>
-                            <div class="ui-input-wrapper">
-                                <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                {{ form_widget(form.locality, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Dirección...'}}) }}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
-                <!-- COLUMNA IZQUIERDA: Cronología -->
-                <div class="lg:col-span-8">
-                    <div class="ui-fieldset !pb-4 h-full">
-                        <div class="ui-legend">Cronología del Servicio</div>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                            <div class="lg:col-span-2">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div class="date-input-container">
-                                        <span class="date-badge">INICIO</span>
-                                        <div class="ui-input-wrapper">
-                                            {{ form_widget(form.startDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'startDateInput'}}) }}
-                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
-                                        </div>
-                                    </div>
-                                    <div class="date-input-container">
-                                        <span class="date-badge">FIN</span>
-                                        <div class="ui-input-wrapper">
-                                            {{ form_widget(form.endDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'endDateInput'}}) }}
-                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="date-input-container">
-                                <span class="date-badge">H. EN BASE (REGRESO)</span>
-                                <div class="ui-input-wrapper">
-                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input', 'data-service-form-target': 'timeAtBaseInput'}}) }}
-                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
-                                </div>
-                            </div>
-                            <div class="date-input-container">
-                                <span class="date-badge">HORA SALIDA</span>
-                                <div class="ui-input-wrapper">
-                                    {{ form_widget(form.departureTime, {'attr': {'class': 'ui-input', 'data-service-form-target': 'departureTimeInput'}}) }}
-                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
-                                </div>
-                            </div>
-                            <div class="lg:col-span-2">
-                                <div class="date-input-container !pt-8">
-                                    <span class="date-badge">LÍMITE INSCRIPCION</span>
-                                    <div class="ui-input-wrapper">
-                                        {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'registrationLimitInput'}}) }}
-                                        <i data-lucide="calendar" class="ui-input-icon-right"></i>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="field-group !mb-3">
+                            <label class="field-label">Nº de Registro (ID)</label>
+                            {{ form_widget(form.numeration, {'attr': {'class': 'ui-input font-mono !bg-slate-50 dark:!bg-slate-900', 'placeholder': 'Auto-generado si vacío', 'data-service-form-target': 'numeration'}}) }}
                         </div>
-                    </div>
-                </div>
 
-                <!-- COLUMNA DERECHA: Clasificación -->
-                <div class="lg:col-span-4">
-                    <div class="ui-fieldset !pb-4 h-full">
-                        <div class="ui-legend">Clasificación</div>
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 !mb-3">
                             <div class="field-group !mb-0">
-                                <label class="field-label">Tipo / Categoría <span>*</span></label>
-                                <div class="flex mb-2">
+                                <label class="field-label">Tipo <span>*</span></label>
+                                <div class="flex">
                                     {{ form_widget(form.type, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-action': 'change->service-form#updateCategories', 'data-service-form-target': 'typeSelect'}}) }}
                                     <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openTypeModal">
                                         <i data-lucide="plus" class="w-4 h-4"></i>
                                     </button>
                                 </div>
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Categoría <span>*</span></label>
                                 <div class="flex">
                                     {{ form_widget(form.subcategory, {'attr': {'class': 'ui-input !rounded-r-none border-r-0', 'data-service-form-target': 'subcategorySelect'}}) }}
                                     <button type="button" class="ui-btn btn-cyan !px-3 !rounded-l-none" data-action="click->service-form#openSubcategoryModal">
@@ -193,24 +130,85 @@
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 !mb-0">
                             <div class="field-group !mb-0">
-                                <div class="grid grid-cols-2 gap-2">
-                                    <div>
-                                        <label class="field-label">Afluencia <span>*</span></label>
-                                        {{ form_widget(form.afluencia, {'attr': {'class': 'ui-input', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
+                                <label class="field-label">Afluencia Estimada <span>*</span></label>
+                                {{ form_widget(form.afluencia, {'attr': {'class': 'ui-input', 'data-action': 'change->service-form#updateAfluenciaColor', 'data-service-form-target': 'afluenciaSelect'}}) }}
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Nº aprox.</label>
+                                {{ form_widget(form.estimatedPeople, {'attr': {'class': 'ui-input text-center', 'placeholder': 'Aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- COLUMNA DERECHA: Cronología y Ubicación -->
+                <div class="lg:col-span-6">
+                    <div class="ui-fieldset h-full !pb-4">
+                        <div class="ui-legend">Cronología y Ubicación</div>
+
+                        <!-- Row 1: Dates & Location -->
+                        <div class="grid grid-cols-1 sm:grid-cols-12 gap-4 !mb-4">
+                            <div class="sm:col-span-7">
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="field-group !mb-0">
+                                        <label class="field-label">Inicio <span>*</span></label>
+                                        <div class="ui-input-wrapper">
+                                            {{ form_widget(form.startDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'startDateInput'}}) }}
+                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="field-label">Nº Personas</label>
-                                        {{ form_widget(form.estimatedPeople, {'attr': {'class': 'ui-input text-center', 'placeholder': 'Aprox.', 'data-service-form-target': 'estimatedPeopleInput'}}) }}
+                                    <div class="field-group !mb-0">
+                                        <label class="field-label">Fin <span>*</span></label>
+                                        <div class="ui-input-wrapper">
+                                            {{ form_widget(form.endDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'endDateInput'}}) }}
+                                            <i data-lucide="calendar" class="ui-input-icon-right"></i>
+                                        </div>
                                     </div>
+                                </div>
+                            </div>
+                            <div class="sm:col-span-5">
+                                <div class="field-group !mb-0">
+                                    <label class="field-label">Ubicación / Lugar <span>*</span></label>
+                                    <div class="ui-input-wrapper">
+                                        <i data-lucide="map-pin" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                        {{ form_widget(form.locality, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Dirección...'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Hours & Limits -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Hora en Base</label>
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.timeAtBase, {'attr': {'class': 'ui-input', 'data-service-form-target': 'timeAtBaseInput'}}) }}
+                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
+                                </div>
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Hora Salida</label>
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.departureTime, {'attr': {'class': 'ui-input', 'data-service-form-target': 'departureTimeInput'}}) }}
+                                    <i data-lucide="clock" class="ui-input-icon-right"></i>
+                                </div>
+                            </div>
+                            <div class="field-group !mb-0">
+                                <label class="field-label">Límite Inscripción</label>
+                                <div class="ui-input-wrapper">
+                                    {{ form_widget(form.registrationLimitDate, {'attr': {'class': 'ui-input', 'data-service-form-target': 'registrationLimitInput'}}) }}
+                                    <i data-lucide="calendar" class="ui-input-icon-right"></i>
                                 </div>
                             </div>
                             <div class="field-group !mb-0">
                                 <label class="field-label">Límite Inscritos</label>
                                 <div class="ui-input-wrapper">
-                                    <i data-lucide="users" class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                                    {% set maxAttendeesWidget = form_widget(form.maxAttendees, {'attr': {'class': 'ui-input !pl-11', 'placeholder': 'Sin límite'}}) %}
-                                    {{ maxAttendeesWidget|raw }}
+                                    <i data-lucide="users" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
+                                    {{ form_widget(form.maxAttendees, {'attr': {'class': 'ui-input !pl-9 text-xs', 'placeholder': 'Sin límite'}}) }}
                                 </div>
                             </div>
                         </div>
@@ -253,86 +251,81 @@
 
         <!-- TAB 2: RECURSOS Y DOTACIÓN -->
         <div class="tab-pane fade" id="recursos" role="tabpanel" aria-labelledby="recursos-tab">
-            <div class="row g-3">
-                <div class="col-12">
-                    <div class="card border-0 shadow-sm rounded-3">
-                        <div class="card-header-compact bg-blue-50/50">
-                            <div class="d-flex align-items-center">
-                                <i data-lucide="package" class="w-4 h-4 text-blue-700 mr-2"></i>
-                                <span class="section-title text-blue-700">Recursos, Materiales y Dotación</span>
-                            </div>
-                        </div>
-                        <div class="card-body p-3">
-                            <div class="row g-3">
-                                <!-- Materiales -->
-                                <div class="col-lg-8 border-end">
-                                    <div class="row g-2" id="materials-container"
-                                         data-service-form-target="materialsContainer"
-                                         data-index="{{ form.serviceMaterials|length }}"
-                                         data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
+            <div class="ui-fieldset">
+                <div class="ui-legend">Recursos, Materiales y Dotación</div>
 
-                                        {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Otros'] %}
-                                        <div class="col-xl-3 col-lg-6 col-md-6 mb-4">
-                                            <div class="d-flex justify-content-between align-items-center mb-2 px-1">
-                                                <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter">{{ category }}</span>
-                                                <button type="button" class="btn btn-link p-0 text-blue-600" data-action="click->service-form#addMaterial" data-category="{{ category }}">
-                                                    <i data-lucide="plus-square" class="w-4 h-4"></i>
-                                                </button>
-                                            </div>
-                                            <div class="space-y-2" data-material-category="{{ category }}">
-                                                {% for sm in form.serviceMaterials %}
-                                                    {% if sm.vars.data.material and sm.vars.data.material.category == category %}
-                                                        {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
-                                                    {% endif %}
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        {% endfor %}
-                                    </div>
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Materiales -->
+                    <div class="lg:col-span-8 border-r border-slate-200 dark:border-slate-800 pr-8">
+                        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6" id="materials-container"
+                             data-service-form-target="materialsContainer"
+                             data-index="{{ form.serviceMaterials|length }}"
+                             data-prototype="{{ include('service/_material_prototype.html.twig', { 'form': form.serviceMaterials.vars.prototype })|e('html_attr') }}">
+
+                            {% for category in ['Sanitario', 'Comunicaciones', 'Logística', 'Otros'] %}
+                            <div class="mb-4">
+                                <div class="flex justify-between items-center mb-4 bg-slate-50 dark:bg-slate-900/50 p-2 rounded-lg border border-slate-100 dark:border-slate-800">
+                                    <span class="text-[10px] font-black text-slate-500 uppercase tracking-widest">{{ category }}</span>
+                                    <button type="button" class="text-cyan-500 hover:text-cyan-600 transition-colors" data-action="click->service-form#addMaterial" data-category="{{ category }}">
+                                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                                    </button>
                                 </div>
+                                <div class="space-y-3" data-material-category="{{ category }}">
+                                    {% for sm in form.serviceMaterials %}
+                                        {% if sm.vars.data.material and sm.vars.data.material.category == category %}
+                                            {{ include('service/_material_prototype.html.twig', { 'form': sm }) }}
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
 
-                                <!-- Dotación y Vehículos -->
-                                <div class="col-lg-4">
-                                    <div class="row g-2">
-                                        <!-- Personal -->
-                                        <div class="col-6">
-                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Personal Requerido</span>
-                                            <div class="space-y-1">
-                                                {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
-                                                    <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-xxs font-bold text-slate-600">{{ form[field].vars.label }}</span>
-                                                        {{ form_widget(form[field], {'attr': {'class': 'form-control !h-6 !w-12 !p-0 text-center text-xxs', 'type': 'number', 'min': '0'}}) }}
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
+                    <!-- Dotación y Vehículos -->
+                    <div class="lg:col-span-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                            <!-- Personal -->
+                            <div>
+                                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Personal Requerido</span>
+                                <div class="space-y-2">
+                                    {% for field in ['numTes', 'numTts', 'numDue', 'numDoctors'] %}
+                                        <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-1 px-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                                            <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">{{ form[field].vars.label }}</span>
+                                            {{ form_widget(form[field], {'attr': {'class': 'ui-input !h-8 !w-12 !p-1 text-center', 'type': 'number', 'min': '0', 'placeholder': '0'}}) }}
                                         </div>
-                                        <!-- Ambulancias -->
-                                        <div class="col-6">
-                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-2">Tipo Ambulancia</span>
-                                            <div class="space-y-1">
-                                                {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
-                                                    <div class="d-flex justify-content-between align-items-center bg-slate-50 p-1 px-2 rounded border border-slate-100">
-                                                        <span class="text-xxs font-bold text-slate-600">{{ form[field].vars.label }}</span>
-                                                        {{ form_widget(form[field], {'attr': {'class': 'form-control !h-6 !w-12 !p-0 text-center text-xxs', 'type': 'number', 'min': '0'}}) }}
-                                                    </div>
-                                                {% endfor %}
-                                            </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Ambulancias -->
+                            <div>
+                                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Tipo Ambulancia</span>
+                                <div class="space-y-2">
+                                    {% for field in ['numSvb', 'numSva', 'numColectiva'] %}
+                                        <div class="flex justify-between items-center bg-slate-50 dark:bg-slate-900/50 p-1 px-3 rounded-lg border border-slate-100 dark:border-slate-800">
+                                            <span class="text-[11px] font-bold text-slate-600 dark:text-slate-400">{{ form[field].vars.label }}</span>
+                                            {{ form_widget(form[field], {'attr': {'class': 'ui-input !h-8 !w-12 !p-1 text-center', 'type': 'number', 'min': '0', 'placeholder': '0'}}) }}
                                         </div>
-                                        <!-- Vehículos (Compact list) -->
-                                        <div class="col-12 mt-2">
-                                            <span class="text-xxs font-black text-slate-400 uppercase tracking-tighter d-block mb-1">Asignar Vehículos</span>
-                                            <div class="overflow-y-auto" style="max-height: 200px;">
-                                                {% for key, vehicle_choice in form.vehicles %}
-                                                    {% set vehicle = form.vehicles.vars.choices[key].data %}
-                                                    <div class="d-flex align-items-center justify-content-between py-1 border-bottom border-slate-100">
-                                                        <span class="text-xxs text-slate-700">{{ vehicle.alias ?: vehicle.model }} <small class="text-muted">({{ vehicle.licensePlate }})</small></span>
-                                                        <div class="form-check form-switch m-0 p-0">
-                                                            <input class="form-check-input ms-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
-                                                        </div>
-                                                    </div>
-                                                {% endfor %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <!-- Vehículos -->
+                            <div class="col-span-2 mt-4">
+                                <span class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Asignar Vehículos</span>
+                                <div class="bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+                                    <div class="max-h-60 overflow-y-auto p-2">
+                                        {% for key, vehicle_choice in form.vehicles %}
+                                            {% set vehicle = form.vehicles.vars.choices[key].data %}
+                                            <div class="flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors border-b border-slate-100 dark:border-slate-800 last:border-0">
+                                                <div class="flex flex-col">
+                                                    <span class="text-[11px] font-bold text-slate-700 dark:text-slate-300">{{ vehicle.alias ?: vehicle.model }}</span>
+                                                    <span class="text-[9px] text-slate-400 font-mono">{{ vehicle.licensePlate }}</span>
+                                                </div>
+                                                <div class="form-check form-switch m-0 p-0">
+                                                    <input class="form-check-input !mt-0" type="checkbox" name="{{ vehicle_choice.vars.full_name }}" id="{{ vehicle_choice.vars.id }}" value="{{ vehicle_choice.vars.value }}" {% if vehicle_choice.vars.checked %}checked{% endif %}>
+                                                </div>
                                             </div>
-                                        </div>
+                                        {% endfor %}
                                     </div>
                                 </div>
                             </div>
@@ -669,6 +662,72 @@
     {{ form_end(form) }}
 
     <!-- Modals -->
+    <!-- Type Modal -->
+    <div id="typeModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[2000] hidden" style="display: none;" data-service-form-target="typeModal">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Nuevo Tipo</h3>
+                <button type="button" data-action="click->service-form#closeTypeModal" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            <form id="modal-new-type-form" data-action="submit->service-form#handleTypeSubmit" novalidate>
+                <div class="field-group">
+                    <label for="type_name_input" class="field-label">Nombre <span>*</span></label>
+                    <input type="text" id="type_name_input" name="name" class="ui-input" required data-action="input->service-form#clearError">
+                    <div class="form-error hidden" id="error-type_name_input"></div>
+                </div>
+                <div class="mt-8 flex justify-end">
+                    <button type="submit" class="ui-btn btn-cyan w-full">Aceptar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Subcategory Modal -->
+    <div id="subcategoryModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[2000] hidden" style="display: none;" data-service-form-target="subcategoryModal">
+        <div class="bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-2xl w-full max-w-md relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-black text-slate-800 dark:text-white uppercase tracking-tight">Nueva Categoría</h3>
+                <button type="button" data-action="click->service-form#closeSubcategoryModal" class="text-slate-400 hover:text-rose-500 transition-colors">
+                    <i data-lucide="x" class="h-6 w-6"></i>
+                </button>
+            </div>
+            <form id="modal-new-subcategory-form" data-action="submit->service-form#handleSubcategorySubmit" novalidate>
+                <input type="hidden" id="modal_type_id" name="type_id">
+
+                <div class="field-group">
+                    <label for="modal_category_select" class="field-label">Categoría (Nivel 2) <span>*</span></label>
+                    <div class="flex">
+                        <select id="modal_category_select" name="category" class="ui-input !rounded-r-none border-r-0" required data-action="change->service-form#clearError">
+                            <option value="">Selecciona...</option>
+                        </select>
+                        <button type="button" class="ui-btn btn-dark !px-3 !rounded-l-none" data-action="click->service-form#showNewCategoryInput">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="form-error hidden" id="error-modal_category_select"></div>
+                </div>
+
+                <div id="new_category_input_container" class="field-group hidden">
+                    <label for="modal_new_category_name" class="field-label">Nombre Nueva Categoría</label>
+                    <input type="text" id="modal_new_category_name" name="new_category_name" class="ui-input" data-action="input->service-form#clearError">
+                    <div class="form-error hidden" id="error-modal_new_category_name"></div>
+                </div>
+
+                <div class="field-group">
+                    <label for="subcategory_name_input" class="field-label">Subcategoría (Nivel 3) <span>*</span></label>
+                    <input type="text" id="subcategory_name_input" name="name" class="ui-input" required data-action="input->service-form#clearError">
+                    <div class="form-error hidden" id="error-subcategory_name_input"></div>
+                </div>
+
+                <div class="mt-8 flex justify-end">
+                    <button type="submit" class="ui-btn btn-cyan w-full">Aceptar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Attendance Volunteer Picker Modal -->
     <div class="hidden fixed inset-0 bg-slate-900/70 backdrop-blur-sm flex items-center justify-center z-50" style="display: none;" data-service-form-target="modal">
         <div class="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl w-full max-w-3xl mx-4 relative flex flex-col" style="max-height: 90vh;">
@@ -757,71 +816,6 @@
     {{ include('service/_fichar_modal.html.twig') }}
     {{ include('service/_individual_fichaje_modal.html.twig') }}
 
-    <!-- Type Modal -->
-    <div id="typeModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" style="display: none;" data-service-form-target="typeModal">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-semibold text-gray-700">Añadir Nuevo Tipo</h3>
-                <button type="button" data-action="click->service-form#closeTypeModal" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-            <form id="modal-new-type-form" data-action="submit->service-form#handleTypeSubmit" novalidate>
-                <div class="mb-4">
-                    <label for="type_name_input" class="block text-sm font-medium text-gray-700 mb-1">Nombre <span class="text-red-500">*</span></label>
-                    <input type="text" id="type_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
-                    <div class="invalid-feedback hidden" id="error-type_name_input"></div>
-                </div>
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="btn btn-primary">Aceptar</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Subcategory Modal -->
-    <div id="subcategoryModal" class="fixed inset-0 bg-gray-800/60 backdrop-blur-sm flex items-center justify-center z-50 hidden" style="display: none;" data-service-form-target="subcategoryModal">
-        <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
-            <div class="flex justify-between items-center border-b pb-3 mb-4">
-                <h3 class="text-xl font-semibold text-gray-700">Añadir Categoría/Subcategoría</h3>
-                <button type="button" data-action="click->service-form#closeSubcategoryModal" class="text-gray-400 hover:text-gray-600">
-                    <i data-lucide="x" class="h-6 w-6"></i>
-                </button>
-            </div>
-            <form id="modal-new-subcategory-form" data-action="submit->service-form#handleSubcategorySubmit" novalidate>
-                <input type="hidden" id="modal_type_id" name="type_id">
-
-                <div class="mb-4">
-                    <label for="modal_category_select" class="block text-sm font-medium text-gray-700 mb-1">Categoría (Nivel 2) <span class="text-red-500">*</span></label>
-                    <div class="input-group">
-                        <select id="modal_category_select" name="category" class="form-select w-full border-gray-300 rounded-md shadow-sm" required data-action="change->service-form#clearError">
-                            <option value="">Selecciona...</option>
-                        </select>
-                        <button type="button" class="btn btn-outline-primary" data-action="click->service-form#showNewCategoryInput">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                    <div class="invalid-feedback hidden" id="error-modal_category_select"></div>
-                </div>
-
-                <div id="new_category_input_container" class="mb-4 hidden">
-                    <label for="modal_new_category_name" class="block text-sm font-medium text-gray-700 mb-1">Nueva Categoría</label>
-                    <input type="text" id="modal_new_category_name" name="new_category_name" class="form-control w-full border-gray-300 rounded-md shadow-sm" data-action="input->service-form#clearError">
-                    <div class="invalid-feedback hidden" id="error-modal_new_category_name"></div>
-                </div>
-
-                <div class="mb-4">
-                    <label for="subcategory_name_input" class="block text-sm font-medium text-gray-700 mb-1">Subcategoría (Nivel 3) <span class="text-red-500">*</span></label>
-                    <input type="text" id="subcategory_name_input" name="name" class="form-control w-full border-gray-300 rounded-md shadow-sm" required data-action="input->service-form#clearError">
-                    <div class="invalid-feedback hidden" id="error-subcategory_name_input"></div>
-                </div>
-
-                <div class="mt-6 flex justify-end">
-                    <button type="submit" class="btn btn-primary">Aceptar</button>
-                </div>
-            </form>
-        </div>
-    </div>
 </div>
 {% endblock %}
 

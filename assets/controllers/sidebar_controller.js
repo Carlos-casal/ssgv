@@ -10,11 +10,13 @@ export default class extends Controller {
         const stored = localStorage.getItem('sidebar-collapsed');
         this.isManual = stored !== null;
 
-        if (this.isManual) {
+        if (window.innerWidth < 1200) {
+            // On mobile/tablet, always start collapsed (drawer closed)
+            this.collapsedValue = true;
+        } else if (this.isManual) {
             this.collapsedValue = stored === 'true';
         } else {
-            // Auto-collapse on small screens if no preference is stored
-            this.collapsedValue = window.innerWidth < 1200;
+            this.collapsedValue = false;
         }
 
         this._updateState();
@@ -128,7 +130,11 @@ export default class extends Controller {
             }
 
             if (this.hasToggleIconTarget) {
-                this.toggleIconTarget.setAttribute('data-lucide', 'chevron-right');
+                const newIcon = document.createElement('i');
+                newIcon.setAttribute('data-lucide', 'chevron-right');
+                newIcon.setAttribute('class', 'w-5 h-5');
+                newIcon.setAttribute('data-sidebar-target', 'toggleIcon');
+                this.toggleIconTarget.replaceWith(newIcon);
             }
 
             if (toggleBtn) {
@@ -143,7 +149,11 @@ export default class extends Controller {
             }
 
             if (this.hasMobileIconTarget) {
-                this.mobileIconTarget.setAttribute('data-lucide', 'menu');
+                const newIcon = document.createElement('i');
+                newIcon.setAttribute('data-lucide', 'menu');
+                newIcon.setAttribute('class', 'w-6 h-6');
+                newIcon.setAttribute('data-sidebar-target', 'mobileIcon');
+                this.mobileIconTarget.replaceWith(newIcon);
             }
 
             this.submenuTargets.forEach(el => el.classList.remove('submenu-open'));
@@ -163,7 +173,11 @@ export default class extends Controller {
             }
 
             if (this.hasToggleIconTarget) {
-                this.toggleIconTarget.setAttribute('data-lucide', 'chevron-left');
+                const newIcon = document.createElement('i');
+                newIcon.setAttribute('data-lucide', 'chevron-left');
+                newIcon.setAttribute('class', 'w-5 h-5');
+                newIcon.setAttribute('data-sidebar-target', 'toggleIcon');
+                this.toggleIconTarget.replaceWith(newIcon);
             }
 
             if (toggleBtn) {
@@ -178,7 +192,11 @@ export default class extends Controller {
             }
 
             if (this.hasMobileIconTarget) {
-                this.mobileIconTarget.setAttribute('data-lucide', 'x');
+                const newIcon = document.createElement('i');
+                newIcon.setAttribute('data-lucide', 'x');
+                newIcon.setAttribute('class', 'w-6 h-6');
+                newIcon.setAttribute('data-sidebar-target', 'mobileIcon');
+                this.mobileIconTarget.replaceWith(newIcon);
             }
 
             links.forEach(link => {

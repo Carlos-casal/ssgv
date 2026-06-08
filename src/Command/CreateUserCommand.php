@@ -30,15 +30,15 @@ class CreateUserCommand extends Command
 
         // Verificar si ya existe el usuario
         $existingUser = $this->entityManager->getRepository(User::class)
-            ->findOneBy(['email' => 'admin@voluntarios.org']);
+            ->findOneBy(['email' => 'admin@example.com']);
 
         if ($existingUser) {
-            $io->warning('El usuario admin@voluntarios.org ya existe.');
+            $io->warning('El usuario admin@example.com ya existe.');
             return Command::SUCCESS;
         }
 
         $user = new User();
-        $user->setEmail('admin@voluntarios.org');
+        $user->setEmail('admin@example.com');
         $user->setRoles(['ROLE_ADMIN']);
         
         $hashedPassword = $this->passwordHasher->hashPassword($user, 'admin123');
@@ -49,7 +49,7 @@ class CreateUserCommand extends Command
 
         $io->success('Usuario administrador creado exitosamente!');
         $io->table(['Campo', 'Valor'], [
-            ['Email', 'admin@voluntarios.org'],
+            ['Email', 'admin@example.com'],
             ['Password', 'admin123'],
             ['Rol', 'ROLE_ADMIN']
         ]);
